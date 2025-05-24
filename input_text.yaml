@@ -1,0 +1,92 @@
+#######################################################
+# Textrutor för inmatning av text
+#######################################################
+
+
+  # En input-textbox för den text som ska bli uppläst i någon Google Home device (högtalare eller puckar)
+    textupplasning:
+      name: Ange text som ska läsas upp
+      initial: ""
+
+  # En input-textbox för Google home - Alla puckar
+    googlehome_alla_puckar_las_upp:
+      name: GH Alla puckar
+      initial: ""
+
+  # En input-textbox för Google home - infopuckarna
+    googlehome_infopuckarna_las_upp:
+      name: GH Infopuckarna
+      initial: ""
+
+  # En input-textbox för Google home i vardagsrummet
+    googlehome_vardagsrummet_las_upp:
+      name: GH Vardagsrummet
+      initial: ""
+
+  # En input-textbox för Google home i köket
+    googlehome_isabelles_rum_las_upp:
+      name: GH Isabelles rum
+      initial: "" 
+
+  # En input-textbox för Google home i sovrummet
+    googlehome_sovrummet_las_upp:
+      name: GH sovrummet rum
+      initial: ""
+
+
+  # En input-textbox för Google home i Eriks rum
+    googlehome_eriks_rum_las_upp:
+      name: GH Eriks rum
+      initial: ""
+
+  # En input-textbox för Google home i köket
+    googlehome_koket_las_upp:
+      name: GH köket
+      initial: ""
+
+  # En input-textbox för Google home i köket
+    googlehome_albins_rum_las_upp:
+      name: GH Albins rum
+      initial: ""
+
+  # En input-textbox för test till infopuckarna
+    text_till_script_for_tts_infopuckarna:
+      name: Text till script för TTS infopuckarna
+      initial: ""
+
+  # En input-textbox för test till alla puckar
+    text_till_script_for_tts_alla_puckar:
+      name: Text till script för TTS Alla puckar
+      initial: ""
+
+  # En input-textbox för att kunna ange aktuell tid (t.ex. tjugo över tre)
+  # Ska aldrig gå att editera
+    aktuell_tid_begriplig:
+      name: Aktuell tid i begripligt format
+      initial: ""
+
+  # En input-textbox för att kunna ange aktuellt väder (t.ex. idag blir det soligt och...)
+  # Ska aldrig gå att editera
+    dagens_vader_begriplig:
+      name: Dagens väder i begripligt format
+      initial: ""
+
+  # En input-textbox för att spara tid när diskmaskinen är klar
+    diskmaskin_sluttid:
+      name: Tid när diskmaskinen kommer vara klar
+      initial: ""
+
+  # En input-textbox för att spara tid när diskmaskinen är klar
+    diskmaskin_meddelandetext:
+      name: Meddelandetext om när diskmaskinen kommer vara klar
+      initial: ""
+
+  # När ska diskmaskinen starta? Avgörs vid fjärrstyrning
+    diskmaskin_tid_fjarrstart:
+      name: När ska diskmaskinen starta vid fjärrstart
+      initial: ""
+
+  # Vad kostade den senaste diskningen
+    diskmaskin_senaste_kostnaden:
+      name: Priset för den senaste diskningen
+      initial: ""

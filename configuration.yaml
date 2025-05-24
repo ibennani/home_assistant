@@ -1,0 +1,1332 @@
+#######################################################
+# Home Assistant grundconfiguration
+#######################################################
+
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: 59.237731498047985
+  longitude: 18.087033927440647
+  #radius: 45
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 61
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/Stockholm  
+  currency: SEK
+  external_url: "https://85gdgmd5j5v1zlxo4dmkybhmvol6ozqk.ui.nabu.casa/"
+  internal_url: "http://192.168.0.222:8123"
+# Ska användas för att ange var man kan skriva till filer, dvs var dessa filer hamnar. 
+  allowlist_external_dirs:
+    - '/'
+    - '/config/'
+    - '/config/www/'
+
+
+
+# Standardprylar som måste vara med om man tar bort "default_config":
+#api: # Enable the API
+automation: !include automations.yaml
+#breaking_changes: # Info om breaking changes mellan installerad version och senast släppt version.
+cloud:
+config:
+energy:
+frontend:
+group: !include groups.yaml
+history:
+input_boolean: !include input_boolean.yaml 
+input_datetime: !include input_datetime.yaml
+input_number: !include input_number.yaml
+input_select: !include input_select.yaml
+input_text: !include input_text.yaml 
+logbook:
+media_source:
+mobile_app:
+my:
+person:  
+# python_script:
+script: !include scripts.yaml
+scene: !include scenes.yaml
+sun:
+system_health:
+# updater:
+# usb:
+zeroconf:
+# zone: !include zone.yaml
+
+
+
+
+zone:
+  # Hemma - istället för default data som finns i configuration.yaml
+  - name: Home
+    latitude: 59.237731498047985
+    longitude: 18.087033927440647
+    radius: 80
+    icon: mdi:home
+
+
+# Spara bara x antal dagar i databasen (så den inte blir gigantisk)
+recorder:
+  purge_keep_days: 7
+
+  
+#######################################################
+# Diverse integrationer som inte görs via UI
+#######################################################  
+
+# # Spotify (ilias konto)
+# spotify:
+#   client_id: bfabbbc30bfd40238951895a128b849b
+#   client_secret: 9e7cdf2ba08a47c190e68f0495ca3836
+
+# Lovelace
+lovelace:
+  mode: yaml  
+
+
+# Text to speech
+tts:
+  - platform: google_translate
+    service_name: google_say
+    language: "sv"
+  - platform: picotts
+    language: "en-GB"
+
+
+# # Device_tracker
+# device_tracker:
+#   - platform: netgear
+#     host: 192.168.0.1
+#     username: ha_user
+#     password: knasigt%%varre
+#     interval_seconds: 10
+#     consider_home: 180
+#     new_device_defaults:
+#       track_new_devices: true
+      
+### Skicka notiser ###
+notify:
+
+### Grupper som ska ta emot mobilnotiser ###  
+  - name: foraldrar
+    platform: group
+    services:
+      - service: mobile_app_ilias_s23_ultra
+      - service: mobile_app_anna_s22_ultra
+  - name: familjen
+    platform: group
+    services:
+      - service: mobile_app_ilias_s23_ultra
+      - service: mobile_app_anna_s22_ultra
+      - service: mobile_app_iphone_12_pro_max
+      - service: mobile_app_isabelles_iphone11
+      - service: mobile_app_erik_s23
+
+# Join
+  - platform: joaoapps_join
+    api_key: b3cd3fddb3c4492bacb350326cef2e1e 
+    device_id: fd64b0af65fe4fb8b9623a1e340fdab3
+    name: Ilias Galaxy Note 8
+
+  - platform: joaoapps_join
+    api_key: 7c3f8e6ab4d249d1b2b966e60091b13a  
+    device_id: fd64b0af65fe4fb8b9623a1e340fdab3
+    name: Ilias S22 Ultra  
+
+  - platform: joaoapps_join
+    api_key: 06402ede14e54b93bca10aa822a00a22 
+    device_id: 1f7556defe2d45758f70d4bc2d84376c
+    name: Annas Galaxy Note 8
+
+  - platform: joaoapps_join
+    api_key: b3cd3fddb3c4492bacb350326cef2e1e 
+    device_id: ada9095aac5942269222ceedf2c43c83
+    name: Larmplattan i hallen
+
+# Google home mini i Isabelles rum
+  - platform: tts
+    name: pucken_i_isabelles_rum
+    tts_service: tts.google_say
+    media_player: media_player.googlehome_isabelles_rum
+
+
+
+# # Sparar info till en fil
+#   - platform: file
+#     name: ljusstyrka_spara_till_fil
+#     filename: ljusstyrka-info.csv
+#     timestamp: false
+
+#   - platform: file
+#     name: diskmaskin_spara_till_fil
+#     filename: diskmaskin-energi-w.csv
+#     timestamp: false
+
+#   - platform: file
+#     name: tvattmaskin_spara_till_fil
+#     filename: tvattmaskin-energi-w.csv
+#     timestamp: false
+
+#   - platform: file
+#     name: luftavfuktare_spara_till_fil
+#     filename: luftavfuktare-energi-w.csv
+#     timestamp: false
+
+#   - platform: file
+#     name: temperaturer_spara_till_fil
+#     filename: temperaturer.csv
+#     timestamp: false
+
+#   - platform: file
+#     name: min_testfil
+#     filename: /config/www/min_testfil.txt
+#     timestamp: false
+
+
+joaoapps_join:
+  - name: android
+    device_id: group.android
+    api_key: b3cd3fddb3c4492bacb350326cef2e1e
+
+
+
+# # Arlo basstation
+# alarm_control_panel:
+#   - platform: aarlo
+#     # away_mode_name: armed
+#     # home_mode_name: home
+#     # night_mode_name: night
+#     trigger_time: 30
+#     alarm_volume: 1
+
+
+# BSH home conect
+# home_connect_alt:
+#   client_id: 07E052C99561E0C8D28E12F150F541D5382CF2012A65C7E3833C2B1D65110F0E
+#   client_secret: EE9C117DE2869935F49AAA19A9939A0174D237180258BE50D15568FCD9787717
+
+
+# # Hur stor är databasfilen just nu
+# command_line:
+#   - sensor:
+#     name: log_db_file_size
+#     command: "du -m /home/homeassistant/.homeassistant/home-assistant_v2.db | cut -f1"
+#     unit_of_measurement: 'MB'
+#     value_template: '{{ value | int - 1 }}'
+
+#######################################################
+# SENSORS
+#######################################################
+
+sensor:
+
+# Nordpol el-priser
+  - platform: nordpool
+    region: "SE3"
+    precision: 3
+
+
+# # Krisinformation
+#   # En sensor för att få allerts om Stockholm
+#   - platform: krisinformation
+#     name: "Krisinformation Stockholm"
+#     county: "Stockholms län"
+#     radius: 100
+#   # En sensor för att få allerts om hela Sverige
+#   - platform: krisinformation
+#     name: "Krisinformation Sverige"
+#     country: 'Sverige'
+  
+
+# Visa solrelaterad data
+  - platform: template
+    sensors:
+      sunset_time:
+        friendly_name: Solnedgång
+        value_template: '{{ as_timestamp(states.sun.sun.attributes.next_setting)  | timestamp_custom("%H:%M") }}'
+
+  - platform: template
+    sensors:
+      sunrise_time:
+        friendly_name: Soluppgång
+        value_template: '{{ as_timestamp(states.sun.sun.attributes.next_rising)  | timestamp_custom("%H:%M") }}'
+
+  - platform: template
+    sensors:
+      sun_elevation:
+        friendly_name: Sol elvation
+        value_template: '{{ states.sun.sun.attributes.elevation }}'
+
+  - platform: template
+    sensors:
+      sun_azimuth:
+        friendly_name: Sol azimuth
+        value_template: '{{ states.sun.sun.attributes.azimuth }}'
+
+  - platform: template
+    sensors:
+      sun_next_noon:
+        friendly_name: Sol maxhöjd
+        value_template: '{{ as_timestamp(states.sun.sun.attributes.next_noon)  | timestamp_custom("%H:%M") }}'
+
+  - platform: template
+    sensors:
+      sun_next_midnight:
+        friendly_name: Midnatt
+        value_template: '{{ as_timestamp(states.sun.sun.attributes.next_midnight)  | timestamp_custom("%H:%M") }}'
+
+  - platform: template
+    sensors:
+      sun_next_dawn:
+        friendly_name: Gryning börjar
+        value_template: '{{ as_timestamp(states.sun.sun.attributes.next_dawn)  | timestamp_custom("%H:%M") }}'
+
+  - platform: template
+    sensors:
+      sun_next_dusk:
+        friendly_name: Skymning slutar
+        value_template: '{{ as_timestamp(states.sun.sun.attributes.next_dusk)  | timestamp_custom("%H:%M") }}'
+
+
+
+# Hur många av de "godkända" personerna är hemma
+  - platform: template
+    sensors:
+      people_home_count:
+        friendly_name: "Hur många prylar är uppkopplade"
+        unit_of_measurement: 'st'
+        value_template: >-
+          {{ states.device_tracker | selectattr('state', 'eq', 'home') 
+          | rejectattr( 'entity_id', 'in', 
+          ['device_tracker.04_db_56_e7_fa_2a',
+          'device_tracker.50338bfc2eb9',
+          'device_tracker.546009d0b9da',
+          'device_tracker.546009fa5416',
+          'device_tracker.606dc75b9e85',
+          'device_tracker.albins_dell_16_2',
+          'device_tracker.amazonee0d363a9',
+          'device_tracker.b8_27_eb_a4_b6_c1',
+          'device_tracker.anneliesipad',
+          'device_tracker.broadlink_outlett1eba119',
+          'device_tracker.chromecastaudio',
+          'device_tracker.galaxywatch5875',
+          'device_tracker.desktop_n7v6eee'
+          'device_tracker.galaxytabs4',
+          'device_tracker.googlehome',
+          'device_tracker.googlehome_2',
+          'device_tracker.googlehome_3',
+          'device_tracker.googlehome_4',
+          'device_tracker.googlehome_5',
+          'device_tracker.google_nest_mini',
+          'device_tracker.iliasprivatadator',
+          'device_tracker.ringpro96',
+          'device_tracker.40_b0_76_06_ab_a1'])
+          | list | count }}                   
+
+# Hur många dörrar och fönster är öppna (skalskyddet)
+  - platform: template
+    sensors:
+      opened_doors_and_windows_count:
+        friendly_name: "Öppnade fönster och dörrar"
+        unit_of_measurement: 'st'
+        value_template: >-
+          {% set sensors = expand('group.opened_doors_and_windows') %}
+          {% set opened_count = sensors | selectattr('state', 'eq', 'on') | list | length %}
+          {{ opened_count }}
+
+
+# Hur många familjemedlemmar är hemma
+  - platform: template
+    sensors:
+      family_people_home_count:
+        friendly_name: "Hur många familjemedlemmar är hemma"
+        unit_of_measurement: 'personer'
+        value_template: >-
+          {{ states|selectattr('entity_id','in',state_attr('group.family_phones','entity_id'))|selectattr('state','eq','home')|list|count }}
+
+
+# Sensorer för att se om vitvarorna är igång
+  - platform: template
+    sensors:
+      diskmaskinen_diskar: # En custom sensor som anger om diskmaskinen diskar
+        friendly_name: 'Diskmaskinen diskar'
+        value_template: >
+          {% if   states("sensor.diskmaskin_switch_power") | float >  60  %} true            
+          {% elif states("sensor.diskmaskin_switch_power") | float <= 60
+              and states("sensor.diskmaskin_switch_power") | float > states("input_number.settings_diskmaskinen_energi_klar") | float
+              and is_state("sensor.diskmaskinen_diskar","true")  %} {{ states("sensor.diskmaskinen_diskar") }}
+          {% elif states("sensor.diskmaskin_switch_power") | float < states("input_number.settings_diskmaskinen_energi_klar") | float
+              and is_state("sensor.diskmaskinen_diskar","true") %} false
+          {% else %} false
+          {% endif %}
+      luftavfuktaren_torkar: # En custom sensor som anger om luftavfuktaren torkar
+        friendly_name: 'Luftavfuktaren torkar'
+        value_template: > 
+          {% if   states("sensor.luftavfuktare_switch_power") | float >  100  %} true            
+          {% elif states("sensor.luftavfuktare_switch_power") | float <= 100
+              and states("sensor.luftavfuktare_switch_power") | float > states("input_number.settings_luftavfuktaren_energi_klar") | float
+              and is_state("sensor.luftavfuktaren_torkar","true")  %} {{ states("sensor.luftavfuktaren_torkar") }}
+          {% elif states("sensor.luftavfuktare_switch_power") | float < states("input_number.settings_luftavfuktaren_energi_klar") | float
+              and is_state("sensor.luftavfuktaren_torkar","true") %} false
+          {% else %} false
+          {% endif %}
+
+
+
+# En custom sensor som anger vilken "source" Sony-tv använder just nu
+  - platform: template
+    sensors: 
+      sony_tv_current_source:
+        friendly_name: 'Sony-tv current source'
+        value_template: >-
+          {% if is_state("media_player.sony_tv_i_vardagsrummet","off") %}
+            off
+          {% else %}
+            {{ states.media_player.sony_tv_i_vardagsrummet.attributes.media_content_id }}
+          {% endif %}
+    
+# En custom sensor som anger vilken volym alla Google Home har
+  - platform: template
+    sensors: 
+      google_home_current_volume:
+        friendly_name: 'Google Home current volume'
+        value_template: >-
+          {% if is_state("media_player.googlehome_koket","off") %}
+            off
+          {% else %}
+            {{ states.media_player.googlehome_koket.attributes.volume_level | round(2) * 100 | int }}
+          {% endif %}
+
+
+# En template sensor som "lurar" group.family_phones att vi är hemma
+# Behövs fram tills dess att Unifi controller fungerar igen.
+  - platform: template
+    sensors: 
+      fejk_mobil:
+        friendly_name: 'Fejkosensor/mobil'
+        value_template: >-
+          {% if 1 %} home
+          {% else %} home
+          {% endif %}
+
+
+# Differens i ljusstyrka mellan framsidan och baksidan. Alltid positiva värden
+  - platform: template
+    sensors:
+      utomhus_ljusstyrka_differens:
+        friendly_name: "Differens i ljusstyrka mellan framsidan och baksidan. Alltid positiva värden"
+        value_template: >-
+          {{ ((states('sensor.utomhus_framsidan_ljusstyrka') | int) - (states('sensor.utomhus_baksidan_ljusstyrka') | int)) | abs }}
+# Differens i procent för ljusstyrkan mellan framsidan och baksidan. Alltid positiva värden
+  - platform: template
+    sensors:
+      utomhus_ljusstyrka_differens_procent:
+        friendly_name: "Differens i procent för ljusstyrkan mellan framsidan och baksidan. Alltid positiva värden"
+        unit_of_measurement: "%"
+        value_template: >-
+          {% set front = states('sensor.utomhus_baksidan_ljusstyrka') | float %}
+          {% set back = states('sensor.utomhus_framsidan_ljusstyrka') | float %}
+          {% if front == 0 and back == 0 %}
+            0
+          {% elif front == 0 or back == 0 %}
+            100
+          {% else %}
+            {% set difference = front - back if front > back else back - front %}
+            {{ ((difference / ((front + back) / 2)) * 100) | round(1) }}
+          {% endif %}
+# Genomsnittlig ljusstyrka mellan framsidan och baksidan. Alltid positiva värden
+      utomhus_ljusstyrka_genomsnitt:
+        friendly_name: "Genomsnittlig ljusstyrka mellan framsidan och baksidan. Alltid positiva värden"
+        value_template: >-
+          {{ ((states('sensor.utomhus_baksidan_ljusstyrka') | int + states('sensor.utomhus_framsidan_ljusstyrka') | int) / 2) | int }}
+
+
+# Tar ut el-priset ifrån Nordpool avseende denna timme
+  - platform: template
+    sensors:
+      elpriset_denna_timme:
+        friendly_name: "Nordpool elpris SE3 denna timme"
+        value_template: >-
+          {% set tid = now().strftime('%H') | int %}
+          {{ state_attr("sensor.nordpool_kwh_se3_sek_3_10_025","today")[tid] }}
+
+# Räkna ut el-kostnaden för aktuell timme
+  - platform: template
+    sensors:
+      elkostnad_denna_timme:
+        friendly_name: "El-kostnad denna timme"
+        value_template: >-
+          {% set tid = now().strftime('%H') | int %}
+          {{ (states('sensor.accumulated_consumption_current_hour_eksharadsgatan_6') | float) }}
+        #  {{ (states('sensor.accumulated_consumption_current_hour_eksharadsgatan_6') | float * state_attr("sensor.nordpool_kwh_se3_sek_3_10_025","today")[tid] | float) }}
+
+
+# Räkna ut när man kan diska (dvs när elen är som billigast under en följd av sammanhängande timmar)
+  - platform: template
+    sensors:
+      dishwasher_cheapest_interval:
+        friendly_name: "Dishwasher Cheapest Interval"
+        value_template: >
+          {% set run_time_minutes = states('input_number.dishwasher_run_time') | int %}
+          {% set price_cap = 3 %}
+          {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'raw_today') %}
+          {% set cheapest_interval = none %}
+          {% set lowest_sum = float('inf') %}
+          
+          {% for i in range(prices | length - 1) %}
+            {% set interval_start = as_datetime(prices[i].start) %}
+            {% set interval_end = interval_start + timedelta(minutes=run_time_minutes) %}
+            {% set total_price = 0 %}
+            {% set valid_interval = true %}
+            
+            {% for hour in prices %}
+              {% set hour_start = as_datetime(hour.start) %}
+              {% set hour_end = as_datetime(hour.end) %}
+              {% if hour_start >= interval_start and hour_end <= interval_end %}
+                {% if hour.value > price_cap %}
+                  {% set valid_interval = false %}
+                {% else %}
+                  {% set total_price = total_price + hour.value %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+            
+            {% if valid_interval and total_price < lowest_sum %}
+              {% set lowest_sum = total_price %}
+              {% set cheapest_interval = [interval_start.isoformat(), interval_end.isoformat()] %}
+            {% endif %}
+          {% endfor %}
+          {{ cheapest_interval[0] if cheapest_interval is not none else 'No valid interval' }}
+                
+        attribute_templates: 
+          cheapest_interval: >
+              {{ cheapest_interval if cheapest_interval is not none else [] }}
+          lowest_sum: >
+              {{ lowest_sum if cheapest_interval is not none else 'N/A' }}
+
+
+
+  # - platform: aarlo
+  #   monitored_conditions:
+  #   - total_cameras
+  #   - last_capture
+  #   - recent_activity
+  #   - captured_today
+  #   - battery_level
+  #   - signal_strength
+  #   - temperature
+  #   - humidity
+  #   - air_quality            
+
+
+
+
+
+# En sensor som anger brandrisken hemma
+  - platform: brandriskute
+    forecast: true
+    prohibition: true
+    verbose: true        
+
+# Hur ljust är det ute? Det kan vara soligt, ljust, mörkt eller nattljus
+  - platform: template
+    sensors:
+      ljust_utomhus_framsidan:
+        friendly_name: "Hur ljust är det på framsidan?"
+        value_template: >
+          {% if states("sensor.utomhus_framsidan_ljusstyrka") | int > states("input_number.settings_ljusstyrka_soligt_ute") | int %} soligt
+          {% elif states("sensor.utomhus_framsidan_ljusstyrka") | int <= states("input_number.settings_ljusstyrka_soligt_ute") | int 
+            and states("sensor.utomhus_framsidan_ljusstyrka") | int > states("input_number.settings_ljusstyrka_ljust_ute") | int %} ljust
+          {% elif states("sensor.utomhus_framsidan_ljusstyrka") | int <= states("input_number.settings_ljusstyrka_ljust_ute") | int 
+            and states("sensor.utomhus_framsidan_ljusstyrka") | int > states("input_number.settings_ljusstyrka_morkt_ute") | int %} {{ states("sensor.ljust_utomhus_framsidan") }}
+          {% elif states("sensor.utomhus_framsidan_ljusstyrka") | int <= states("input_number.settings_ljusstyrka_morkt_ute") | int
+            and states("sensor.utomhus_framsidan_ljusstyrka") | int > states("input_number.settings_ljusstyrka_nattljus_ute") | int %} mörkt
+          {% else %} nattljus
+          {% endif %} 
+      ljust_utomhus_baksidan:
+        friendly_name: "Hur ljust är det på baksidan?"
+        value_template: >
+          {% if states("sensor.utomhus_baksidan_ljusstyrka") | int > states("input_number.settings_ljusstyrka_soligt_ute") | int %} soligt
+          {% elif states("sensor.utomhus_baksidan_ljusstyrka") | int <= states("input_number.settings_ljusstyrka_soligt_ute") | int 
+            and states("sensor.utomhus_baksidan_ljusstyrka") | int > states("input_number.settings_ljusstyrka_ljust_ute") | int %} ljust
+          {% elif states("sensor.utomhus_baksidan_ljusstyrka") | int <= states("input_number.settings_ljusstyrka_ljust_ute") | int 
+            and states("sensor.utomhus_baksidan_ljusstyrka") | int > states("input_number.settings_ljusstyrka_morkt_ute") | int %} {{ states("sensor.ljust_utomhus_framsidan") }}
+          {% elif states("sensor.utomhus_baksidan_ljusstyrka") | int <= states("input_number.settings_ljusstyrka_morkt_ute") | int
+            and states("sensor.utomhus_baksidan_ljusstyrka") | int > states("input_number.settings_ljusstyrka_nattljus_ute") | int %} mörkt
+          {% else %} nattljus
+          {% endif %} 
+
+# # Skolmaten
+#   - platform: skolmat
+#     name: Farsta grundskola # Name of school here
+#     rss: https://skolmaten.se/farsta-grundskola/rss/weeks/?limit=2 # your rss here
+#     format: both # Course to show as sensor state. first, second or both (will be separated with |) 
+
+
+
+# Resrobot
+  - platform: resrobot
+    key: 7b7f216b2be44e89aa5f1968738112e6
+    departures:
+    - stop_id: 740000692
+    
+
+# Räkna ut genomsnitsvärdet av temperaturen inomhus
+  - platform: min_max
+    name: 'Temperatur inomhus'
+    unique_id: 05s6df0a1sg0asg81asg8r00
+    type: mean
+    round_digits: 1    
+    entity_ids:
+      - sensor.isabelles_rum_temp
+      - sensor.netatmo_bennani_vs_inomhus_temperature
+      - sensor.sovrummet_temp
+      - sensor.wc_temp
+      - sensor.eriks_rum_temp
+      - sensor.koket_temp
+      - sensor.skafferiet_temp
+      - sensor.albins_rum_temp
+      - sensor.badrummet_temp
+      - sensor.tvattstugan_temp
+      - sensor.forradet_temperatur
+
+
+# Räkna ut min temperaturen inomhus
+  - platform: min_max
+    name: 'Temperatur inomhus min'
+    unique_id: 05s6df0a1sg0asg81asg8r0
+    type: min
+    round_digits: 1
+    entity_ids:
+      - sensor.isabelles_rum_temp
+      - sensor.netatmo_bennani_vs_inomhus_temperature
+      - sensor.sovrummet_temp
+      - sensor.wc_temp
+      - sensor.eriks_rum_temp
+      - sensor.koket_temp
+      - sensor.skafferiet_temp
+      - sensor.albins_rum_temp
+      - sensor.badrummet_temp
+      - sensor.tvattstugan_temp
+      - sensor.forradet_temperatur
+
+# Räkna ut max temperaturen inomhus
+  - platform: min_max
+    name: 'Temperatur inomhus max'
+    unique_id: 05s6df0a1sg0asg8dd1asgr1
+    type: max
+    round_digits: 1
+    entity_ids:
+      - sensor.isabelles_rum_temp
+      - sensor.netatmo_bennani_vs_inomhus_temperature
+      - sensor.sovrummet_temp
+      - sensor.wc_temp
+      - sensor.eriks_rum_temp
+      - sensor.koket_temp
+      - sensor.skafferiet_temp
+      - sensor.albins_rum_temp
+      - sensor.badrummet_temp
+      - sensor.tvattstugan_temp
+      - sensor.forradet_temperatur
+
+
+
+# Räkna ut genomsnitsvärdet av luftfuktighet inomhus
+  - platform: min_max
+    name: 'Luftfuktighet inomhus'
+    unique_id: 05s6df0a1sg0asg81asg8r00a
+    type: mean
+    round_digits: 1    
+    entity_ids:
+      - sensor.isabelles_rum_luftfuktighet
+      - sensor.netatmo_bennani_vs_inomhus_humidity
+      - sensor.sovrummet_luftfuktighet
+      - sensor.wc_luftfuktighet
+      - sensor.eriks_rum_luftfuktighet
+      - sensor.koket_luftfuktighet
+      - sensor.skafferiet_luftfuktighet
+      - sensor.albins_rum_luftfuktighet
+      - sensor.badrummet_luftfuktighet
+      - sensor.tvattstugan_luftfuktighet
+      - sensor.forradet_luftfuktighet
+
+# Räkna ut min luftfuktighet inomhus
+  - platform: min_max
+    name: 'Luftfuktighet inomhus min'
+    unique_id: 05s6df0a1sg0asg81asg8r0a
+    type: min
+    round_digits: 1
+    entity_ids:
+      - sensor.isabelles_rum_luftfuktighet
+      - sensor.netatmo_bennani_vs_inomhus_humidity
+      - sensor.sovrummet_luftfuktighet
+      - sensor.wc_luftfuktighet
+      - sensor.eriks_rum_luftfuktighet
+      - sensor.koket_luftfuktighet
+      - sensor.skafferiet_luftfuktighet
+      - sensor.albins_rum_luftfuktighet
+      - sensor.badrummet_luftfuktighet
+      - sensor.tvattstugan_luftfuktighet
+      - sensor.forradet_luftfuktighet
+
+# Räkna ut max luftfuktighet inomhus
+  - platform: min_max
+    name: 'Luftfuktighet inomhus max'
+    unique_id: 05s6df0a1sg0asg8dd1asgr1a
+    type: max
+    round_digits: 1
+    entity_ids:
+      - sensor.isabelles_rum_luftfuktighet
+      - sensor.netatmo_bennani_vs_inomhus_humidity
+      - sensor.sovrummet_luftfuktighet
+      - sensor.wc_luftfuktighet
+      - sensor.eriks_rum_luftfuktighet
+      - sensor.koket_luftfuktighet
+      - sensor.skafferiet_luftfuktighet
+      - sensor.albins_rum_luftfuktighet
+      - sensor.badrummet_luftfuktighet
+      - sensor.tvattstugan_luftfuktighet
+      - sensor.forradet_luftfuktighet
+
+
+
+# Räkna ut  lufttrycket inomhus
+  - platform: template
+    sensors:
+      lufttryck_inomhus:
+        friendly_name: 'Lufttryck inomhus'
+        unique_id: 'indoor_pressure_mean_05s6df0a1sg0asg81asg8r00aaasdf'
+        unit_of_measurement: 'hPa'
+        value_template: >
+          {% set sensors = [
+            states('sensor.isabelles_rum_lufttryck') | float,
+            states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
+            states('sensor.sovrummet_lufttryck') | float,
+            states('sensor.wc_lufttryck') | float,
+            states('sensor.eriks_rum_lufttryck') | float,
+            states('sensor.koket_lufttryck') | float,
+            states('sensor.skafferiet_lufttryck') | float,
+            states('sensor.albins_rum_lufttryck') | float,
+            states('sensor.badrummet_lufttryck') | float,
+            states('sensor.tvattstugan_lufttryck') | float,
+            states('sensor.forradet_lufttryck') | float
+          ] %}
+          {{ sensors | select('is_number') | average | round(1) }}
+
+      lufttryck_inomhus_min:
+        friendly_name: 'Lufttryck inomhus min'
+        unique_id: 'indoor_pressure_min_05s6df0a1sg0asg81asg8r0aasgsa'
+        unit_of_measurement: 'hPa'
+        value_template: >
+          {% set sensors = [
+            states('sensor.isabelles_rum_lufttryck') | float,
+            states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
+            states('sensor.sovrummet_lufttryck') | float,
+            states('sensor.wc_lufttryck') | float,
+            states('sensor.eriks_rum_lufttryck') | float,
+            states('sensor.koket_lufttryck') | float,
+            states('sensor.skafferiet_lufttryck') | float,
+            states('sensor.albins_rum_lufttryck') | float,
+            states('sensor.badrummet_lufttryck') | float,
+            states('sensor.tvattstugan_lufttryck') | float,
+            states('sensor.forradet_lufttryck') | float
+          ] %}
+          {{ sensors | select('is_number') | min | round(1) }}
+
+      lufttryck_inomhus_max:
+        friendly_name: 'Lufttryck inomhus max'
+        unique_id: 'indoor_pressure_max_05s6df0a1sg0asg8dd1asgr1aaasg'
+        unit_of_measurement: 'hPa'
+        value_template: >
+          {% set sensors = [
+            states('sensor.isabelles_rum_lufttryck') | float,
+            states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
+            states('sensor.sovrummet_lufttryck') | float,
+            states('sensor.wc_lufttryck') | float,
+            states('sensor.eriks_rum_lufttryck') | float,
+            states('sensor.koket_lufttryck') | float,
+            states('sensor.skafferiet_lufttryck') | float,
+            states('sensor.albins_rum_lufttryck') | float,
+            states('sensor.badrummet_lufttryck') | float,
+            states('sensor.tvattstugan_lufttryck') | float,
+            states('sensor.forradet_lufttryck') | float
+          ] %}
+          {{ sensors | select('is_number') | max | round(1) }}
+
+
+      
+
+
+# Räkna ut max ljusstyrka utomhus 
+  - platform: min_max
+    name: 'Ljusstyrka utomhus maximal'
+    unique_id: 05s6df0a1sg0asg81dggasg8r100
+    type: max
+    round_digits: 1
+    entity_ids:      
+      - sensor.utomhus_baksidan_ljusstyrka      
+      - sensor.ljusstyrka_framsidan_maximal
+
+
+# Räkna ut max ljusstyrka på framsidan 
+  - platform: template
+    sensors:
+      ljusstyrka_framsidan_maximal: 
+        friendly_name: 'Ljusstyrka framsidan maximal'
+        unique_id: 05s6df0a1sg0asg8dd1asgr1aaasgddda
+        unit_of_measurement: 'lx'
+        value_template: >
+          {% set framsidan = states("sensor.utomhus_framsidan_ljusstyrka") | float %}
+          {% set fonstret = states("sensor.isabelles_fonster_ljusstyrka") | float %}
+          {% if is_state("light.ljusslingan_pa_balkongen","on") %} {{ states("sensor.utomhus_framsidan_ljusstyrka") | float }}
+          {% else %} {{ [ framsidan , fonstret ] | max }}
+          {% endif %} 
+
+
+
+# All info om den senaste blixten (från Blitzortung
+  - platform: template
+    sensors:
+      blixtinfo:
+        friendly_name: "Info om den senaste blixten"
+        value_template: >
+          {{ states("sensor.blitzortung_lightning_counter") }}
+        attribute_templates:
+          nr: >
+            {{ states("sensor.blitzortung_lightning_counter") }}
+          latitude: >
+            {{ state_attr("sensor.blitzortung_lightning_azimuth", "lat") }}
+          longitude: >
+            {{ state_attr("sensor.blitzortung_lightning_azimuth", "lon") }}
+
+          
+
+
+# Sensorer som anger om Anna eller Ilias är "nära" hemmed, dvs inom 7 km radioe hemmifrån !env_var 
+# Används t.ex. för att slå igång golvvärmen i badrummet så det inte är iskallt när vi kommer hem.
+  - platform: template
+    sensors:
+      ilias_nara_hemmet:
+        friendly_name: "Ilias är nära hemmet"
+        value_template: >
+          {{  states.device_tracker.ilias_s23_ultra and states.zone.home and
+              distance(states.device_tracker.ilias_s23_ultra, states.zone.home) < 7 }}
+      anna_nara_hemmet:
+        friendly_name: "Anna är nära hemmet"
+        value_template: >
+          {{  states.device_tracker.anna_s22_ultra and states.zone.home and
+              distance(states.device_tracker.anna_s22_ultra, states.zone.home) < 7 }}
+
+
+### TV och Stereo ###
+media_player:
+
+
+# # För att kunna casta Arlo-kamerorna
+#   - platform: aarlo    
+
+# Gruppera vissa högtalare (används för att kunna sätta volumen på states("sensor.diskmaskinen_diskar")
+  - platform: universal
+    name: infopuckarna_ha_grupp
+    children:
+      - media_player.googlehome_vardagsrummet
+      - media_player.googlehome_koket
+    commands:
+      volume_set:
+        service: media_player.volume_set
+        data_template:
+          entity_id:
+            - media_player.googlehome_vardagsrummet
+            - media_player.googlehome_koket
+          volume_level: '{{ volume_level }}'
+  - platform: universal
+    name: alla_puckar_ha_grupp
+    children:
+      - media_player.googlehome_isabelles_rum
+      - media_player.googlehome_vardagsrummet
+      - media_player.googlehome_sovrummet
+      - media_player.googlehome_eriks_rum
+      - media_player.googlehome_koket
+      - media_player.googlehome_albins_rum
+    commands:
+      volume_set:
+        service: media_player.volume_set
+        data_template:
+          entity_id:
+            - media_player.googlehome_isabelles_rum
+            - media_player.googlehome_vardagsrummet
+            - media_player.googlehome_sovrummet
+            - media_player.googlehome_eriks_rum
+            - media_player.googlehome_koket
+            - media_player.googlehome_albins_rum
+          volume_level: '{{ volume_level }}'
+  - platform: universal
+    name: alla_hogtalare_ha_grupp
+    children:
+      - media_player.googlehome_isabelles_rum
+      - media_player.googlehome_vardagsrummet
+      - media_player.googlehome_sovrummet
+      - media_player.googlehome_eriks_rum
+      - media_player.googlehome_koket
+      - media_player.googlehome_albins_rum
+      - media_player.stereon_i_vardagsrummet
+      - media_player.eriks_stereo
+      - media_player.hogtalarna_i_koket
+      - media_player.albins_stereo
+    commands:
+      volume_set:
+        service: media_player.volume_set
+        data_template:
+          entity_id:
+            - media_player.googlehome_isabelles_rum
+            - media_player.googlehome_vardagsrummet
+            - media_player.googlehome_sovrummet
+            - media_player.googlehome_eriks_rum
+            - media_player.googlehome_koket
+            - media_player.googlehome_albins_rum
+            - media_player.stereon_i_vardagsrummet
+            - media_player.eriks_stereo
+            - media_player.hogtalarna_i_koket
+            - media_player.albins_stereo
+          volume_level: '{{ volume_level }}'
+  - platform: universal
+    name: de_basta_hogtalarna_ha_grupp
+    children:
+      - media_player.stereon_i_vardagsrummet
+      - media_player.eriks_stereo
+      - media_player.hogtalarna_i_koket
+      - media_player.albins_stereo
+    commands:
+      volume_set:
+        service: media_player.volume_set
+        data_template:
+          entity_id:
+            - media_player.stereon_i_vardagsrummet
+            - media_player.eriks_stereo
+            - media_player.hogtalarna_i_koket
+            - media_player.albins_stereo
+          volume_level: '{{ volume_level }}'
+        
+
+
+
+
+#######################################################
+# binary_sensor
+#######################################################  
+
+binary_sensor:
+
+
+# Tre templates som anger om det är soligt. 
+# Används bland annat för att styra rullgardiner och viss belysning. 
+- platform: template
+  sensors:
+    soligt:
+      friendly_name: "Det är soligt"
+      delay_off:
+        minutes: 15
+      value_template: >-
+        {{ states('sensor.utomhus_framsidan_ljusstyrka') | int >= states('input_number.settings_ljusstyrka_soligt_ute') | int
+        or states('sensor.utomhus_baksidan_ljusstyrka') | int >= states('input_number.settings_ljusstyrka_soligt_ute') | int}}
+      icon_template: >-
+        {% if states('sensor.utomhus_framsidan_ljusstyrka') | int >= states('input_number.settings_ljusstyrka_soligt_ute') | int 
+            or states('sensor.utomhus_baksidan_ljusstyrka') | int >= states('input_number.settings_ljusstyrka_soligt_ute') | int  %}
+          mdi:weather-sunny
+        {% else %}
+          mdi:weather-cloudy
+        {% endif %}        
+
+- platform: template
+  sensors:
+    soligt_framsidan:
+      friendly_name: "Det är soligt på framsidan"
+      delay_off:
+        minutes: 15
+      value_template: >-
+        {{ states('sensor.utomhus_framsidan_ljusstyrka') | int >= 13000 }}
+      icon_template: >-
+        {% if states('sensor.utomhus_framsidan_ljusstyrka') | int >= 13000 %}
+          mdi:weather-sunny
+        {% else %}
+          mdi:weather-cloudy
+        {% endif %}           
+
+- platform: template
+  sensors:
+    soligt_baksidan:
+      friendly_name: "Det är soligt på baksidan"
+      delay_off:
+        minutes: 15
+      value_template: >-
+        {{ states('sensor.utomhus_baksidan_ljusstyrka') | int >= 13000 }}
+      icon_template: >-
+        {% if states('sensor.utomhus_baksidan_ljusstyrka') | int >= 13000 %}
+          mdi:weather-sunny
+        {% else %}
+          mdi:weather-cloudy
+        {% endif %}           
+
+# Det lyser in solljus genom fönstren (styr rullgardinerna)
+- platform: template
+  sensors:
+    solen_lyser_in_genom_fonstren_pa_framsidan:
+      friendly_name: "Solen lyser in genom fönstren på framsidan"
+      value_template: >
+        {{ is_state("input_select.house_time_modes","Dag")
+        and is_state("binary_sensor.soligt_framsidan","on")
+        and (states("sensor.sun_azimuth") | float > states("input_number.settings_rullgardiner_framsidan_azimuth") | int
+        or states("sensor.sun_elevation") | float < states("input_number.settings_rullgardiner_framsidan_elevation") | int) }}
+    solen_lyser_in_genom_fonstren_pa_baksidan:
+      friendly_name: "Solen lyser in genom fönstren på baksidan"
+      value_template: >
+        {{ is_state("input_select.house_time_modes","Dag") 
+        and is_state("binary_sensor.soligt_baksidan","on")
+        and states("sensor.sun_azimuth") | int < states("input_number.settings_rullgardiner_eriks_rum_azimuth_upp") | int
+        and states("sensor.sun_elevation") | int > states("input_number.settings_rullgardiner_eriks_rum_elevation_ner") | int }}
+    ljust_pa_framsidan_dagtid_pa_vintern:
+      friendly_name: "Det är ljust på framsidan dagtid (vinter och snö)"
+      value_template: >
+        {{ is_state("input_select.house_time_modes","Dag") 
+            and states("sensor.netatmo_bennani_vs_utomhus_temperature") | int < -1 
+            and states("sensor.utomhus_framsidan_ljusstyrka") | int > 8000 }}
+
+
+# Brevlådans lucka
+- platform: template
+  sensors: 
+    brevladans_lucka:
+      friendly_name: "Brevlådans lucka"
+      value_template: >
+        {{ is_state("sensor.brevladans_lucka","22") }}
+
+
+# # Finns det någon sammhällsinformatin att rapportera
+# - platform: template
+#   sensors:
+#     krisinformation_finns:
+#       friendly_name: "Krisinformation finns"
+#       value_template: >
+#         {{ is_state('sensor.krisinformation_stockholm', 'News') or is_state('sensor.krisinformation_sverige', 'News') }}
+
+
+# En sensor som anger om vi har julpynt uppe (fredag före 1:a advent - söndag på eller efter trettondagen nästa år)
+- platform: template
+  sensors: 
+    julbelysning:
+      friendly_name: julbelysning
+      value_template: >
+        {% set year = now().year %}
+        {% set christmas_day = strptime(year ~ '-12-25', '%Y-%m-%d') %}
+        {% set first_advent = christmas_day - timedelta(days=(christmas_day.weekday() + 22)) %}
+        {% set friday_before_first_advent = first_advent - timedelta(days=2) %}
+        {% set next_year = now().year + 1 %}
+        {% set jan_6 = strptime(next_year ~ '-01-06', '%Y-%m-%d') %}
+        {% set end_date = jan_6 if jan_6.weekday() == 6 else (jan_6 + timedelta(days=(6 - jan_6.weekday()))) %}
+        
+        {{ now().replace(tzinfo=None) >= friday_before_first_advent and now().replace(tzinfo=None) <= end_date }}
+    
+
+- platform: template
+  sensors:
+    tvattmaskinen_aktiv:
+      friendly_name: "Tvättmaskinen är aktiv"
+      device_class: running
+      value_template: >
+        {% set power = states('sensor.tvattmaskinen_switch_power') | float %}
+        {% if power >= 600 %}
+          true
+        {% elif power <= 5 %}
+          false
+        {% else %}
+          states('binary_sensor.tvattmaskinen_aktiv') == 'on'
+        {% endif %}
+      delay_on: "00:03:00"
+      delay_off: "00:02:00"
+
+# # Arlo för att känna av rörelse och ljud
+# - platform: aarlo
+#   monitored_conditions:
+#   - motion
+#   - sound  
+
+
+
+#######################################################
+# Switch
+#######################################################
+
+
+# # Alro basstation
+# - platform: aarlo
+#   siren: True
+#   all_sirens: True
+#   snapshot: True
+#   doorbell_silence: True
+#   siren_volume: 10
+#   siren_duration: 10
+
+
+
+
+#######################################################
+# Media
+#######################################################
+
+# Gör det möjligt att strömma video, t.ex ifrån kameror.
+stream: 
+
+# Live-TV
+svt_play:
+tv4_play:
+
+
+#######################################################
+# Kameror
+#######################################################
+
+# # Arlo-kamerorna (från HACS)
+# aarlo:
+#   username: ilias@abc.se
+#   password: dmZIVcZyT33HqStIlR6Bs5rnYNW5NY
+#   refresh_devices_every: 2
+#   stream_timeout: 120
+#   reconnect_every: 90
+
+
+
+#######################################################
+# VARIABLE
+#######################################################
+var:
+
+# Meddelande när batteri behöver bytas  
+  change_batteries_message:
+    initial_value: ""
+    friendly_name: "Meddelande vid batteribyte"
+    restore: true
+
+# Meddelande när larmet triggats
+  alarm_triggered_message:
+    initial_value: "Ingenting"
+    friendly_name: "Meddelande när larmet triggats"
+    restore: true
+
+# "Morgoninfo" i köket blir bara uppläst en gång per dygn.
+  morgoninfo_koket_redan_upplast:
+    initial_value: "false"
+    friendly_name: "Morgon info i köket redan uppläst"
+    restore: true
+
+# Ange när solen står som högst idag.
+# Sensorn anger alltid next noon, inte noon today, vilket ev kan leda till besvär. 
+  tid_solen_mitt_pa_dagen:
+    initial_value: "12:00:00"
+    friendly_name: "När står solen som högst på himelen"
+    restore: true
+
+
+# Ange status för diskmaskinen
+  diskmaskin_state:
+    initial_value: "idle"
+    friendly_name: "Vad gör diskaskinen just nu"
+    restore: true
+
+# Ange status för diskmaskin_delay
+  diskmaskin_delay:
+    initial_value: "ok"
+    friendly_name: "Kan värdet på diskmaskin_state ändras?"
+    restore: true    
+
+# Har lampan på baksidan tänds pga rörelse som Arlo-kameran noterade
+  lampan_baksidan_tandes_pga_rorelse:
+    initial_value: "nej"
+    friendly_name: "Lampan på baksidan tändes pga rörelse"
+    restore: true   
+
+# Brightnes level för lamporna i badrummet
+  current_brightness_level_badrummet:
+    initial_value: ""
+    friendly_name: "Brightnes level för lamporna i badrummet"
+    restore: true
+
+# Brightnes level för lamporna på toaletten
+  current_brightness_level_wc:
+    initial_value: ""
+    friendly_name: "Brightnes level för lamporna på toaletten"
+    restore: true
+
+# Larmmeddelande: Vad ska läsas upp och skickas som notis vid olika larmhändelser
+  alarm_textmessage:
+    initial_value: ""
+    friendly_name: "Larm - meddelandetext"
+    restore: true  
+
+
+# Z-wave: Sätt till true om Z-wave nätverket är klart.
+# Används för att hindra vissa saker ifrån att köras om Z-vavenätverket ännu inte är klart.
+  z_wave_is_ready:
+    initial_value: "false"
+    friendly_name: "Z-wave näteverket är igång"
+#    restore: false  
+
+
+# Spottarna i hallen: Spara undan aktuell ljusstyrka om någon ringer på ytterdörren
+# Används för att återgå till tidigare ljusstyrka när det gått en viss tid (styrs av timer)
+  hallspottarna_aktuell_ljusstyrka:
+    initial_value: ""
+    friendly_name: "Ljusstyrka i hallen precis innan det ringde på dörren"
+    restore: true  
+
+# Spara ljusstyrkan för viss köksbelysning
+  koksbelysningen_aktuell_ljusstyrka:
+    initial_value: ""
+    friendly_name: "Köksbelysningen precis innan ändring"
+    restore: true
+  takspottarna_kokstaket_aktuell_ljusstyrka:
+    initial_value: ""
+    friendly_name: "Takspottarna kökstaket precis innan ändring"
+    restore: true
+
+
+# Covid-19 totalt avlidna
+  covid19_totalt_avlidna:
+    initial_value: ""
+    friendly_name: "Covid-19: Totalt avlidna"
+    restore: true  
+
+# Vem är ensam hemma
+  vem_ar_ensam_hemma:
+    initial_value: ""
+    friendly_name: "Vem är ensam hemma"
+    restore: true  
+
+
+# Måltiden håller på att avslutas
+  avslutar_maltiden:
+    initial_value: "off"
+    friendly_name: "Avslutar måltiden"
+    restore: true  
+
+
+# Vilken device ska texten läsas upp på
+  textupplasning_device:
+    initial_value: ""
+    friendly_name: "Vilken device ska texten läsas upp på"
+    restore: false
+
+
+# Vilken text ska läsas upp 
+  textupplasning_text:
+    initial_value: ""
+    friendly_name: "Vilken text ska läsas upp"
+    restore: false    
+
+
+# Variabler som styr i vilken riktning dimningen ska ändras
+  dimming_direction_isabeles_taklampa:
+    initial_value: "Upp"
+    friendly_name: "Dimma Isabelles taklampa vid långtryck"
+    restore: true
+
+
+# Variabler som styr i vilken riktning dimningen ska ändras
+  dimming_direction_fjarr_hogtalarna_i_koket:
+    initial_value: "Upp"
+    friendly_name: "Ändra volymen på högtalarna i köket vid långtryck"
+    restore: true
+
+#######################################################
+# TIMERS 
+#######################################################
+
+timer:
+
+# Används för att fördröja när radion i köket startar.
+# Problem: Så fort någon passerar köket startar radion.
+# Detta gör att en ny rörelse måste ske innan timern tar slut
+# för att radion ska starta. 
+  kitchen_radio_delay:
+    duration: '00:01:00'
+
+
+# Används för att släckaa alla lampor om någno trycker på brytare i övre trappen 
+# 2+2 gånger inom fem sekunder 
+  to_night_lights:
+    duration: '00:00:05'
+
+
+# Används för att fördröja larmsignal och notis om huset är larmat och när något triggar larmet.
+# Dena paus behövs t.ex. för att man ska hinna stänga av larmet när man kommer hem. 
+  alarm_delay:
+    duration: '00:30:00'
+
+
+# Hur länge ska strålkastaren ska vara tänd när kamreran i ringklockan noterar rörelse.
+  stralkastaren_on:
+    duration: '00:05:00'
+
+
+# Hur länge ska lampan på framsidan ska vara tänd när kamreran i ringklockan noterar rörelse.
+  lampan_framsidan_on:
+    duration: '00:05:00'
+
+
+# Timer för att släcka lamprna i garderoben efter rörelse
+  ljus_timeout_lamporna_i_garderoben:
+#      duration: '{{ states.input_number.ljus_timeout_lamporna_i_garderoben.state | int | timestamp_custom("%H:%M:%S", 0) }}'
+
+
+# Hur lång tid ska lamporna i hallen vara dimmade till lite ljusare när det ringer på dörren (ring doorbell) eller när det rör sig i hallen.
+  hallen_uppdimmad_belysning:
+    duration: '00:05:00'
+
+
+#######################################################
+# Lights
+#######################################################
+
+light:
+
+# Grupper av belysning 
+- platform: group       # Köket förutom takspottarna i kökstaket (den stora zonen)
+  name: Köksbelysningen
+  entities:
+    - light.takspottarna_koksluckorna_level
+    - light.takspottarna_trappan_level
+    - light.spottarna_bakom_spisen_level
+
+- platform: group       # LED listerna ovanför arbetsbänkarna
+  name: LED lister ovanför arbetsbänkarna
+  entities:
+    - light.led_ovanfor_stora_arbetsbanken
+    - light.led_ovanfor_lilla_arbetsbanken
+
+- platform: group       # Vägglamporna utomhus framsidan
+  name: Fasadbelysningen
+  entities:
+    - light.utomhus_framsidan_1
+    - light.utomhus_framsidan_2    
+
+- platform: group       # Vägglamporna utomhus framsidan
+  name: WC skåp och handfat
+  entities:
+    - light.wc_spegelskap
+    - light.wc_handfat    
+
+
+
+#######################################################
+# utility mätare
+#######################################################
+utility_meter:
+
+# Daglig användning
+  daily_energy:
+    source: sensor.accumulated_consumption_eksharadsgatan_6
+    name: Tibber daglig förbrukning
+    cycle: daily
+

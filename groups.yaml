@@ -1,0 +1,336 @@
+#######################################################
+# GRUPPER 
+#######################################################
+
+
+lights_taklampor:
+  name: Alla taklampor
+  icon: mdi:ceiling-light
+  entities:
+    - light.taklampan_isabelles_rum_level
+    - light.taklampa_vardagsrummet
+    - light.taklampan_ovre_trappan_level
+    - light.toaletten_handfatet
+    - light.taklampa_sovrummet_level
+    - light.taklampan_eriks_rum_level
+    - light.takspottarna_hallen_level
+    - light.takspottarna_kokstaket_level
+    - light.takspottarna_koksluckorna_level
+    - light.takspottarna_trappan_level
+    - light.takspottarna_skafferiet_level
+    - light.taklampan_nedre_trappan_level
+    - light.vagglampor_badrummet      
+    - light.taklampan_albins_fonster_level
+    - light.taklampan_albins_sang_level
+
+
+lights_mysbelysning:
+    name: All mysbelysning
+    icon: mdi:lightbulb
+    entities:
+      - switch.lampor_vardagsrummet_soffan_switch
+      - switch.lampa_ilias_sang_switch
+      - switch.lampa_annas_sang_switch
+      - switch.lampor_koksfonster_switch
+      - light.spottarna_bakom_spisen_level
+      - light.hue_color_candle # Tillfällig lampa - hue i trappan
+      - switch.lampa_eriks_fonster_switch
+      - switch.lampa_eriks_jordglob_switch
+      - light.eriks_myshorna      
+      - switch.albins_lavalampa_switch
+      - switch.lampa_pa_nedre_frysen_switch
+
+
+rorelse_i_garderoben:
+  name: Rörelse i garderoben
+  icon: mdi:run
+  entities:
+    - binary_sensor.tradfri_rorelse_i_garderoben_1
+    - binary_sensor.tradfri_rorelse_i_garderoben_2
+    - binary_sensor.tradfri_rorelse_i_garderoben_3
+    - binary_sensor.tradfri_rorelse_i_garderoben_4
+
+
+opened_doors_and_windows:
+  name: Öppnade dörrar och fönster
+  entities:
+    - binary_sensor.balkongdorren
+    - binary_sensor.altandorr_baksidan
+    - binary_sensor.altandorr_koket
+    - binary_sensor.ytterdorren
+    - binary_sensor.isabelles_fonster
+    - binary_sensor.vardagsrummet_fonster
+    - binary_sensor.wc_fonster
+    - binary_sensor.eriks_fonster
+    - binary_sensor.albins_fonster   
+    - binary_sensor.badrummet_fonster  
+
+
+family_phones:
+  name: Familjens mobiler
+  entities:
+  #- device_tracker.ilias_galaxynote8  # Ilias mobil
+  - device_tracker.ilias_s23_ultra # ilias mobil
+  - device_tracker.anna_s22_ultra  # Annas mobil 
+  - device_tracker.albins_iphone_12_gps_tracker # Albins mobil
+  - device_tracker.annelies_iphone  # Isabelles mobil 
+  - device_tracker.erik_s23 # Eriks mobil
+
+
+rullgardiner_framsidan:
+  name: "Rullgardiner mot framsidan"
+  entities:
+    - cover.rullgardin_isabelles_rum
+    - cover.rullgardin_balkongdorren
+    - cover.rullgardin_vardagsrummet  
+
+
+lights_sanglamporna_sovrummet:
+  name: "Sänglamporna i sovrummet"
+  entities:
+    - switch.lampa_ilias_sang_switch
+    - switch.lampa_annas_sang_switch
+
+
+lights_taklamporna_i_albins_rum:
+  name: "Taklamporna i Albins rum"
+  entities:
+    - light.taklampan_albins_fonster_level
+    - light.taklampan_albins_sang_level
+
+rorelse_i_koket:
+  name: "Rörelse i köket"
+  entities: 
+    - binary_sensor.koksbordet_rorelse
+    - binary_sensor.koket_rorelse
+    - binary_sensor.koket_arbetsbanken_rorelse
+
+rorelse_i_allmanna_utrymmen:
+  name: "Rörelse i allmänna utrymmen"
+  entities: 
+    - binary_sensor.vardagsrummet_rorelse
+    - binary_sensor.vardagsrummet_soffan_rorelse
+    - binary_sensor.ovre_trappan_rorelse
+    - binary_sensor.koksbordet_rorelse
+    - binary_sensor.koket_rorelse
+    - binary_sensor.koket_arbetsbanken_rorelse
+
+
+rorelse_i_vardagsrummet:
+  name: "Rörelse i vardagsrummet"
+  entities: 
+    - binary_sensor.vardagsrummet_rorelse
+    - binary_sensor.vardagsrummet_soffan_rorelse
+
+
+
+all_motion_and_open_close_sensors:
+  name: "Alla rörelse och dörrsensorer"
+  entities:
+    - binary_sensor.balkongdorren
+    - binary_sensor.altandorr_baksidan
+    - binary_sensor.altandorr_koket
+    - binary_sensor.ytterdorren
+    - binary_sensor.isabelles_fonster
+    - binary_sensor.vardagsrummet_fonster
+    - binary_sensor.wc_fonster
+    - binary_sensor.eriks_fonster
+    - binary_sensor.albins_fonster   
+    - binary_sensor.badrummet_fonster  
+    - binary_sensor.isabelles_rum_rorelse
+    - binary_sensor.isabelles_skrivbord_rorelse
+    - binary_sensor.vardagsrummet_rorelse
+    - binary_sensor.vardagsrummet_soffan_rorelse
+    - binary_sensor.ovre_trappan_rorelse
+    - binary_sensor.sovrummet_rorelse
+    - binary_sensor.wc_rorelse
+    - binary_sensor.eriks_rum_rorelse
+    - binary_sensor.koket_rorelse
+    - binary_sensor.koket_arbetsbanken_rorelse
+    - binary_sensor.koksbordet_rorelse
+    - binary_sensor.hallen_rorelse
+    - binary_sensor.nedre_trappan_rorelse
+    - binary_sensor.albins_rum_rorelse    
+    - binary_sensor.tvattstugan_rorelse
+
+
+battery_levels:
+  name: "Batterinivåer"
+  entities:
+# Ljusmätare
+#    - sensor.utomhus_framsidan_ljusstyrka_battery
+#    - sensor.utomhus_baksidan_ljusstyrka_battery
+# Tempsensorer    
+    - sensor.vinden_temperatur_battery
+    - sensor.isabelles_rum_temperatur_battery
+    - sensor.sovrummet_temperatur_battery
+    - sensor.utomhus_baksidan_temperatur_battery
+    - sensor.wc_temperatur_battery
+    - sensor.eriks_rum_temperatur_battery
+    - sensor.koket_temperatur_battery
+    - sensor.vaxthuset_temperatur_battery
+    - sensor.skafferiet_temperatur_battery
+    - sensor.kylskapet_koket_temp_battery
+    - sensor.frysen_i_koket_temperatur_battery
+    - sensor.albins_rum_temperatur_battery
+    - sensor.badrummet_temperatur_battery
+    - sensor.tvattstugan_temperatur_battery
+    - sensor.frysen_i_tvattstugan_temperatur_battery
+    - sensor.forradet_tempsensor_batteri
+    - sensor.kylskapet_forradet_tempsensor_battery
+# Rörelsesensorer
+    - sensor.balkongen_rorelse_battery
+    - sensor.baksidan_rorelse_wc_fonster_batteri
+    - sensor.isabelles_rum_rorelse_batteri
+    - sensor.isabelles_rum_skrivbord_rorelse_battery
+    - sensor.vardagsrummet_rorelse_battery
+    - sensor.vardagsrummet_soffan_rorelse_battery
+    - sensor.sovrummet_rorelse_battery
+    - sensor.wc_rorelse_battery
+    - sensor.eriks_rum_rorelse_battery
+    - sensor.koket_arbetsbanken_rorelse_battery
+    - sensor.koket_rorelse_battery
+    - sensor.koksbordet_rorelse_batteri
+    - sensor.hallen_rorelse_batteri
+    - sensor.albins_rum_rorelse_battery
+    - sensor.rorelse_nedre_trappan_batteri
+    - sensor.badrummet_rorelse_battery
+    - sensor.tvattstugan_rorelse_battery
+    - sensor.brevladan_rorelse_battery           
+# Fönster och dörrsensorer
+    - sensor.isabelles_fonster_battery
+    - sensor.balkongdorren_batteri
+    - sensor.altandorr_baksidan_battery
+    - sensor.wc_fonster_battery
+    - sensor.wc_dorr_battery
+    - sensor.eriks_fonster_battery
+    - sensor.altandorren_koket_batteri     
+    - sensor.skafferidorren_battery
+    - sensor.ytterdorren_battery
+    - sensor.eriks_fonster_battery
+    - sensor.albins_fonster_battery
+    - sensor.badrumsdorren_battery
+    - sensor.badrummet_fonster_battery
+    - sensor.brevladans_lucka_battery
+# Rörelse garderoben i sovrummet
+    - sensor.garderoben_rorelse_1_battery
+    - sensor.garderoben_rorelse_2_battery
+    - sensor.garderoben_rorelse_3_battery
+    - sensor.garderoben_rorelse_4_battery
+# fjärrkontroller
+    - sensor.fjarr_rullgardin_isabelles_rum_batteri
+    - sensor.fjarr_rullgardin_vardagsrummet_batteri
+    - sensor.fjarr_rullgardin_sovrummet_batteri
+    - sensor.fjarr_rullgardin_eriks_rum_batteri   
+    - sensor.fjarr_stereon_i_koket_battery
+    - sensor.fjarr_isabelles_rum_battery
+    - sensor.fjarr_taklampan_i_isabelles_rum_battery
+    - sensor.fjarr_sovrummet_battery
+    - sensor.fjarr_albins_rum_battery
+    - sensor.fjarr_2_albins_rum_battery
+    - sensor.fjarr_badrummet_battery
+# Rullgardiner
+    - sensor.rullgardin_isabelles_rum_batteri
+    - sensor.rullgardin_balkongdorren_batteri
+    - sensor.rullgardin_vardagsrummet_batteri
+    - sensor.rullgardinen_sovrummet_batteri
+    - sensor.rullgardin_eriks_rum_batteri
+    - sensor.rullgardin_albins_rum_batteri
+# Netatmo
+    - sensor.netatmo_bennani_vs_regnmatare_battery_percent
+    - sensor.netatmo_bennani_vs_vind_utomhus_battery_percent
+    - sensor.netatmo_bennani_vs_utomhus_battery_percent        
+# Flood sensorer
+    - sensor.diskmaskinen_flood_sensor_battery
+    - sensor.tvattstugan_flood_sensor_battery
+    - sensor.oversvamning_albins_fonster_battery
+# Brandvarnare
+    - sensor.brandvarnaren_ovre_trappan_battery
+# Kameror
+    - sensor.aarlo_battery_level_baksidan
+# Vibrationsensorer
+    - sensor.vibrationsensor_1_battery
+    - sensor.vaxthuset_vibration_battery
+# Tandborstar
+    - sensor.oral_b_black_battery
+    - sensor.oral_b_pink_battery
+
+
+# Sensorer som kan vara unavaliable men som vi ändå bortser ifrån
+ignored_offline_sensors:
+  name: "Unavailable sensors that i don't care about"
+  entities:
+    - sensor.rorelse_badrummet_temperature
+
+
+# Sensorer som är usla på att rapportera batterinivå.
+# Använd den här gruppen för att kontrollera om en sensor "fastnat" på ett värde.
+# Detta kan indikera att batteriet är slut
+temp_sensors_with_bad_battery_indicators:
+  name: "Tempsensorer (aqara) med dåliga batteriindikatorer"
+  entities:
+    # Tempsensorer
+    - sensor.utomhus_baksidan_temperature
+    - sensor.vinden_temp
+    - sensor.isabelles_rum_temp
+    - sensor.sovrummet_temp
+    - sensor.wc_temp
+    - sensor.eriks_rum_temp
+    - sensor.koket_temp
+    - sensor.skafferiet_temp
+    - sensor.albins_rum_temp
+    - sensor.badrummet_temp
+    - sensor.badrummet_temp
+    - sensor.tvattstugan_temp
+    - sensor.forradet_temperatur
+    - sensor.kylskapet_koket_tempp
+    - sensor.kylskapet_forradet_temperatur
+    - sensor.frysen_koket_temp
+    - sensor.frysen_tvattstugan_temp
+
+
+other_sensors_with_bad_battery_indicators:
+  name: "Övriga sensorer (aqara) med dåliga batteriindikatorer"
+  entities:
+    # Dörrar
+    - binary_sensor.balkongdorren
+    - binary_sensor.altandorr_baksidan
+    - binary_sensor.wc_dorr
+    - binary_sensor.altandorr_koket
+    - binary_sensor.ytterdorren
+    - binary_sensor.skafferidorren
+    - binary_sensor.badrumsdorren
+    - binary_sensor.forradet_dorr
+    # Fönser
+    - binary_sensor.isabelles_fonster
+    - binary_sensor.vardagsrummet_fonster
+    - binary_sensor.wc_fonster
+    - binary_sensor.eriks_fonster
+    - binary_sensor.albins_fonster
+    - binary_sensor.badrummet_fonster
+    # Rörelse
+    - binary_sensor.balkongen_rorelse
+    - binary_sensor.isabelles_rum_rorelse
+    - binary_sensor.isabelles_skrivbord_rorelse
+    - binary_sensor.vardagsrummet_rorelse
+    - binary_sensor.vardagsrummet_soffan_rorelse
+    - binary_sensor.ovre_trappan_rorelse
+    - binary_sensor.sovrummet_rorelse
+    - binary_sensor.wc_rorelse
+    - binary_sensor.eriks_rum_rorelse
+    - binary_sensor.eriks_skrivbord_rorelse
+    - binary_sensor.koket_arbetsbanken_rorelse
+    - binary_sensor.koket_rorelse
+    - binary_sensor.koksbordet_rorelse
+    - binary_sensor.hallen_rorelse
+    - binary_sensor.albins_rum_rorelse
+    - binary_sensor.albins_skrivbord_rorelse
+    - binary_sensor.nedre_trappan_rorelse
+    - binary_sensor.badrummet_rorelse
+    - binary_sensor.tvattstugan_rorelse
+    - binary_sensor.tradfri_rorelse_i_garderoben_1
+    - binary_sensor.tradfri_rorelse_i_garderoben_2
+#    - binary_sensor.tradfri_rorelse_i_garderoben_3
+    - binary_sensor.tradfri_rorelse_i_garderoben_4
+
+

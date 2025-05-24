@@ -1,0 +1,94 @@
+###########################################################
+# input_bolean, används för att toggla olika "modes/states"
+###########################################################
+
+# Kökslamporna har tänts pga rörelse
+  kitchen_lights_turned_on_by_motion:
+    name: kitchen lights turned on by motion
+    initial: off
+
+
+# Aktivera larmet (larma huset) när ingen längre är hemma om denna brytare är satt till "on"
+  house_alarm_on_when_house_is_empty:
+    name: Larma huset när alla har lämnat hemmet
+    initial: on
+    icon: mdi:alarm-light-outline    
+
+
+# En brytare som används för att belysning mm 
+# ska ha andra tider när vi är hemma och är lediga
+# flera dagar i rad (t.ex. så lampor inte släcks när vi fortfarande är vakna)
+  vacation_mode:
+    name: Vi är lediga
+    icon: mdi:snowman
+
+# En toggle som bland annat styr belysningen i köket så att inget ändras när vi äter
+  vi_ater:
+    name: Vi äter
+    icon: mdi:food
+
+# En toggle som bland annat styr belysningen i köket så att inget ändras när vi äter
+  kolla_posten:
+    name: Kolla posten
+    icon: mdi:email-alert
+
+# Aktivera nattlarmet på de tider som är angivna i GUI om denna switch är på
+  night_alarm_on:
+    name: Nattlarmet startar automatiskt
+    icon: mdi:alarm-light-outline    
+
+
+# Ställ in om lamporna i garderoben ska tändas nerdimmade mellan vissa angivna klockslag
+  settings_lamporna_i_garderoben_dimmade:
+    name: Dimma lamporna i garderoben mellan dessa klockslag
+
+# Ställ in om lamporna i garderoben ska hindras ifrån att tändas öht mellan vissa angivna klockslag
+  settings_lamporna_i_garderoben_avstangda:
+    name: Stäng av lamporna i garderoben mellan dessa klockslag   
+
+
+
+
+# Ska SL-infon uppdateras?
+  settings_uppdatera_sl:
+    name: Uppdatera info om SL
+    icon: mdi:subway-variant
+
+
+# Ska allt spelande vara avstängt (PS4)
+  settings_prevent_gaming:
+    name: Stoppa allt spelande
+    icon: mdi:sony-playstation
+
+# Stäng av Sony-TV
+  settings_stang_av_sony_tv:
+    name: Stäng alltid av Sony-TV
+    icon: mdi:television-off
+
+# Vibrationsensor 1 larmar vid rörelse
+  vibrationsensor_1_aktiverad:
+    name: Vibrationssensor 1 aktiverad
+
+
+# Städerskan är hemma.
+  stadning_pagar:
+    name: Städning pågår
+    icon: mdi:spray-bottle
+
+
+# Vi har gäster hemma: Disablar vissa automatiseringar
+  gaster_hemma:
+    name: Vi har gäster hemma
+    icon: mdi:bed
+
+
+# Dimma taklampan i badrummet uppåt (sant eller falskt)
+  vagglampor_badrummet_dimma_upp:
+    name: Dimma vägglamporna i badrummet uppåt
+    initial: true
+
+
+# Är det läge för julbelysning
+  julbelysning:
+    name: Julbelysning
+    
