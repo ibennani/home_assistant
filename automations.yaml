@@ -5803,183 +5803,586 @@
 #####   Rullgardiner  #####
 
 # Styr rullgardinerna i vardagsrummet
-- alias: "Rullgardiner: Styr rullgardinerna i vardagsrummet"
-  id: '7918340156060011448674'
-  mode: queued
-  triggers: 
-    - trigger: template
-      value_template: >
-        {{   is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan","on") 
-          or is_state("binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern","on") }}
-    - trigger: template
-      value_template: >      
-        {{    (is_state("binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern","off")) 
-          and (as_timestamp(now()) - as_timestamp(states.binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern.last_changed) | int(default = 0)  > (15 * 60)) 
-          and is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan","off") 
-          and (as_timestamp(now()) - as_timestamp(states.binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan.last_changed) | int(default = 0)  > (15 * 60)) 
-          and is_state("media_player.sony_tv_i_vardagsrummet","off")
-        }} 
+- id: automation_vardagsrum_rullgardiner_automatic_logic # Ge den ett unikt ID
+  alias: "Rullgardiner: Styr rullgardinen i vardagsrummet"
+  mode: restart
+  triggers:
+    # Solskyddssensorer
     - trigger: state
-      entity_id: input_select.house_time_modes
+      entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+      id: solskydd_solen_lyser_in_vardagsrum
+    - trigger: state
+      entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+      id: solskydd_vinterljus_vardagsrum
+
+    # TV-status
     - trigger: state
       entity_id: media_player.sony_tv_i_vardagsrummet
-    - trigger: template
-      value_template: >
-        {{ states("sensor.utomhus_framsidan_ljusstyrka") | int(default = 0)  <= 300 }} 
-  action:
-    - action: >
-        {% if is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan","on")
-          or  is_state("binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern","on") 
-          or ( states("media_player.sony_tv_i_vardagsrummet") in ["playing","on"]
-              and states("sensor.utomhus_framsidan_ljusstyrka") | int(default = 0)  > 300) %}
-            cover.close_cover
-        {% elif (is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan","off")
-              or is_state("binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern","off")
-              or is_state("input_select.house_time_modes","Kväll") 
-              or is_state("input_select.house_time_modes","Natt")) %}
-          {% if is_state("media_player.sony_tv_i_vardagsrummet","off") %} cover.open_cover
-          {% elif states("media_player.sony_tv_i_vardagsrummet") in ["playing","on"]
-              and (states("sensor.utomhus_framsidan_ljusstyrka") | int(default = 0)  <= 300 ) %} 
-              {% if is_state("cover.rullgardin_vardagsrummet","open") %} script.do_nothing
-              {% else %} cover.open_cover
-              {% endif %}
-          {% else %} cover.open_cover
-          {% endif %}
-        {% else %} script.do_nothing
-        {% endif %}
-      target:
-        entity_id: 
-        #  - group.rullgardiner_framsidan
-        #  - cover.rullgardin_isabelles_rum
-          - cover.rullgardin_balkongdorren
-          - cover.rullgardin_vardagsrummet
+      to: # Specifika relevanta tillstånd
+        - "playing"
+        - "on" # Om din TV går till "on" innan "playing"
+        - "off"
+        - "standby" # Om den går till standby istället för off
+        - "unavailable" # Om den blir unavailable när den stängs av
+      id: tv_status_andrad_vardagsrum
 
-# Styr rullgardinen framför balkongdörren när balkongdörren öppnas och stängs
-- alias: "Rullgardiner: Styr rullgardinen framför balkongdörren när balkongdörren öppnas och stängs"
-  id: '79101112sdfgg6558348674'
-  mode: queued
-  triggers: 
-    - trigger: state
-      entity_id: binary_sensor.balkongdorren    
-  action:
-    - action: >
-        {% if is_state("binary_sensor.balkongdorren","off") and trigger.from_state.state == "on" %}  
-          {% if is_state("cover.rullgardin_vardagsrummet","closed") %} cover.close_cover
-          {% elif is_state("cover.rullgardin_vardagsrummet","open") %} cover.open_cover
-          {% else %} script.do_nothing
-          {% endif %}
-        {% elif is_state("binary_sensor.balkongdorren","on" and trigger.from_state.state == "off")  %}  
-          {% if is_state("cover.rullgardin_balkongdorren","closed") %} cover.open_cover
-          {% elif is_state("cover.rullgardin_balkongdorren","open") %} script.do_nothing
-          {% else %} script.do_nothing
-          {% endif %}        
-        {% else %} script.do_nothing
-        {% endif %}
-      target:
-        entity_id: cover.rullgardin_balkongdorren
+    # Ljusstyrka (för TV-bländning)
+    - trigger: numeric_state
+      entity_id: sensor.utomhus_framsidan_ljusstyrka
+      above: 300
+      id: ljus_over_300_vardagsrum
+    - trigger: numeric_state
+      entity_id: sensor.utomhus_framsidan_ljusstyrka
+      below: 301 # För att fånga övergången ner under tröskeln
+      id: ljus_under_301_vardagsrum
 
+    # Husläge
+    - trigger: template # Använder template för Kväll ELLER Natt
+      value_template: "{{ states('input_select.house_time_modes') in ['Kväll', 'Natt'] }}"
+      id: huslage_kvall_eller_natt_vardagsrum
+
+    # HA Start
+    - trigger: homeassistant
+      event: start
+      id: ha_start_vardagsrum
+
+  action:
+    - choose:
+        # Scenario 1: Home Assistant har startat
+        - conditions:
+            - condition: trigger
+              id: ha_start_vardagsrum
+          sequence:
+            - choose:
+                - conditions: # Dra ner om TV-bländningsskydd är aktivt vid start
+                    - condition: state
+                      entity_id: media_player.sony_tv_i_vardagsrummet
+                      state: # Lista av tillstånd som indikerar att TV:n är PÅ
+                        - "playing"
+                        - "on"
+                    - condition: numeric_state
+                      entity_id: sensor.utomhus_framsidan_ljusstyrka
+                      above: 300
+                  sequence:
+                    - action: cover.close_cover
+                      target:
+                        entity_id:
+                          - cover.rullgardin_vardagsrummet
+                          - cover.rullgardin_balkongdorren
+                - conditions: # Eller dra ner om solskydd är aktivt vid start
+                    - condition: or
+                      conditions:
+                        - condition: state
+                          entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+                          state: 'on'
+                        - condition: state
+                          entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+                          state: 'on'
+                  sequence:
+                    - action: cover.close_cover
+                      target:
+                        entity_id:
+                          - cover.rullgardin_vardagsrummet
+                          - cover.rullgardin_balkongdorren
+
+        # Scenario 2: TV på + Ljust ute (Bländningsskydd > 300 lux) -> Dra ner (HÖGST PRIO efter HA start)
+        - conditions:
+            - condition: state
+              entity_id: media_player.sony_tv_i_vardagsrummet
+              state: # Lista av tillstånd som indikerar att TV:n är PÅ
+                - "playing"
+                - "on"
+            - condition: numeric_state
+              entity_id: sensor.utomhus_framsidan_ljusstyrka
+              above: 300
+          sequence:
+            - action: cover.close_cover
+              target:
+                entity_id:
+                  - cover.rullgardin_vardagsrummet
+                  - cover.rullgardin_balkongdorren
+
+        # Scenario 3: Husläget ÄR Kväll eller Natt (och TV:n INTE kräver bländningsskydd) -> Dra alltid upp
+        - conditions:
+            - condition: trigger
+              id: huslage_kvall_eller_natt_vardagsrum
+            # Villkor för att säkerställa att TV-bländningsskydd INTE är aktivt
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: media_player.sony_tv_i_vardagsrummet
+                  state: # Lista av tillstånd som indikerar att TV:n är PÅ
+                    - "playing"
+                    - "on"
+                - condition: numeric_state
+                  entity_id: sensor.utomhus_framsidan_ljusstyrka
+                  above: 300
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id:
+                  - cover.rullgardin_vardagsrummet
+                  - cover.rullgardin_balkongdorren
+
+        # Scenario 4: Solskydd behövs (solen lyser in ELLER ljust på vintern)
+        # OCH husläge INTE är Kväll/Natt
+        # OCH TV:n INTE redan kräver bländningsskydd (för att undvika dubbelkommando)
+        - conditions:
+            - condition: or # En av solskyddssensorerna måste vara PÅ
+              conditions:
+                - condition: state
+                  entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+                  state: 'on'
+                - condition: state
+                  entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+                  state: 'on'
+            - condition: template # Husläge får INTE vara Kväll eller Natt
+              value_template: "{{ states('input_select.house_time_modes') not in ['Kväll', 'Natt'] }}"
+            # Villkor för att säkerställa att TV-bländningsskydd INTE är aktivt
+            # (för om det är det, har Scenario 2 redan hanterat det)
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: media_player.sony_tv_i_vardagsrummet
+                  state: # Lista av tillstånd som indikerar att TV:n är PÅ
+                    - "playing"
+                    - "on"
+                - condition: numeric_state
+                  entity_id: sensor.utomhus_framsidan_ljusstyrka
+                  above: 300
+          sequence:
+            - action: cover.close_cover
+              target:
+                entity_id:
+                  - cover.rullgardin_vardagsrummet
+                  - cover.rullgardin_balkongdorren
+
+        # Scenario 5: Dra upp rullgardinerna
+        # Detta sker om:
+        #   - Solskydd upphör (båda sensorer av)
+        #   - ELLER TV stängs av (och inget solskydd aktivt)
+        #   - ELLER TV är på men det är mörkt (<=300 lux)
+        #   OCH husläget INTE är Kväll/Natt (för det hanteras av Scenario 3)
+        #   OCH TV-bländningsskydd (neråt) INTE är aktivt (för det hanteras av Scenario 2)
+        - conditions:
+            # Grundvillkor: Inte kväll/natt OCH inget aktivt TV-bländningsskydd (neråt)
+            - condition: template
+              value_template: "{{ states('input_select.house_time_modes') not in ['Kväll', 'Natt'] }}"
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: media_player.sony_tv_i_vardagsrummet
+                  state: # Lista av tillstånd som indikerar att TV:n är PÅ
+                    - "playing"
+                    - "on"
+                - condition: numeric_state
+                  entity_id: sensor.utomhus_framsidan_ljusstyrka
+                  above: 300
+            # OR-villkor för anledningen att dra upp
+            - condition: or
+              conditions:
+                # Solskydd har upphört
+                - condition: and
+                  conditions:
+                    - condition: state
+                      entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+                      state: 'off'
+                    - condition: state
+                      entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+                      state: 'off'
+                # TV har stängts av (och inget solskydd är aktivt - underförstått från föregående AND)
+                - condition: state
+                  entity_id: media_player.sony_tv_i_vardagsrummet
+                  state: # Lista av tillstånd som indikerar att TV:n är AV
+                    - "off"
+                    - "standby"
+                    - "unavailable" # Lägg till om din TV blir det när den stängs av
+                # TV är på men det är mörkt
+                - condition: and
+                  conditions:
+                    - condition: state
+                      entity_id: media_player.sony_tv_i_vardagsrummet
+                      state: # Lista av tillstånd som indikerar att TV:n är PÅ
+                        - "playing"
+                        - "on"
+                    - condition: numeric_state
+                      entity_id: sensor.utomhus_framsidan_ljusstyrka
+                      below: 301 # Strikt mindre än eller lika med 300
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id:
+                  - cover.rullgardin_vardagsrummet
+                  - cover.rullgardin_balkongdorren
+
+      # default:
+      #   - action: persistent_notification.create
+      #     data:
+      #       message: "Vardagsrums-rullgardin (automatisk): Ingen åtgärd matchade för trigger {{ trigger.id if trigger.id is defined else 'okänd' }}."
+      #       notification_id: "vardagsrum_blind_auto_debug"
 
 
 
 # Styr rullgardinerna i Isabelles rum
-# Denna gartin styrs bara av solljus och när det blir kväll.
-# Hissas ner samtidigt som alla andra gardiner mot framsidan när det blir för ljust.
-- alias: "Rullgardiner: Styr rullgardinerna i Isabelles rum"
-  id: '7910111225558348674'
-  mode: queued
-  triggers: 
-    - trigger: template
-      value_template: >
-        {{   is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan","on") 
-          or is_state("binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern","on") }}
-    - trigger: template
-      value_template: >
-        {{    (is_state("binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern","off")) 
-          and (as_timestamp(now()) - as_timestamp(states.binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan.last_changed) | int(default = 0)  > (15 * 60)) 
-          and (as_timestamp(now()) - as_timestamp(states.binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern.last_changed) | int(default = 0)  > (15 * 60)) }} 
+- alias: "Rullgardiner: Styr rullgardinen i Isabelles rum"
+  id: styr_rullgardin_isabelles_rum
+  mode: restart
+  triggers:
+    # Trigger för solskyddssensorer (både på och av)
     - trigger: state
-      entity_id: input_select.house_time_modes
+      entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+      id: solskydd_solen_lyser_in
+    - trigger: state
+      entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+      id: solskydd_vinterljus
+
+    # Trigger för när husläget blir Kväll ELLER Natt (med template)
+    - trigger: template
+      value_template: "{{ states('input_select.house_time_modes') in ['Kväll', 'Natt'] }}"
+      id: huslage_kvall_eller_natt
+
+    # Trigger för Home Assistant start
+    - trigger: homeassistant
+      event: start
+      id: ha_start
   action:
-    - action: > 
-        {% if is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan","on")
-        or  is_state("binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern","on")  %}
-          cover.close_cover
-        {% elif   (is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan","off")
-                or is_state("binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern","off")
-                or is_state("input_select.house_time_modes","Kväll") 
-                or is_state("input_select.house_time_modes","Natt"))
-            and is_state("cover.rullgardin_isabelles_rum","closed") %} 
-          cover.open_cover
-        {% else %} script.do_nothing
-        {% endif %}
-      target:
-        entity_id: cover.rullgardin_isabelles_rum
+    - choose:
+        # Scenario 1: Home Assistant har startat
+        - conditions:
+            - condition: trigger
+              id: ha_start
+          sequence:
+            - choose: # Inre choose för startlogik
+                - conditions: # Dra ner om solskydd är aktivt vid start
+                    - condition: or
+                      conditions:
+                        - condition: state
+                          entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+                          state: 'on'
+                        - condition: state
+                          entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+                          state: 'on'
+                  sequence:
+                    - action: cover.close_cover
+                      target:
+                        entity_id: cover.rullgardin_isabelles_rum
+
+        # Scenario 2: Husläget ÄR Kväll eller Natt (och detta var triggern) -> Dra alltid upp
+        - conditions:
+            - condition: trigger
+              id: huslage_kvall_eller_natt
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id: cover.rullgardin_isabelles_rum
+
+        # Scenario 3: Solskydd behövs (solen lyser in ELLER ljust på vintern) OCH husläge INTE är Kväll/Natt
+        - conditions:
+            - condition: trigger
+              id: # Triggas av solskyddssensorerna
+                - solskydd_solen_lyser_in
+                - solskydd_vinterljus
+            - condition: or # En av solskyddssensorerna måste vara PÅ
+              conditions:
+                - condition: state
+                  entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+                  state: 'on'
+                - condition: state
+                  entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+                  state: 'on'
+            - condition: template # Husläge får INTE vara Kväll eller Natt
+              value_template: "{{ states('input_select.house_time_modes') not in ['Kväll', 'Natt'] }}"
+          sequence:
+            - action: cover.close_cover
+              target:
+                entity_id: cover.rullgardin_isabelles_rum
+
+        # Scenario 4: Solskydd upphör (båda solskyddssensorerna är AV) OCH husläge INTE är Kväll/Natt
+        - conditions:
+            - condition: trigger
+              id: # Triggas av solskyddssensorerna
+                - solskydd_solen_lyser_in
+                - solskydd_vinterljus
+            - condition: state # Båda solskyddssensorerna måste vara AV
+              entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+              state: 'off'
+            - condition: state
+              entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+              state: 'off'
+            - condition: template # Husläge får INTE vara Kväll eller Natt
+              value_template: "{{ states('input_select.house_time_modes') not in ['Kväll', 'Natt'] }}"
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id: cover.rullgardin_isabelles_rum
 
 
 # Styr rullgardinerna i Eriks rum
-# Denna gartin styrs bara av solljus.
-- alias: "Rullgardiner: Styr rullgardinen i Eriks rum"
-  id: '791834867032610894'
-  mode: queued
-  triggers: 
+- id: automation_eriks_rum_rullgardin_automatic_logic_v2 # Unikt ID
+  alias: "Rullgardiner: Styr rullgardinen i Eriks rum" # Ditt önskade alias
+  mode: restart
+  triggers:
+    # Solskyddssensor ändras
     - trigger: state
       entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+      id: erik_solskydd_baksida_andrad
+
+    # Husläge ändras
     - trigger: state
-      entity_id: input_select.house_time_modes      
-  action:
-  - action: >  # Hissas ner när det blir för ljust, annars hissa upp
-      {% if is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan","on")
-        and is_state("input_select.house_time_modes","Dag") %}
-          cover.close_cover
-      {% elif is_state("binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan","off") %}
-          cover.open_cover
-      {% else %} script.do_nothing
-      {% endif %}
-    target:
-      entity_id: cover.rullgardin_eriks_rum
-  # - action: notify.mobile_app_ilias_s23_ultra
-  #   data:
-  #     title: "HEMMET {{ now().strftime('%R') }}"
-  #     message: "Eriks rullgardin {{ states('cover.rullgardin_eriks_rum') }}"       
+      entity_id: input_select.house_time_modes
+      id: erik_huslage_andrat
 
-
-# Rullgardinen i sovrummet
-- alias: "Rullgardiner: Styr rullgardinerna i sovrummet"
-  id: '791834121122331190874'
-  mode: queued
-  triggers:
+    # Närvaro ändras
     - trigger: state
       entity_id: zone.home
+      id: erik_narvaro_andrad
+
+    # När morgoninfo blir uppläst
+    - trigger: state
+      entity_id: var.morgoninfo_koket_redan_upplast
+      to: 'true'
+      id: erik_morgoninfo_klar
+
+    # Home Assistant start
+    - trigger: homeassistant
+      event: start
+      id: erik_ha_start
+  action:
+    - variables:
+        automatik_pausad_morgon: >
+          {{ states('zone.home') | int > 0 and
+              is_state('var.morgoninfo_koket_redan_upplast', 'false') }}
+    - choose:
+        # Scenario 1: Home Assistant har startat
+        - conditions:
+            - condition: trigger
+              id: erik_ha_start
+          sequence:
+            - choose:
+                - conditions: # Dra ner om solskydd är aktivt vid start OCH automatik INTE är pausad
+                    - condition: state
+                      entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+                      state: 'on'
+                    - condition: template
+                      value_template: "{{ not automatik_pausad_morgon }}"
+                  sequence:
+                    - action: cover.close_cover
+                      target:
+                        entity_id: cover.rullgardin_eriks_rum
+
+        # Scenario 2: Husläget ÄR Kväll eller Natt -> Dra alltid upp
+        - conditions:
+            - condition: template
+              value_template: "{{ states('input_select.house_time_modes') in ['Kväll', 'Natt'] }}"
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id: cover.rullgardin_eriks_rum
+
+        # Scenario 3: Solskydd behövs (solen lyser in)
+        # OCH husläge INTE är Kväll/Natt
+        # OCH automatik INTE är pausad på morgonen
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+              state: 'on'
+            - condition: template
+              value_template: "{{ states('input_select.house_time_modes') not in ['Kväll', 'Natt'] }}"
+            - condition: template
+              value_template: "{{ not automatik_pausad_morgon }}"
+          sequence:
+            - action: cover.close_cover
+              target:
+                entity_id: cover.rullgardin_eriks_rum
+
+        # Scenario 4: Solskydd upphör (solen lyser INTE in)
+        # OCH husläge INTE är Kväll/Natt
+        # OCH automatik INTE är pausad på morgonen
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+              state: 'off'
+            - condition: template
+              value_template: "{{ states('input_select.house_time_modes') not in ['Kväll', 'Natt'] }}"
+            - condition: template
+              value_template: "{{ not automatik_pausad_morgon }}"
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id: cover.rullgardin_eriks_rum
+
+
+# Styr rullgardinen i sovrummet
+- id: automation_sovrum_rullgardin_logik_v2 # Nytt unikt ID
+  alias: "Rullgardiner: Styr rullgardinen i sovrummet"
+  mode: restart
+  triggers:
+    # Närvaro ändras
+    - trigger: state
+      entity_id: zone.home
+      id: sovrum_narvaro_andrad
+
+    # Solskyddssensor ändras
     - trigger: state
       entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
-  action:
-    - action: >
-        {% set home_state = states('zone.home') | int %}
-        {% set sun_sensor = is_state('binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan', 'on') %}
-        {% set sun_off_duration = (as_timestamp(now()) - as_timestamp(states.binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan.last_changed)) | int %}
-        {% set night_mode = is_state('input_select.house_time_modes', 'Natt') %}
+      id: sovrum_solskydd_baksida_andrad
 
-        {% if home_state == 0 and sun_sensor %}
-          cover.close_cover
-        {% elif home_state == 0 and not sun_sensor and sun_off_duration > (60 * 15) %}
-          cover.open_cover
-        {% elif home_state > 0 %}
-          {% set from_state = trigger.from_state.state | int %}
-          {% set to_state = trigger.to_state.state | int %}
-          {% if from_state == 0 and to_state > 0 and not night_mode %}
-            cover.open_cover
-          {% else %}
-            script.do_nothing
-          {% endif %}
-        {% else %}
-          script.do_nothing
-        {% endif %}
-      target:
-        entity_id: cover.rullgardin_sovrummet
+    # Husläge ändras (för att hantera Natt/Dag/Morgon när ingen är hemma)
+    - trigger: state
+      entity_id: input_select.house_time_modes
+      id: sovrum_huslage_andrat
+
+    # Home Assistant start
+    - trigger: homeassistant
+      event: start
+      id: sovrum_ha_start
+  action:
+    - choose:
+        # Scenario 1: Home Assistant har startat
+        - conditions:
+            - condition: trigger
+              id: sovrum_ha_start
+          sequence:
+            - choose: # Inre choose för startlogik
+                - conditions: # Ingen hemma
+                    - condition: numeric_state
+                      entity_id: zone.home
+                      below: 1 # zone.home är 0
+                  sequence:
+                    - choose:
+                        - conditions: # Om det är Natt vid start
+                            - condition: state
+                              entity_id: input_select.house_time_modes
+                              state: "Natt"
+                          sequence:
+                            - action: cover.close_cover
+                              target:
+                                entity_id: cover.rullgardin_sovrummet
+                        - conditions: # Om det är Dag eller Morgon vid start (eller Kväll)
+                            - condition: state
+                              entity_id: input_select.house_time_modes
+                              state: # Lista av tillstånd
+                                - "Dag"
+                                - "Morgon"
+                                - "Kväll" # Kväll följer också solsensorn när ingen är hemma
+                          sequence: # Följ solsensorn
+                            - choose:
+                                - conditions:
+                                    - condition: state
+                                      entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+                                      state: 'on'
+                                  sequence:
+                                    - action: cover.close_cover
+                                      target:
+                                        entity_id: cover.rullgardin_sovrummet
+                                - conditions:
+                                    - condition: state
+                                      entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+                                      state: 'off'
+                                  sequence:
+                                    - action: cover.open_cover
+                                      target:
+                                        entity_id: cover.rullgardin_sovrummet
+                # default: (Om någon är hemma vid start) -> Gör ingenting (implicit)
+
+        # Scenario 2: Någon kommer hem (zone.home går från 0 till >0) -> Alltid upp
+        - conditions:
+            - condition: trigger
+              id: sovrum_narvaro_andrad
+            - condition: template
+              value_template: "{{ trigger.from_state.state == '0' and trigger.to_state.state != '0' }}"
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id: cover.rullgardin_sovrummet
+
+        # Scenario 3: Ingen är hemma (zone.home är 0)
+        - conditions:
+            - condition: numeric_state
+              entity_id: zone.home
+              below: 1 # zone.home är 0
+          sequence:
+            - choose: # Hantera olika triggers/tillstånd när ingen är hemma
+                # Fall 3.1: Husläget blev precis Natt
+                - conditions:
+                    - condition: trigger
+                      id: sovrum_huslage_andrat
+                    - condition: state # Kontrollera att det faktiskt är Natt nu
+                      entity_id: input_select.house_time_modes
+                      state: "Natt"
+                  sequence:
+                    - action: cover.close_cover
+                      target:
+                        entity_id: cover.rullgardin_sovrummet
+                # Fall 3.2: Husläget blev precis Dag eller Morgon
+                - conditions:
+                    - condition: trigger
+                      id: sovrum_huslage_andrat
+                    - condition: state # Kontrollera att det faktiskt är Dag/Morgon nu
+                      entity_id: input_select.house_time_modes
+                      state:
+                        - "Dag"
+                        - "Morgon"
+                  sequence:
+                    - action: cover.open_cover
+                      target:
+                        entity_id: cover.rullgardin_sovrummet
+                # Fall 3.3: Solskyddssensorn ändrades, ELLER husläget ändrades till Kväll, ELLER det var en närvaroändring TILL "ingen hemma"
+                # Denna del styr baserat på solen om inte huslägesändring till Natt/Dag/Morgon precis skett och hanterats ovan.
+                - conditions:
+                    # Detta villkor ser till att vi inte kör sollogiken om vi precis hanterat en huslägesändring till Natt/Dag/Morgon via trigger "sovrum_huslage_andrat"
+                    - condition: template
+                      value_template: >
+                        {% if trigger.id == 'sovrum_huslage_andrat' %}
+                          {{ states('input_select.house_time_modes') not in ['Natt', 'Dag', 'Morgon'] }} {# Dvs om det blev Kväll #}
+                        {% else %}
+                          true {# Om triggern var solsensorn eller närvaro, utvärdera alltid sollogiken nedan #}
+                        {% endif %}
+                  sequence:
+                    - choose:
+                        - conditions:
+                            - condition: state
+                              entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+                              state: 'on'
+                          sequence:
+                            - action: cover.close_cover
+                              target:
+                                entity_id: cover.rullgardin_sovrummet
+                        - conditions:
+                            - condition: state
+                              entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+                              state: 'off'
+                          sequence:
+                            - action: cover.open_cover
+                              target:
+                                entity_id: cover.rullgardin_sovrummet
+
+        # Scenario 4: Någon är hemma (zone.home > 0) OCH det var INTE "någon kommer hem"-triggern
+        # -> Gör ingenting automatiskt
+        - conditions:
+            - condition: numeric_state
+              entity_id: zone.home
+              above: 0 # Någon är hemma
+            - condition: template # Säkerställ att det inte var "någon kommer hem"-triggern
+              value_template: >
+                {% if trigger.id == 'sovrum_narvaro_andrad' %}
+                  {{ not (trigger.from_state.state == '0' and trigger.to_state.state != '0') }}
+                {% else %}
+                  true {# Om triggern var solsensor eller husläge medan någon redan är hemma #}
+                {% endif %}
+          sequence:
+            - action: script.do_nothing
+
+      # default: # Avkommentera för felsökning om det behövs
+      #   - action: persistent_notification.create
+      #     data:
+      #       message: "Sovrums-rullgardin (debug): Trigger {{ trigger.id if trigger.id is defined else 'okänd' }}. Zone: {{ states('zone.home') }}. Sol: {{ states('binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan') }}. Husläge: {{ states('input_select.house_time_modes') }}"
+      #       notification_id: "sovrum_blind_auto_debug_default"
 
 
 
 # Styr alla rullgardinerna med sina respektive fjärrkontroller
+# Övrig automatik för rullgardinerna sker i andra auomatiotiseringar. --
 - alias: "Rullgardiner: Styr rullgardiner med fjärrkontroller"
   id: "rullgardiner_fjarrkontroller"
   mode: parallel
@@ -6014,54 +6417,54 @@
 
 
 # Styr rullgardinen i Albins rum
-- alias: "Rullgardiner: Styr rullgardinen i Albins rum"
-  id: '9998348670sdddgfe00dg'
-  mode: queued  
-  triggers: 
-    - trigger: template
-      value_template: >
-        {{ is_state("zone.home","0") and is_state("input_boolean.gaster_hemma","off") 
-        or not is_state("device_tracker.erik_s23","home") and is_state("input_boolean.gaster_hemma","off") }}
-  action:
-    - action: >
-        {% if is_state("zone.home","0") and is_state("input_boolean.gaster_hemma","off") 
-        or not is_state("device_tracker.erik_s23","home") and is_state("input_boolean.gaster_hemma","off") %} cover.open_cover
-        {% else %} script.do_nothing
-        {% endif %}
-      target: 
-        entity_id: cover.rullgardin_albins_rum
-
-
-
-# Dra upp rullgardinerna när det är mörkt ute (under 2000 lux)
-- alias: "Rullgardiner: Dra upp rullgardinerna när det är mörkt ute"
-  id: '9998348670sdfe00dg'
-  mode: queued  
-  triggers: 
-    - trigger: template
-      value_template: >
-        {{ states("sensor.utomhus_framsidan_ljusstyrka") | int(default=0) <= 2000 }}
+- id: automation_albins_rum_rullgardin_oppna_vid_fritt_fram # Behåller ett unikt ID
+  alias: "Rullgardiner: Styr rullgardinen i Albins rum" # Ditt önskade alias
+  mode: single
+  triggers:
+    # Närvaro för hela huset ändras
+    - trigger: state
+      entity_id: zone.home
+      id: albin_narvaro_total_andrad_v2
+    # Närvaro för Erik ändras
+    - trigger: state
+      entity_id: device_tracker.erik_s23 # Eller person.erik_bennani
+      id: albin_narvaro_erik_andrad_v2
+    # Gäststatus ändras
+    - trigger: state
+      entity_id: input_boolean.gaster_hemma
+      id: albin_gaster_andrad_v2
+    # HA Start
+    - trigger: homeassistant
+      event: start
+      id: albin_ha_start_v2
   condition:
-    - condition: numeric_state
-      entity_id: sensor.utomhus_framsidan_ljusstyrka
-      below: 2000
-  action:
-    - action: cover.open_cover
-      target:
-        entity_id: 
-          - cover.rullgardin_isabelles_rum
-          - cover.rullgardin_eriks_rum
+    # Global condition: Inga gäster hemma för att automatiken ska agera
     - condition: state
-      entity_id: media_player.sony_tv_i_vardagsrummet
+      entity_id: input_boolean.gaster_hemma
       state: 'off'
-    - action: cover.open_cover
-      target:
-        entity_id: 
-          - cover.rullgardin_vardagsrummet
-          - cover.rullgardin_balkongdorren
-
-
-
+  action:
+    - choose:
+        # Scenario 1: Ingen är hemma (och inga gäster, redan kollat i global condition)
+        - conditions:
+            - condition: numeric_state
+              entity_id: zone.home
+              below: 1 # zone.home är 0
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id: cover.rullgardin_albins_rum
+        # Scenario 2: Erik är INTE hemma (och inga gäster, redan kollat i global condition)
+        - conditions:
+            - condition: state
+              entity_id: device_tracker.erik_s23 # Eller person.erik_bennani
+              state: 'not_home'
+          sequence:
+            - action: cover.open_cover
+              target:
+                entity_id: cover.rullgardin_albins_rum
+      # Inget default: Gör inget om inget av ovanstående specifika villkor är sanna.
+      # Om rullgardinen redan är öppen och villkoren uppfylls, skickas ett open_cover igen,
+      # vilket inte har någon negativ effekt.
 
 
 #####   Saker som händer när Ilias är ensam hemma  #####
