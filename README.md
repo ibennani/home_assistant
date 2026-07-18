@@ -96,7 +96,7 @@ Koppla Cursor till Home Assistant via ha-mcp — se [docs/ha-mcp.md](docs/ha-mcp
 
 Kopiera `.cursor/mcp.json.example` till `.cursor/mcp.json` och klistra in **Nabu Casa-webhook-URL** från proxy-add-onens logg (eller lokal URL om du bara kör Agent-chatt hemma).
 
-**Cursor Automations** (t.ex. `cursor+ha test`) kräver dessutom MCP i [cursor.com → Settings → MCP](https://cursor.com/settings) — lokal `mcp.json` räcker inte. Se felsökning i [docs/ha-mcp.md](docs/ha-mcp.md#5b-felsökning--cursor-automation--agenten-cursorha-test-når-inte-ha).
+**Cursor Automations** (t.ex. `cursor+ha test`) kräver dessutom MCP i [cursor.com → Settings → MCP](https://cursor.com/settings) — lokal `mcp.json` räcker inte. Steg-för-steg: [docs/cursor-cloud-mcp-steg.md](docs/cursor-cloud-mcp-steg.md). Verifiera lokalt: `.\scripts\verify-ha-mcp.ps1`.
 
 ## WhatsApp-chatt
 

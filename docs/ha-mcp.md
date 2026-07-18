@@ -224,13 +224,17 @@ Verifierat 2026-07-19: `192.168.0.222:9583` svarar (403 utan sökväg, 405 med k
 
 **Åtgärd för Automations / Cloud Agent:**
 
+Steg-för-steg med JSON-mall: **[docs/cursor-cloud-mcp-steg.md](cursor-cloud-mcp-steg.md)**
+
 1. Gå till **[cursor.com → Settings → MCP](https://cursor.com/settings)** (dashboard, inte bara lokal `mcp.json`)
-2. Lägg till en **ny MCP-server** med namnet `home-assistant`
+2. Lägg till en **ny MCP-server** med namnet `home-assistant` (exakt stavning — automationen matchar `serverName`, inte `user-home-assistant`)
 3. Använd **Nabu Casa-webhook-URL** (inte `192.168.x.x`):
    - HA → **Tillägg → Nabu Casa – Webhook Proxy for HA MCP → Logg**
    - Kopiera raden `MCP Server URL (remote): https://….ui.nabu.casa/api/webhook/mcp_…`
 4. Spara och öppna automationen `cursor+ha test` → kontrollera att verktyget **home-assistant** är valt och inte står i "Set up MCP"
 5. Kör automationen igen
+
+**Snabbtest lokalt:** `.\scripts\verify-ha-mcp.ps1` (LAN 403, webhook 405, REST API 200, mcp.json-matchning)
 
 **Åtgärd om du bara vill köra lokalt:** Använd **lokal Agent-chatt** (inte Cloud/Automation), eller ställ in automationen till **local runtime** om det finns som alternativ.
 
@@ -246,19 +250,18 @@ Verifierat 2026-07-19: `192.168.0.222:9583` svarar (403 utan sökväg, 405 med k
 **Snabbtest (PowerShell, på din dator):**
 
 ```powershell
+.\scripts\verify-ha-mcp.ps1
+```
+
+Manuellt (samma förväntade svar):
+
+```powershell
 # 403 = add-on kör
 curl.exe -s -o NUL -w "%{http_code}" http://192.168.0.222:9583/
 
 # 405 = webhook-URL giltig (byt ut … mot din maskerade URL)
 curl.exe -s -o NUL -w "%{http_code}" "https://….ui.nabu.casa/api/webhook/mcp_…"
 ```
-
-**Vanliga misstag:**
-
-- `mcp.json` i fel katalog (t.ex. repo-rot utan `.cursor/`-mapp, eller `~/.cursor/` på fel användare)
-- Använda `command`/`args` i stället för `url` för add-on-HTTP (det är Claude Desktop-format, inte Cursor HTTP)
-- Glömma *Reload Window* efter filändring
-- Förvänta sig Connection Guide i add-on Web UI (finns inte i v7.x — URL i **Logg**, se tabell ovan)
 
 ### 6. Kända problem (Cursor + ha-mcp v7.x)
 
@@ -282,6 +285,9 @@ Ha **inte** både in-process server *och* add-on igång samtidigt om du inte vet
 ## Snabbreferens — kommandon i detta repo
 
 ```powershell
+# Verifiera MCP (LAN + Nabu webhook + REST API + mcp.json)
+.\scripts\verify-ha-mcp.ps1
+
 # Uppdatera inventering (reports/ gitignorerad)
 .\scripts\ha-inventory.ps1
 
