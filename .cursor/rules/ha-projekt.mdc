@@ -1,0 +1,20 @@
+---
+description: Regler för Home Assistant-projektet
+globs:
+alwaysApply: true
+---
+
+# Home Assistant-projekt
+
+## Språk
+- Kommunikation och dokumentation på svenska.
+- Commit-meddelanden på svenska.
+
+## Säkerhet (obligatoriskt)
+- Committa ALDRIG: tokens, lösenord, API-nycklar, `secrets.yaml`, `.env`, `.storage/`, databaser.
+- Använd `!secret nyckel` i YAML på HA-servern.
+- Känsliga värden endast i `.env` (lokalt) eller HA:s `secrets.yaml`.
+
+## Syfte
+- Versionera automatiseringar, skript och dokumentation.
+- Mål: chatt via WhatsApp med Assist/Conversation.

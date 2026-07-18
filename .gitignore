@@ -1,0 +1,55 @@
+# Hemligheter och lokala credentials — committas ALDRIG
+.env
+.env.local
+.env.*.local
+secrets.yaml
+**/secrets.yaml
+*.pem
+*.key
+id_rsa
+id_ed25519
+*.ppk
+
+# Home Assistant runtime-data
+.storage/
+.cloud/
+.homekit.state
+home-assistant_v2.db
+home-assistant_v2.db-shm
+home-assistant_v2.db-wal
+*.db
+*.db-shm
+*.db-wal
+*.log
+*.log.*
+tts/
+deps/
+*.conf
+ip_bans.yaml
+known_devices.yaml
+
+# Exporterad config
+config/.storage/
+config/secrets.yaml
+config/home-assistant_v2.db*
+config/tts/
+config/deps/
+config/*.log*
+
+# Inventeringsrapporter (kan innehålla enhetsnamn)
+reports/
+*.inventory.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

@@ -1,0 +1,21 @@
+alias: "WhatsApp: chatta med Assist"
+description: "Vidarebefordrar WhatsApp till conversation.process och svarar."
+mode: queued
+max: 10
+trigger:
+  - platform: event
+    event_type: whatsapp_message_received
+condition:
+  - condition: template
+    value_template: "{{ trigger.event.data.sender_number == secret_whatsapp_allowed_number }}"
+variables:
+  secret_whatsapp_allowed_number: !secret whatsapp_allowed_number
+action:
+  - action: conversation.process
+    data:
+      text: "{{ trigger.event.data.content }}"
+    response_variable: assist_svar
+  - action: whatsapp.send_message
+    data:
+      target: "{{ trigger.event.data.sender }}"
+      message: "{{ assist_svar.response.speech.plain.speech }}"

@@ -1,0 +1,2 @@
+# Automatiseringar versioneras här.
+# På HA: automation: !include_dir_merge_list automations/
