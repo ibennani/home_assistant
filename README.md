@@ -6,6 +6,8 @@ Repo: https://github.com/ibennani/home_assistant
 
 **Publikt repo = kod syns för alla. Hemligheter (token, lösenord) ligger aldrig i git.**
 
+Senaste lägesrapport: [docs/lage-rapport.md](docs/lage-rapport.md)
+
 ## Steg 1 — Öppna rätt mapp i Cursor
 
 **File → Open Folder** → `C:\kod\home_assistant`
