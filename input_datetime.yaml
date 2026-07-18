@@ -1,0 +1,98 @@
+#######################################################
+# Date och time-input
+#######################################################
+
+  # När ska Google Home växla ifrån nattvolym till dagvolym
+    google_home_to_day_volume:
+      name: "Google home till dagvolym"
+      has_time: true  
+  
+  # När ska Google Home växla ifrån dagvolym till nattvolym
+    google_home_to_night_volume:
+      name: "Google home till nattvolym"
+      has_time: true  
+  
+  # När ska nattlarmet gå igång (natt mot vardagar)
+    alarm_nattlarm_pa_tid_mot_vardagar:
+      name: "Nattlarm på (sön - tor)"
+      has_time: true    
+  
+  # När ska nattlarmet gå igång (natt mot helgdagar)
+    alarm_nattlarm_pa_tid_mot_helgdagar:
+      name: "Nattlarm på (fre + lör samt när vi är lediga)"
+      has_time: true 
+  
+  # När ska nattlarmet stängas av (vardagar)
+    alarm_nattlarm_av_tid_vardagar:
+      name: "Nattlarm av (mån - fre)"
+      has_time: true    
+  
+  # När ska nattlarmet gå igång (helgdagar/lediga)
+    alarm_nattlarm_av_tid_helgdagar:
+      name: "Nattlarm av (lör + sön samt när vi är lediga)"
+      has_time: true 
+  
+  # Hur lång tid kan en dörr vara öppen innan nattlarmet aktiveras?
+    alarm_nattlarm_delay:
+      name: "Nattlarm fördröjning"
+      has_time: true        
+  
+  # När på kvällen ska Eriks myshörna lysa svagare när man släcker taklampan?
+    eriks_myshorna_nattljus_tid:
+      name: "Eriks myshörna nattljus from kl"
+      has_time: true       
+  
+  
+  # STYR HUSETS TIDER
+  
+  # När blir det morgon på vardagar?
+    huset_morgontid_vardagar :
+      name: "Morgon vardagar"
+      has_time: true  
+  
+  # När blir det morgon på helgerna
+    huset_morgontid_helger :
+      name: "Morgon helger"
+      has_time: true  
+  
+  # När blir det natt söndag till torsdag?
+    huset_nattid_son_tor:
+      name: "Natt söndag till torsdag"
+      has_time: true
+  
+  # När blir det natt söndag till torsdag?
+    huset_nattid_fre_lor:
+      name: "Natt fredag och lördag"
+      has_time: true    
+  
+  # När blir det morgon när vi är lediga?
+    huset_morgontid_lediga:
+      name: "Morgon när vi är lediga"
+      has_time: true  
+  
+  # När blir det natt när vi är lediga?
+    huset_nattid_lediga:
+      name: "Natt när vi är lediga"
+      has_time: true  
+                          
+  # Styr lamporna i garderoben, när de ska dimmas ner, när de ska vara avstängda
+  
+  # Från vilket klockslag ska lamporna i garderoben tändas nerdimmade
+    settings_lamporna_i_garderoben_dimmade_from:
+      name: "Dimma ner from"
+      has_time: true  
+  
+  # till vilket klockslag ska lamporna i garderoben tändas nerdimmade
+    settings_lamporna_i_garderoben_dimmade_tom:
+      name: "Dimma ner tom"
+      has_time: true      
+  
+  # Från vilket klockslag ska lamporna i garderoben vara helt avstängda
+    settings_lamporna_i_garderoben_avstangda_from:
+      name: "Stäng av from"
+      has_time: true  
+  
+  # till vilket klockslag ska lamporna i garderoben vara helt avstängda
+    settings_lamporna_i_garderoben_avstangda_tom:
+      name: "Stäng av tom"
+      has_time: true      

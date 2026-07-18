@@ -1,0 +1,179 @@
+#######################################################
+# Input selectors
+#######################################################
+
+# Alarm-lägen
+  house_alarm_modes:
+    name: Alarm mode
+    options:
+      - Larmet är avstängt
+      - Nattlarm
+      - Huset är larmat
+    icon: mdi:alarm-light
+
+
+# Olika tider på dygnet
+  house_time_modes:
+    name: Time mode
+    options:
+      - Morgon
+      - Dag
+      - Kväll
+      - Natt
+    icon: mdi:timelapse
+
+
+# Välj vad som ska spelas på chromecast i köket
+  chromecast_audio_kitchen:
+    name: Vad ska spelas i köket
+    options:
+      - Tyst
+      - Sveriges Radio P1
+      - Sveriges Radio P2
+      - Sveriges Radio P3
+      - Sveriges Radio P4 Stockholm
+      - Sveriges Radio P4 PLUS
+      - Sveriges Radio Ekot Direkt
+    initial: Tyst
+    icon: mdi:radio
+
+
+# Välj vilken enhet som texten ska läsas upp på
+  textupplasning_device:
+    name: Var ska texten läsas upp
+    options:
+      - Välj högtalare
+      - Alla högtalare
+      - De bästa högtalarna
+      - Stereon i vardagsrummet
+      - Eriks stereo
+      - Högtalarna i köket
+      - Albins stereo
+      - Alla puckar
+      - Infopuckarna
+      - Pucken i Isabelles rum
+      - Pucken i vardsgsrummet
+      - Pucken i sovrummet
+      - Pucken i Eriks rum
+      - Pucken i köket
+      - Pucken i Albins rum
+    initial: Välj högtalare
+    icon: mdi:speaker
+
+# Välj röst
+  textupplasning_device_voice:
+    name: Välj röst
+    options:
+      - Mattias
+      - Sofie
+      - Hillevi
+    initial: Mattias
+    icon: mdi:message    
+
+# Välj språk
+  textupplasning_device_language:
+    name: Välj röst
+    options:
+      - Svenska
+      - Engelska (UK)
+      - Engelska (USA)
+      - Franska
+      - Tyska
+      - Spanska
+    initial: Svenska
+    icon: mdi:translate         
+
+
+# Belysningen i Isabelles rum
+  isabelles_rum_belysning:
+    name: Belysning i Isabelles rum
+    options:
+      - Tänt
+      - Sängen
+      - Myslampan
+      - Lamporna i fönstret
+      - Städning
+      - Släckt 
+    initial: Släckt
+    icon: mdi:home-floor-b
+
+
+# Belysningen i vardagsrummet
+  vardagsrummet_belysning:
+    name: Belysning i vardsgsrummet
+    options:
+      - Tänt
+      - Dämpat
+      - Städning
+      - Träning
+      - PS4
+      - TV
+      - Släckt 
+    initial: Släckt
+    icon: mdi:home-floor-b
+
+
+
+# Belysningen i Sovrummet
+  sovrummet_belysning:
+    name: Belysning i sovrummet
+    options:
+      - Tänt
+      - Sänglamporna
+      - Mysigt
+      - Städning
+      - Släckt 
+    initial: Släckt
+    icon: mdi:home-floor-b
+
+
+# Belysningen i Sovrummet
+  eriks_rum_belysning:
+    name: Belysning i Eriks rum
+    options:
+      - Tänt
+      - Trådkorgarna normalbelysning
+      - Trådkorgarna maxbelysning
+      - Mysigt
+      - Städning
+      - Släckt 
+
+    initial: Släckt
+    icon: mdi:home-floor-b
+
+
+# Köksbelysning
+  koket_belysning:
+    name: Köksbelysning
+    options:
+      - Normalt
+      - Måltid
+      - Buffé
+      - Maxbelysning
+      - Spelkväll
+      - Mysigt
+      - Släckt
+      - ---
+      - Morgon
+      - Städning
+      - Dämpat
+    initial: Normalt
+    icon: mdi:food   
+
+
+# Belysningen i Albins rum
+  albins_rum_belysning:
+    name: Belysning i Albins rum
+    options:
+      - Tänt
+      - Taklamporna
+      - Läsning
+      - Mysigt
+      - Minimalt
+      - Städning
+      - Släckt 
+    initial: Släckt
+    icon: mdi:home-floor-b
+
+
+

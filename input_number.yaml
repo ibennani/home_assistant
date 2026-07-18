@@ -1,0 +1,363 @@
+###############################################################
+# input_number, används som variabler för att ange olika värden
+###############################################################
+
+  sekunder_koksradion:
+    name: sekunder_koksradion
+    min: 0
+    max: 90000
+    unit_of_measurement: sekunder
+
+# När man tryckt tre gånger inom fem sekunder på någon av knapparna i övrre trappen
+# så ska alla lampor släckas. 
+  antal_tryck_pa_trappbrytaren:
+    name: Antal tryck på trappbrytaren
+    min: 0
+    max: 3
+
+
+### Google Home ###
+
+# Sätt dag-volymen på alla Google Home 
+  google_home_volume_setting_dag:
+    name: GH volym dag
+#    initial: 40
+    min: 0
+    max: 100
+    step: 5   
+    unit_of_measurement: "%"
+
+# Sätt natt-volymen på alla Google Home 
+  google_home_volume_setting_natt:
+    name: GH volym natt
+#    initial: 20
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+
+# Sätt notis-volymen på alla Google Home 
+  google_home_volume_setting_notiser:
+    name: GH volym (notiser)
+#    initial: 40
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+
+# Sätt volymen när en text ska läsas upp i en eller flera högtalare
+  textupplasning_volym:
+    name: Volym läs upp text
+  #    initial: 40
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+    
+
+### Diverse belysning ###
+
+# Hur många sekunder innan lamporna i garderoben släcks efter rörelse
+  ljus_timeout_lamporna_i_garderoben:
+    name: Släck (sekunder)
+    min: 60
+    max: 300
+    step: 15  
+
+# Sätt natt-ljusstyrkan under Eriks myshörna
+  eriks_myshorna_nattljusstyrka:
+    name: Eriks myshörna nattljusstyrka
+#    initial: 20
+    min: 0
+    max: 100
+    step: 5
+    unit_of_measurement: "%"
+
+
+### Inställningar för olika huslägen ###
+
+# När blir det morgon oavsett väder (solvinkel över horisonten)
+  settings_solvinkel_dag:
+    name: Solvinkel dag
+    min: 0
+    max: 15
+    step: 0.1
+    icon: mdi:weather-sunset-up
+    unit_of_measurement: °
+    mode: box
+
+# När blir det kväll (solvinkel över horisonten)
+  settings_solvinkel_kvall:
+    name: Solvinkel kväll 
+    min: 0
+    max: 15
+    step: 0.1
+    icon: mdi:weather-sunset-down
+    unit_of_measurement: °
+    mode: box
+
+
+
+### Belysningen i skafferiet ###
+
+# Ljusstyrka när skafferidörrarna är öppna 
+  settings_skafferiet_ljusstyrka_nu_oppet:
+    name: "Skafferiet: Ljusstyrka öppna dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är stängda
+  settings_skafferiet_ljusstyrka_nu_stangt:
+    name: "Skafferiet: Ljusstyrka stangda dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är öppna på morgonen
+  settings_skafferiet_ljusstyrka_morgon_oppet:
+    name: "Skafferiet: Ljusstyrka morgon öppna dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är stängda på morgonen
+  settings_skafferiet_ljusstyrka_morgon_stangt:
+    name: "Skafferiet: Ljusstyrka morgon stangda dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är öppna på dagen
+  settings_skafferiet_ljusstyrka_dag_oppet:
+    name: "Skafferiet: Ljusstyrka dag öppna dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är stängda på dag
+  settings_skafferiet_ljusstyrka_dag_stangt:
+    name: "Skafferiet: Ljusstyrka dag stangda dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är öppna på kvällen
+  settings_skafferiet_ljusstyrka_kvall_oppet:
+    name: "Skafferiet: Ljusstyrka kväll öppna dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är stängda på kvällen
+  settings_skafferiet_ljusstyrka_kvall_stangt:
+    name: "Skafferiet: Ljusstyrka kväll stangda dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är öppna på natten
+  settings_skafferiet_ljusstyrka_natt_oppet:
+    name: "Skafferiet: Ljusstyrka natt öppna dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är stängda på natt
+  settings_skafferiet_ljusstyrka_natt_stangt:
+    name: "Skafferiet: Ljusstyrka natt stangda dörrar"
+    min: 0
+    max: 255
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+
+### Vitvaror - Energiåtgång när programmet är klart ###
+
+# Diskmaskinen
+  settings_diskmaskinen_energi_klar:
+    name: "Diskmaskinen: Energi vid klar"
+    min: 0
+    max: 100
+    step: 0.01   
+    mode: box
+
+# Tvättmaskinen
+  settings_tvattmaskinen_energi_klar:
+    name: "Tvättmaskinen: Energi vid klar"
+    min: 0
+    max: 100
+    step: 0.01   
+    mode: box
+
+# Luftavfuktaren
+  settings_luftavfuktaren_energi_klar:
+    name: "Luftavfuktaren: Energi vid klar"
+    min: 0
+    max: 100
+    step: 0.01   
+    mode: box
+
+
+# Arlo siren - ljudvolym
+  settings_arlo_siren_volym:
+    name: "Siren volym"
+    min: 1
+    max: 8
+    step: 1
+    mode: box
+
+
+### Värden som styr rullgardinerna ###
+### Dessa värden i kombination avgör när rullgardinerna på framsidan ska åka ner 
+### Bägge värdena behövs för att säkra att rullgardinerna åker ner när det blir ljust i övervåningen. 
+
+# azimuth-vinklel för rullgardinerna
+  settings_rullgardiner_framsidan_azimuth:
+    name: "Azimuth (dra ner)"
+    min: 200
+    max: 359
+    step: 1
+    mode: box
+
+# elevation-vinklel för rullgardinerna
+  settings_rullgardiner_framsidan_elevation:
+    name: "Elevation (dra ner)"
+    min: 0
+    max: 90
+    step: 1
+    mode: box
+
+
+### När ska Eriks rullgardin dras ner resp åka upp
+
+# azimuth-vinklel för när rullgardinen ska dras upp
+  settings_rullgardiner_eriks_rum_azimuth_upp:
+    name: "Azimuth (dra upp)"
+    min: 100
+    max: 200
+    step: 1
+    mode: box
+
+# elevation-vinklel för rullgardinen i Eriks rum ska dras ner
+  settings_rullgardiner_eriks_rum_elevation_ner:
+    name: "Elevation (dra ner)"
+    min: 0
+    max: 50
+    step: 1
+    mode: box
+
+
+### Ljusstyrka utomhus ###
+
+# Hur många lux krävs för att det ska vara soligt ute. 
+  settings_ljusstyrka_soligt_ute:
+    name: "Lux soligt:"
+    min: 0
+    max: 100000
+    mode: box
+
+
+# Hur många lux krävs för att det ska vara ljust ute. 
+  settings_ljusstyrka_ljust_ute:
+    name: "Lux ljust:"
+    min: 0
+    max: 100000
+    mode: box    
+
+
+# Hur många lux krävs för att det ska vara mörkt ute. 
+  settings_ljusstyrka_morkt_ute:
+    name: "Lux mörkt:"
+    min: 0
+    max: 100000
+    mode: box      
+
+
+# Hur många lux krävs för att det ska vara läge för att tända nattljus ute. 
+  settings_ljusstyrka_nattljus_ute:
+    name: "Lux nattljus:"
+    min: 0
+    max: 100000
+    mode: box      
+
+
+### Belysningen i hallen ¤¤¤
+# Detta behövs för att undvika att ljuset dimmas ner vid rörelse på morogn och kväll
+# om ljuset är satt till en högre nivå än vad det ska dimmas till.
+
+# Ljusstyrka vid uppdimmat
+  settings_hallen_ljusstyrka_nu:
+    name: "Hallen: Ljusstyrka uppdimmad just nu"
+    min: 0
+    max: 100
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är öppna på morgonen
+  settings_hallen_ljusstyrka_morgon:
+    name: "Hallen: Ljusstyrka uppdimmad morgon"
+    min: 0
+    max: 100
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+# Ljusstyrka när skafferidörrarna är öppna på morgonen
+  settings_hallen_ljusstyrka_dag:
+    name: "Hallen: Ljusstyrka uppdimmad dag"
+    min: 0
+    max: 100
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box    
+
+# Ljusstyrka när skafferidörrarna är öppna på morgonen
+  settings_hallen_ljusstyrka_kvall:
+    name: "Hallen: Ljusstyrka uppdimmad kväll"
+    min: 0
+    max: 100
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+  
+# Ljusstyrka när skafferidörrarna är öppna på morgonen
+  settings_hallen_ljusstyrka_natt:
+    name: "Hallen: Ljusstyrka uppdimmad natt"
+    min: 0
+    max: 100
+    step: 1    
+    icon: mdi:spotlight-beam
+    mode: box
+
+
+# för diskmaskinens fjärrstart: Hur lång tid kommer det aktuella programmet ta
+# Anvvänds i annan funktionalitet för att ta reda på när det är billigast att diska
+  dishwasher_run_time:
+    name: "Hur lång tid tar aktuellt diskprogramm"
+    min: 0
+    max: 600
+    step: 1
+    unit_of_measurement: minutes
+    mode: box
+    icon: mdi:clock-outline
