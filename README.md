@@ -82,6 +82,12 @@ home_assistant/
 
 Se [docs/sakerhet.md](docs/sakerhet.md).
 
+**Viktigt:** `secrets.yaml` ligger kvar lokalt men trackas inte i git. Filen fanns i ett tidigare commit på GitHub — byt lösenord/nycklar om repot blir publikt.
+
+## Befintlig HA-config
+
+Repot innehåller din befintliga YAML-config i rotmappen (`configuration.yaml`, `automations.yaml` m.m.). Nya mallar och verktyg ligger under `automations/`, `scripts/` och `docs/`.
+
 ## WhatsApp-chatt
 
 Se [docs/whatsapp-chatt-plan.md](docs/whatsapp-chatt-plan.md).
