@@ -114,9 +114,22 @@ http://192.168.0.222:9583/private_<din-hemlighet>
 
 Behandla webhook-URL:en som ett lösenord — den ger bred HA-administration via MCP.
 
-### 2. Skapa projektets MCP-konfiguration
+### 2. Skapa MCP-konfiguration
 
-Skapa `C:\kod\home_assistant\.cursor\mcp.json`:
+Cursor läser **två** `mcp.json`-filer och slår ihop dem:
+
+| Plats | Sökväg | Syfte |
+|-------|--------|--------|
+| **Projekt** | `C:\kod\home_assistant\.cursor\mcp.json` | Team-/projektspecifik (gitignorerad — innehåller hemlig URL) |
+| **Global** | `C:\Users\iliben\.cursor\mcp.json` | Personlig, alla projekt |
+
+Om samma servernamn finns i båda vinner projektfilen.
+
+**Viktigt om Settings → Tools & MCP:** Cursor visar i praktiken bara servrar från den **globala** filen (`~/.cursor/mcp.json`) i inställnings-UI:t. En server som bara finns i projektets `.cursor/mcp.json` kan fungera i Agent-chatt men **syns inte** under Tools & MCP. Lägg därför till `home-assistant` i den globala filen om du vill se och växla den där.
+
+#### Projekt (valfritt, för dokumentation i repot)
+
+Kopiera `.cursor/mcp.json.example` till `.cursor/mcp.json` (filen är gitignorerad):
 
 ```json
 {
@@ -128,15 +141,59 @@ Skapa `C:\kod\home_assistant\.cursor\mcp.json`:
 }
 ```
 
+#### Global (rekommenderat för att synas i Settings)
+
+Lägg till samma post i `C:\Users\iliben\.cursor\mcp.json` under befintliga `mcpServers`:
+
+```json
+"home-assistant": {
+  "url": "http://192.168.0.222:9583/private_<din-hemlighet>"
+}
+```
+
 För Nabu Casa-webhook, byt `url` till den fjärr-URL du kopierade från proxy-add-onens logg.
+
+**Format:** ha-mcp v7.x (add-on) är en HTTP/streamable MCP-server. Cursor behöver bara fältet `"url"` — **inte** `"command"`, `"args"` eller `"type": "streamableHttp"`. (Claude Desktop behöver däremot `uvx mcp-proxy` — det gäller inte Cursor.)
 
 **Tips:** Lägg inte `HA_TOKEN` i denna fil om du använder webhook-URL — hemligheten ligger i URL:en. För stdio/pip-installation (ej ditt nuvarande upplägg) behövs token via miljövariabler.
 
 ### 3. Starta om Cursor
 
-Stäng och öppna Cursor (eller *Developer: Reload Window*). Kontrollera **Settings → MCP** — servern ska visa *Connected*.
+Stäng och öppna Cursor (eller *Developer: Reload Window*). Kontrollera **Settings → Tools & MCP** — `home-assistant` ska synas om den ligger i den globala `mcp.json`.
 
-### 4. Kända problem (Cursor + ha-mcp v7.x)
+### 4. Verifiera anslutning
+
+**Nätverk (PowerShell):**
+
+```powershell
+# 403 = servern kör, fel sökväg
+Invoke-WebRequest -Uri "http://192.168.0.222:9583/" -UseBasicParsing
+# 405 på GET med rätt private_-sökväg = MCP-endpoint svarar (förväntat)
+Invoke-WebRequest -Uri "http://192.168.0.222:9583/private_<hemlighet>" -UseBasicParsing
+```
+
+Verifierat 2026-07-19: `192.168.0.222:9583` svarar (403 utan sökväg, 405 med korrekt `private_…`).
+
+**MCP-loggar:** Output-panelen (Ctrl+Shift+U) → välj **MCP Logs** i listan. Leta efter `home-assistant` och eventuella anslutningsfel.
+
+### 5. Felsökning — servern syns inte i Tools & MCP
+
+| Symptom | Trolig orsak | Åtgärd |
+|---------|--------------|--------|
+| Ingen `home-assistant` i Settings | Endast projekt-`.cursor/mcp.json` skapad | Lägg till servern i `C:\Users\iliben\.cursor\mcp.json` (se ovan) |
+| Fortfarande ingen server | Fel workspace-mapp öppnad | Öppna mappen `C:\kod\home_assistant` som rot (inte en undermapp) |
+| Server listad men röd / Error | Cursor + ha-mcp ikon-bugg | Uppdatera Cursor; se avsnitt 6 nedan |
+| JSON läses inte | Syntaxfel i `mcp.json` | Validera med `Get-Content .cursor\mcp.json \| ConvertFrom-Json` |
+| Timeout / nätverksfel | Inte på samma nät som HA | Testa URL i webbläsare eller PowerShell; använd Nabu Casa-webhook utanför LAN |
+
+**Vanliga misstag:**
+
+- `mcp.json` i fel katalog (t.ex. repo-rot utan `.cursor/`-mapp, eller `~/.cursor/` på fel användare)
+- Använda `command`/`args` i stället för `url` för add-on-HTTP (det är Claude Desktop-format, inte Cursor HTTP)
+- Glömma *Reload Window* efter filändring
+- Förvänta sig Connection Guide i add-on Web UI (finns inte i v7.x — URL i **Logg**, se tabell ovan)
+
+### 6. Kända problem (Cursor + ha-mcp v7.x)
 
 Cursor har haft buggar med MCP-ikonvalidering mot nyare ha-mcp-versioner ([issue #375](https://github.com/homeassistant-ai/ha-mcp/issues/375)). Om anslutningen misslyckas:
 
@@ -144,7 +201,7 @@ Cursor har haft buggar med MCP-ikonvalidering mot nyare ha-mcp-versioner ([issue
 - Testa webhook-URL i stället för direkt port
 - Som sista utväg: äldre ha-mcp-version utan ikoner (se FAQ i ha-mcp-repot)
 
-### 5. Valfritt — förenkla stacken
+### 7. Valfritt — förenkla stacken
 
 Du kör idag **add-on + webhook-proxy + File & YAML Tools**. Alternativ:
 
