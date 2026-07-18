@@ -94,7 +94,9 @@ Repot innehåller din befintliga YAML-config i rotmappen (`configuration.yaml`, 
 
 Koppla Cursor till Home Assistant via ha-mcp — se [docs/ha-mcp.md](docs/ha-mcp.md).
 
-Kopiera `.cursor/mcp.json.example` till `.cursor/mcp.json` och klistra in URL från add-onens Connection Guide.
+Kopiera `.cursor/mcp.json.example` till `.cursor/mcp.json` och klistra in **Nabu Casa-webhook-URL** från proxy-add-onens logg (eller lokal URL om du bara kör Agent-chatt hemma).
+
+**Cursor Automations** (t.ex. `cursor+ha test`) kräver dessutom MCP i [cursor.com → Settings → MCP](https://cursor.com/settings) — lokal `mcp.json` räcker inte. Se felsökning i [docs/ha-mcp.md](docs/ha-mcp.md#5b-felsökning--cursor-automation--agenten-cursorha-test-når-inte-ha).
 
 ## WhatsApp-chatt
 

@@ -129,13 +129,27 @@ Om samma servernamn finns i båda vinner projektfilen.
 
 #### Projekt (valfritt, för dokumentation i repot)
 
-Kopiera `.cursor/mcp.json.example` till `.cursor/mcp.json` (filen är gitignorerad):
+Kopiera `.cursor/mcp.json.example` till `.cursor/mcp.json` (filen är gitignorerad).
+
+**Rekommenderat:** Nabu Casa-webhook (fungerar hemma, utanför LAN, och krävs för Cloud Agents / Automations):
 
 ```json
 {
   "mcpServers": {
     "home-assistant": {
-      "url": "http://192.168.0.222:9583/private_BYT_UT"
+      "url": "https://<din-nabu>.ui.nabu.casa/api/webhook/mcp_<hemlighet>"
+    }
+  }
+}
+```
+
+**Alternativ hemma i LAN:** lokal add-on-URL från **Logg** (fungerar **inte** från Cloud Agent / Automation):
+
+```json
+{
+  "mcpServers": {
+    "home-assistant": {
+      "url": "http://192.168.0.222:9583/private_<hemlighet>"
     }
   }
 }
@@ -185,6 +199,59 @@ Verifierat 2026-07-19: `192.168.0.222:9583` svarar (403 utan sökväg, 405 med k
 | Server listad men röd / Error | Cursor + ha-mcp ikon-bugg | Uppdatera Cursor; se avsnitt 6 nedan |
 | JSON läses inte | Syntaxfel i `mcp.json` | Validera med `Get-Content .cursor\mcp.json \| ConvertFrom-Json` |
 | Timeout / nätverksfel | Inte på samma nät som HA | Testa URL i webbläsare eller PowerShell; använd Nabu Casa-webhook utanför LAN |
+
+### 5b. Felsökning — Cursor Automation / agenten "cursor+ha test" når inte HA
+
+**Symptom:** En **Cursor Automation** (t.ex. `cursor+ha test`) eller **Cloud Agent** kan inte använda Home Assistant, medan vanlig Agent-chatt i Cursor på din dator fungerar.
+
+**Diagnos (verifierat 2026-07-19):**
+
+| Kontroll | Resultat | Betydelse |
+|----------|----------|-----------|
+| `http://192.168.0.222:9583/` | **403** | MCP add-on kör |
+| `http://192.168.0.222:9583/private_…` | **405** | Lokal MCP-endpoint svarar |
+| Nabu Casa-webhook (`…/api/webhook/mcp_…`) | **405** | Fjärr-URL fungerar (rätt hemlighet) |
+| `http://192.168.0.222:8123/api/` med `HA_TOKEN` | **200** | HA REST API OK |
+| Agent-chatt lokalt (`ha_get_overview`) | OK | `mcp.json` är korrekt konfigurerad |
+
+**Rotorsak:** Cursor läser `mcp.json` **bara på din dator** (lokal Agent-chatt). **Cursor Automations** och **Cloud Agents** kör i Cursors moln och har **inte** åtkomst till din lokala `~/.cursor/mcp.json` eller projektets `.cursor/mcp.json`. De kan heller inte nå `192.168.x.x` — endast publika URL:er (t.ex. Nabu Casa-webhook).
+
+| Körningsläge | Läser lokal `mcp.json`? | Når `192.168.x.x`? | Når Nabu-webhook? |
+|--------------|-------------------------|--------------------|--------------------|
+| **Lokal Agent-chatt** (Cursor på din PC) | Ja | Ja (hemma) | Ja |
+| **Cloud Agent** | Nej | Nej | Ja (om MCP lagts till i dashboard) |
+| **Cursor Automation** (`cursor+ha test` m.fl.) | Nej | Nej | Ja (om MCP lagts till i dashboard) |
+
+**Åtgärd för Automations / Cloud Agent:**
+
+1. Gå till **[cursor.com → Settings → MCP](https://cursor.com/settings)** (dashboard, inte bara lokal `mcp.json`)
+2. Lägg till en **ny MCP-server** med namnet `home-assistant`
+3. Använd **Nabu Casa-webhook-URL** (inte `192.168.x.x`):
+   - HA → **Tillägg → Nabu Casa – Webhook Proxy for HA MCP → Logg**
+   - Kopiera raden `MCP Server URL (remote): https://….ui.nabu.casa/api/webhook/mcp_…`
+4. Spara och öppna automationen `cursor+ha test` → kontrollera att verktyget **home-assistant** är valt och inte står i "Set up MCP"
+5. Kör automationen igen
+
+**Åtgärd om du bara vill köra lokalt:** Använd **lokal Agent-chatt** (inte Cloud/Automation), eller ställ in automationen till **local runtime** om det finns som alternativ.
+
+**Vanliga misstag:**
+
+| Misstag | Varför det strular |
+|---------|-------------------|
+| Bara `mcp.json` på datorn | Automations/Cloud ser inte filen |
+| Lokal URL (`192.168.0.222:9583/…`) i automation | Molnet når inte hemnätet |
+| MCP-servern heter något annat i automationen | Måste matcha `serverName` i dashboard (t.ex. `home-assistant`) |
+| Webhook-URL roterad i HA men inte uppdaterad i Cursor | Kopiera ny URL från proxy-add-onens logg |
+
+**Snabbtest (PowerShell, på din dator):**
+
+```powershell
+# 403 = add-on kör
+curl.exe -s -o NUL -w "%{http_code}" http://192.168.0.222:9583/
+
+# 405 = webhook-URL giltig (byt ut … mot din maskerade URL)
+curl.exe -s -o NUL -w "%{http_code}" "https://….ui.nabu.casa/api/webhook/mcp_…"
+```
 
 **Vanliga misstag:**
 

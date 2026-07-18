@@ -30,8 +30,13 @@
 bash scripts/pre-commit-check.sh
 ```
 
-## För Cursor Cloud Agent
+## För Cursor Cloud Agent och Automations
 
 - Repot måste vara **public** på GitHub
 - Token ska **inte** ligga i repot
 - SSH till HA fungerar bara från **lokal** Cursor (din dator), inte molnet
+- **MCP via `mcp.json`** (lokal fil) gäller bara Agent-chatt på din dator — **inte** Cloud Agents eller Cursor Automations (t.ex. `cursor+ha test`)
+- För moln/automation: lägg till Home Assistant MCP på [cursor.com → Settings → MCP](https://cursor.com/settings) med **Nabu Casa-webhook-URL** (aldrig `192.168.x.x`)
+- Webhook-URL:en är en hemlighet — behandla den som ett lösenord; rotera vid misstanke om läckage
+
+Se [ha-mcp.md](ha-mcp.md) avsnitt **5b** för felsökning.
