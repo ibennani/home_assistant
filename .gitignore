@@ -53,3 +53,6 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# Cursor-chattmigrering (innehåller full chattdata)
+scripts/_ha_chat_migration_backup.json
