@@ -39,7 +39,7 @@ Inventering (`reports/inventory-20260719T005637Z.json`) och live API-kontroll vi
 
 | Add-on | Roll |
 |--------|------|
-| **Home Assistant MCP Server** | Kör ha-mcp som add-on (lokal port 9583, hemlig sökväg). Har inbyggd "Connection Guide" / Web UI med klipp-och-klistra-konfig för Cursor m.fl. |
+| **Home Assistant MCP Server** | Kör ha-mcp som add-on (lokal port 9583, hemlig sökväg). Web UI via ingress = verktygsinställningar (Tools/Settings); anslutnings-URL finns i **Logg** eller **Konfiguration** (se felsökning nedan). |
 | **Nabu Casa – Webhook Proxy for HA MCP** | Installerar/uppdaterar `mcp_proxy`-integrationen och skapar en **webhook-URL** (`/api/webhook/mcp_…`) som proxar till MCP-servern. Gör att Cursor kan nå HA utifrån via Nabu Casa utan port forwarding. |
 
 `mcp_proxy` kör **inte** en egen MCP-server — den vidarebefordrar bara trafik till add-on-servern.
@@ -75,10 +75,36 @@ WhatsApp saknas fortfarande som integration (`whatsapp` finns inte bland kompone
 **Alternativ A — Lokal nätverksåtkomst (enklast hemma):**
 
 1. HA → **Inställningar → Tillägg → Home Assistant MCP Server**
-2. Öppna **OPEN WEB UI** / Connection Guide
+2. Öppna fliken **Logg** (eller **Konfiguration** → avancerade alternativ → `secret_path`)
 3. Kopiera URL för Cursor (format ungefär `http://192.168.0.222:9583/private_<hemlighet>`)
 
+> **Obs:** Knappen **Öppna webbgränssnitt** visar bara Tools/Settings — inte Connection Guide. Se [felsökning](#felsökning-web-ui-visar-bara-tools--settings) om du landar där.
+
 Verifierat: port **9583** på `192.168.0.222` svarar (403 utan rätt sökväg = servern kör).
+
+#### Felsökning: Web UI visar bara Tools / Settings
+
+I ha-mcp v7.x öppnar **Öppna webbgränssnitt** (Supervisor ingress) **endast inställningssidan** — flikarna Tools och Settings. Det finns **ingen Connection Guide** där. Det är förväntat beteende, inte en trasig installation.
+
+**Var hittar du URL:en i stället?**
+
+| Plats | Vad du letar efter |
+|-------|---------------------|
+| **Home Assistant MCP Server → Logg** | Raden `🔐 MCP Server URL: http://192.168.0.222:9583/private_…` (vid start; scrolla om loggen är lång) |
+| **Home Assistant MCP Server → Konfiguration** | Aktivera *Visa oanvända valfria konfigurationsalternativ* längst ned → fältet `secret_path` (t.ex. `/private_abc…`). Bygg URL: `http://<HA-IP>:9583` + värdet (med inledande `/`) |
+| **Nabu Casa – Webhook Proxy for HA MCP → Logg** | Raden `MCP Server URL (remote): https://….ui.nabu.casa/api/webhook/mcp_…` — för Cursor utanför hemnätet |
+
+**Bygg lokal URL manuellt:**
+
+```
+http://192.168.0.222:9583/private_<din-hemlighet>
+```
+
+- Porten är **9583** (fast i add-on).
+- Hemligheten genereras automatiskt vid första start och sparas i add-on-containern som `/data/secret_path.txt` (kräver Terminal/SSH-add-on om du vill läsa filen direkt).
+- `secret_path` i Konfiguration är samma värde som i loggen — om fältet är tomt har add-on genererat en automatiskt (syns bara i logg/fil, inte i Web UI).
+
+**Testa att sökvägen stämmer:** `curl http://192.168.0.222:9583/` → **403** (servern kör, fel sökväg). Med rätt `private_…`-sökväg får du **405** på GET (MCP-endpointen svarar — det är OK).
 
 **Alternativ B — Fjärråtkomst via Nabu Casa (Cursor utanför hemnätet):**
 
