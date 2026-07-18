@@ -54,5 +54,8 @@ __pycache__/
 .venv/
 venv/
 
+# Cursor MCP (webhook-URL innehåller hemlig sökväg)
+.cursor/mcp.json
+
 # Cursor-chattmigrering (innehåller full chattdata)
 scripts/_ha_chat_migration_backup.json

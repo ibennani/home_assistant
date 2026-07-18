@@ -90,6 +90,12 @@ Se [docs/sakerhet.md](docs/sakerhet.md).
 
 Repot innehåller din befintliga YAML-config i rotmappen (`configuration.yaml`, `automations.yaml` m.m.). Nya mallar och verktyg ligger under `automations/`, `scripts/` och `docs/`.
 
+## Cursor MCP
+
+Koppla Cursor till Home Assistant via ha-mcp — se [docs/ha-mcp.md](docs/ha-mcp.md).
+
+Kopiera `.cursor/mcp.json.example` till `.cursor/mcp.json` och klistra in URL från add-onens Connection Guide.
+
 ## WhatsApp-chatt
 
 Se [docs/whatsapp-chatt-plan.md](docs/whatsapp-chatt-plan.md).
