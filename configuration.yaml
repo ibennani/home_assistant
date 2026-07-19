@@ -420,52 +420,6 @@ sensor:
 
 
 
-# Räkna ut  lufttrycket inomhus
-
-      lufttryck_inomhus_min:
-        friendly_name: 'Lufttryck inomhus min'
-        unique_id: 'indoor_pressure_min_05s6df0a1sg0asg81asg8r0aasgsa'
-        unit_of_measurement: 'hPa'
-        value_template: >
-          {% set sensors = [
-            states('sensor.isabelles_rum_lufttryck') | float,
-            states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
-            states('sensor.sovrummet_lufttryck') | float,
-            states('sensor.wc_lufttryck') | float,
-            states('sensor.eriks_rum_lufttryck') | float,
-            states('sensor.koket_lufttryck') | float,
-            states('sensor.skafferiet_lufttryck') | float,
-            states('sensor.albins_rum_lufttryck') | float,
-            states('sensor.badrummet_lufttryck') | float,
-            states('sensor.tvattstugan_lufttryck') | float,
-            states('sensor.forradet_lufttryck') | float
-          ] %}
-          {{ sensors | select('is_number') | min | round(1) }}
-
-      lufttryck_inomhus_max:
-        friendly_name: 'Lufttryck inomhus max'
-        unique_id: 'indoor_pressure_max_05s6df0a1sg0asg8dd1asgr1aaasg'
-        unit_of_measurement: 'hPa'
-        value_template: >
-          {% set sensors = [
-            states('sensor.isabelles_rum_lufttryck') | float,
-            states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
-            states('sensor.sovrummet_lufttryck') | float,
-            states('sensor.wc_lufttryck') | float,
-            states('sensor.eriks_rum_lufttryck') | float,
-            states('sensor.koket_lufttryck') | float,
-            states('sensor.skafferiet_lufttryck') | float,
-            states('sensor.albins_rum_lufttryck') | float,
-            states('sensor.badrummet_lufttryck') | float,
-            states('sensor.tvattstugan_lufttryck') | float,
-            states('sensor.forradet_lufttryck') | float
-          ] %}
-          {{ sensors | select('is_number') | max | round(1) }}
-
-
-      
-
-
 # Räkna ut max ljusstyrka utomhus 
   - platform: min_max
     name: 'Ljusstyrka utomhus maximal'
