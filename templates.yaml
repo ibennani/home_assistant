@@ -1,0 +1,279 @@
+#######################################################
+# Template entities (migrerade från legacy platform: template)
+#######################################################
+
+- sensor:
+  - default_entity_id: sensor.sunset_time
+    name: Solnedgång
+    state: '{{ as_timestamp(states.sun.sun.attributes.next_setting)  | timestamp_custom("%H:%M") }}'
+  - default_entity_id: sensor.sunrise_time
+    name: Soluppgång
+    state: '{{ as_timestamp(states.sun.sun.attributes.next_rising)  | timestamp_custom("%H:%M") }}'
+  - default_entity_id: sensor.sun_elevation
+    name: Sol elvation
+    state: '{{ states.sun.sun.attributes.elevation }}'
+  - default_entity_id: sensor.sun_azimuth
+    name: Sol azimuth
+    state: '{{ states.sun.sun.attributes.azimuth }}'
+  - default_entity_id: sensor.sun_next_noon
+    name: Sol maxhöjd
+    state: '{{ as_timestamp(states.sun.sun.attributes.next_noon)  | timestamp_custom("%H:%M") }}'
+  - default_entity_id: sensor.sun_next_midnight
+    name: Midnatt
+    state: '{{ as_timestamp(states.sun.sun.attributes.next_midnight)  | timestamp_custom("%H:%M") }}'
+  - default_entity_id: sensor.sun_next_dawn
+    name: Gryning börjar
+    state: '{{ as_timestamp(states.sun.sun.attributes.next_dawn)  | timestamp_custom("%H:%M") }}'
+  - default_entity_id: sensor.sun_next_dusk
+    name: Skymning slutar
+    state: '{{ as_timestamp(states.sun.sun.attributes.next_dusk)  | timestamp_custom("%H:%M") }}'
+  - default_entity_id: sensor.people_home_count
+    name: Hur många prylar är uppkopplade
+    state: '{{ states.device_tracker | selectattr(''state'', ''eq'', ''home'')  | rejectattr( ''entity_id'', ''in'',  [''device_tracker.04_db_56_e7_fa_2a'', ''device_tracker.50338bfc2eb9'', ''device_tracker.546009d0b9da'', ''device_tracker.546009fa5416'', ''device_tracker.606dc75b9e85'', ''device_tracker.albins_dell_16_2'', ''device_tracker.amazonee0d363a9'', ''device_tracker.b8_27_eb_a4_b6_c1'', ''device_tracker.anneliesipad'', ''device_tracker.broadlink_outlett1eba119'', ''device_tracker.chromecastaudio'', ''device_tracker.galaxywatch5875'', ''device_tracker.desktop_n7v6eee'' ''device_tracker.galaxytabs4'', ''device_tracker.googlehome'', ''device_tracker.googlehome_2'', ''device_tracker.googlehome_3'', ''device_tracker.googlehome_4'', ''device_tracker.googlehome_5'', ''device_tracker.google_nest_mini'', ''device_tracker.iliasprivatadator'', ''device_tracker.ringpro96'', ''device_tracker.40_b0_76_06_ab_a1'']) | list | count }}                   '
+    unit_of_measurement: st
+  - default_entity_id: sensor.opened_doors_and_windows_count
+    name: Öppnade fönster och dörrar
+    state: '{% set sensors = expand(''group.opened_doors_and_windows'') %} {% set opened_count = sensors | selectattr(''state'', ''eq'', ''on'') | list | length %} {{ opened_count }}'
+    unit_of_measurement: st
+  - default_entity_id: sensor.family_people_home_count
+    name: Hur många familjemedlemmar är hemma
+    state: '{{ states|selectattr(''entity_id'',''in'',state_attr(''group.family_phones'',''entity_id''))|selectattr(''state'',''eq'',''home'')|list|count }}'
+    unit_of_measurement: personer
+  - default_entity_id: sensor.diskmaskinen_diskar
+    name: Diskmaskinen diskar
+    state: |
+      {% if   states("sensor.diskmaskin_switch_power") | float >  60  %} true             {% elif states("sensor.diskmaskin_switch_power") | float <= 60
+          and states("sensor.diskmaskin_switch_power") | float > states("input_number.settings_diskmaskinen_energi_klar") | float
+          and is_state("sensor.diskmaskinen_diskar","true")  %} {{ states("sensor.diskmaskinen_diskar") }}
+      {% elif states("sensor.diskmaskin_switch_power") | float < states("input_number.settings_diskmaskinen_energi_klar") | float
+          and is_state("sensor.diskmaskinen_diskar","true") %} false
+      {% else %} false {% endif %}
+  - default_entity_id: sensor.luftavfuktaren_torkar
+    name: Luftavfuktaren torkar
+    state: |
+      {% if   states("sensor.luftavfuktare_switch_power") | float >  100  %} true             {% elif states("sensor.luftavfuktare_switch_power") | float <= 100
+          and states("sensor.luftavfuktare_switch_power") | float > states("input_number.settings_luftavfuktaren_energi_klar") | float
+          and is_state("sensor.luftavfuktaren_torkar","true")  %} {{ states("sensor.luftavfuktaren_torkar") }}
+      {% elif states("sensor.luftavfuktare_switch_power") | float < states("input_number.settings_luftavfuktaren_energi_klar") | float
+          and is_state("sensor.luftavfuktaren_torkar","true") %} false
+      {% else %} false {% endif %}
+  - default_entity_id: sensor.sony_tv_current_source
+    name: Sony-tv current source
+    state: |-
+      {% if is_state("media_player.sony_tv_i_vardagsrummet","off") %}
+        off
+      {% else %}
+        {{ states.media_player.sony_tv_i_vardagsrummet.attributes.media_content_id }}
+      {% endif %}
+  - default_entity_id: sensor.google_home_current_volume
+    name: Google Home current volume
+    state: |-
+      {% if is_state("media_player.googlehome_koket","off") %}
+        off
+      {% else %}
+        {{ states.media_player.googlehome_koket.attributes.volume_level | round(2) * 100 | int }}
+      {% endif %}
+  - default_entity_id: sensor.fejk_mobil
+    name: Fejkosensor/mobil
+    state: '{% if 1 %} home {% else %} home {% endif %}'
+  - default_entity_id: sensor.utomhus_ljusstyrka_differens
+    name: Differens i ljusstyrka mellan framsidan och baksidan. Alltid positiva värden
+    state: '{{ ((states(''sensor.utomhus_framsidan_ljusstyrka'') | int) - (states(''sensor.utomhus_baksidan_ljusstyrka'') | int)) | abs }}'
+  - default_entity_id: sensor.utomhus_ljusstyrka_differens_procent
+    name: Differens i procent för ljusstyrkan mellan framsidan och baksidan. Alltid positiva värden
+    state: |-
+      {% set front = states('sensor.utomhus_baksidan_ljusstyrka') | float %} {% set back = states('sensor.utomhus_framsidan_ljusstyrka') | float %} {% if front == 0 and back == 0 %}
+        0
+      {% elif front == 0 or back == 0 %}
+        100
+      {% else %}
+        {% set difference = front - back if front > back else back - front %}
+        {{ ((difference / ((front + back) / 2)) * 100) | round(1) }}
+      {% endif %}
+    unit_of_measurement: '%'
+  - default_entity_id: sensor.utomhus_ljusstyrka_genomsnitt
+    name: Genomsnittlig ljusstyrka mellan framsidan och baksidan. Alltid positiva värden
+    state: '{{ ((states(''sensor.utomhus_baksidan_ljusstyrka'') | int + states(''sensor.utomhus_framsidan_ljusstyrka'') | int) / 2) | int }}'
+  - default_entity_id: sensor.elpriset_denna_timme
+    name: Nordpool elpris SE3 denna timme
+    state: '{% set tid = now().strftime(''%H'') | int %} {{ state_attr("sensor.nordpool_kwh_se3_sek_3_10_025","today")[tid] }}'
+  - default_entity_id: sensor.elkostnad_denna_timme
+    name: El-kostnad denna timme
+    state: '{% set tid = now().strftime(''%H'') | int %} {{ (states(''sensor.accumulated_consumption_current_hour_eksharadsgatan_6'') | float) }}'
+  - default_entity_id: sensor.dishwasher_cheapest_interval
+    name: Dishwasher Cheapest Interval
+    state: >
+      {% set run_time_minutes = states('input_number.dishwasher_run_time') | int %}
+      {% set price_cap = 3 %}
+      {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'raw_today') %}
+      {% set cheapest_interval = none %}
+      {% set lowest_sum = float('inf') %}
+
+      {% for i in range(prices | length - 1) %}
+        {% set interval_start = as_datetime(prices[i].start) %}
+        {% set interval_end = interval_start + timedelta(minutes=run_time_minutes) %}
+        {% set total_price = 0 %}
+        {% set valid_interval = true %}
+
+        {% for hour in prices %}
+          {% set hour_start = as_datetime(hour.start) %}
+          {% set hour_end = as_datetime(hour.end) %}
+          {% if hour_start >= interval_start and hour_end <= interval_end %}
+            {% if hour.value > price_cap %}
+              {% set valid_interval = false %}
+            {% else %}
+              {% set total_price = total_price + hour.value %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {% if valid_interval and total_price < lowest_sum %}
+          {% set lowest_sum = total_price %}
+          {% set cheapest_interval = [interval_start.isoformat(), interval_end.isoformat()] %}
+        {% endif %}
+      {% endfor %}
+      {{ cheapest_interval[0] if cheapest_interval is not none else 'No valid interval' }}
+    attributes:
+      cheapest_interval: >
+        {{ cheapest_interval if cheapest_interval is not none else [] }}
+      lowest_sum: >
+        {{ lowest_sum if cheapest_interval is not none else 'N/A' }}
+  - default_entity_id: sensor.ljust_utomhus_framsidan
+    name: Hur ljust är det på framsidan?
+    state: "{% if states(\"sensor.utomhus_framsidan_ljusstyrka\") | int > states(\"input_number.settings_ljusstyrka_soligt_ute\") | int %} soligt {% elif states(\"sensor.utomhus_framsidan_ljusstyrka\") | int <= states(\"input_number.settings_ljusstyrka_soligt_ute\") | int \n  and states(\"sensor.utomhus_framsidan_ljusstyrka\") | int > states(\"input_number.settings_ljusstyrka_ljust_ute\") | int %} ljust\n{% elif states(\"sensor.utomhus_framsidan_ljusstyrka\") | int <= states(\"input_number.settings_ljusstyrka_ljust_ute\") | int \n  and states(\"sensor.utomhus_framsidan_ljusstyrka\") | int > states(\"input_number.settings_ljusstyrka_morkt_ute\") | int %} {{ states(\"sensor.ljust_utomhus_framsidan\") }}\n{% elif states(\"sensor.utomhus_framsidan_ljusstyrka\") | int <= states(\"input_number.settings_ljusstyrka_morkt_ute\") | int\n  and states(\"sensor.utomhus_framsidan_ljusstyrka\") | int > states(\"input_number.settings_ljusstyrka_nattljus_ute\") | int %} mörkt\n{% else %} nattljus {% endif\
+      \ %} \n"
+  - default_entity_id: sensor.ljust_utomhus_baksidan
+    name: Hur ljust är det på baksidan?
+    state: "{% if states(\"sensor.utomhus_baksidan_ljusstyrka\") | int > states(\"input_number.settings_ljusstyrka_soligt_ute\") | int %} soligt {% elif states(\"sensor.utomhus_baksidan_ljusstyrka\") | int <= states(\"input_number.settings_ljusstyrka_soligt_ute\") | int \n  and states(\"sensor.utomhus_baksidan_ljusstyrka\") | int > states(\"input_number.settings_ljusstyrka_ljust_ute\") | int %} ljust\n{% elif states(\"sensor.utomhus_baksidan_ljusstyrka\") | int <= states(\"input_number.settings_ljusstyrka_ljust_ute\") | int \n  and states(\"sensor.utomhus_baksidan_ljusstyrka\") | int > states(\"input_number.settings_ljusstyrka_morkt_ute\") | int %} {{ states(\"sensor.ljust_utomhus_framsidan\") }}\n{% elif states(\"sensor.utomhus_baksidan_ljusstyrka\") | int <= states(\"input_number.settings_ljusstyrka_morkt_ute\") | int\n  and states(\"sensor.utomhus_baksidan_ljusstyrka\") | int > states(\"input_number.settings_ljusstyrka_nattljus_ute\") | int %} mörkt\n{% else %} nattljus {% endif %} \n"
+  - default_entity_id: sensor.lufttryck_inomhus
+    unique_id: indoor_pressure_mean_05s6df0a1sg0asg81asg8r00aaasdf
+    name: Lufttryck inomhus
+    state: |
+      {% set sensors = [
+        states('sensor.isabelles_rum_lufttryck') | float,
+        states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
+        states('sensor.sovrummet_lufttryck') | float,
+        states('sensor.wc_lufttryck') | float,
+        states('sensor.eriks_rum_lufttryck') | float,
+        states('sensor.koket_lufttryck') | float,
+        states('sensor.skafferiet_lufttryck') | float,
+        states('sensor.albins_rum_lufttryck') | float,
+        states('sensor.badrummet_lufttryck') | float,
+        states('sensor.tvattstugan_lufttryck') | float,
+        states('sensor.forradet_lufttryck') | float
+      ] %} {{ sensors | select('is_number') | average | round(1) }}
+    unit_of_measurement: hPa
+  - default_entity_id: sensor.lufttryck_inomhus_min
+    unique_id: indoor_pressure_min_05s6df0a1sg0asg81asg8r0aasgsa
+    name: Lufttryck inomhus min
+    state: |
+      {% set sensors = [
+        states('sensor.isabelles_rum_lufttryck') | float,
+        states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
+        states('sensor.sovrummet_lufttryck') | float,
+        states('sensor.wc_lufttryck') | float,
+        states('sensor.eriks_rum_lufttryck') | float,
+        states('sensor.koket_lufttryck') | float,
+        states('sensor.skafferiet_lufttryck') | float,
+        states('sensor.albins_rum_lufttryck') | float,
+        states('sensor.badrummet_lufttryck') | float,
+        states('sensor.tvattstugan_lufttryck') | float,
+        states('sensor.forradet_lufttryck') | float
+      ] %} {{ sensors | select('is_number') | min | round(1) }}
+    unit_of_measurement: hPa
+  - default_entity_id: sensor.lufttryck_inomhus_max
+    unique_id: indoor_pressure_max_05s6df0a1sg0asg8dd1asgr1aaasg
+    name: Lufttryck inomhus max
+    state: |
+      {% set sensors = [
+        states('sensor.isabelles_rum_lufttryck') | float,
+        states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
+        states('sensor.sovrummet_lufttryck') | float,
+        states('sensor.wc_lufttryck') | float,
+        states('sensor.eriks_rum_lufttryck') | float,
+        states('sensor.koket_lufttryck') | float,
+        states('sensor.skafferiet_lufttryck') | float,
+        states('sensor.albins_rum_lufttryck') | float,
+        states('sensor.badrummet_lufttryck') | float,
+        states('sensor.tvattstugan_lufttryck') | float,
+        states('sensor.forradet_lufttryck') | float
+      ] %} {{ sensors | select('is_number') | max | round(1) }}
+    unit_of_measurement: hPa
+  - default_entity_id: sensor.ljusstyrka_framsidan_maximal
+    unique_id: 05s6df0a1sg0asg8dd1asgr1aaasgddda
+    name: Ljusstyrka framsidan maximal
+    state: "{% set framsidan = states(\"sensor.utomhus_framsidan_ljusstyrka\") | float %} {% set fonstret = states(\"sensor.isabelles_fonster_ljusstyrka\") | float %} {% if is_state(\"light.ljusslingan_pa_balkongen\",\"on\") %} {{ states(\"sensor.utomhus_framsidan_ljusstyrka\") | float }} {% else %} {{ [ framsidan , fonstret ] | max }} {% endif %} \n"
+    unit_of_measurement: lx
+  - default_entity_id: sensor.blixtinfo
+    name: Info om den senaste blixten
+    state: |
+      {{ states("sensor.blitzortung_lightning_counter") }}
+    attributes:
+      nr: |
+        {{ states("sensor.blitzortung_lightning_counter") }}
+      latitude: |
+        {{ state_attr("sensor.blitzortung_lightning_azimuth", "lat") }}
+      longitude: |
+        {{ state_attr("sensor.blitzortung_lightning_azimuth", "lon") }}
+  - default_entity_id: sensor.ilias_nara_hemmet
+    name: Ilias är nära hemmet
+    state: |
+      {{  states.device_tracker.ilias_s23_ultra and states.zone.home and
+          distance(states.device_tracker.ilias_s23_ultra, states.zone.home) < 7 }}
+  - default_entity_id: sensor.anna_nara_hemmet
+    name: Anna är nära hemmet
+    state: |
+      {{  states.device_tracker.anna_s22_ultra and states.zone.home and
+          distance(states.device_tracker.anna_s22_ultra, states.zone.home) < 7 }}
+- binary_sensor:
+  - default_entity_id: binary_sensor.soligt
+    name: Det är soligt
+    state: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int >= states(''input_number.settings_ljusstyrka_soligt_ute'') | int or states(''sensor.utomhus_baksidan_ljusstyrka'') | int >= states(''input_number.settings_ljusstyrka_soligt_ute'') | int}}'
+    icon: "{% if states('sensor.utomhus_framsidan_ljusstyrka') | int >= states('input_number.settings_ljusstyrka_soligt_ute') | int \n    or states('sensor.utomhus_baksidan_ljusstyrka') | int >= states('input_number.settings_ljusstyrka_soligt_ute') | int  %}\n  mdi:weather-sunny\n{% else %}\n  mdi:weather-cloudy\n{% endif %}        "
+    delay_off:
+      minutes: 15
+  - default_entity_id: binary_sensor.soligt_framsidan
+    name: Det är soligt på framsidan
+    state: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int >= 13000 }}'
+    icon: "{% if states('sensor.utomhus_framsidan_ljusstyrka') | int >= 13000 %}\n  mdi:weather-sunny\n{% else %}\n  mdi:weather-cloudy\n{% endif %}           "
+    delay_off:
+      minutes: 15
+  - default_entity_id: binary_sensor.soligt_baksidan
+    name: Det är soligt på baksidan
+    state: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | int >= 13000 }}'
+    icon: "{% if states('sensor.utomhus_baksidan_ljusstyrka') | int >= 13000 %}\n  mdi:weather-sunny\n{% else %}\n  mdi:weather-cloudy\n{% endif %}           "
+    delay_off:
+      minutes: 15
+  - default_entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+    name: Solen lyser in genom fönstren på framsidan
+    state: |
+      {{ is_state("input_select.house_time_modes","Dag") and is_state("binary_sensor.soligt_framsidan","on") and (states("sensor.sun_azimuth") | float > states("input_number.settings_rullgardiner_framsidan_azimuth") | int or states("sensor.sun_elevation") | float < states("input_number.settings_rullgardiner_framsidan_elevation") | int) }}
+  - default_entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
+    name: Solen lyser in genom fönstren på baksidan
+    state: |
+      {{ is_state("input_select.house_time_modes","Dag")  and is_state("binary_sensor.soligt_baksidan","on") and states("sensor.sun_azimuth") | int < states("input_number.settings_rullgardiner_eriks_rum_azimuth_upp") | int and states("sensor.sun_elevation") | int > states("input_number.settings_rullgardiner_eriks_rum_elevation_ner") | int }}
+  - default_entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+    name: Det är ljust på framsidan dagtid (vinter och snö)
+    state: "{{ is_state(\"input_select.house_time_modes\",\"Dag\") \n    and states(\"sensor.netatmo_bennani_vs_utomhus_temperature\") | int < -1 \n    and states(\"sensor.utomhus_framsidan_ljusstyrka\") | int > 8000 }}\n"
+  - default_entity_id: binary_sensor.brevladans_lucka
+    name: Brevlådans lucka
+    state: |
+      {{ is_state("sensor.brevladans_lucka","22") }}
+  - default_entity_id: binary_sensor.julbelysning
+    name: julbelysning
+    state: |
+      {% set year = now().year %} {% set christmas_day = strptime(year ~ '-12-25', '%Y-%m-%d') %} {% set first_advent = christmas_day - timedelta(days=(christmas_day.weekday() + 22)) %} {% set friday_before_first_advent = first_advent - timedelta(days=2) %} {% set next_year = now().year + 1 %} {% set jan_6 = strptime(next_year ~ '-01-06', '%Y-%m-%d') %} {% set end_date = jan_6 if jan_6.weekday() == 6 else (jan_6 + timedelta(days=(6 - jan_6.weekday()))) %}
+      {{ now().replace(tzinfo=None) >= friday_before_first_advent and now().replace(tzinfo=None) <= end_date }}
+  - default_entity_id: binary_sensor.tvattmaskinen_aktiv
+    name: Tvättmaskinen är aktiv
+    state: |
+      {% set power = states('sensor.tvattmaskinen_switch_power') | float %} {% if power >= 600 %}
+        true
+      {% elif power <= 5 %}
+        false
+      {% else %}
+        states('binary_sensor.tvattmaskinen_aktiv') == 'on'
+      {% endif %}
+    device_class: running
+    delay_on: 00:03:00
+    delay_off: 00:02:00

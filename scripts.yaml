@@ -2388,8 +2388,8 @@ badrummet_stall_in_belysningen:
       entity_id: light.vagglampor_badrummet
       data:
         brightness_pct: >
-          {% if   states{"badrummet_belysning"} in ["Maxbelysning"] %} 100
-          {% elif states{"badrummet_belysning"} in ["Släckt"] %} 0
+          {% if is_state("input_boolean.stadning_pagar", "on") %} 100
+          {% elif is_state("input_boolean.stadning_pagar", "off") and is_state("input_select.house_time_modes", "Natt") and states("sensor.utomhus_baksidan_ljusstyrka") | int(default=0) < 50 %} 0
           {% else %}
             {% if is_state("input_select.house_time_modes","Morgon") %}
               {% if states("sensor.utomhus_baksidan_ljusstyrka") | int(default = 0) < 100 %} 20
