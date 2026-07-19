@@ -3700,8 +3700,8 @@ views:
         thumb_interval: 15
         update_interval: 2
         cameras:
-          - entity: camera.ringdoorbell_front_door
-            motion_entity: binary_sensor.ringdoorbell_front_door_motion         
+          - entity: camera.front_door_live_view
+            motion_entity: binary_sensor.front_door_motion         
   - title: Nivåer
     icon: mdi:battery-medium
     path: levels

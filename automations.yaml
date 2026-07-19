@@ -1819,9 +1819,9 @@
   id: '8348674'
   mode: queued
   triggers:
-    - trigger: template
-      value_template: "{{ is_state('binary_sensor.front_door_motion', 'on') }}"
-  action:
+    - trigger: state
+      entity_id: event.front_door_motion
+  actions:
     - action: var.set
       data:
         entity_id: var.current_brightness_level_badrummet
