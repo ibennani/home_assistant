@@ -921,16 +921,6 @@ media_player:
 binary_sensor:
 
 
-# Ring-rörelse på framsidan (härledd från event.front_door_motion)
-- platform: template
-  sensors:
-    front_door_motion:
-      friendly_name: "Utomhus framsidan"
-      device_class: motion
-      value_template: >
-        {{ (now() - states.event.front_door_motion.last_changed).total_seconds() < 45 }}
-
-
 # Tre templates som anger om det är soligt. 
 # Används bland annat för att styra rullgardiner och viss belysning. 
 - platform: template
