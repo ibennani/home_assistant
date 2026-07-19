@@ -1,0 +1,25 @@
+alias: "Telegram: chatta med Gemini"
+description: "Vidarebefordrar Telegram till Gemini (HA-MCP) och svarar tillbaka."
+mode: queued
+max: 10
+trigger:
+  - platform: event
+    event_type: telegram_text
+  - platform: event
+    event_type: telegram_command
+condition:
+  - condition: template
+    value_template: "{{ trigger.event.data.chat_id == secret_telegram_allowed_chat_id }}"
+variables:
+  secret_telegram_allowed_chat_id: !secret telegram_allowed_chat_id
+action:
+  - action: conversation.process
+    data:
+      text: "{{ trigger.event.data.text }}"
+      agent_id: conversation.google_ai_conversation
+    response_variable: gemini_svar
+  - action: notify.send_message
+    data:
+      message: "{{ gemini_svar.response.speech.plain.speech }}"
+    target:
+      entity_id: notify.huset_home_assistant_ilias_bennani
