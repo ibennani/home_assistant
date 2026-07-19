@@ -18,3 +18,8 @@ alwaysApply: true
 ## Syfte
 - Versionera automatiseringar, skript och dokumentation.
 - Mål: chatt via WhatsApp med Assist/Conversation.
+
+## Git-synk från Cursor Cloud
+- Molnet når HA via MCP (Nabu Casa), inte SSH.
+- Efter engångs-`git pull` på servern: anropa `script.git_synka_config` via MCP (`ha_call_service`).
+- Se [docs/cursor-cloud-git-synk.md](../docs/cursor-cloud-git-synk.md).

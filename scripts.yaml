@@ -2933,16 +2933,17 @@ spela_tv_stream_pa_appletv:
         volume_level: 0.4
 
 
-
-
-
-
-
-
-
-
-
-
+git_synka_config:
+  alias: "Git: Synka /config från GitHub"
+  description: "Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP."
+  mode: single
+  sequence:
+    - action: shell_command.git_pull
+    - delay:
+        seconds: 8
+    - action: homeassistant.reload_core_config
+    - action: automation.reload
+    - action: template.reload
 
 
 
