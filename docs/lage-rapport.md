@@ -49,7 +49,7 @@ Kör `ha core info` via SSH eller kontrollera i HA UI under **Inställningar →
 - **HA OS** med Nabu Casa (`cloud:` aktiverat), Supervisor-komponenter (`hassio`, `hassio.*`)
 - **Intern URL:** `http://192.168.0.222:8123`
 - **Extern URL:** Nabu Casa (i `configuration.yaml`)
-- **Notiser:** `mobile_app` (flera telefoner), `joaoapps_join` (Join)
+- **Notiser:** `mobile_app` (flera telefoner)
 - **Röst/Assist:** Google Home, `google_translate` TTS, OpenAI Conversation, Assist Pipeline
 - **Webhooks:** Ja (t.ex. `mobillarmet_morgon_vardagar`, `testtrigger`)
 - **Automatiseringar:** Stor `automations.yaml` (~8000 rader)
@@ -70,7 +70,6 @@ Kör `ha core info` via SSH eller kontrollera i HA UI under **Inställningar →
 
 ## Säkerhet (viktigt — publikt repo)
 
-`configuration.yaml` innehöll **Join API-nycklar i klartext**. Dessa har flyttats till `!secret` i en uppdatering.
-**Byt/regenerera Join API-nycklar** i Join-appen om de legat publikt länge.
+Join-integrationen är borttagen (användes inte längre).
 
 Gamla lösenord i kommenterade rader i yaml (netgear, spotify m.m.) finns kvar i **git-historik** — rotera om de varit riktiga.
