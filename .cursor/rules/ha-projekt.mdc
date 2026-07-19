@@ -26,11 +26,31 @@ Molnet når **inte** SSH/LAN. Använd **MCP + Nabu Casa**.
 ### Efter YAML-ändringar i git (automatiseringar, scripts, configuration)
 
 1. Committa och pusha till `main`.
-2. Synka till HA-servern:
+2. Synka till HA-servern (välj ett sätt):
+
+   **A — Event (när YAML är laddad):**
    ```
    ha_call_write_tool(name="ha_call_event", arguments={"event_type": "cursor_git_synk"})
    ```
-   Alternativ: `ha_call_service` med `entity_id: script.git_synka_config`.
+
+   **B — Skript (när YAML är laddad):**
+   ```
+   ha_call_write_tool(name="ha_call_service", arguments={
+     "domain": "script", "service": "git_synka_config",
+     "entity_id": "script.git_synka_config"
+   })
+   ```
+
+   **C — Fallback via SSH-app (fungerar alltid från molnet):**
+   ```
+   ha_manage_addon(slug="a0d7b954_ssh", options={
+     "init_commands": ["sh -lc 'cd /config && git fetch origin main && git reset --hard origin/main 2>&1 | tee -a /config/git-pull.log; exit 0'"]
+   })
+   ha_manage_addon(slug="a0d7b954_ssh", action="restart")
+   # vänta ~10s, rensa init_commands ([]), restart SSH-app igen
+   ha_reload_core(target="all")  # om config_check är giltig
+   ```
+
 3. Verifiera: `ha_get_system_health` med `include: config_check`.
 4. Bekräfta att ändringen finns live (t.ex. `ha_config_get_automation`, `ha_search`).
 
