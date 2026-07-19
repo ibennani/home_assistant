@@ -19,7 +19,26 @@ alwaysApply: true
 - Versionera automatiseringar, skript och dokumentation.
 - Mål: chatt via WhatsApp med Assist/Conversation.
 
-## Git-synk från Cursor Cloud
-- Molnet når HA via MCP (Nabu Casa), inte SSH.
-- Efter engångs-`git pull` på servern: anropa `script.git_synka_config` via MCP (`ha_call_service`).
-- Se [docs/cursor-cloud-git-synk.md](../docs/cursor-cloud-git-synk.md).
+## Deploy till live HA (obligatoriskt för agenter)
+
+Molnet når **inte** SSH/LAN. Använd **MCP + Nabu Casa**.
+
+### Efter YAML-ändringar i git (automatiseringar, scripts, configuration)
+
+1. Committa och pusha till `main`.
+2. Synka till HA-servern:
+   ```
+   ha_call_write_tool(name="ha_call_event", arguments={"event_type": "cursor_git_synk"})
+   ```
+   Alternativ: `ha_call_service` med `entity_id: script.git_synka_config`.
+3. Verifiera: `ha_get_system_health` med `include: config_check`.
+4. Bekräfta att ändringen finns live (t.ex. `ha_config_get_automation`, `ha_search`).
+
+**Fråga aldrig användaren om git pull eller SSH** — kör synken via MCP ovan.
+
+### Nya/redigerade automatiseringar (utan YAML-deploy)
+
+Använd `ha_config_set_automation` direkt i live HA när ändringen inte ska vänta på git-synk.
+
+### Referens
+- [docs/cursor-cloud-git-synk.md](../docs/cursor-cloud-git-synk.md)

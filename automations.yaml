@@ -8025,6 +8025,17 @@
 ########   SLUT PÅ AUTOMATISERINGARNA   ########
 ################################################
 
+# Git-synk: triggas av Cursor Cloud via event cursor_git_synk
+- alias: "System: Git-synk från GitHub"
+  id: 'cursor_git_synk'
+  description: "Synkar /config med GitHub main och laddar om YAML. Cursor Cloud anropar event cursor_git_synk."
+  mode: single
+  triggers:
+    - trigger: event
+      event_type: cursor_git_synk
+  actions:
+    - action: script.git_synka_config
+
 
 
 

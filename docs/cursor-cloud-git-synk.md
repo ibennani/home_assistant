@@ -8,50 +8,57 @@
 | SSH | `ssh root@homeassistant.local` fungerar | Privata IP-adresser går inte att nå |
 | HA API | Lokal URL eller Nabu Casa | **Nabu Casa webhook** (MCP) |
 
-Molnet når alltså redan din HA via **MCP + Nabu Casa** — men inte SSH. Lösningen är att exponera `git pull` som en **Home Assistant-tjänst** som MCP kan anropa.
+Molnet når din HA via **MCP + Nabu Casa**. Git-synk sker via tjänster i HA — inte SSH.
 
-## Engångsinstallation på HA-servern
+## Komponenter (i repot)
 
-Efter att `shell_command.git_pull` och `script.git_synka_config` finns i repot, kör **en gång** i SSH/Web Terminal:
+| Komponent | Syfte |
+|-----------|--------|
+| `shell_command.git_pull` | `git fetch` + `reset --hard origin/main` i `/config` |
+| `script.git_synka_config` | Pull + reload core/automations/templates |
+| `automation` **System: Git-synk från GitHub** | Triggas av event `cursor_git_synk` |
 
-```bash
-cd /config
-git pull origin main
-```
+Logg: `/config/git-pull.log` (gitignorerad via `*.log`).
 
-Ladda om YAML (Inställningar → YAML → **Alla YAML-konfigurationer**) eller starta om Home Assistant Core.
+**OBS:** `reset --hard` gör att ocommittade YAML-ändringar på servern skrivs över av GitHub `main`. Det är avsiktligt — repot är källan till sanning.
 
-## Synka från Cursor Cloud (agent)
+## Cursor Cloud-agent (standardflöde)
 
-Agenten anropar via MCP:
-
-```text
-ha_call_service(domain="script", service="git_synka_config")
-```
-
-Det kör i ordning:
-
-1. `git pull origin main` i `/config` (logg: `/config/git-pull.log`)
-2. Laddar om core, automatiseringar och templates
-
-Alternativ utan reload:
+Efter commit/push till `main`:
 
 ```text
-ha_call_service(domain="shell_command", service="git_pull")
+ha_call_write_tool(
+  name="ha_call_event",
+  arguments={"event_type": "cursor_git_synk"}
+)
 ```
 
-## Synka från din dator
+Alternativ:
 
-Som tidigare:
+```text
+ha_call_write_tool(
+  name="ha_call_service",
+  arguments={
+    "domain": "script",
+    "service": "git_synka_config",
+    "entity_id": "script.git_synka_config"
+  }
+)
+```
+
+Därefter: verifiera med `ha_get_system_health(include="config_check")`.
+
+## Manuellt i HA UI
+
+Kör skriptet **Git: Synka /config från GitHub** eller tryck på knappen om du lagt till en i dashboard.
+
+## Från din dator (SSH)
 
 ```bash
-bash scripts/ssh-ha.sh 'cd /config && git pull origin main'
+bash scripts/ssh-ha.sh 'cd /config && git fetch origin main && git reset --hard origin/main'
 ```
-
-eller kör skriptet **Git: Synka /config från GitHub** i HA UI.
 
 ## Säkerhet
 
-- Endast den som har **MCP-webhook-URL** (eller HA admin-token) kan trigga synken.
+- Kräver MCP-webhook-URL eller HA admin-token.
 - Committa aldrig webhook-URL eller tokens till git.
-- Vid merge-konflikt på servern misslyckas `git pull` — löses manuellt i SSH-terminalen.
