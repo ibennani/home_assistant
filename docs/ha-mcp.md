@@ -226,7 +226,7 @@ Verifierat 2026-07-19: `192.168.0.222:9583` svarar (403 utan sökväg, 405 med k
 
 Steg-för-steg med JSON-mall: **[docs/cursor-cloud-mcp-steg.md](cursor-cloud-mcp-steg.md)**
 
-1. Gå till **[cursor.com → Settings → MCP](https://cursor.com/settings)** (dashboard, inte bara lokal `mcp.json`)
+1. Gå till **[cursor.com/agents](https://cursor.com/agents)** (MCP-menyn nära agentfältet — **inte** Add Secrets, **inte** `cursor.com/settings/mcp`)
 2. Lägg till en **ny MCP-server** med namnet `home-assistant` (exakt stavning — automationen matchar `serverName`, inte `user-home-assistant`)
 3. Använd **Nabu Casa-webhook-URL** (inte `192.168.x.x`):
    - HA → **Tillägg → Nabu Casa – Webhook Proxy for HA MCP → Logg**

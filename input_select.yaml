@@ -24,8 +24,8 @@
 
 
 # Välj vad som ska spelas på chromecast i köket
-  chromecast_audio_kitchen:
-    name: Vad ska spelas i köket
+  play_radiostation:
+    name: Välj radiostation
     options:
       - Tyst
       - Sveriges Radio P1
@@ -36,6 +36,18 @@
       - Sveriges Radio Ekot Direkt
     initial: Tyst
     icon: mdi:radio
+
+# Välj vilken högtalare/grupp radiostatinen ska spelas up på
+  play_radiostation_target:
+    name: Högtalare
+    options:
+      - Ingen högtalare
+      - Högtalarna i köket
+      - Morgonhögtalarna
+      - Pucken i Isabelles rum
+    initial: Ingen högtalare
+    icon: mdi:speaker
+
 
 
 # Välj vilken enhet som texten ska läsas upp på
@@ -174,6 +186,16 @@
       - Släckt 
     initial: Släckt
     icon: mdi:home-floor-b
+
+
+# Belysning i nedre trappan
+  nedre_trappan_belysning:
+    name: Belysning i nedre trappan
+    options:
+      - Tänt
+      - Städning
+      - Släckt
+    initial: Släckt
 
 
 

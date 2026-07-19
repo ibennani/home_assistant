@@ -1330,3 +1330,12 @@ utility_meter:
     name: Tibber daglig förbrukning
     cycle: daily
 
+
+# Git-synk: anropas av Cursor Cloud via MCP (shell_command.git_pull / script.git_synka_config)
+# reset --hard: /config ska spegla GitHub main (lokala ocommittade YAML-ändringar skrivs över)
+shell_command:
+  git_pull: >-
+    cd /config && git fetch origin main
+    && git reset --hard origin/main
+    2>&1 | tee -a /config/git-pull.log
+    && echo "--- $(date -Iseconds) ---" >> /config/git-pull.log

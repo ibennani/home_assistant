@@ -152,6 +152,7 @@ all_motion_and_open_close_sensors:
     - binary_sensor.nedre_trappan_rorelse
     - binary_sensor.albins_rum_rorelse    
     - binary_sensor.tvattstugan_rorelse
+    - binary_sensor.grinden_baksidan
 
 
 battery_levels:
@@ -163,6 +164,7 @@ battery_levels:
 # Tempsensorer    
     - sensor.vinden_temperatur_battery
     - sensor.isabelles_rum_temperatur_battery
+    - sensor.framsidan_temperatur_batteri
     - sensor.sovrummet_temperatur_battery
     - sensor.utomhus_baksidan_temperatur_battery
     - sensor.wc_temperatur_battery
@@ -174,10 +176,11 @@ battery_levels:
     - sensor.frysen_i_koket_temperatur_battery
     - sensor.albins_rum_temperatur_battery
     - sensor.badrummet_temperatur_battery
+    - sensor.badrummet_temperatur_refferens_batteri 
     - sensor.tvattstugan_temperatur_battery
-    - sensor.frysen_i_tvattstugan_temperatur_battery
     - sensor.forradet_tempsensor_batteri
     - sensor.kylskapet_forradet_tempsensor_battery
+    - sensor.frysen_i_forradet_temp_battery
 # Rörelsesensorer
     - sensor.balkongen_rorelse_battery
     - sensor.baksidan_rorelse_wc_fonster_batteri
@@ -212,6 +215,7 @@ battery_levels:
     - sensor.badrumsdorren_battery
     - sensor.badrummet_fonster_battery
     - sensor.brevladans_lucka_battery
+    - sensor.grinden_baksidan_batteri
 # Rörelse garderoben i sovrummet
     - sensor.garderoben_rorelse_1_battery
     - sensor.garderoben_rorelse_2_battery
@@ -226,6 +230,7 @@ battery_levels:
     - sensor.fjarr_isabelles_rum_battery
     - sensor.fjarr_taklampan_i_isabelles_rum_battery
     - sensor.fjarr_sovrummet_battery
+    # - sensor.lilla_lampknappen_wc_batteri
     - sensor.fjarr_albins_rum_battery
     - sensor.fjarr_2_albins_rum_battery
     - sensor.fjarr_badrummet_battery
@@ -251,9 +256,11 @@ battery_levels:
 # Vibrationsensorer
     - sensor.vibrationsensor_1_battery
     - sensor.vaxthuset_vibration_battery
-# Tandborstar
-    - sensor.oral_b_black_battery
-    - sensor.oral_b_pink_battery
+# Vattenslangen framsidan
+    - sensor.vattenslangen_batteri
+# # Tandborstar
+#     - sensor.oral_b_black_battery
+#     - sensor.oral_b_pink_battery
 
 
 # Sensorer som kan vara unavaliable men som vi ändå bortser ifrån
@@ -333,4 +340,55 @@ other_sensors_with_bad_battery_indicators:
 #    - binary_sensor.tradfri_rorelse_i_garderoben_3
     - binary_sensor.tradfri_rorelse_i_garderoben_4
 
+
+# Energiåtgång för alla lampor där vi kan mäta energiåtgången
+energi_just_nu_kallor:
+  name: "Energi just nu – källor"
+  icon: mdi:flash
+  entities:
+    # Taklampor
+    - sensor.dimmer_2_power_16  # Taklampan i Isabelles rum
+    - sensor.dimmer_2_power_11  # Taklampan i vardagsrummet
+    - sensor.dimmer_2_power_2   # Taklampan i övre trappan
+    - sensor.dimmer_2_power_21  # Taklampan i sovrummet
+    - sensor.wc_taklampa_power_24  # Taklampa WC
+    - sensor.dimmer_2_power_13  # Taklampan i Eriks rum
+    - sensor.dimmer_2_power_19  # Takspottarna i kökstaket
+    - sensor.dimmer_2_power_20  # Takspottarna vid trappan
+    - sensor.dimmer_2_power_12  # Takspottarna vid köksluckorna
+    - sensor.dimmer_2_power     # Bakom spisen
+    - sensor.dimmer_2_power_6   # Lamporna i köksfönstret
+    - sensor.dimmer_2_power_22  # Arbetsbänken i köket
+    - sensor.dimmer_2_power_4   # Takspottarna i skafferiet
+    - sensor.dimmer_2_power_18  # Takspottarna i hallen
+    - sensor.dimmer_2_power_3   # Taklampan i nedre trappan
+    - sensor.dimmer_2_power_14  # Taklampan ovanför Albins fönster
+    - sensor.dimmer_2_power_15  # Taklampan ovanför Albins säng
+    - sensor.dimmer_2_power_23  # Tvättstugan
+    - sensor.takspottar_badrummet_power  # Takspottarna i badrummet
+    - sensor.takspott_duschen_power      # Takspotten i duschen
+    - sensor.led_badrummet_energi        # LED-belysning i badrummet
+    - sensor.takspottarna_i_forradet_power  # Förrådet
+
+    # Mysbelysning
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w    # Isabelles fönster
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w_4  # Isabelles myslampa
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w_3  # Lamporna ovanför Isabelles säng
+    - sensor.lampan_balkongdorren_energi                           # Lampan vid balkongdörren
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w_6  # Eriks fönster
+    - sensor.led_ovanfor_lilla_arbetsbanken_electric_consumption_w # LED ovanför lilla arbetsbänken
+    - sensor.rgbw_controller_2_electric_consumption_w_2            # LED ovanför stora arbetsbänken
+    - sensor.elljusstaken_i_koksfonstret_power                     # Elljusstaken i köksfönstret
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w_2  # Brudkistan
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w_5  # Albins myslampa
+
+    # Funktionsbelysning
+    - sensor.rgbw_controller_2_electric_consumption_w_3  # WC spegelskåp och handfat
+    - sensor.dimmer_2_power_5                            # Spegeln i badrummet
+
+    # Utomhus
+    - sensor.dimmer_2_power_8   # Utomhus framsidan 2
+    - sensor.dimmer_2_power_9   # Utomhus framsidan 1
+    - sensor.dimmer_2_power_10  # Strålkastaren
+    - sensor.dimmer_2_power_17  # Lampan på baksidan
 

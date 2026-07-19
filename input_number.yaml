@@ -98,99 +98,6 @@
 
 
 
-### Belysningen i skafferiet ###
-
-# Ljusstyrka när skafferidörrarna är öppna 
-  settings_skafferiet_ljusstyrka_nu_oppet:
-    name: "Skafferiet: Ljusstyrka öppna dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är stängda
-  settings_skafferiet_ljusstyrka_nu_stangt:
-    name: "Skafferiet: Ljusstyrka stangda dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är öppna på morgonen
-  settings_skafferiet_ljusstyrka_morgon_oppet:
-    name: "Skafferiet: Ljusstyrka morgon öppna dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är stängda på morgonen
-  settings_skafferiet_ljusstyrka_morgon_stangt:
-    name: "Skafferiet: Ljusstyrka morgon stangda dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är öppna på dagen
-  settings_skafferiet_ljusstyrka_dag_oppet:
-    name: "Skafferiet: Ljusstyrka dag öppna dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är stängda på dag
-  settings_skafferiet_ljusstyrka_dag_stangt:
-    name: "Skafferiet: Ljusstyrka dag stangda dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är öppna på kvällen
-  settings_skafferiet_ljusstyrka_kvall_oppet:
-    name: "Skafferiet: Ljusstyrka kväll öppna dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är stängda på kvällen
-  settings_skafferiet_ljusstyrka_kvall_stangt:
-    name: "Skafferiet: Ljusstyrka kväll stangda dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är öppna på natten
-  settings_skafferiet_ljusstyrka_natt_oppet:
-    name: "Skafferiet: Ljusstyrka natt öppna dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är stängda på natt
-  settings_skafferiet_ljusstyrka_natt_stangt:
-    name: "Skafferiet: Ljusstyrka natt stangda dörrar"
-    min: 0
-    max: 255
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-
 ### Vitvaror - Energiåtgång när programmet är klart ###
 
 # Diskmaskinen
@@ -301,54 +208,6 @@
     mode: box      
 
 
-### Belysningen i hallen ¤¤¤
-# Detta behövs för att undvika att ljuset dimmas ner vid rörelse på morogn och kväll
-# om ljuset är satt till en högre nivå än vad det ska dimmas till.
-
-# Ljusstyrka vid uppdimmat
-  settings_hallen_ljusstyrka_nu:
-    name: "Hallen: Ljusstyrka uppdimmad just nu"
-    min: 0
-    max: 100
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är öppna på morgonen
-  settings_hallen_ljusstyrka_morgon:
-    name: "Hallen: Ljusstyrka uppdimmad morgon"
-    min: 0
-    max: 100
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-
-# Ljusstyrka när skafferidörrarna är öppna på morgonen
-  settings_hallen_ljusstyrka_dag:
-    name: "Hallen: Ljusstyrka uppdimmad dag"
-    min: 0
-    max: 100
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box    
-
-# Ljusstyrka när skafferidörrarna är öppna på morgonen
-  settings_hallen_ljusstyrka_kvall:
-    name: "Hallen: Ljusstyrka uppdimmad kväll"
-    min: 0
-    max: 100
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
-  
-# Ljusstyrka när skafferidörrarna är öppna på morgonen
-  settings_hallen_ljusstyrka_natt:
-    name: "Hallen: Ljusstyrka uppdimmad natt"
-    min: 0
-    max: 100
-    step: 1    
-    icon: mdi:spotlight-beam
-    mode: box
 
 
 # för diskmaskinens fjärrstart: Hur lång tid kommer det aktuella programmet ta
@@ -361,3 +220,26 @@
     unit_of_measurement: minutes
     mode: box
     icon: mdi:clock-outline
+
+
+  diskmaskin_kostnad_fjarrstart:
+    name: Diskmaskin kostnad fjärrstart
+    min: 0
+    max: 10
+    step: 0.01
+    unit_of_measurement: "kr"
+
+# Dessa behövs för att kunna dimma spegelskåpet och handfatet i WC
+  wc_handfat_dimindex:
+    name: WC Handfat Dim-index
+    min: 0
+    max: 6
+    step: 1
+    mode: box
+
+  wc_spegelskap_dimindex:
+    name: WC Spegelskåp Dim-index
+    min: 0
+    max: 6
+    step: 1
+    mode: box

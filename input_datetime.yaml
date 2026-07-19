@@ -96,3 +96,14 @@
     settings_lamporna_i_garderoben_avstangda_tom:
       name: "Stäng av tom"
       has_time: true      
+  
+  # till vilket klockslag ska lamporna i garderoben vara helt avstängda
+    badrum_motion_last_on:
+      name: "Badrum rörelse senast ON"
+      has_date: true
+      has_time: true
+    duschdorr_oppnad_ts:
+      name: "Duschdörr öppnad"
+      has_date: true
+      has_time: true
+      icon: mdi:shower-head

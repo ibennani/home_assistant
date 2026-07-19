@@ -90,3 +90,8 @@
     diskmaskin_senaste_kostnaden:
       name: Priset för den senaste diskningen
       initial: ""
+
+
+  # När tryckte någon på lampknapparna i badrummet senast?
+    wc_last_button_press:
+      name: Senaste WC-knapptryck

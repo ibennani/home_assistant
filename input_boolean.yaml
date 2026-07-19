@@ -27,11 +27,6 @@
     name: Vi äter
     icon: mdi:food
 
-# En toggle som bland annat styr belysningen i köket så att inget ändras när vi äter
-  kolla_posten:
-    name: Kolla posten
-    icon: mdi:email-alert
-
 # Aktivera nattlarmet på de tider som är angivna i GUI om denna switch är på
   night_alarm_on:
     name: Nattlarmet startar automatiskt
@@ -92,3 +87,22 @@
   julbelysning:
     name: Julbelysning
     
+
+# Behövs för att styra dimning i övre WC (spegelskåp och handfat)
+  wc_s1_hold_running:
+    name: WC S1 Dimmer Running
+
+
+# Toggle som avgör om vattenspridaren ska stara automatiskt
+  vattenspridaren_audostart:
+    name: Vattenspridaren autostart
+
+
+# Någon står i duschen. Styrs av andra faktorer
+  nagon_duschar:
+    name: Någon duschar
+# Giltig duschdörrssekvens (öppen 3-60 s, badrumsdörr stängd) väntar på stillhet/fukt
+  duschsekvens_giltig:
+    name: Duschdörrssekvens giltig
+    icon: mdi:shower-head
+    initial: off

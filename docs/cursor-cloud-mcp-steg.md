@@ -6,17 +6,25 @@ Datum: 2026-07-19
 
 Lokal Agent-chatt på din dator fungerar redan om `mcp.json` är korrekt. Detta steg behövs bara för **molnbaserade** körningar.
 
-## 1. Öppna MCP-inställningar
+## 1. Öppna rätt sida (inte Secrets)
 
-Gå till **[https://cursor.com/settings](https://cursor.com/settings)** → fliken **MCP** (eller direkt [cursor.com/settings/mcp](https://cursor.com/settings/mcp) om länken finns).
+Gå till **[https://cursor.com/agents](https://cursor.com/agents)** och logga in.
+
+> **Föråldrat:** `cursor.com/settings/mcp` finns inte längre som MCP-inställningssida.
+>
+> **Fel ställe:** *Add Secrets* under Cloud Agents — det är för REST-token/miljövariabler, **inte** MCP.
+
+Team-admins kan alternativt lägga till delad MCP under **[cursor.com/dashboard/integrations](https://cursor.com/dashboard/integrations)** → **Add MCP**.
 
 ## 2. Lägg till ny MCP-server
+
+På agents-sidan: öppna **MCP**-menyn (dropdown/knapp nära agentfältet) → **Add MCP** / **Add custom MCP**.
 
 | Fält | Värde |
 |------|-------|
 | **Namn** | `home-assistant` |
-| **Typ** | HTTP / URL (streamable HTTP) |
-| **URL** | Din Nabu Casa-webhook (se nedan) |
+| **Typ** | HTTP (streamable HTTP) |
+| **Server URL** | Din Nabu Casa-webhook (se nedan) |
 
 **Viktigt:** Servernamnet måste vara exakt `home-assistant` — samma som i din lokala `mcp.json`. Automationen matchar mot detta namn, inte `user-home-assistant` eller liknande.
 
