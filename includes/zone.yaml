@@ -1,0 +1,6 @@
+# Hemma – istället för default data som finns i configuration.yaml
+- name: Home
+  latitude: 59.237731498047985
+  longitude: 18.087033927440647
+  radius: 80
+  icon: mdi:home

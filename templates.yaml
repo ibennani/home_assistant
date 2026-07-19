@@ -1,5 +1,6 @@
 #######################################################
-# Template entities (migrerade från legacy platform: template)
+# ARKIVERAD — används inte. Aktiv källa: includes/template.yaml
+# (Behålls som referens tills migrering är verifierad.)
 #######################################################
 
 - sensor:

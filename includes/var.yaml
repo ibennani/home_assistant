@@ -1,0 +1,122 @@
+# Meddelande när batteri behöver bytas
+change_batteries_message:
+  initial_value: ""
+  friendly_name: "Meddelande vid batteribyte"
+  restore: true
+
+# Meddelande när larmet triggats
+alarm_triggered_message:
+  initial_value: "Ingenting"
+  friendly_name: "Meddelande när larmet triggats"
+  restore: true
+
+# "Morgoninfo" i köket blir bara uppläst en gång per dygn
+morgoninfo_koket_redan_upplast:
+  initial_value: "false"
+  friendly_name: "Morgon info i köket redan uppläst"
+  restore: true
+
+# Ange när solen står som högst idag
+tid_solen_mitt_pa_dagen:
+  initial_value: "12:00:00"
+  friendly_name: "När står solen som högst på himelen"
+  restore: true
+
+# Ange status för diskmaskinen
+diskmaskin_state:
+  initial_value: "idle"
+  friendly_name: "Vad gör diskaskinen just nu"
+  restore: true
+
+# Ange status för diskmaskin_delay
+diskmaskin_delay:
+  initial_value: "ok"
+  friendly_name: "Kan värdet på diskmaskin_state ändras?"
+  restore: true
+
+# Har lampan på baksidan tänts pga rörelse
+lampan_baksidan_tandes_pga_rorelse:
+  initial_value: "nej"
+  friendly_name: "Lampan på baksidan tändes pga rörelse"
+  restore: true
+
+# Brightness level badrum
+current_brightness_level_badrummet:
+  initial_value: ""
+  friendly_name: "Brightnes level för lamporna i badrummet"
+  restore: true
+
+# Brightness level WC
+current_brightness_level_wc:
+  initial_value: ""
+  friendly_name: "Brightnes level för lamporna på toaletten"
+  restore: true
+
+# Larmmeddelandetext
+alarm_textmessage:
+  initial_value: ""
+  friendly_name: "Larm - meddelandetext"
+  restore: true
+
+# Z-wave redo
+z_wave_is_ready:
+  initial_value: "false"
+  friendly_name: "Z-wave näteverket är igång"
+
+# Spara ljusstyrka i hallen före ringklocka
+hallspottarna_aktuell_ljusstyrka:
+  initial_value: ""
+  friendly_name: "Ljusstyrka i hallen precis innan det ringde på dörren"
+  restore: true
+
+# Spara köksbelysning
+koksbelysningen_aktuell_ljusstyrka:
+  initial_value: ""
+  friendly_name: "Köksbelysningen precis innan ändring"
+  restore: true
+
+takspottarna_kokstaket_aktuell_ljusstyrka:
+  initial_value: ""
+  friendly_name: "Takspottarna kökstaket precis innan ändring"
+  restore: true
+
+# Covid-19
+covid19_totalt_avlidna:
+  initial_value: ""
+  friendly_name: "Covid-19: Totalt avlidna"
+  restore: true
+
+# Vem är ensam hemma
+vem_ar_ensam_hemma:
+  initial_value: ""
+  friendly_name: "Vem är ensam hemma"
+  restore: true
+
+# Måltiden avslutas
+avslutar_maltiden:
+  initial_value: "off"
+  friendly_name: "Avslutar måltiden"
+  restore: true
+
+# Uppläsningsdevice
+textupplasning_device:
+  initial_value: ""
+  friendly_name: "Vilken device ska texten läsas upp på"
+  restore: false
+
+# Uppläsningstext
+textupplasning_text:
+  initial_value: ""
+  friendly_name: "Vilken text ska läsas upp"
+  restore: false
+
+# Dimningsriktning
+dimming_direction_isabeles_taklampa:
+  initial_value: "Upp"
+  friendly_name: "Dimma Isabelles taklampa vid långtryck"
+  restore: true
+
+dimming_direction_fjarr_hogtalarna_i_koket:
+  initial_value: "Upp"
+  friendly_name: "Ändra volymen på högtalarna i köket vid långtryck"
+  restore: true

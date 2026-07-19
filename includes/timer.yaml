@@ -1,0 +1,32 @@
+# Används för att fördröja när radion i köket startar.
+# Problem: Så fort någon passerar köket startar radion.
+# Detta gör att en ny rörelse måste ske innan timern tar slut
+# för att radion ska starta.
+kitchen_radio_delay:
+  duration: '00:01:00'
+
+# Används för att släcka alla lampor om någon trycker på brytare i övre trappen
+# 2+2 gånger inom fem sekunder
+to_night_lights:
+  duration: '00:00:05'
+
+# Används för att fördröja larmsignal och notis om huset är larmat och när något triggar larmet.
+# Denna paus behövs t.ex. för att man ska hinna stänga av larmet när man kommer hem.
+alarm_delay:
+  duration: '00:30:00'
+
+# Hur länge ska strålkastaren vara tänd när kameran i ringklockan noterar rörelse.
+stralkastaren_on:
+  duration: '00:05:00'
+
+# Hur länge ska lampan på framsidan vara tänd när kameran i ringklockan noterar rörelse.
+lampan_framsidan_on:
+  duration: '00:05:00'
+
+# Timer för att släcka lamporna i garderoben efter rörelse
+ljus_timeout_lamporna_i_garderoben: {}
+
+# Hur lång tid ska lamporna i hallen vara dimmade till lite ljusare när det ringer på dörren
+# (ring doorbell) eller när det rör sig i hallen.
+hallen_uppdimmad_belysning:
+  duration: '00:05:00'

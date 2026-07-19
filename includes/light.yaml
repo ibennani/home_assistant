@@ -1,0 +1,38 @@
+# Grupper av belysning
+
+- platform: group       # Köket förutom takspottarna i kökstaket (den stora zonen)
+  name: Köksbelysningen
+  entities:
+    - light.takspottarna_koksluckorna_level
+    - light.takspottarna_trappan_level
+    - light.spottarna_bakom_spisen_level
+
+- platform: group       # LED-lister ovanför arbetsbänkarna
+  name: LED lister ovanför arbetsbänkarna
+  entities:
+    - light.led_ovanfor_stora_arbetsbanken
+    - light.led_ovanfor_lilla_arbetsbanken
+
+- platform: group       # Vägglamporna utomhus framsidan
+  name: Fasadbelysningen
+  entities:
+    - light.utomhus_framsidan_1
+    - light.utomhus_framsidan_2
+
+- platform: group       # Belysning WC
+  name: WC skåp och handfat
+  entities:
+    - light.wc_spegelskap
+    - light.wc_handfat
+
+
+- platform: group     # Belysningen i badrummet
+  name: Badrummet alla lampor
+  entities:
+    - light.takspottar_badrummet
+    - light.takspott_duschen
+    - light.spegeln_badrummet
+    - light.led_badrummet_duschen
+    - light.led_badrummet_handfatet
+    - light.led_badrummet_kommoden
+    

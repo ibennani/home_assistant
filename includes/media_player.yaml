@@ -1,0 +1,83 @@
+- platform: universal
+  name: infopuckarna_ha_grupp
+  children:
+    - media_player.googlehome_vardagsrummet
+    - media_player.googlehome_koket
+  commands:
+    volume_set:
+      service: media_player.volume_set
+      data_template:
+        entity_id:
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_koket
+        volume_level: "{{ volume_level }}"
+
+- platform: universal
+  name: alla_puckar_ha_grupp
+  children:
+    - media_player.googlehome_isabelles_rum
+    - media_player.googlehome_vardagsrummet
+    - media_player.googlehome_sovrummet
+    - media_player.googlehome_eriks_rum
+    - media_player.googlehome_koket
+    - media_player.googlehome_albins_rum
+  commands:
+    volume_set:
+      service: media_player.volume_set
+      data_template:
+        entity_id:
+          - media_player.googlehome_isabelles_rum
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_sovrummet
+          - media_player.googlehome_eriks_rum
+          - media_player.googlehome_koket
+          - media_player.googlehome_albins_rum
+        volume_level: "{{ volume_level }}"
+
+- platform: universal
+  name: alla_hogtalare_ha_grupp
+  children:
+    - media_player.googlehome_isabelles_rum
+    - media_player.googlehome_vardagsrummet
+    - media_player.googlehome_sovrummet
+    - media_player.googlehome_eriks_rum
+    - media_player.googlehome_koket
+    - media_player.googlehome_albins_rum
+    - media_player.stereon_i_vardagsrummet
+    - media_player.eriks_stereo
+    - media_player.hogtalarna_i_koket
+    - media_player.albins_stereo
+  commands:
+    volume_set:
+      service: media_player.volume_set
+      data_template:
+        entity_id:
+          - media_player.googlehome_isabelles_rum
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_sovrummet
+          - media_player.googlehome_eriks_rum
+          - media_player.googlehome_koket
+          - media_player.googlehome_albins_rum
+          - media_player.stereon_i_vardagsrummet
+          - media_player.eriks_stereo
+          - media_player.hogtalarna_i_koket
+          - media_player.albins_stereo
+        volume_level: "{{ volume_level }}"
+
+- platform: universal
+  name: de_basta_hogtalarna_ha_grupp
+  children:
+    - media_player.stereon_i_vardagsrummet
+    - media_player.eriks_stereo
+    - media_player.hogtalarna_i_koket
+    - media_player.albins_stereo
+  commands:
+    volume_set:
+      service: media_player.volume_set
+      data_template:
+        entity_id:
+          - media_player.stereon_i_vardagsrummet
+          - media_player.eriks_stereo
+          - media_player.hogtalarna_i_koket
+          - media_player.albins_stereo
+        volume_level: "{{ volume_level }}"

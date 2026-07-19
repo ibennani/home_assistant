@@ -8,78 +8,80 @@ homeassistant:
   # Location required to calculate the time the sun rises and sets
   latitude: 59.237731498047985
   longitude: 18.087033927440647
-  #radius: 45
   # Impacts weather/sunrise data (altitude above sea level in meters)
   elevation: 61
   # metric for Metric, imperial for Imperial
   unit_system: metric
   # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-  time_zone: Europe/Stockholm  
+  time_zone: Europe/Stockholm
   currency: SEK
   external_url: "https://85gdgmd5j5v1zlxo4dmkybhmvol6ozqk.ui.nabu.casa/"
   internal_url: "http://192.168.0.222:8123"
-# Ska användas för att ange var man kan skriva till filer, dvs var dessa filer hamnar. 
+  # Ska användas för att ange var man kan skriva till filer, dvs var dessa filer hamnar.
   allowlist_external_dirs:
-    - '/'
-    - '/config/'
-    - '/config/www/'
+    - "/"
+    - "/config/"
+    - "/config/www/"
 
+#######################################################
+# Standardprylar som måste vara med om man tar bort "default_config:"
+#######################################################
 
-
-# Standardprylar som måste vara med om man tar bort "default_config":
-#api: # Enable the API
 automation: !include automations.yaml
-#breaking_changes: # Info om breaking changes mellan installerad version och senast släppt version.
 cloud:
 config:
 energy:
 frontend:
 group: !include groups.yaml
 history:
-input_boolean: !include input_boolean.yaml 
+input_boolean: !include input_boolean.yaml
 input_datetime: !include input_datetime.yaml
 input_number: !include input_number.yaml
 input_select: !include input_select.yaml
-input_text: !include input_text.yaml 
+input_text: !include input_text.yaml
 logbook:
 media_source:
 mobile_app:
 my:
-person:  
-# python_script:
+person:
 script: !include scripts.yaml
-template: !include templates.yaml
 scene: !include scenes.yaml
 sun:
 system_health:
-# updater:
-# usb:
 zeroconf:
-# zone: !include zone.yaml
 
+#######################################################
+# Includes (flyttade domäner)
+#######################################################
 
+binary_sensor: !include includes/binary_sensor.yaml
+sensor: !include includes/sensor.yaml
+light: !include includes/light.yaml
+media_player: !include includes/media_player.yaml
+notify: !include includes/notify.yaml
+tts: !include includes/tts.yaml
+zone: !include includes/zone.yaml
+timer: !include includes/timer.yaml
+var: !include includes/var.yaml
+utility_meter: !include includes/utility_meter.yaml
+intent_script: !include includes/intent_script.yaml
+template: !include includes/template.yaml
 
-
-zone:
-  # Hemma - istället för default data som finns i configuration.yaml
-  - name: Home
-    latitude: 59.237731498047985
-    longitude: 18.087033927440647
-    radius: 80
-    icon: mdi:home
-
-
+#######################################################
 # Spara bara x antal dagar i databasen (så den inte blir gigantisk)
+#######################################################
+
 recorder:
   purge_keep_days: 7
+  exclude:
+    entity_globs:
+      - sensor.*_active_notification_count
 
-  
 #######################################################
 # Diverse integrationer som inte görs via UI
 #######################################################
 
 # Git-synk: anropas av Cursor Cloud via MCP (shell_command.git_pull / script.git_synka_config)
-# reset --hard: /config ska spegla GitHub main (lokala ocommittade YAML-ändringar skrivs över)
 shell_command:
   git_pull: >-
     cd /config && git fetch origin main
@@ -87,766 +89,16 @@ shell_command:
     2>&1 | tee -a /config/git-pull.log
     && echo "--- $(date -Iseconds) ---" >> /config/git-pull.log
 
-# # Spotify (ilias konto)
-# spotify:
-#   client_id: bfabbbc30bfd40238951895a128b849b
-#   client_secret: 9e7cdf2ba08a47c190e68f0495ca3836
-
-# Lovelace
-lovelace:
-  mode: yaml  
-
-
-# Text to speech
-tts:
-  - platform: google_translate
-    service_name: google_say
-    language: "sv"
-  # Pico TTS konfigureras via UI (Settings → Devices & Services → Add integration)
-  # YAML-stöd tas bort i HA 2026.10
-
-
-# # Device_tracker
-# device_tracker:
-#   - platform: netgear
-#     host: 192.168.0.1
-#     username: ha_user
-#     password: knasigt%%varre
-#     interval_seconds: 10
-#     consider_home: 180
-#     new_device_defaults:
-#       track_new_devices: true
-      
-### Skicka notiser ###
-notify:
-
-### Grupper som ska ta emot mobilnotiser ###  
-  - name: foraldrar
-    platform: group
-    services:
-      - service: mobile_app_ilias_s23_ultra
-      - service: mobile_app_anna_s22_ultra
-  - name: familjen
-    platform: group
-    services:
-      - service: mobile_app_ilias_s23_ultra
-      - service: mobile_app_anna_s22_ultra
-      - service: mobile_app_iphone_12_pro_max
-      - service: mobile_app_isabelles_iphone11
-      - service: mobile_app_erik_s23
-
-# Google home mini i Isabelles rum
-  - platform: tts
-    name: pucken_i_isabelles_rum
-    tts_service: tts.google_say
-    media_player: media_player.googlehome_isabelles_rum
-
-
-
-# # Sparar info till en fil
-#   - platform: file
-#     name: ljusstyrka_spara_till_fil
-#     filename: ljusstyrka-info.csv
-#     timestamp: false
-
-#   - platform: file
-#     name: diskmaskin_spara_till_fil
-#     filename: diskmaskin-energi-w.csv
-#     timestamp: false
-
-#   - platform: file
-#     name: tvattmaskin_spara_till_fil
-#     filename: tvattmaskin-energi-w.csv
-#     timestamp: false
-
-#   - platform: file
-#     name: luftavfuktare_spara_till_fil
-#     filename: luftavfuktare-energi-w.csv
-#     timestamp: false
-
-#   - platform: file
-#     name: temperaturer_spara_till_fil
-#     filename: temperaturer.csv
-#     timestamp: false
-
-#   - platform: file
-#     name: min_testfil
-#     filename: /config/www/min_testfil.txt
-#     timestamp: false
-
-
-# # Arlo basstation
-# alarm_control_panel:
-#   - platform: aarlo
-#     # away_mode_name: armed
-#     # home_mode_name: home
-#     # night_mode_name: night
-#     trigger_time: 30
-#     alarm_volume: 1
-
-
-# BSH home conect
-# home_connect_alt:
-#   client_id: 07E052C99561E0C8D28E12F150F541D5382CF2012A65C7E3833C2B1D65110F0E
-#   client_secret: EE9C117DE2869935F49AAA19A9939A0174D237180258BE50D15568FCD9787717
-
-
-# # Hur stor är databasfilen just nu
-# command_line:
-#   - sensor:
-#     name: log_db_file_size
-#     command: "du -m /home/homeassistant/.homeassistant/home-assistant_v2.db | cut -f1"
-#     unit_of_measurement: 'MB'
-#     value_template: '{{ value | int - 1 }}'
-
-#######################################################
-# SENSORS
-#######################################################
-
-sensor:
-
-# Nordpol el-priser
-  - platform: nordpool
-    region: "SE3"
-    precision: 3
-
-
-# # Krisinformation
-#   # En sensor för att få allerts om Stockholm
-#   - platform: krisinformation
-#     name: "Krisinformation Stockholm"
-#     county: "Stockholms län"
-#     radius: 100
-#   # En sensor för att få allerts om hela Sverige
-#   - platform: krisinformation
-#     name: "Krisinformation Sverige"
-#     country: 'Sverige'
-  
-
-# Visa solrelaterad data
-
-
-
-
-
-
-
-
-
-
-# Hur många av de "godkända" personerna är hemma
-
-# Hur många dörrar och fönster är öppna (skalskyddet)
-
-
-# Hur många familjemedlemmar är hemma
-
-
-# Sensorer för att se om vitvarorna är igång
-
-
-
-# En custom sensor som anger vilken "source" Sony-tv använder just nu
-
-
-# En template sensor som "lurar" group.family_phones att vi är hemma
-# Behövs fram tills dess att Unifi controller fungerar igen.
-
-
-# Differens i ljusstyrka mellan framsidan och baksidan. Alltid positiva värden
-
-
-# Tar ut el-priset ifrån Nordpool avseende denna timme
-
-# Räkna ut el-kostnaden för aktuell timme
-
-
-# Räkna ut när man kan diska (dvs när elen är som billigast under en följd av sammanhängande timmar)
-
-
-
-  # - platform: aarlo
-  #   monitored_conditions:
-  #   - total_cameras
-  #   - last_capture
-  #   - recent_activity
-  #   - captured_today
-  #   - battery_level
-  #   - signal_strength
-  #   - temperature
-  #   - humidity
-  #   - air_quality            
-
-
-
-
-
-# Brandrisk Ute konfigureras via UI (Settings → Devices & Services → Add integration)
-# YAML platform-stöd är borttaget
-
-# Hur ljust är det ute? Det kan vara soligt, ljust, mörkt eller nattljus
-
-# # Skolmaten
-#   - platform: skolmat
-#     name: Farsta grundskola # Name of school here
-#     rss: https://skolmaten.se/farsta-grundskola/rss/weeks/?limit=2 # your rss here
-#     format: both # Course to show as sensor state. first, second or both (will be separated with |) 
-
-
-
-# Resrobot
-  - platform: resrobot
-    key: 7b7f216b2be44e89aa5f1968738112e6
-    departures:
-    - stop_id: 740000692
-    
-
-# Räkna ut genomsnitsvärdet av temperaturen inomhus
-  - platform: min_max
-    name: 'Temperatur inomhus'
-    unique_id: 05s6df0a1sg0asg81asg8r00
-    type: mean
-    round_digits: 1    
-    entity_ids:
-      - sensor.isabelles_rum_temp
-      - sensor.netatmo_bennani_vs_inomhus_temperature
-      - sensor.sovrummet_temp
-      - sensor.wc_temp
-      - sensor.eriks_rum_temp
-      - sensor.koket_temp
-      - sensor.skafferiet_temp
-      - sensor.albins_rum_temp
-      - sensor.badrummet_temp
-      - sensor.tvattstugan_temp
-      - sensor.forradet_temperatur
-
-
-# Räkna ut min temperaturen inomhus
-  - platform: min_max
-    name: 'Temperatur inomhus min'
-    unique_id: 05s6df0a1sg0asg81asg8r0
-    type: min
-    round_digits: 1
-    entity_ids:
-      - sensor.isabelles_rum_temp
-      - sensor.netatmo_bennani_vs_inomhus_temperature
-      - sensor.sovrummet_temp
-      - sensor.wc_temp
-      - sensor.eriks_rum_temp
-      - sensor.koket_temp
-      - sensor.skafferiet_temp
-      - sensor.albins_rum_temp
-      - sensor.badrummet_temp
-      - sensor.tvattstugan_temp
-      - sensor.forradet_temperatur
-
-# Räkna ut max temperaturen inomhus
-  - platform: min_max
-    name: 'Temperatur inomhus max'
-    unique_id: 05s6df0a1sg0asg8dd1asgr1
-    type: max
-    round_digits: 1
-    entity_ids:
-      - sensor.isabelles_rum_temp
-      - sensor.netatmo_bennani_vs_inomhus_temperature
-      - sensor.sovrummet_temp
-      - sensor.wc_temp
-      - sensor.eriks_rum_temp
-      - sensor.koket_temp
-      - sensor.skafferiet_temp
-      - sensor.albins_rum_temp
-      - sensor.badrummet_temp
-      - sensor.tvattstugan_temp
-      - sensor.forradet_temperatur
-
-
-
-# Räkna ut genomsnitsvärdet av luftfuktighet inomhus
-  - platform: min_max
-    name: 'Luftfuktighet inomhus'
-    unique_id: 05s6df0a1sg0asg81asg8r00a
-    type: mean
-    round_digits: 1    
-    entity_ids:
-      - sensor.isabelles_rum_luftfuktighet
-      - sensor.netatmo_bennani_vs_inomhus_humidity
-      - sensor.sovrummet_luftfuktighet
-      - sensor.wc_luftfuktighet
-      - sensor.eriks_rum_luftfuktighet
-      - sensor.koket_luftfuktighet
-      - sensor.skafferiet_luftfuktighet
-      - sensor.albins_rum_luftfuktighet
-      - sensor.badrummet_luftfuktighet
-      - sensor.tvattstugan_luftfuktighet
-      - sensor.forradet_luftfuktighet
-
-# Räkna ut min luftfuktighet inomhus
-  - platform: min_max
-    name: 'Luftfuktighet inomhus min'
-    unique_id: 05s6df0a1sg0asg81asg8r0a
-    type: min
-    round_digits: 1
-    entity_ids:
-      - sensor.isabelles_rum_luftfuktighet
-      - sensor.netatmo_bennani_vs_inomhus_humidity
-      - sensor.sovrummet_luftfuktighet
-      - sensor.wc_luftfuktighet
-      - sensor.eriks_rum_luftfuktighet
-      - sensor.koket_luftfuktighet
-      - sensor.skafferiet_luftfuktighet
-      - sensor.albins_rum_luftfuktighet
-      - sensor.badrummet_luftfuktighet
-      - sensor.tvattstugan_luftfuktighet
-      - sensor.forradet_luftfuktighet
-
-# Räkna ut max luftfuktighet inomhus
-  - platform: min_max
-    name: 'Luftfuktighet inomhus max'
-    unique_id: 05s6df0a1sg0asg8dd1asgr1a
-    type: max
-    round_digits: 1
-    entity_ids:
-      - sensor.isabelles_rum_luftfuktighet
-      - sensor.netatmo_bennani_vs_inomhus_humidity
-      - sensor.sovrummet_luftfuktighet
-      - sensor.wc_luftfuktighet
-      - sensor.eriks_rum_luftfuktighet
-      - sensor.koket_luftfuktighet
-      - sensor.skafferiet_luftfuktighet
-      - sensor.albins_rum_luftfuktighet
-      - sensor.badrummet_luftfuktighet
-      - sensor.tvattstugan_luftfuktighet
-      - sensor.forradet_luftfuktighet
-
-
-
-# Räkna ut max ljusstyrka utomhus 
-  - platform: min_max
-    name: 'Ljusstyrka utomhus maximal'
-    unique_id: 05s6df0a1sg0asg81dggasg8r100
-    type: max
-    round_digits: 1
-    entity_ids:      
-      - sensor.utomhus_baksidan_ljusstyrka      
-      - sensor.ljusstyrka_framsidan_maximal
-
-
-# Räkna ut max ljusstyrka på framsidan 
-
-
-
-# All info om den senaste blixten (från Blitzortung
-
-          
-
-
-# Sensorer som anger om Anna eller Ilias är "nära" hemmed, dvs inom 7 km radioe hemmifrån !env_var 
-# Används t.ex. för att slå igång golvvärmen i badrummet så det inte är iskallt när vi kommer hem.
-
-
-### TV och Stereo ###
-media_player:
-
-
-# # För att kunna casta Arlo-kamerorna
-#   - platform: aarlo    
-
-# Gruppera vissa högtalare (används för att kunna sätta volumen på states("sensor.diskmaskinen_diskar")
-  - platform: universal
-    name: infopuckarna_ha_grupp
-    children:
-      - media_player.googlehome_vardagsrummet
-      - media_player.googlehome_koket
-    commands:
-      volume_set:
-        service: media_player.volume_set
-        data_template:
-          entity_id:
-            - media_player.googlehome_vardagsrummet
-            - media_player.googlehome_koket
-          volume_level: '{{ volume_level }}'
-  - platform: universal
-    name: alla_puckar_ha_grupp
-    children:
-      - media_player.googlehome_isabelles_rum
-      - media_player.googlehome_vardagsrummet
-      - media_player.googlehome_sovrummet
-      - media_player.googlehome_eriks_rum
-      - media_player.googlehome_koket
-      - media_player.googlehome_albins_rum
-    commands:
-      volume_set:
-        service: media_player.volume_set
-        data_template:
-          entity_id:
-            - media_player.googlehome_isabelles_rum
-            - media_player.googlehome_vardagsrummet
-            - media_player.googlehome_sovrummet
-            - media_player.googlehome_eriks_rum
-            - media_player.googlehome_koket
-            - media_player.googlehome_albins_rum
-          volume_level: '{{ volume_level }}'
-  - platform: universal
-    name: alla_hogtalare_ha_grupp
-    children:
-      - media_player.googlehome_isabelles_rum
-      - media_player.googlehome_vardagsrummet
-      - media_player.googlehome_sovrummet
-      - media_player.googlehome_eriks_rum
-      - media_player.googlehome_koket
-      - media_player.googlehome_albins_rum
-      - media_player.stereon_i_vardagsrummet
-      - media_player.eriks_stereo
-      - media_player.hogtalarna_i_koket
-      - media_player.albins_stereo
-    commands:
-      volume_set:
-        service: media_player.volume_set
-        data_template:
-          entity_id:
-            - media_player.googlehome_isabelles_rum
-            - media_player.googlehome_vardagsrummet
-            - media_player.googlehome_sovrummet
-            - media_player.googlehome_eriks_rum
-            - media_player.googlehome_koket
-            - media_player.googlehome_albins_rum
-            - media_player.stereon_i_vardagsrummet
-            - media_player.eriks_stereo
-            - media_player.hogtalarna_i_koket
-            - media_player.albins_stereo
-          volume_level: '{{ volume_level }}'
-  - platform: universal
-    name: de_basta_hogtalarna_ha_grupp
-    children:
-      - media_player.stereon_i_vardagsrummet
-      - media_player.eriks_stereo
-      - media_player.hogtalarna_i_koket
-      - media_player.albins_stereo
-    commands:
-      volume_set:
-        service: media_player.volume_set
-        data_template:
-          entity_id:
-            - media_player.stereon_i_vardagsrummet
-            - media_player.eriks_stereo
-            - media_player.hogtalarna_i_koket
-            - media_player.albins_stereo
-          volume_level: '{{ volume_level }}'
-        
-
-
-
-
-#######################################################
-# binary_sensor
-#######################################################  
-
-binary_sensor:
-
-
-# Tre templates som anger om det är soligt. 
-# Används bland annat för att styra rullgardiner och viss belysning. 
-
-
-
-# Det lyser in solljus genom fönstren (styr rullgardinerna)
-
-
-# Brevlådans lucka
-
-
-# # Finns det någon sammhällsinformatin att rapportera
-# - platform: template
-#   sensors:
-#     krisinformation_finns:
-#       friendly_name: "Krisinformation finns"
-#       value_template: >
-#         {{ is_state('sensor.krisinformation_stockholm', 'News') or is_state('sensor.krisinformation_sverige', 'News') }}
-
-
-# En sensor som anger om vi har julpynt uppe (fredag före 1:a advent - söndag på eller efter trettondagen nästa år)
-
-
-# # Arlo för att känna av rörelse och ljud
-# - platform: aarlo
-#   monitored_conditions:
-#   - motion
-#   - sound  
-
-
-
-#######################################################
-# Switch
-#######################################################
-
-
-# # Alro basstation
-# - platform: aarlo
-#   siren: True
-#   all_sirens: True
-#   snapshot: True
-#   doorbell_silence: True
-#   siren_volume: 10
-#   siren_duration: 10
-
-
-
-
 #######################################################
 # Media
 #######################################################
 
 # Gör det möjligt att strömma video, t.ex ifrån kameror.
-stream: 
+stream:
 
 # Live-TV
 svt_play:
 tv4_play:
 
-
-#######################################################
-# Kameror
-#######################################################
-
-# # Arlo-kamerorna (från HACS)
-# aarlo:
-#   username: ilias@abc.se
-#   password: dmZIVcZyT33HqStIlR6Bs5rnYNW5NY
-#   refresh_devices_every: 2
-#   stream_timeout: 120
-#   reconnect_every: 90
-
-
-
-#######################################################
-# VARIABLE
-#######################################################
-var:
-
-# Meddelande när batteri behöver bytas  
-  change_batteries_message:
-    initial_value: ""
-    friendly_name: "Meddelande vid batteribyte"
-    restore: true
-
-# Meddelande när larmet triggats
-  alarm_triggered_message:
-    initial_value: "Ingenting"
-    friendly_name: "Meddelande när larmet triggats"
-    restore: true
-
-# "Morgoninfo" i köket blir bara uppläst en gång per dygn.
-  morgoninfo_koket_redan_upplast:
-    initial_value: "false"
-    friendly_name: "Morgon info i köket redan uppläst"
-    restore: true
-
-# Ange när solen står som högst idag.
-# Sensorn anger alltid next noon, inte noon today, vilket ev kan leda till besvär. 
-  tid_solen_mitt_pa_dagen:
-    initial_value: "12:00:00"
-    friendly_name: "När står solen som högst på himelen"
-    restore: true
-
-
-# Ange status för diskmaskinen
-  diskmaskin_state:
-    initial_value: "idle"
-    friendly_name: "Vad gör diskaskinen just nu"
-    restore: true
-
-# Ange status för diskmaskin_delay
-  diskmaskin_delay:
-    initial_value: "ok"
-    friendly_name: "Kan värdet på diskmaskin_state ändras?"
-    restore: true    
-
-# Har lampan på baksidan tänds pga rörelse som Arlo-kameran noterade
-  lampan_baksidan_tandes_pga_rorelse:
-    initial_value: "nej"
-    friendly_name: "Lampan på baksidan tändes pga rörelse"
-    restore: true   
-
-# Brightnes level för lamporna i badrummet
-  current_brightness_level_badrummet:
-    initial_value: ""
-    friendly_name: "Brightnes level för lamporna i badrummet"
-    restore: true
-
-# Brightnes level för lamporna på toaletten
-  current_brightness_level_wc:
-    initial_value: ""
-    friendly_name: "Brightnes level för lamporna på toaletten"
-    restore: true
-
-# Larmmeddelande: Vad ska läsas upp och skickas som notis vid olika larmhändelser
-  alarm_textmessage:
-    initial_value: ""
-    friendly_name: "Larm - meddelandetext"
-    restore: true  
-
-
-# Z-wave: Sätt till true om Z-wave nätverket är klart.
-# Används för att hindra vissa saker ifrån att köras om Z-vavenätverket ännu inte är klart.
-  z_wave_is_ready:
-    initial_value: "false"
-    friendly_name: "Z-wave näteverket är igång"
-#    restore: false  
-
-
-# Spottarna i hallen: Spara undan aktuell ljusstyrka om någon ringer på ytterdörren
-# Används för att återgå till tidigare ljusstyrka när det gått en viss tid (styrs av timer)
-  hallspottarna_aktuell_ljusstyrka:
-    initial_value: ""
-    friendly_name: "Ljusstyrka i hallen precis innan det ringde på dörren"
-    restore: true  
-
-# Spara ljusstyrkan för viss köksbelysning
-  koksbelysningen_aktuell_ljusstyrka:
-    initial_value: ""
-    friendly_name: "Köksbelysningen precis innan ändring"
-    restore: true
-  takspottarna_kokstaket_aktuell_ljusstyrka:
-    initial_value: ""
-    friendly_name: "Takspottarna kökstaket precis innan ändring"
-    restore: true
-
-
-# Covid-19 totalt avlidna
-  covid19_totalt_avlidna:
-    initial_value: ""
-    friendly_name: "Covid-19: Totalt avlidna"
-    restore: true  
-
-# Vem är ensam hemma
-  vem_ar_ensam_hemma:
-    initial_value: ""
-    friendly_name: "Vem är ensam hemma"
-    restore: true  
-
-
-# Måltiden håller på att avslutas
-  avslutar_maltiden:
-    initial_value: "off"
-    friendly_name: "Avslutar måltiden"
-    restore: true  
-
-
-# Vilken device ska texten läsas upp på
-  textupplasning_device:
-    initial_value: ""
-    friendly_name: "Vilken device ska texten läsas upp på"
-    restore: false
-
-
-# Vilken text ska läsas upp 
-  textupplasning_text:
-    initial_value: ""
-    friendly_name: "Vilken text ska läsas upp"
-    restore: false    
-
-
-# Variabler som styr i vilken riktning dimningen ska ändras
-  dimming_direction_isabeles_taklampa:
-    initial_value: "Upp"
-    friendly_name: "Dimma Isabelles taklampa vid långtryck"
-    restore: true
-
-
-# Variabler som styr i vilken riktning dimningen ska ändras
-  dimming_direction_fjarr_hogtalarna_i_koket:
-    initial_value: "Upp"
-    friendly_name: "Ändra volymen på högtalarna i köket vid långtryck"
-    restore: true
-
-#######################################################
-# TIMERS 
-#######################################################
-
-timer:
-
-# Används för att fördröja när radion i köket startar.
-# Problem: Så fort någon passerar köket startar radion.
-# Detta gör att en ny rörelse måste ske innan timern tar slut
-# för att radion ska starta. 
-  kitchen_radio_delay:
-    duration: '00:01:00'
-
-
-# Används för att släckaa alla lampor om någno trycker på brytare i övre trappen 
-# 2+2 gånger inom fem sekunder 
-  to_night_lights:
-    duration: '00:00:05'
-
-
-# Används för att fördröja larmsignal och notis om huset är larmat och när något triggar larmet.
-# Dena paus behövs t.ex. för att man ska hinna stänga av larmet när man kommer hem. 
-  alarm_delay:
-    duration: '00:30:00'
-
-
-# Hur länge ska strålkastaren ska vara tänd när kamreran i ringklockan noterar rörelse.
-  stralkastaren_on:
-    duration: '00:05:00'
-
-
-# Hur länge ska lampan på framsidan ska vara tänd när kamreran i ringklockan noterar rörelse.
-  lampan_framsidan_on:
-    duration: '00:05:00'
-
-
-# Timer för att släcka lamprna i garderoben efter rörelse
-  ljus_timeout_lamporna_i_garderoben:
-#      duration: '{{ states.input_number.ljus_timeout_lamporna_i_garderoben.state | int | timestamp_custom("%H:%M:%S", 0) }}'
-
-
-# Hur lång tid ska lamporna i hallen vara dimmade till lite ljusare när det ringer på dörren (ring doorbell) eller när det rör sig i hallen.
-  hallen_uppdimmad_belysning:
-    duration: '00:05:00'
-
-
-#######################################################
-# Lights
-#######################################################
-
-light:
-
-# Grupper av belysning 
-- platform: group       # Köket förutom takspottarna i kökstaket (den stora zonen)
-  name: Köksbelysningen
-  entities:
-    - light.takspottarna_koksluckorna_level
-    - light.takspottarna_trappan_level
-    - light.spottarna_bakom_spisen_level
-
-- platform: group       # LED listerna ovanför arbetsbänkarna
-  name: LED lister ovanför arbetsbänkarna
-  entities:
-    - light.led_ovanfor_stora_arbetsbanken
-    - light.led_ovanfor_lilla_arbetsbanken
-
-- platform: group       # Vägglamporna utomhus framsidan
-  name: Fasadbelysningen
-  entities:
-    - light.utomhus_framsidan_1
-    - light.utomhus_framsidan_2    
-
-- platform: group       # Vägglamporna utomhus framsidan
-  name: WC skåp och handfat
-  entities:
-    - light.wc_spegelskap
-    - light.wc_handfat    
-
-
-
-#######################################################
-# utility mätare
-#######################################################
-utility_meter:
-
-# Daglig användning
-  daily_energy:
-    source: sensor.accumulated_consumption_eksharadsgatan_6
-    name: Tibber daglig förbrukning
-    cycle: daily
-
+assist_pipeline:
+ssdp:

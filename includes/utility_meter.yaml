@@ -1,0 +1,4 @@
+daily_energy:
+  source: sensor.accumulated_consumption_eksharadsgatan_6
+  name: Tibber daglig förbrukning
+  cycle: daily
