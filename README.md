@@ -98,6 +98,8 @@ Kopiera `.cursor/mcp.json.example` till `.cursor/mcp.json` och klistra in **Nabu
 
 **Cursor Automations** (t.ex. `cursor+ha test`) kräver dessutom MCP i [cursor.com → Settings → MCP](https://cursor.com/settings) — lokal `mcp.json` räcker inte. Steg-för-steg: [docs/cursor-cloud-mcp-steg.md](docs/cursor-cloud-mcp-steg.md). Verifiera lokalt: `.\scripts\verify-ha-mcp.ps1`.
 
+**Git-synk från molnet:** [docs/cursor-cloud-git-synk.md](docs/cursor-cloud-git-synk.md) — `git pull` via MCP efter engångsinstallation på servern.
+
 ## WhatsApp-chatt
 
 Se [docs/whatsapp-chatt-plan.md](docs/whatsapp-chatt-plan.md).
