@@ -107,3 +107,8 @@
       has_date: true
       has_time: true
       icon: mdi:shower-head
+    duschsession_start:
+      name: "Duschsession start"
+      has_date: true
+      has_time: true
+      icon: mdi:shower-head

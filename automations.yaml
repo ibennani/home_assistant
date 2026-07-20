@@ -7636,8 +7636,9 @@
   alias: 'Status: Någon duschar'
   description: 'Hanterar duschstatus i tre steg. Kandidat kräver stängd badrumsdörr,
     duschdörr öppen 3-60 sekunder och sedan 120 sekunder utan rörelse. Fukt kan bekräfta
-    direkt till Någon duschar om sekvensen är giltig, eller bekräfta från kandidat. Avslut
-    när badrumsdörren öppnas.
+    direkt till Någon duschar om sekvensen är giltig, eller bekräfta från kandidat.
+    Avslut när badrumsdörren öppnas, eller via fuktnedgång (minst 8 % under sessionstopp,
+    stabil 4 min, stängd duschdörr, minst 3 min i Någon duschar).
 
     '
   triggers:
@@ -7662,6 +7663,9 @@
   - trigger: state
     id: fukt_andrad
     entity_id: sensor.badrummet_luftfuktighet
+  - trigger: time_pattern
+    id: fukt_nedgang_kontroll
+    minutes: "/1"
   - trigger: state
     id: badrumsdorr_oppnad
     entity_id: binary_sensor.badrumsdorren
@@ -7764,6 +7768,16 @@
           entity_id: input_select.nagon_duschar
         data:
           option: Ingen duschar
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_topp
+        data:
+          value: 0
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_nedgang_ts
+        data:
+          value: 0
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
@@ -7800,6 +7814,16 @@
           entity_id: input_datetime.duschsession_start
         data:
           datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_topp
+        data:
+          value: '{{ states(''sensor.badrummet_luftfuktighet'') | float(0) }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_nedgang_ts
+        data:
+          value: 0
       - action: input_select.select_option
         target:
           entity_id: input_select.nagon_duschar
@@ -7847,6 +7871,16 @@
             ''none'', ''None''] and (raw | string) | length > 0 else as_timestamp(now())
             %} {% set elapsed = [0, (as_timestamp(now()) - start_ts) | int(0)] | max
             %} {{ elapsed // 60 }}:{{ ''%02d'' | format(elapsed % 60) }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_topp
+        data:
+          value: '{{ [states(''input_number.duschsession_fukt_topp'') | float(0), states(''sensor.badrummet_luftfuktighet'') | float(0)] | max }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_nedgang_ts
+        data:
+          value: 0
       - action: input_select.select_option
         target:
           entity_id: input_select.nagon_duschar
@@ -7889,6 +7923,16 @@
           entity_id: input_select.nagon_duschar
         data:
           option: Ingen duschar
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_topp
+        data:
+          value: 0
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_nedgang_ts
+        data:
+          value: 0
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
@@ -7919,6 +7963,128 @@
             message: Duschkandidat avslutades när badrumsdörren öppnades.
     - conditions:
       - condition: template
+        value_template: '{{ trigger.id in [''fukt_andrad'', ''fukt_nedgang_kontroll'']
+          }}'
+      - condition: template
+        value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'')
+          }}'
+      sequence:
+      - variables:
+          fukt_current: '{{ states(''sensor.badrummet_luftfuktighet'') | float(0)
+            }}'
+          fukt_peak: '{{ states(''input_number.duschsession_fukt_topp'') | float(0)
+            }}'
+          fukt_decline_ts: '{{ states(''input_number.duschsession_fukt_nedgang_ts'')
+            | float(0) }}'
+          fukt_now_ts: '{{ as_timestamp(now()) }}'
+          fukt_session_start: "{% set raw = states('input_datetime.duschsession_start')
+            %} {% set bad = ['unknown', 'unavailable', 'none', 'None', ''] %} {{
+            as_timestamp(raw) if raw not in bad and (raw | string) | length > 0 else
+            as_timestamp(now()) }}"
+          fukt_session_elapsed: '{{ fukt_now_ts | float - fukt_session_start | float
+            }}'
+          fukt_from_v: "{% if trigger.id == 'fukt_andrad' and trigger.from_state
+            is not none and trigger.from_state.state not in ['unknown', 'unavailable',
+            'none', 'None', ''] %}{{ trigger.from_state.state | float(0) }}{% else
+            %}{{ fukt_current | float }}{% endif %}"
+          fukt_rising: '{{ fukt_current | float > fukt_from_v | float + 0.5 }}'
+          fukt_decline_ok: "{{
+            is_state('binary_sensor.duschdorren', 'off')
+            and fukt_session_elapsed | float >= 180
+            and fukt_peak | float > 0
+            and fukt_current | float <= fukt_peak | float - 8
+            and not (fukt_rising | bool)
+          }}"
+          fukt_end_ok: '{{ fukt_decline_ok | bool and fukt_decline_ts | float > 0
+            and (fukt_now_ts | float - fukt_decline_ts | float) >= 240 }}'
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ fukt_current | float > fukt_peak | float }}'
+          sequence:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.duschsession_fukt_topp
+            data:
+              value: '{{ fukt_current | float }}'
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.duschsession_fukt_nedgang_ts
+            data:
+              value: 0
+        - conditions:
+          - condition: template
+            value_template: '{{ fukt_end_ok | bool }}'
+          sequence:
+          - variables:
+              elapsed_text: '{% set raw = states(''input_datetime.duschsession_start'')
+                %} {% set start_ts = as_timestamp(raw) if raw not in [''unknown'',
+                ''unavailable'', ''none'', ''None''] and (raw | string) | length >
+                0 else as_timestamp(now()) %} {% set elapsed = [0, (as_timestamp(now())
+                - start_ts) | int(0)] | max %} {{ elapsed // 60 }}:{{ ''%02d'' | format(elapsed
+                % 60) }}'
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.nagon_duschar
+            data:
+              option: Ingen duschar
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.duschsession_fukt_topp
+            data:
+              value: 0
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.duschsession_fukt_nedgang_ts
+            data:
+              value: 0
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.duschsekvens_giltig
+          - action: timer.cancel
+            target:
+              entity_id: timer.duschkandidat
+          - action: notify.mobile_app_ilias_s23_ultra
+            data:
+              message: 'HEMMET {{ now().strftime(''%R'') }}:
+
+                Någon har duschat klart.
+
+                Total tid: {{ elapsed_text }}.
+
+                Avslutat via fuktnedgång (stängd duschdörr).
+
+                '
+              data:
+                ttl: 0
+                priority: high
+          - action: logbook.log
+            data:
+              name: Duschstatus
+              message: 'Dusch avslutad via fuktnedgång. Topp {{ fukt_peak | round(1)
+                }} %, nu {{ fukt_current | round(1) }} %.'
+        - conditions:
+          - condition: template
+            value_template: '{{ fukt_decline_ok | bool and fukt_decline_ts | float
+              == 0 }}'
+          sequence:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.duschsession_fukt_nedgang_ts
+            data:
+              value: '{{ fukt_now_ts | float }}'
+        - conditions:
+          - condition: template
+            value_template: '{{ not (fukt_decline_ok | bool) and fukt_decline_ts |
+              float > 0 }}'
+          sequence:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.duschsession_fukt_nedgang_ts
+            data:
+              value: 0
+    - conditions:
+      - condition: template
         value_template: '{{ trigger.id == ''kandidat_timer_klar'' }}'
       - condition: template
         value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon kanske
@@ -7929,6 +8095,16 @@
           entity_id: input_select.nagon_duschar
         data:
           option: Ingen duschar
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_topp
+        data:
+          value: 0
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_nedgang_ts
+        data:
+          value: 0
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
