@@ -660,7 +660,7 @@ views:
                   - type: custom:template-entity-row  
                     entity: switch.larmlampan_switch
                     name: Larmlampan
-                    secondary: Uppdaterades {{ as_timestamp(state_attr('switch.larmlampan_switch', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Uppdaterades {{ as_timestamp(states.switch.larmlampan_switch.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
               - type: markdown
                 title: Öppna dörrar
                 content: |
@@ -694,7 +694,7 @@ views:
               - type: markdown
                 title: Brevlådan
                 content: |
-                  Senaste händelsen: {{ as_timestamp(states.binary_sensor.binary_sensor.rorelse_i_brevladan.last_updated) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                  Senaste händelsen: {{ as_timestamp(states.binary_sensor.rorelse_i_brevladan.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
               - type: history-graph
                 title: Brevlådan
                 entities:
@@ -817,108 +817,108 @@ views:
                   - type: custom:template-entity-row 
                     entity: binary_sensor.balkongdorren
                     icon: mdi:door
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.balkongdorren', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.balkongdorren.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.balkongdorren','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.balkongdorren', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.balkongdorren', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.balkongdorren', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.balkongdorren.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.balkongdorren.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.balkongdorren.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.altandorr_baksidan
                     icon: mdi:door
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.altandorr_baksidan', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.altandorr_baksidan.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.altandorr_baksidan','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.altandorr_baksidan', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.altandorr_baksidan', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.altandorr_baksidan', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.altandorr_baksidan.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.altandorr_baksidan.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.altandorr_baksidan.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.wc_dorr
                     icon: mdi:door
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.wc_dorr', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.wc_dorr.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.wc_dorr','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_dorr', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_dorr', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_dorr', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_dorr.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_dorr.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_dorr.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.diskmaskin_lucka
                     icon: mdi:dishwasher
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.diskmaskin_lucka', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.diskmaskin_lucka.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.diskmaskin_lucka','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.diskmaskin_lucka', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.diskmaskin_lucka', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.diskmaskin_lucka', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.diskmaskin_lucka.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.diskmaskin_lucka.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.diskmaskin_lucka.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.altandorr_koket
                     icon: mdi:door
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.altandorr_koket', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.altandorr_koket.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.altandorr_koket','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.altandorr_koket', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.altandorr_koket', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.altandorr_koket', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.altandorr_koket.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.altandorr_koket.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.altandorr_koket.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.ytterdorren
                     icon: mdi:door
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.ytterdorren', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.ytterdorren.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.ytterdorren','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.ytterdorren', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.ytterdorren', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.ytterdorren', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.ytterdorren.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.ytterdorren.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.ytterdorren.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: divider
                   - type: custom:template-entity-row 
                     entity: binary_sensor.skafferidorren
                     icon: mdi:wardrobe-outline
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.skafferidorren', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.skafferidorren.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.skafferidorren','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.skafferidorren', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.skafferidorren', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.skafferidorren', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.skafferidorren.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.skafferidorren.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.skafferidorren.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.badrumsdorren
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.badrumsdorren', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.badrumsdorren.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.badrumsdorren','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrumsdorren', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrumsdorren', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrumsdorren', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.badrumsdorren.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.badrumsdorren.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.badrumsdorren.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.forradet_dorr
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.forradet_dorr', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.forradet_dorr.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.forradet_dorr','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.forradet_dorr', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.forradet_dorr', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.forradet_dorr', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.forradet_dorr.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.forradet_dorr.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.forradet_dorr.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
           - type: vertical-stack
@@ -930,75 +930,75 @@ views:
                   - type: custom:template-entity-row 
                     entity: binary_sensor.isabelles_fonster
                     icon: mdi:window-closed-variant
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.isabelles_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.isabelles_fonster.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.isabelles_fonster','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_fonster.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_fonster.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_fonster.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.vardagsrummet_fonster
                     icon: mdi:window-closed-variant
                     name: Vardagsrummet
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.vardagsrummet_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.vardagsrummet_fonster.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.vardagsrummet_fonster','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_fonster.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_fonster.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_fonster.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.wc_fonster
                     icon: mdi:window-closed-variant
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.wc_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.wc_fonster.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.wc_fonster','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_fonster.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_fonster.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_fonster.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.eriks_fonster
                     icon: mdi:window-closed-variant
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.eriks_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.eriks_fonster.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.eriks_fonster','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_fonster.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_fonster.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_fonster.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.albins_fonster
                     icon: mdi:window-closed-variant
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.albins_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.albins_fonster.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.albins_fonster','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_fonster.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_fonster.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_fonster.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
                     entity: binary_sensor.badrummet_fonster
                     icon: mdi:window-closed-variant
                     name: Badrummet
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.badrummet_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.badrummet_fonster.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.badrummet_fonster','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrummet_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrummet_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrummet_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.badrummet_fonster.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.badrummet_fonster.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.badrummet_fonster.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
 
@@ -1009,366 +1009,366 @@ views:
                   - type: custom:template-entity-row
                     entity: binary_sensor.front_door_motion
                     name: Utomhus framsidan
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.front_door_motion', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.front_door_motion.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.front_door_motion', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.front_door_motion', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.front_door_motion', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.front_door_motion', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.front_door_motion.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.front_door_motion.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.front_door_motion.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.balkongen_rorelse
                     name: Balkongen
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.balkongen_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.balkongen_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.balkongen_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.balkongen_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.balkongen_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.balkongen_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.balkongen_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.balkongen_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.balkongen_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.aarlo_motion_baksidan
                     name: Utomhus baksidan
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.aarlo_motion_baksidan', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.aarlo_motion_baksidan.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.aarlo_motion_baksidan', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.aarlo_motion_baksidan', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.aarlo_motion_baksidan', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.aarlo_motion_baksidan', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.aarlo_motion_baksidan.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.aarlo_motion_baksidan.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.aarlo_motion_baksidan.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.baksidan_rorelse_wc_fonster
                     name: Utomhus baksidan (WC fönster)
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.baksidan_rorelse_wc_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.baksidan_rorelse_wc_fonster.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.baksidan_rorelse_wc_fonster', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.baksidan_rorelse_wc_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.baksidan_rorelse_wc_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.baksidan_rorelse_wc_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.baksidan_rorelse_wc_fonster.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.baksidan_rorelse_wc_fonster.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.baksidan_rorelse_wc_fonster.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: divider
                   - type: custom:template-entity-row
                     entity: binary_sensor.isabelles_rum_rorelse
                     name: Isabelles rum
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.isabelles_rum_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.isabelles_rum_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.isabelles_rum_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_rum_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_rum_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_rum_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_rum_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_rum_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_rum_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.isabelles_skrivbord_rorelse
                     name: Isabelles skrivbord
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.isabelles_skrivbord_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.isabelles_skrivbord_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.isabelles_skrivbord_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_skrivbord_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_skrivbord_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.isabelles_skrivbord_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_skrivbord_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_skrivbord_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.isabelles_skrivbord_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: group.rorelse_i_vardagsrummet
                     name: Vardagsrummet alla sensorer
-                    secondary: Senast {{ as_timestamp(state_attr('group.rorelse_i_vardagsrummet', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.group.rorelse_i_vardagsrummet.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('group.rorelse_i_vardagsrummet', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_vardagsrummet', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_vardagsrummet', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_vardagsrummet', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.group.rorelse_i_vardagsrummet.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.group.rorelse_i_vardagsrummet.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.group.rorelse_i_vardagsrummet.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.vardagsrummet_rorelse
                     name: Vardagsrummet
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.vardagsrummet_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.vardagsrummet_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.vardagsrummet_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.vardagsrummet_soffan_rorelse
                     name: Vardagsrummet soffan
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.vardagsrummet_soffan_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.vardagsrummet_soffan_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.vardagsrummet_soffan_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_soffan_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_soffan_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.vardagsrummet_soffan_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_soffan_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_soffan_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.vardagsrummet_soffan_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: divider
                   - type: custom:template-entity-row
                     entity: binary_sensor.ovre_trappan_rorelse
                     name: Övre trappan
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.ovre_trappan_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.ovre_trappan_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.ovre_trappan_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.ovre_trappan_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.ovre_trappan_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.ovre_trappan_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.ovre_trappan_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.ovre_trappan_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.ovre_trappan_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.sovrummet_rorelse
                     name: Sovrummet
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.sovrummet_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.sovrummet_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.sovrummet_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.sovrummet_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.sovrummet_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.sovrummet_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.sovrummet_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.sovrummet_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.sovrummet_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: group.rorelse_i_garderoben
                     name: Garderoben
-                    secondary: Senast {{ as_timestamp(state_attr('group.rorelse_i_garderoben', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.group.rorelse_i_garderoben.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('group.rorelse_i_garderoben', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_garderoben', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_garderoben', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_garderoben', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.group.rorelse_i_garderoben.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.group.rorelse_i_garderoben.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.group.rorelse_i_garderoben.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.wc_rorelse
                     name: WC
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.wc_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.wc_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.wc_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.wc_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.wc_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.eriks_rum_rorelse
                     name: Eriks rum
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.eriks_rum_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.eriks_rum_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_rum_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_rum_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_rum_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.eriks_skrivbord_rorelse
                     name: Eriks skrivbord
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.eriks_skrivbord_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.eriks_skrivbord_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.eriks_skrivbord_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_skrivbord_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_skrivbord_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_skrivbord_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_skrivbord_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_skrivbord_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.eriks_skrivbord_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: divider
                   - type: custom:template-entity-row
                     entity: group.rorelse_i_koket
                     name: Köket alla sensorer
-                    secondary: Senast {{ as_timestamp(state_attr('group.rorelse_i_koket', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.group.rorelse_i_koket.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('group.rorelse_i_koket', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_koket', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_koket', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_koket', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.group.rorelse_i_koket.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.group.rorelse_i_koket.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.group.rorelse_i_koket.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.koket_arbetsbanken_rorelse
                     name: Köket arbetsbänken
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.koket_arbetsbanken_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.koket_arbetsbanken_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.koket_arbetsbanken_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koket_arbetsbanken_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koket_arbetsbanken_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koket_arbetsbanken_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.koket_arbetsbanken_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.koket_arbetsbanken_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.koket_arbetsbanken_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.koket_rorelse
                     name: Köket
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.koket_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.koket_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.koket_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koket_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koket_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koket_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.koket_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.koket_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.koket_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.koksbordet_rorelse
                     name: Köksbordet
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.koksbordet_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.koksbordet_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.koksbordet_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koksbordet_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koksbordet_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.koksbordet_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.koksbordet_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.koksbordet_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.koksbordet_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.hallen_rorelse
                     name: Hallen
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.hallen_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.hallen_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.hallen_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.hallen_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.hallen_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.hallen_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.hallen_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.hallen_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.hallen_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: divider
                   - type: custom:template-entity-row
                     entity: binary_sensor.albins_rum_rorelse
                     name: Albins rum
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.albins_rum_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.albins_rum_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_rum_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_rum_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_rum_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.albins_skrivbord_rorelse
                     name: Albins skrivbord
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.albins_skrivbord_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.albins_skrivbord_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.albins_skrivbord_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_skrivbord_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_skrivbord_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_skrivbord_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_skrivbord_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_skrivbord_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.albins_skrivbord_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.nedre_trappan_rorelse
                     name: Nedre trappan
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.nedre_trappan_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.nedre_trappan_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.nedre_trappan_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.nedre_trappan_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.nedre_trappan_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.nedre_trappan_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.nedre_trappan_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.nedre_trappan_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.nedre_trappan_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.badrummet_rorelse
                     name: Badrummet
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.badrummet_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.badrummet_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrummet_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrummet_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.badrummet_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.forradet_rorelse
                     name: Förrådet
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.forradet_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.forradet_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.forradet_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.forradet_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.forradet_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.forradet_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.forradet_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.forradet_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.forradet_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.tvattstugan_rorelse
                     name: Tvättstugan
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.tvattstugan_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.tvattstugan_rorelse.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tvattstugan_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tvattstugan_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tvattstugan_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tvattstugan_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tvattstugan_rorelse.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tvattstugan_rorelse.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.tvattstugan_rorelse.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: divider
                   - type: custom:template-entity-row
                     entity: binary_sensor.tradfri_rorelse_i_garderoben_1
                     name: Garderoben 1
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_1', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_1.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_1', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_1', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_1', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_1', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_1.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_1.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_1.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.tradfri_rorelse_i_garderoben_2
                     name: Garderoben 2
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_2', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_2.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_2', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_2', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_2', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_2', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_2.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_2.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_2.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.tradfri_rorelse_i_garderoben_3
                     name: Garderoben 3
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_3', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_3.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_3', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_3', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_3', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_3', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_3.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_3.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_3.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
                     entity: binary_sensor.tradfri_rorelse_i_garderoben_4
                     name: Garderoben 4
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_4', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_4.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_4', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_4', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_4', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.tradfri_rorelse_i_garderoben_4', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_4.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_4.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_4.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
 
@@ -1501,37 +1501,37 @@ views:
                   - type: custom:template-entity-row    
                     entity: binary_sensor.oversvamning_diskmaskinen
                     name: Diskmaskinen
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.oversvamning_diskmaskinen', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.oversvamning_diskmaskinen.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_4','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_diskmaskinen', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_diskmaskinen', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_diskmaskinen', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_diskmaskinen.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_diskmaskinen.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_diskmaskinen.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row    
                     entity: binary_sensor.oversvamning_tvattstugan
                     name: Tvättstugan
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.oversvamning_tvattstugan', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.oversvamning_tvattstugan.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_4','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_tvattstugan', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_tvattstugan', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_tvattstugan', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_tvattstugan.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_tvattstugan.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_tvattstugan.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row    
                     entity: binary_sensor.oversvamning_albins_fonster
                     name: Albins fönster
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.oversvamning_albins_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(states.binary_sensor.oversvamning_albins_fonster.last_changed) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_4','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_albins_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_albins_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_albins_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_albins_fonster.last_changed)) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_albins_fonster.last_changed)) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.oversvamning_albins_fonster.last_changed)) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
   - title: Temperaturer
