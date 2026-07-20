@@ -8540,6 +8540,60 @@
         tag: vattenspridare_framsidan_starta_igen
   mode: restart
 
+# HomeKit: dölj parkopplingsnotiser utan att ta bort integrationen
+- alias: "HomeKit: Dismiss parkopplingsnotiser"
+  id: '808502072001'
+  description: Tar bort HomeKit parkopplingsnotiser vid omstart. Bron och integrationen behålls.
+  mode: parallel
+  max: 5
+  triggers:
+    - trigger: homeassistant
+      event: start
+      id: ha_start
+    - trigger: persistent_notification
+      update_type:
+        - added
+      id: hk_notice
+  actions:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: hk_notice
+            - condition: template
+              value_template: "{{ trigger.notification.title == 'HomeKit Pairing' }}"
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: "{{ trigger.notification.notification_id }}"
+        - conditions:
+            - condition: trigger
+              id: ha_start
+          sequence:
+            - delay: "00:00:45"
+            - repeat:
+                for_each:
+                  - f791823a10164a1b3af1ba0799feef85
+                  - d229821a6f7e9a52c87c89425366a567
+                  - 6cf97911c820237def1d1eb6a6cd8e2e
+                  - a9512680495ddf54f8dcd038685bbaa4
+                sequence:
+                  - action: persistent_notification.dismiss
+                    data:
+                      notification_id: "{{ repeat.item }}"
+                    continue_on_error: true
+            - delay: "00:01:00"
+            - repeat:
+                for_each:
+                  - f791823a10164a1b3af1ba0799feef85
+                  - d229821a6f7e9a52c87c89425366a567
+                  - 6cf97911c820237def1d1eb6a6cd8e2e
+                  - a9512680495ddf54f8dcd038685bbaa4
+                sequence:
+                  - action: persistent_notification.dismiss
+                    data:
+                      notification_id: "{{ repeat.item }}"
+                    continue_on_error: true
+
 # Git-synk: triggas av Cursor Cloud via event cursor_git_synk
 - alias: "System: Git-synk från GitHub"
   id: 'cursor_git_synk'
