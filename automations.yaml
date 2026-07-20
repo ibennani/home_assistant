@@ -3001,7 +3001,7 @@
                 target:
                   entity_id: light.wc_spegelskap
                 data:
-                  brightness_step_pct: 10
+                  brightness_step_pct: 15
                   transition: 1
               - delay: 00:00:01
         default:
@@ -3015,7 +3015,7 @@
               target:
                 entity_id: light.wc_spegelskap
               data:
-                brightness_step_pct: -10
+                brightness_step_pct: -15
                 transition: 1
             - delay: 00:00:01
     - conditions:
@@ -3089,7 +3089,7 @@
                 target:
                   entity_id: light.wc_handfat
                 data:
-                  brightness_step_pct: 10
+                  brightness_step_pct: 15
                   transition: 1
               - delay: 00:00:01
         default:
@@ -3103,7 +3103,7 @@
               target:
                 entity_id: light.wc_handfat
               data:
-                brightness_step_pct: -10
+                brightness_step_pct: -15
                 transition: 1
             - delay: 00:00:01
     - conditions:
@@ -7003,7 +7003,7 @@
                 target:
                   entity_id: light.taklampan_badrummet
                 data:
-                  brightness_step_pct: -10
+                  brightness_step_pct: -15
                   transition: 1
                   kelvin: "{% set ljusstyrka = states(\"sensor.utomhus_baksidan_ljusstyrka\")
                     | int(default=0) %} {% set mode = states(\"input_select.house_time_modes\")
