@@ -1037,33 +1037,92 @@
       {% elif is_state(\"light.koket_ingen_lampa_1\",\"off\") %} light.turn_off {%
       else %} script.do_nothing {% endif %} \n"
     entity_id: light.stralkastaren
-- alias: 'Belysning: Tänd och Släck strålkastaren vid rörelse på framsidan'
+# Tänd / släck strålkastaren om något rör sig på framsidan
+# Ring-rörelsen rapporteras som event (event.front_door_motion), inte on/off.
+# Släckning kräver 3 min utan rörelse och att båda dörrarna är stängda.
+- alias: "Belysning: Tänd och Släck strålkastaren vid rörelse på framsidan"
   id: '7918151123333574'
+  mode: single
   triggers:
-  - trigger: template
-    value_template: '{{ is_state(''input_select.house_alarm_modes'', ''Nattlarm'')  and
-      is_state(''binary_sensor.front_door_motion'', ''on'') }}
+    - trigger: state
+      entity_id: event.front_door_motion
+      id: rorelse
+    - trigger: time_pattern
+      minutes: "/1"
+      id: kontroll
+    - trigger: state
+      entity_id:
+        - binary_sensor.ytterdorren
+        - binary_sensor.altandorr_koket
+      to: "off"
+      id: dorr_stangs
+  actions:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: rorelse
+            - condition: state
+              entity_id: input_select.house_alarm_modes
+              state:
+                - Nattlarm
+                - Huset är larmat
+            - condition: numeric_state
+              entity_id: sensor.utomhus_framsidan_ljusstyrka
+              below: 300
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.stralkastaren
+        - conditions:
+            - condition: trigger
+              id:
+                - kontroll
+                - dorr_stangs
+            - condition: state
+              entity_id: light.stralkastaren
+              state: "on"
+            - condition: state
+              entity_id: binary_sensor.ytterdorren
+              state: "off"
+            - condition: state
+              entity_id: binary_sensor.altandorr_koket
+              state: "off"
+            - condition: template
+              value_template: >
+                {{ (now() - states.event.front_door_motion.last_changed).total_seconds() > 180 }}
+          sequence:
+            - action: light.turn_off
+              target:
+                entity_id: light.stralkastaren
 
-      '
-  - trigger: template
-    value_template: '{{ is_state(''input_select.house_alarm_modes'', ''Huset är larmat'')  and
-      is_state(''binary_sensor.front_door_motion'', ''on'')  and (states(''sensor.utomhus_framsidan_ljusstyrka'')
-      | int) < 300 }}
 
-      '
-  - trigger: template
-    value_template: '{{  is_state(''binary_sensor.front_door_motion'', ''off'')  and
-      is_state(''binary_sensor.altandorr_koket'', ''off'')  and is_state(''binary_sensor.ytterdorren'',
-      ''off'')  and (as_timestamp(now()) - as_timestamp(states.binary_sensor.front_door_motion.last_changed))
-      > (3 * 60) }}
-
-      '
-  action:
-  - action: '{% if is_state(''binary_sensor.front_door_motion'', ''on'') %} light.turn_on
-      {% else %} light.turn_off {% endif %}
-
-      '
-    entity_id: light.stralkastaren
+# Vattenslang på framsidan vid rörelse nattetid när huset är larmat
+- alias: "Bevattning: Vattenslang vid rörelse på framsidan nattetid"
+  id: '7918151123333575'
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id: event.front_door_motion
+  conditions:
+    - condition: state
+      entity_id: input_select.house_time_modes
+      state: Natt
+    - condition: state
+      entity_id: input_select.house_alarm_modes
+      state:
+        - Nattlarm
+        - Huset är larmat
+    - condition: state
+      entity_id: switch.vattenslang_framsidan
+      state: "off"
+  actions:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.vattenslang_framsidan
+    - delay: "00:00:10"
+    - action: switch.turn_off
+      target:
+        entity_id: switch.vattenslang_framsidan
 - id: '8348674'
   alias: 'Belysning: Blinka i WC och badrummet vid rörelse på framsidan'
   triggers:
