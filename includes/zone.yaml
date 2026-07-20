@@ -4,3 +4,16 @@
   longitude: 18.087033927440647
   radius: 80
   icon: mdi:home
+
+# Sjukhus (namn utan avslutande mellanslag – måste matcha automations.yaml)
+- name: Sahlgrenska sjukhuset
+  latitude: 57.6822800214212
+  longitude: 11.959862876683475
+  radius: 461
+  icon: mdi:hospital-box-outline
+
+- name: Mölndahls sjukhus
+  latitude: 57.66094070711746
+  longitude: 12.010909840464592
+  radius: 234
+  icon: mdi:hospital-box-outline
