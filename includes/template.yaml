@@ -141,6 +141,8 @@
           states('sensor.forradet_lufttryck') | float(0)
         ] %}
         {{ sensors | select('is_number') | max | round(1) }}
+
+    - name: Ljusstyrkan på framsidan i lux uppdelad på olika sektioner
       unique_id: ljusstyrka_framsidan_sektioner
       state: >
         {% set lux = states('sensor.utomhus_framsidan_ljusstyrka') | int(0) %}
