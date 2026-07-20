@@ -91,6 +91,18 @@
 # Behövs för att styra dimning i övre WC (spegelskåp och handfat)
   wc_s1_hold_running:
     name: WC S1 Dimmer Running
+  wc_s2_hold_running:
+    name: WC S2 Dimmer Running
+  wc_spegelskap_dimma_upp:
+    name: WC Spegelskåp dimma upp nästa håll
+    initial: true
+  wc_handfat_dimma_upp:
+    name: WC Handfat dimma upp nästa håll
+    initial: true
+  wc_s1_session_dim_up:
+    name: WC S1 dimningsriktning denna hållning
+  wc_s2_session_dim_up:
+    name: WC S2 dimningsriktning denna hållning
 
 
 # Toggle som avgör om vattenspridaren ska stara automatiskt

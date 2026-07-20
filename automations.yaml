@@ -2950,6 +2950,182 @@
         data:
           brightness_pct: 99
           transition: 0
+    - conditions:
+      - condition: trigger
+        id: s1_hold
+      sequence:
+      - variables:
+          session_dim_up: "{% set pct = spegel_pct | int(0) %}\n{% if is_state('light.wc_spegelskap',
+            'off') %}\n  true\n{% elif pct >= 90 %}\n  false\n{% elif pct <= 10
+            %}\n  true\n{% else %}\n  {{ is_state('input_boolean.wc_spegelskap_dimma_upp',
+            'on') }}\n{% endif %}\n"
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: light.wc_spegelskap
+            state: 'off'
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.wc_spegelskap
+            data:
+              brightness_pct: 1
+              transition: 0
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ session_dim_up }}'
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.wc_s1_session_dim_up
+        default:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.wc_s1_session_dim_up
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.wc_s1_hold_running
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ session_dim_up }}'
+          sequence:
+          - repeat:
+              while:
+              - condition: state
+                entity_id: input_boolean.wc_s1_hold_running
+                state: 'on'
+              sequence:
+              - action: light.turn_on
+                target:
+                  entity_id: light.wc_spegelskap
+                data:
+                  brightness_step_pct: 10
+                  transition: 1
+              - delay: 00:00:01
+        default:
+        - repeat:
+            while:
+            - condition: state
+              entity_id: input_boolean.wc_s1_hold_running
+              state: 'on'
+            sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.wc_spegelskap
+              data:
+                brightness_step_pct: -10
+                transition: 1
+            - delay: 00:00:01
+    - conditions:
+      - condition: trigger
+        id: s1_release
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.wc_s1_hold_running
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: input_boolean.wc_s1_session_dim_up
+            state: 'on'
+          sequence:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.wc_spegelskap_dimma_upp
+        default:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.wc_spegelskap_dimma_upp
+    - conditions:
+      - condition: trigger
+        id: s2_hold
+      sequence:
+      - variables:
+          session_dim_up: "{% set pct = handfat_pct | int(0) %}\n{% if is_state('light.wc_handfat',
+            'off') %}\n  true\n{% elif pct >= 90 %}\n  false\n{% elif pct <= 10 %}\n
+            \ true\n{% else %}\n  {{ is_state('input_boolean.wc_handfat_dimma_upp',
+            'on') }}\n{% endif %}\n"
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: light.wc_handfat
+            state: 'off'
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.wc_handfat
+            data:
+              brightness_pct: 1
+              transition: 0
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ session_dim_up }}'
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.wc_s2_session_dim_up
+        default:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.wc_s2_session_dim_up
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.wc_s2_hold_running
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ session_dim_up }}'
+          sequence:
+          - repeat:
+              while:
+              - condition: state
+                entity_id: input_boolean.wc_s2_hold_running
+                state: 'on'
+              sequence:
+              - action: light.turn_on
+                target:
+                  entity_id: light.wc_handfat
+                data:
+                  brightness_step_pct: 10
+                  transition: 1
+              - delay: 00:00:01
+        default:
+        - repeat:
+            while:
+            - condition: state
+              entity_id: input_boolean.wc_s2_hold_running
+              state: 'on'
+            sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.wc_handfat
+              data:
+                brightness_step_pct: -10
+                transition: 1
+            - delay: 00:00:01
+    - conditions:
+      - condition: trigger
+        id: s2_release
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.wc_s2_hold_running
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: input_boolean.wc_s2_session_dim_up
+            state: 'on'
+          sequence:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.wc_handfat_dimma_upp
+        default:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.wc_handfat_dimma_upp
   mode: parallel
   variables:
     lux: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | int(0) }}'
