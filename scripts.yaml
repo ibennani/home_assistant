@@ -728,6 +728,7 @@ tand_alla_lampor_pa_maxbelysning:
       - light.taklampa_tvattstugan
       - light.badrummet_alla_lampor
       - light.koket_arbetsbanken
+      - light.spottarna_bakom_spisen_level
       - light.led_lister_ovanfor_arbetsbankarna
       - light.led_ovanfor_lilla_arbetsbanken
       - light.led_ovanfor_stora_arbetsbanken
