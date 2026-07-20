@@ -39,6 +39,19 @@ koket_stall_in_belysningen:
   - action: light.turn_on
     target:
       entity_id:
+      - light.led_ovanfor_lilla_arbetsbanken
+      - light.led_ovanfor_stora_arbetsbanken
+    data:
+      brightness_pct: "{% if stadning %} 100 {% elif house_mode in [\"Morgon\",\"Dag\",\"Kväll\"]
+        %}\n  {% if scene == \"Normalt\" %}\n    {% if front_section <= 2 %} 75\n
+        \   {% elif front_section == 3 %} 85\n    {% elif front_section == 4 %} 100\n
+        \   {% else %} 100\n    {% endif %}\n  {% elif scene == \"Maxbelysning\" %}
+        100\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %} 0\n  {% else %} 0\n  {% endif
+        %}\n{% elif house_mode == \"Natt\" %} 0 {% else %} 0 {% endif %}\n"
+      transition: '{{ transition_seconds }}'
+  - action: light.turn_on
+    target:
+      entity_id:
       - light.stjarnan_i_trappan
     data:
       brightness_pct: '{% if is_state("light.koksbelysningen","on") %} 100 {% else
@@ -644,29 +657,82 @@ nattbelysning:
 tand_alla_lampor_pa_maxbelysning:
   alias: Tänd alla lampor på max
   mode: queued
-  description: Tänd alla lampor på max
+  description: Tänd inomhustaklampor (ej skafferiet), badrum och köks-LED vid städning
   sequence:
-  - action: light.turn_on
-    entity_id:
-    - light.taklampan_isabelles_rum_level
-    - light.taklampa_vardagsrummet
-    - light.taklampan_ovre_trappan_level
-    - light.taklampa_sovrummet_level
-    - light.taklampa_wc
-    - light.taklampan_eriks_rum_level
-    - light.eriks_myshorna
-    - light.koksbelysningen
-    - light.takspottarna_kokstaket_level
-    - light.koket_arbetsbanken
-    - light.led_lister_ovanfor_arbetsbankarna
-    - light.takspottarna_hallen_level
-    - light.taklampan_nedre_trappan_level
-    - light.vagglampor_badrummet
-    - light.taklampan_badrummet
-    - light.forradet
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.vardagsrummet_belysning
     data:
-      brightness: 255
-      color_temp: 447
+      option: Städning
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.sovrummet_belysning
+    data:
+      option: Städning
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.eriks_rum_belysning
+    data:
+      option: Städning
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.albins_rum_belysning
+    data:
+      option: Städning
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.koket_belysning
+    data:
+      option: Städning
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.nedre_trappan_belysning
+    data:
+      option: Städning
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.isabelles_rum_belysning
+    data:
+      option: Städning
+  - action: script.turn_on
+    target:
+      entity_id:
+      - script.vardagsrummet_stall_in_belysningen
+      - script.sovrummet_stall_in_belysningen
+      - script.eriks_rum_stall_in_belysningen
+      - script.albins_rum_stall_in_belysningen
+      - script.ovre_trappan_stall_in_belysningen
+      - script.nedre_trappan_stall_in_belysningen
+  - action: script.turn_on
+    target:
+      entity_id: script.koket_stall_in_belysningen
+    data:
+      variables:
+        rapid_transition: 'on'
+  - action: light.turn_on
+    target:
+      entity_id:
+      - light.taklampan_isabelles_rum_level
+      - light.taklampa_vardagsrummet
+      - light.taklampan_ovre_trappan_level
+      - light.taklampa_sovrummet_level
+      - light.taklampan_eriks_rum_level
+      - light.takspottarna_hallen_level
+      - light.takspottarna_kokstaket_level
+      - light.takspottarna_koksluckorna_level
+      - light.takspottarna_trappan_level
+      - light.taklampan_nedre_trappan_level
+      - light.taklampan_albins_fonster_level
+      - light.taklampan_albins_sang_level
+      - light.taklampa_wc
+      - light.taklampa_tvattstugan
+      - light.badrummet_alla_lampor
+      - light.koket_arbetsbanken
+      - light.led_lister_ovanfor_arbetsbankarna
+      - light.led_ovanfor_lilla_arbetsbanken
+      - light.led_ovanfor_stora_arbetsbanken
+    data:
+      brightness_pct: 100
 stang_av_allt:
   alias: Stäng av allt
   mode: queued
@@ -915,10 +981,7 @@ vardagsrummet_stall_in_belysningen:
     entity_id:
     - light.taklampa_vardagsrummet
     data:
-      brightness_pct: "{% if states(\"input_select.vardagsrummet_belysning\") in [\"Städning\",\"PS4\"]
-        %}\n  {% if states(\"input_select.vardagsrummet_belysning\") == \"Städning\"
-        %} 100\n  {% elif states(\"input_select.vardagsrummet_belysning\") == \"PS4\"
-        %} 5\n  {% else %} 0\n  {% endif %}\n{% else %} 0 {% endif %}\n"
+      brightness_pct: "{% if is_state(\"input_boolean.stadning_pagar\", \"on\") or states(\"input_select.vardagsrummet_belysning\") == \"Städning\" %} 100\n{% elif states(\"input_select.vardagsrummet_belysning\") == \"PS4\" %} 5\n{% else %} 0 {% endif %}\n"
 ovre_trappan_stall_in_belysningen:
   alias: Ställ in belysningen i övre trappan
   mode: restart
@@ -955,7 +1018,7 @@ sovrummet_stall_in_belysningen:
     data:
       brightness: "{% set current_brightness = state_attr(\"light.taklampa_sovrummet_level\",
         \"brightness\") | float(default=0.0) / 2.55 %} {% set mode = states(\"input_select.sovrummet_belysning\")
-        %} {% if mode == \"Städning\" %}\n  255\n{% elif mode in [\"Mysigt\", \"Släckt\"]
+        %} {% if mode == \"Städning\" or is_state(\"input_boolean.stadning_pagar\", \"on\") %}\n  255\n{% elif mode in [\"Mysigt\", \"Släckt\"]
         %}\n  0\n{% else %}\n  {{ current_brightness | int }}\n{% endif %}\n"
   - action: "{% set mode = states(\"input_select.sovrummet_belysning\") %} {% set
       time_mode = states(\"input_select.house_time_modes\") %} {% if mode == \"Släckt\"
@@ -1008,7 +1071,7 @@ eriks_rum_stall_in_belysningen:
     data:
       brightness_pct: "{% set oforandrat_ljus = (state_attr(\"light.taklampan_eriks_rum_level\",\"brightness\")
         | float(default = 0.0) / 2.55 ) | float(default = 0.0) %} {% if   states(\"input_select.eriks_rum_belysning\")
-        in [\"Städning\"] %} 100  {% elif states(\"input_select.eriks_rum_belysning\")
+        in [\"Städning\"] or is_state(\"input_boolean.stadning_pagar\", \"on\") %} 100  {% elif states(\"input_select.eriks_rum_belysning\")
         in [\"Släckt\"] %} 0 {% elif states(\"input_select.eriks_rum_belysning\")
         in [\"Mysigt\"] %} 0 {% elif states(\"input_select.eriks_rum_belysning\")
         in [\"Tänt\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.eriks_rum_belysning\")
