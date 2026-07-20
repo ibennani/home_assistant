@@ -244,6 +244,34 @@
     step: 1
     mode: box
 
+  wc_spegelskap_hold_start_pct:
+    name: WC Spegelskåp dim-håll start %
+    min: 0
+    max: 100
+    step: 1
+    mode: box
+
+  wc_spegelskap_hold_start_ts:
+    name: WC Spegelskåp dim-håll start ts
+    min: 0
+    max: 9999999999
+    step: 1
+    mode: box
+
+  wc_handfat_hold_start_pct:
+    name: WC Handfat dim-håll start %
+    min: 0
+    max: 100
+    step: 1
+    mode: box
+
+  wc_handfat_hold_start_ts:
+    name: WC Handfat dim-håll start ts
+    min: 0
+    max: 9999999999
+    step: 1
+    mode: box
+
 # Duschstatus — fuktnedgång (sessionens topp och nedgångsstart, unix-ts; 0 = inaktiv)
   duschsession_fukt_topp:
     name: "Duschsession fukt topp"

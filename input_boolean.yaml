@@ -103,6 +103,10 @@
     name: WC S1 dimningsriktning denna hållning
   wc_s2_session_dim_up:
     name: WC S2 dimningsriktning denna hållning
+  wc_s1_block_tap:
+    name: WC S1 blockera enkeltryck efter håll
+  wc_s2_block_tap:
+    name: WC S2 blockera enkeltryck efter håll
 
 
 # Toggle som avgör om vattenspridaren ska stara automatiskt

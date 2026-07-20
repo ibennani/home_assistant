@@ -2847,6 +2847,9 @@
     - conditions:
       - condition: trigger
         id: s1
+      - condition: state
+        entity_id: input_boolean.wc_s1_block_tap
+        state: 'off'
       sequence:
       - action: input_text.set_value
         target:
@@ -2885,6 +2888,9 @@
     - conditions:
       - condition: trigger
         id: s2
+      - condition: state
+        entity_id: input_boolean.wc_s2_block_tap
+        state: 'off'
       sequence:
       - action: input_text.set_value
         target:
@@ -2959,6 +2965,8 @@
             'off') %}\n  true\n{% elif pct >= 90 %}\n  false\n{% elif pct <= 10
             %}\n  true\n{% else %}\n  {{ is_state('input_boolean.wc_spegelskap_dimma_upp',
             'on') }}\n{% endif %}\n"
+          dim_hold_start_pct: "{% if is_state('light.wc_spegelskap', 'off') %}1{%
+            else %}{{ spegel_pct | int(0) }}{% endif %}"
       - choose:
         - conditions:
           - condition: state
@@ -2971,6 +2979,16 @@
             data:
               brightness_pct: 1
               transition: 0
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.wc_spegelskap_hold_start_pct
+        data:
+          value: '{{ dim_hold_start_pct }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.wc_spegelskap_hold_start_ts
+        data:
+          value: '{{ as_timestamp(now()) }}'
       - choose:
         - conditions:
           - condition: template
@@ -3007,11 +3025,18 @@
       - condition: trigger
         id: s1_release
       sequence:
+      - variables:
+          release_pct: "{% set start = states('input_number.wc_spegelskap_hold_start_pct')
+            | float(0) %}\n{% set t0 = states('input_number.wc_spegelskap_hold_start_ts')
+            | float(0) %}\n{% set elapsed = as_timestamp(now()) - t0 %}\n{% set up
+            = is_state('input_boolean.wc_s1_session_dim_up', 'on') %}\n{% if up %}\n
+            \ {{ [start + elapsed * 15, 100] | min | round(0) | int }}\n{% else %}\n
+            \ {{ [start - elapsed * 15, 1] | max | round(0) | int }}\n{% endif %}\n"
       - action: light.turn_on
         target:
           entity_id: light.wc_spegelskap
         data:
-          brightness_pct: '{{ spegel_pct }}'
+          brightness_pct: '{{ release_pct }}'
           transition: 0
       - choose:
         - conditions:
@@ -3026,6 +3051,13 @@
         - action: input_boolean.turn_on
           target:
             entity_id: input_boolean.wc_spegelskap_dimma_upp
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.wc_s1_block_tap
+      - delay: 00:00:01
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.wc_s1_block_tap
     - conditions:
       - condition: trigger
         id: s2_hold
@@ -3035,6 +3067,8 @@
             'off') %}\n  true\n{% elif pct >= 90 %}\n  false\n{% elif pct <= 10 %}\n
             \ true\n{% else %}\n  {{ is_state('input_boolean.wc_handfat_dimma_upp',
             'on') }}\n{% endif %}\n"
+          dim_hold_start_pct: "{% if is_state('light.wc_handfat', 'off') %}1{% else
+            %}{{ handfat_pct | int(0) }}{% endif %}"
       - choose:
         - conditions:
           - condition: state
@@ -3047,6 +3081,16 @@
             data:
               brightness_pct: 1
               transition: 0
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.wc_handfat_hold_start_pct
+        data:
+          value: '{{ dim_hold_start_pct }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.wc_handfat_hold_start_ts
+        data:
+          value: '{{ as_timestamp(now()) }}'
       - choose:
         - conditions:
           - condition: template
@@ -3083,11 +3127,18 @@
       - condition: trigger
         id: s2_release
       sequence:
+      - variables:
+          release_pct: "{% set start = states('input_number.wc_handfat_hold_start_pct')
+            | float(0) %}\n{% set t0 = states('input_number.wc_handfat_hold_start_ts')
+            | float(0) %}\n{% set elapsed = as_timestamp(now()) - t0 %}\n{% set up
+            = is_state('input_boolean.wc_s2_session_dim_up', 'on') %}\n{% if up %}\n
+            \ {{ [start + elapsed * 15, 100] | min | round(0) | int }}\n{% else %}\n
+            \ {{ [start - elapsed * 15, 1] | max | round(0) | int }}\n{% endif %}\n"
       - action: light.turn_on
         target:
           entity_id: light.wc_handfat
         data:
-          brightness_pct: '{{ handfat_pct }}'
+          brightness_pct: '{{ release_pct }}'
           transition: 0
       - choose:
         - conditions:
@@ -3102,6 +3153,13 @@
         - action: input_boolean.turn_on
           target:
             entity_id: input_boolean.wc_handfat_dimma_upp
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.wc_s2_block_tap
+      - delay: 00:00:01
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.wc_s2_block_tap
   mode: parallel
   variables:
     lux: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | int(0) }}'
