@@ -738,7 +738,7 @@
         priority: high
 - alias: 'Mobilnotis: Vibrationssensor 1 har rört sig'
   id: '7918135974'
-  initial_state: true
+  initial_state: false
   triggers:
   - trigger: state
     entity_id: binary_sensor.vibrationsensor_1
@@ -2020,8 +2020,9 @@
   id: '33355597918348674'
   mode: restart
   triggers:
-  - trigger: time_pattern
-    seconds: /3
+  - trigger: state
+    entity_id: light.stjarnan_i_trappan
+    to: 'on'
   - trigger: state
     entity_id: light.stjarnan_i_trappan
     from: unavailable
@@ -2030,7 +2031,7 @@
   - condition: template
     value_template: '{{ states("light.stjarnan_i_trappan") not in ["unavailable","unknown"]
       }}'
-  action:
+  actions:
   - action: script.turn_on
     target:
       entity_id: script.stjarnan_i_trappan_loopa_farger

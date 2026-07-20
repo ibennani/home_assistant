@@ -853,25 +853,31 @@ stjarnan_i_trappan_loopa_farger:
   alias: Stjärnan i trappan loopa färger
   mode: restart
   sequence:
-  - condition: state
-    entity_id: light.stjarnan_i_trappan
-    state: 'on'
-  - action: light.turn_on
-    entity_id: light.stjarnan_i_trappan
-    data:
-      rgb_color: "{% set colors_old = ['red','orange', 'blue', 'green', 'violet']
-        %} {% set colors = ['255, 164, 74','255, 218, 110','255, 190, 45','255, 43,
-        0'] %} {{ colors|random }}        \n"
-      transition: 2
-      brightness_pct: "{% if is_state(\"light.koksbelysningen\",\"off\") %} 0 {% elif
-        is_state(\"zone.home\",\"0\") %} 0 {% elif is_state(\"input_select.house_time_modes\",\"Morgon\")
-        %} \n  {% if state_attr(\"light.takspottarna_koksluckorna_level\",\"brightness\")
-        | int(default = 0) < 1 %} 0\n  {% else %} 100\n  {% endif %}           \n{%
-        elif is_state(\"input_select.house_time_modes\",\"Dag\") %} \n  {% if states(\"sensor.utomhus_framsidan_ljusstyrka\")
-        | int(default = 0) < 1 %} 0\n  {% else %} 100\n  {% endif %} \n{% elif is_state(\"input_select.house_time_modes\",\"Kväll\")
-        %} \n  {% if state_attr(\"light.takspottarna_koksluckorna_level\",\"brightness\")
-        | int(default = 0)  < 1 %} 0\n  {% else %} 100\n  {% endif %} \n{% elif is_state(\"input_select.house_time_modes\",\"Natt\")
-        %} 0 {% else %} 0 {% endif %}        \n"
+  - repeat:
+      while:
+      - condition: state
+        entity_id: light.stjarnan_i_trappan
+        state: 'on'
+      sequence:
+      - action: light.turn_on
+        target:
+          entity_id: light.stjarnan_i_trappan
+        data:
+          rgb_color: "{% set colors_old = ['red','orange', 'blue', 'green', 'violet']
+            %} {% set colors = ['255, 164, 74','255, 218, 110','255, 190, 45','255, 43,
+            0'] %} {{ colors|random }}        \n"
+          transition: 2
+          brightness_pct: "{% if is_state(\"light.koksbelysningen\",\"off\") %} 0 {% elif
+            is_state(\"zone.home\",\"0\") %} 0 {% elif is_state(\"input_select.house_time_modes\",\"Morgon\")
+            %} \n  {% if state_attr(\"light.takspottarna_koksluckorna_level\",\"brightness\")
+            | int(default = 0) < 1 %} 0\n  {% else %} 100\n  {% endif %}           \n{%
+            elif is_state(\"input_select.house_time_modes\",\"Dag\") %} \n  {% if states(\"sensor.utomhus_framsidan_ljusstyrka\")
+            | int(default = 0) < 1 %} 0\n  {% else %} 100\n  {% endif %} \n{% elif is_state(\"input_select.house_time_modes\",\"Kväll\")
+            %} \n  {% if state_attr(\"light.takspottarna_koksluckorna_level\",\"brightness\")
+            | int(default = 0)  < 1 %} 0\n  {% else %} 100\n  {% endif %} \n{% elif is_state(\"input_select.house_time_modes\",\"Natt\")
+            %} 0 {% else %} 0 {% endif %}        \n"
+      - delay:
+          seconds: 3
 vardagsrummet_stall_in_belysningen:
   alias: Ställ in belysningen i vardagsrummet
   mode: restart
