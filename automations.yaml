@@ -1650,7 +1650,8 @@
         - conditions:
           - condition: template
             value_template: "{{
-  not is_state('input_select.house_time_modes', 'Natt')
+  is_state('input_select.nagon_duschar', 'Ingen duschar')
+  and not is_state('input_select.house_time_modes', 'Natt')
   and is_state('light.takspott_duschen', 'off')
   and is_state('light.led_badrummet_duschen', 'off')
 }}"
