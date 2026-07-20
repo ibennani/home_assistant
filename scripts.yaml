@@ -725,6 +725,8 @@ tand_alla_lampor_pa_maxbelysning:
       - light.taklampan_albins_fonster_level
       - light.taklampan_albins_sang_level
       - light.taklampa_wc
+      - light.wc_spegelskap
+      - light.wc_handfat
       - light.taklampa_tvattstugan
       - light.badrummet_alla_lampor
       - light.koket_arbetsbanken
