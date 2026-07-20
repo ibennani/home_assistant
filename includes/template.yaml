@@ -544,14 +544,13 @@
         {% set brightness_below_since_ts = this.attributes.brightness_below_since_ts | default(0, true) | float(0) %}
         {% set now_ts = as_timestamp(now()) %}
 
-        {% if not sun_window_active %}
-          false
-        {% elif brightness_high %}
-          true
-        {% elif brightness_below_since_ts == 0 %}
+        {% if sun_window_active and (
+          brightness_high or
+          (brightness_below_since_ts > 0 and (now_ts - brightness_below_since_ts) < 900)
+        ) %}
           true
         {% else %}
-          {{ (now_ts - brightness_below_since_ts) < 900 }}
+          false
         {% endif %}
 
       attributes:
@@ -583,7 +582,19 @@
           {% endif %}
 
       icon: >
-        {% if is_state('binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan', 'on') %}
+        {% set brightness = states('sensor.utomhus_framsidan_ljusstyrka') | int(0) %}
+        {% set azimuth = states('sensor.sun_azimuth') | float(0) %}
+        {% set elevation = states('sensor.sun_elevation') | float(0) %}
+
+        {% set sun_window_active = azimuth >= 225 and elevation <= 35 %}
+        {% set brightness_high = brightness >= 13000 %}
+        {% set brightness_below_since_ts = this.attributes.brightness_below_since_ts | default(0, true) | float(0) %}
+        {% set now_ts = as_timestamp(now()) %}
+
+        {% if sun_window_active and (
+          brightness_high or
+          (brightness_below_since_ts > 0 and (now_ts - brightness_below_since_ts) < 900)
+        ) %}
           mdi:sun-wireless
         {% else %}
           mdi:sun-off-outline
