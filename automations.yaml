@@ -8607,62 +8607,129 @@
     dim_max_ticks: 80
 - id: '1767296601267'
   alias: 'Belysning: Dimma eller släck i köket vid inaktivitet'
+  description: >-
+    Normalt → Mysigt efter exakt 15 min utan rörelse; Måltid → Mysigt efter 30 min.
+    Neddimning sker bara när timern löper ut, inte vid manuellt byte om köket redan
+    varit stilla länge. Ny timer startar vid byte till Normalt/Måltid eller när
+    rörelse upphör. Rörelse avbryter pågående nedräkning.
   triggers:
-  - trigger: template
-    id: maltid_30
-    value_template: "{{\n  is_state('input_select.koket_belysning', 'Måltid')\n  and
-      is_state('group.rorelse_i_koket', 'off')\n  and (as_timestamp(now()) - as_timestamp(states.group.rorelse_i_koket.last_changed))
-      > (30 * 60)\n}}\n"
-  - trigger: template
-    id: normalt_15
-    value_template: "{{\n  is_state('input_select.koket_belysning', 'Normalt')\n  and
-      is_state('group.rorelse_i_koket', 'off')\n  and (as_timestamp(now()) - as_timestamp(states.group.rorelse_i_koket.last_changed))
-      > (15 * 60)\n}}\n"
+  - trigger: state
+    entity_id: input_select.koket_belysning
+    to: Normalt
+    id: normalt_start
+  - trigger: state
+    entity_id: group.rorelse_i_koket
+    to: 'off'
+    for: '00:15:00'
+    id: normalt_inactive_15
+  - trigger: state
+    entity_id: group.rorelse_i_koket
+    to: 'on'
+    id: rorelse_pa
+  - trigger: state
+    entity_id: input_select.koket_belysning
+    to: Måltid
+    id: maltid_start
+  - trigger: state
+    entity_id: group.rorelse_i_koket
+    to: 'off'
+    for: '00:30:00'
+    id: maltid_inactive_30
   actions:
   - variables:
       is_natt: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
-      skyddade_lagen:
-      - Mysigt
-      - Släckt
-      - Dämpat
-      - Måltid
-      nuvarande_lage: '{{ states(''input_select.koket_belysning'') }}'
+      nytt_lage: "{% if is_natt %}\n  Släckt\n{% else %}\n  Mysigt\n{% endif %}\n"
   - choose:
     - conditions:
-      - condition: template
-        value_template: '{{ is_natt }}'
-      sequence:
-      - action: input_select.select_option
-        target:
-          entity_id: input_select.koket_belysning
-        data:
-          option: Släckt
+      - condition: trigger
+        id: rorelse_pa
+      sequence: []
     - conditions:
-      - condition: template
-        value_template: '{{ trigger.id == ''maltid_30'' }}'
+      - condition: trigger
+        id: normalt_start
       sequence:
+      - condition: state
+        entity_id: group.rorelse_i_koket
+        state: 'off'
+      - delay: '00:15:00'
+      - condition: state
+        entity_id: input_select.koket_belysning
+        state: Normalt
+      - condition: state
+        entity_id: group.rorelse_i_koket
+        state: 'off'
       - action: input_select.select_option
         target:
           entity_id: input_select.koket_belysning
         data:
-          option: Mysigt
+          option: '{{ nytt_lage }}'
+      - action: script.turn_on
+        target:
+          entity_id: script.koket_stall_in_belysningen
+        data:
+          variables:
+            rapid_transition: 'on'
     - conditions:
-      - condition: template
-        value_template: '{{ trigger.id == ''normalt_15'' }}'
-      - condition: template
-        value_template: '{{ nuvarande_lage not in skyddade_lagen }}'
+      - condition: trigger
+        id: normalt_inactive_15
+      - condition: state
+        entity_id: input_select.koket_belysning
+        state: Normalt
       sequence:
       - action: input_select.select_option
         target:
           entity_id: input_select.koket_belysning
         data:
-          option: Mysigt
-  - action: script.turn_on
-    target:
-      entity_id: script.koket_stall_in_belysningen
-    data:
-      variables:
-        rapid_transition: 'on'
+          option: '{{ nytt_lage }}'
+      - action: script.turn_on
+        target:
+          entity_id: script.koket_stall_in_belysningen
+        data:
+          variables:
+            rapid_transition: 'on'
+    - conditions:
+      - condition: trigger
+        id: maltid_start
+      sequence:
+      - condition: state
+        entity_id: group.rorelse_i_koket
+        state: 'off'
+      - delay: '00:30:00'
+      - condition: state
+        entity_id: input_select.koket_belysning
+        state: Måltid
+      - condition: state
+        entity_id: group.rorelse_i_koket
+        state: 'off'
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.koket_belysning
+        data:
+          option: '{{ nytt_lage }}'
+      - action: script.turn_on
+        target:
+          entity_id: script.koket_stall_in_belysningen
+        data:
+          variables:
+            rapid_transition: 'on'
+    - conditions:
+      - condition: trigger
+        id: maltid_inactive_30
+      - condition: state
+        entity_id: input_select.koket_belysning
+        state: Måltid
+      sequence:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.koket_belysning
+        data:
+          option: '{{ nytt_lage }}'
+      - action: script.turn_on
+        target:
+          entity_id: script.koket_stall_in_belysningen
+        data:
+          variables:
+            rapid_transition: 'on'
   mode: restart
   initial_state: true
 - id: '8784355417363'
