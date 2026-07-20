@@ -2983,50 +2983,36 @@
         - action: input_boolean.turn_off
           target:
             entity_id: input_boolean.wc_s1_session_dim_up
-      - action: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.wc_s1_hold_running
       - choose:
         - conditions:
           - condition: template
             value_template: '{{ session_dim_up }}'
           sequence:
-          - repeat:
-              while:
-              - condition: state
-                entity_id: input_boolean.wc_s1_hold_running
-                state: 'on'
-              sequence:
-              - action: light.turn_on
-                target:
-                  entity_id: light.wc_spegelskap
-                data:
-                  brightness_step_pct: 3
-                  transition: 0.2
-              - delay:
-                  milliseconds: 200
+          - action: light.turn_on
+            target:
+              entity_id: light.wc_spegelskap
+            data:
+              brightness_pct: 100
+              transition: '{{ [((100 - spegel_pct | int(0)) / 15) | float, 1] | max
+                | round(1) }}'
         default:
-        - repeat:
-            while:
-            - condition: state
-              entity_id: input_boolean.wc_s1_hold_running
-              state: 'on'
-            sequence:
-            - action: light.turn_on
-              target:
-                entity_id: light.wc_spegelskap
-              data:
-                brightness_step_pct: -3
-                transition: 0.2
-            - delay:
-                milliseconds: 200
+        - action: light.turn_on
+          target:
+            entity_id: light.wc_spegelskap
+          data:
+            brightness_pct: 1
+            transition: '{{ [((spegel_pct | int(0) - 1) / 15) | float, 1] | max | round(1)
+              }}'
     - conditions:
       - condition: trigger
         id: s1_release
       sequence:
-      - action: input_boolean.turn_off
+      - action: light.turn_on
         target:
-          entity_id: input_boolean.wc_s1_hold_running
+          entity_id: light.wc_spegelskap
+        data:
+          brightness_pct: '{{ spegel_pct }}'
+          transition: 0
       - choose:
         - conditions:
           - condition: state
@@ -3073,50 +3059,36 @@
         - action: input_boolean.turn_off
           target:
             entity_id: input_boolean.wc_s2_session_dim_up
-      - action: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.wc_s2_hold_running
       - choose:
         - conditions:
           - condition: template
             value_template: '{{ session_dim_up }}'
           sequence:
-          - repeat:
-              while:
-              - condition: state
-                entity_id: input_boolean.wc_s2_hold_running
-                state: 'on'
-              sequence:
-              - action: light.turn_on
-                target:
-                  entity_id: light.wc_handfat
-                data:
-                  brightness_step_pct: 3
-                  transition: 0.2
-              - delay:
-                  milliseconds: 200
+          - action: light.turn_on
+            target:
+              entity_id: light.wc_handfat
+            data:
+              brightness_pct: 100
+              transition: '{{ [((100 - handfat_pct | int(0)) / 15) | float, 1] | max
+                | round(1) }}'
         default:
-        - repeat:
-            while:
-            - condition: state
-              entity_id: input_boolean.wc_s2_hold_running
-              state: 'on'
-            sequence:
-            - action: light.turn_on
-              target:
-                entity_id: light.wc_handfat
-              data:
-                brightness_step_pct: -3
-                transition: 0.2
-              - delay:
-                  milliseconds: 200
+        - action: light.turn_on
+          target:
+            entity_id: light.wc_handfat
+          data:
+            brightness_pct: 1
+            transition: '{{ [((handfat_pct | int(0) - 1) / 15) | float, 1] | max | round(1)
+              }}'
     - conditions:
       - condition: trigger
         id: s2_release
       sequence:
-      - action: input_boolean.turn_off
+      - action: light.turn_on
         target:
-          entity_id: input_boolean.wc_s2_hold_running
+          entity_id: light.wc_handfat
+        data:
+          brightness_pct: '{{ handfat_pct }}'
+          transition: 0
       - choose:
         - conditions:
           - condition: state
