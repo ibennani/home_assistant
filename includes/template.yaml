@@ -514,7 +514,7 @@
           mdi:sun-off-outline
         {% endif %}
 
-# 3. Solen på framsidan
+# 3. Solen på framsidan (Med 15-minuters hysteres vid öppning)
 - triggers:
     - trigger: state
       entity_id: sensor.utomhus_framsidan_ljusstyrka
@@ -524,6 +524,10 @@
 
     - trigger: state
       entity_id: sensor.sun_elevation
+
+    # Behövs för att 15-minutersregeln ska kunna löpa ut.
+    - trigger: time_pattern
+      minutes: "/1"
 
   binary_sensor:
     - name: "Solen lyser in genom fönstren på framsidan"
@@ -535,7 +539,47 @@
         {% set elevation = states('sensor.sun_elevation') | float(0) %}
 
         {% set sun_window_active = azimuth >= 225 and elevation <= 35 %}
-        {{ sun_window_active and brightness >= 13000 }}
+        {% set brightness_high = brightness >= 13000 %}
+        {% set brightness_below_since_ts = this.attributes.brightness_below_since_ts | default(0, true) | float(0) %}
+        {% set now_ts = as_timestamp(now()) %}
+
+        {% if not sun_window_active %}
+          false
+        {% elif brightness_high %}
+          true
+        {% elif brightness_below_since_ts > 0 %}
+          {{ (now_ts - brightness_below_since_ts) < 900 }}
+        {% else %}
+          false
+        {% endif %}
+
+      attributes:
+        brightness_below_since_ts: >
+          {% set brightness = states('sensor.utomhus_framsidan_ljusstyrka') | int(0) %}
+          {% set azimuth = states('sensor.sun_azimuth') | float(0) %}
+          {% set elevation = states('sensor.sun_elevation') | float(0) %}
+
+          {% set sun_window_active = azimuth >= 225 and elevation <= 35 %}
+          {% set brightness_high = brightness >= 13000 %}
+          {% set previous = this.attributes.brightness_below_since_ts | default(0, true) | float(0) %}
+
+          {% if not sun_window_active or brightness_high %}
+            0
+          {% elif previous > 0 %}
+            {{ previous }}
+          {% elif is_state('binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan', 'on') %}
+            {{ as_timestamp(now()) }}
+          {% else %}
+            0
+          {% endif %}
+
+        brightness_below_since_local: >
+          {% set ts = this.attributes.brightness_below_since_ts | default(0, true) | float(0) %}
+          {% if ts > 0 %}
+            {{ ts | timestamp_custom('%Y-%m-%d %H:%M:%S', true) }}
+          {% else %}
+            {{ '' }}
+          {% endif %}
 
       icon: >
         {% set brightness = states('sensor.utomhus_framsidan_ljusstyrka') | int(0) %}
@@ -543,8 +587,14 @@
         {% set elevation = states('sensor.sun_elevation') | float(0) %}
 
         {% set sun_window_active = azimuth >= 225 and elevation <= 35 %}
+        {% set brightness_high = brightness >= 13000 %}
+        {% set brightness_below_since_ts = this.attributes.brightness_below_since_ts | default(0, true) | float(0) %}
+        {% set now_ts = as_timestamp(now()) %}
 
-        {% if sun_window_active and brightness >= 13000 %}
+        {% if sun_window_active and (
+          brightness_high or
+          (brightness_below_since_ts > 0 and (now_ts - brightness_below_since_ts) < 900)
+        ) %}
           mdi:sun-wireless
         {% else %}
           mdi:sun-off-outline
