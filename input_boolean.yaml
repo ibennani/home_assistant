@@ -122,3 +122,8 @@
     name: Duschdörrssekvens giltig
     icon: mdi:shower-head
     initial: off
+# Satt vid första snapshot per duschsession; nollställs när duschen avslutas
+  badrum_dusch_snapshot_finns:
+    name: Badrum dusch-snapshot finns
+    icon: mdi:camera
+    initial: off
