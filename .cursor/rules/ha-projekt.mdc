@@ -62,3 +62,8 @@ Använd `ha_config_set_automation` direkt i live HA när ändringen inte ska vä
 
 ### Referens
 - [docs/cursor-cloud-git-synk.md](../docs/cursor-cloud-git-synk.md)
+
+## Verifiera innan "klart" (obligatoriskt)
+
+Efter varje ändring: kör relevanta tester och rapportera resultat innan uppgiften markeras som klar.
+Se [verifiera-fore-klart.mdc](verifiera-fore-klart.mdc) och [docs/verifiering-och-test.md](../docs/verifiering-och-test.md).
