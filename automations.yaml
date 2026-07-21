@@ -1568,9 +1568,7 @@
           scene_id: badrum_fore_duschslackning
           snapshot_entities:
           - light.takspottar_badrummet
-          - light.takspott_duschen
           - light.spegeln_badrummet
-          - light.led_badrummet_duschen
           - light.led_badrummet_handfatet
           - light.led_badrummet_kommoden
       - action: input_boolean.turn_on
