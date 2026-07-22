@@ -7799,12 +7799,12 @@
 - id: '1765585518927'
   alias: 'Status: Någon duschar'
   description: 'Hanterar duschstatus i tre steg. Kandidat kräver stängd badrumsdörr,
-    duschdörr öppen 3-60 sekunder och sedan 120 sekunder utan rörelse. Fukt kan bekräfta
-    direkt till Någon duschar om sekvensen är giltig, eller bekräfta från kandidat.
-    Avslut när badrumsdörren öppnas, via lång duschdörrsöppning (≥75 s efter topp
-    och fuktnedgång), eller via fuktnedgång (−12 % under sessionstopp, stabil 4 min
-    med fryst timer vid kort öppen dörr <20 s, stängd duschdörr, minst 3 min i Någon
-    duschar).
+    duschdörr öppen 3-60 sekunder och sedan 120 sekunder utan rörelse. Kraftig fuktökning
+    med båda dörrar stängda bekräftar direkt till Någon duschar. Fukt kan även bekräfta
+    via giltig duschdörrssekvens, eller bekräfta från kandidat. Avslut när badrumsdörren
+    öppnas, via lång duschdörrsöppning (≥75 s efter topp och fuktnedgång), eller via
+    fuktnedgång (−12 % under sessionstopp, stabil 4 min med fryst timer vid kort öppen
+    dörr <20 s, stängd duschdörr, minst 3 min i Någon duschar).
 
     '
   triggers:
@@ -7959,6 +7959,82 @@
         data:
           name: Duschstatus
           message: Duschkandidat avbröts eftersom rörelse återkom utan ny duschdörrsaktivitet.
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''fukt_andrad'' }}'
+      - condition: template
+        value_template: '{{ is_state(''input_select.nagon_duschar'', ''Ingen duschar'')
+          or is_state(''input_select.nagon_duschar'', ''Någon kanske duschar'') }}'
+      - condition: state
+        entity_id: binary_sensor.badrumsdorren
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.duschdorren
+        state: 'off'
+      - condition: template
+        value_template: "{% set bad = ['unknown', 'unavailable', 'none', 'None', '']
+          %} {% set valid_trigger = trigger.from_state is not none and trigger.to_state
+          is not none and trigger.from_state.state not in bad and trigger.to_state.state
+          not in bad %} {% set from_v = trigger.from_state.state | float(0) if valid_trigger
+          else 0 %} {% set to_v = trigger.to_state.state | float(0) if valid_trigger
+          else 0 %} {% set dt = (as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed))
+          | float(999) if valid_trigger else 999 %} {% set quick_rise = (to_v - from_v)
+          >= 3.0 and dt <= 180 %} {% set high_and_rising = to_v >= 65 and to_v > from_v
+          %} {{ valid_trigger and (quick_rise or high_and_rising) }}"
+      sequence:
+      - variables:
+          was_kandidat: '{{ is_state(''input_select.nagon_duschar'', ''Någon kanske
+            duschar'') }}'
+          elapsed_text: '{% set raw = states(''input_datetime.duschsession_start'')
+            %} {% set start_ts = as_timestamp(raw) if raw not in [''unknown'', ''unavailable'',
+            ''none'', ''None''] and (raw | string) | length > 0 else as_timestamp(now())
+            %} {% set elapsed = [0, (as_timestamp(now()) - start_ts) | int(0)] | max
+            %} {{ elapsed // 60 }}:{{ ''%02d'' | format(elapsed % 60) }}'
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not was_kandidat }}'
+          sequence:
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.duschsession_start
+            data:
+              datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_topp
+        data:
+          value: '{{ [states(''input_number.duschsession_fukt_topp'') | float(0), states(''sensor.badrummet_luftfuktighet'') | float(0)] | max }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_nedgang_ts
+        data:
+          value: 0
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.nagon_duschar
+        data:
+          option: Någon duschar
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.duschsekvens_giltig
+      - action: timer.cancel
+        target:
+          entity_id: timer.duschkandidat
+      - action: notify.mobile_app_ilias_s23_ultra
+        data:
+          message: "{% if was_kandidat %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
+            duschar.\n\nTid sedan start: {{ elapsed_text }}.\n\nBekräftat via kraftig
+            fuktökning (båda dörrar stängda).\n\n{% else %}\nHEMMET {{ now().strftime('%R')
+            }}:\n\nNågon duschar.\n\nBekräftat via kraftig fuktökning (båda dörrar
+            stängda).\n\n{% endif %}"
+          data:
+            ttl: 0
+            priority: high
+      - action: logbook.log
+        data:
+          name: Duschstatus
+          message: Dusch bekräftad via kraftig fuktökning med stängd badrums- och duschdörr.
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''fukt_andrad'' }}'
