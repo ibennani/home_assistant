@@ -327,6 +327,13 @@
       unique_id: batterivarningar
       state: >
         {%- set ignored = expand('group.ignored_offline_sensors') | map(attribute='entity_id') | list -%}
+        {%- set temp_dev_ns = namespace(ids=[]) -%}
+        {%- for x in expand('group.temp_sensors_with_bad_battery_indicators')
+            if x.state == 'unavailable'
+            or (((as_timestamp(now()) - (as_timestamp(x.last_updated)) | int(0)) / (12 * 3600)) | int(0) > 0 ) -%}
+        {%- set dev_id = device_id(x.entity_id) -%}
+        {%- if dev_id %}{% set temp_dev_ns.ids = temp_dev_ns.ids + [dev_id] %}{% endif -%}
+        {%- endfor -%}
         {%- set ns = namespace(n=0) -%}
         {%- for entity_id in states.group.battery_levels.attributes.entity_id
             if states(entity_id) not in ['unknown', 'unavailable']
@@ -339,7 +346,9 @@
         {%- set ns.n = ns.n + 1 -%}
         {%- endfor -%}
         {%- for x in expand('group.battery_levels')
-            if x.state == 'unavailable' and x.entity_id not in ignored -%}
+            if x.state == 'unavailable'
+            and x.entity_id not in ignored
+            and device_id(x.entity_id) not in temp_dev_ns.ids -%}
         {%- set ns.n = ns.n + 1 -%}
         {%- endfor -%}
         {{ ns.n }}
@@ -357,18 +366,25 @@
           {% if low_ns.items | length > 0 %}
           {% set ns.sections = ns.sections + ['**Lågt batteri**'] + low_ns.items %}
           {% endif %}
-          {% set temp_ns = namespace(items=[]) %}
+          {% set temp_ns = namespace(items=[], device_ids=[]) %}
           {% for x in expand('group.temp_sensors_with_bad_battery_indicators')
               if x.state == 'unavailable'
               or (((as_timestamp(now()) - (as_timestamp(x.last_updated)) | int(0)) / (12 * 3600)) | int(0) > 0 ) %}
-          {% set temp_ns.items = temp_ns.items + ['* ' ~ x.attributes.friendly_name ~ (' (offline)' if x.state == 'unavailable' else '')] %}
+          {% set reason = ' (offline)' if x.state == 'unavailable' else ' (ingen data på 12h+)' %}
+          {% set temp_ns.items = temp_ns.items + ['* ' ~ x.attributes.friendly_name ~ reason] %}
+          {% set dev_id = device_id(x.entity_id) %}
+          {% if dev_id %}
+          {% set temp_ns.device_ids = temp_ns.device_ids + [dev_id] %}
+          {% endif %}
           {% endfor %}
           {% if temp_ns.items | length > 0 %}
           {% set ns.sections = ns.sections + ([''] if ns.sections | length > 0 else []) + ['**Följande sensorer behöver troligtvis byta batteri**'] + temp_ns.items %}
           {% endif %}
           {% set offline_ns = namespace(items=[]) %}
           {% for x in expand('group.battery_levels')
-              if x.state == 'unavailable' and x.entity_id not in ignored %}
+              if x.state == 'unavailable'
+              and x.entity_id not in ignored
+              and device_id(x.entity_id) not in temp_ns.device_ids %}
           {% set offline_ns.items = offline_ns.items + ['* ' ~ x.attributes.friendly_name ~ ' (offline)'] %}
           {% endfor %}
           {% if offline_ns.items | length > 0 %}
