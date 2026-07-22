@@ -30,3 +30,11 @@ ljus_timeout_lamporna_i_garderoben: {}
 # (ring doorbell) eller när det rör sig i hallen.
 hallen_uppdimmad_belysning:
   duration: '00:05:00'
+
+# 120 s efter stängd duschdörr (kandidat + duschsläckning)
+badrum_dusch_120s:
+  duration: '00:02:00'
+
+# Väntar på fuktbekräftelse efter Någon kanske duschar
+duschkandidat:
+  duration: '00:08:00'

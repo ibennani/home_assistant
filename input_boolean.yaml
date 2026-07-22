@@ -127,3 +127,13 @@
     name: Badrum dusch-snapshot finns
     icon: mdi:camera
     initial: off
+# Ljus utanför duschen är släckta under bekräftad dusch
+  duschslackning_aktiv:
+    name: Duschsläckning aktiv
+    icon: mdi:lightbulb-off-outline
+    initial: off
+# Håll badrumsljus tänt efter vifta tills fukt bekräftar dusch igen
+  badrum_dusch_ljus_last:
+    name: Badrum dusch ljus låst
+    icon: mdi:lock
+    initial: off

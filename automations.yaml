@@ -1388,15 +1388,11 @@
     id: dusch_bekraftad
     entity_id: input_select.nagon_duschar
     to: Någon duschar
-  - trigger: state
-    id: duschdorr_stangd
-    entity_id: binary_sensor.duschdorren
-    to: 'off'
-  - trigger: state
-    id: rorelse_off_120
-    entity_id: binary_sensor.badrummet_rorelse
-    to: 'off'
-    for: 00:02:00
+  - trigger: event
+    id: badrum_dusch_120s_klar
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.badrum_dusch_120s
   - trigger: state
     id: duschstatus_ingen
     entity_id: input_select.nagon_duschar
@@ -1422,6 +1418,25 @@
           brightness_pct: 100
           transition: 0
       - stop: Städning aktiv
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''tand'' }}'
+      - condition: template
+        value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.duschslackning_aktiv', 'on') and is_state('input_boolean.badrum_dusch_ljus_last', 'off') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') }}"
+      sequence:
+      - action: scene.turn_on
+        target:
+          entity_id: scene.badrum_fore_duschslackning
+        data:
+          transition: 0
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.duschslackning_aktiv
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.badrum_dusch_ljus_last
+      - stop: Duschpaus — ljus låst tills fukt bekräftar igen
   - choose:
     - conditions:
       - condition: template
@@ -1508,9 +1523,16 @@
       - choose:
         - conditions:
           - condition: template
-            value_template: '{{ is_state(''input_boolean.duschslackning_aktiv'', ''on'') }}'
+            value_template: '{{ trigger.id == ''duschdorr_oppnad'' }}'
           - condition: template
-            value_template: '{{ is_state(''input_boolean.badrum_dusch_snapshot_finns'', ''on'') }}'
+            value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'')
+              and is_state(''input_boolean.badrum_dusch_snapshot_finns'', ''on'')
+              and is_state(''input_boolean.badrum_dusch_ljus_last'', ''off'') }}'
+          - condition: template
+            value_template: '{{ is_state(''input_boolean.duschslackning_aktiv'', ''on'')
+              or is_state(''light.takspottar_badrummet'', ''off'') or is_state(''light.led_badrummet_handfatet'',
+              ''off'') or is_state(''light.led_badrummet_kommoden'', ''off'') or is_state(''light.spegeln_badrummet'',
+              ''off'') }}'
           sequence:
           - action: scene.turn_on
             target:
@@ -1574,31 +1596,7 @@
           transition: 0
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id == ''rorelse_off_120'' }}'
-      - condition: template
-        value_template: "{{
-  is_state('input_select.nagon_duschar', 'Någon duschar')
-  and is_state('binary_sensor.duschdorren', 'off')
-  and is_state('binary_sensor.badrumsdorren', 'off')
-  and is_state('input_boolean.duschslackning_aktiv', 'off')
-  and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on')
-}}"
-      sequence:
-      - action: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.duschslackning_aktiv
-      - action: light.turn_off
-        target:
-          entity_id:
-          - light.spegeln_badrummet
-          - light.takspottar_badrummet
-          - light.led_badrummet_handfatet
-          - light.led_badrummet_kommoden
-        data:
-          transition: 5
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.id in [''duschdorr_stangd'', ''badrumsdorr_stangd''] }}'
+        value_template: '{{ trigger.id == ''badrum_dusch_120s_klar'' }}'
       - condition: template
         value_template: "{{
   is_state('input_select.nagon_duschar', 'Någon duschar')
@@ -1606,8 +1604,8 @@
   and is_state('binary_sensor.badrumsdorren', 'off')
   and is_state('binary_sensor.badrummet_rorelse', 'off')
   and is_state('input_boolean.duschslackning_aktiv', 'off')
+  and is_state('input_boolean.badrum_dusch_ljus_last', 'off')
   and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on')
-  and (as_timestamp(now()) - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) >= 120
 }}"
       sequence:
       - action: input_boolean.turn_on
@@ -1649,6 +1647,10 @@
           entity_id:
           - input_boolean.duschslackning_aktiv
           - input_boolean.badrum_dusch_snapshot_finns
+          - input_boolean.badrum_dusch_ljus_last
+      - action: timer.cancel
+        target:
+          entity_id: timer.badrum_dusch_120s
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''ha_start'' }}'
@@ -7799,12 +7801,11 @@
 - id: '1765585518927'
   alias: 'Status: Någon duschar'
   description: 'Hanterar duschstatus i tre steg. Kandidat kräver stängd badrumsdörr,
-    duschdörr öppen 3-60 sekunder och sedan 120 sekunder utan rörelse. Kraftig fuktökning
-    med båda dörrar stängda bekräftar direkt till Någon duschar. Fukt kan även bekräfta
-    via giltig duschdörrssekvens, eller bekräfta från kandidat. Avslut när badrumsdörren
-    öppnas, via lång duschdörrsöppning (≥75 s efter topp och fuktnedgång), eller via
-    fuktnedgång (−12 % under sessionstopp, stabil 4 min med fryst timer vid kort öppen
-    dörr <20 s, stängd duschdörr, minst 3 min i Någon duschar).
+    duschdörr öppen 3-60 sekunder och 120 sekunder efter stängd duschdörr utan rörelse
+    vid timerutgång. Kraftig fuktökning med båda dörrar stängda bekräftar direkt till
+    Någon duschar. Fukt kan även bekräfta via giltig duschdörrssekvens, eller bekräfta
+    från kandidat. Avslut endast när badrumsdörren öppnas. Fukt spåras under session
+    för toppvärde och för att släppa ljuslås efter paus.
 
     '
   triggers:
@@ -7814,19 +7815,9 @@
     to: 'on'
     for: 00:00:03
   - trigger: state
-    id: duschdorr_lang_oppen
-    entity_id: binary_sensor.duschdorren
-    to: 'on'
-    for: 00:01:15
-  - trigger: state
     id: duschdorr_stangd
     entity_id: binary_sensor.duschdorren
     to: 'off'
-  - trigger: state
-    id: kandidat_rorelse_off
-    entity_id: binary_sensor.badrummet_rorelse
-    to: 'off'
-    for: 00:02:00
   - trigger: state
     id: kandidat_rorelse_on
     entity_id: binary_sensor.badrummet_rorelse
@@ -7834,9 +7825,6 @@
   - trigger: state
     id: fukt_andrad
     entity_id: sensor.badrummet_luftfuktighet
-  - trigger: time_pattern
-    id: fukt_nedgang_kontroll
-    minutes: "/1"
   - trigger: state
     id: badrumsdorr_oppnad
     entity_id: binary_sensor.badrumsdorren
@@ -7846,6 +7834,11 @@
     event_type: timer.finished
     event_data:
       entity_id: timer.duschkandidat
+  - trigger: event
+    id: badrum_dusch_120s_klar
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.badrum_dusch_120s
   conditions: []
   actions:
   - choose:
@@ -7861,10 +7854,23 @@
           entity_id: input_datetime.duschdorr_oppnad_ts
         data:
           datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.duschdorr_stangd_ts
+        data:
+          datetime: '1970-01-01 00:00:00'
+      - action: timer.cancel
+        target:
+          entity_id: timer.badrum_dusch_120s
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''duschdorr_stangd'' }}'
       sequence:
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.duschdorr_stangd_ts
+        data:
+          datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
       - choose:
         - conditions:
           - condition: template
@@ -7882,9 +7888,19 @@
         - action: input_boolean.turn_off
           target:
             entity_id: input_boolean.duschsekvens_giltig
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ is_state('binary_sensor.badrumsdorren', 'off') and (\n  (is_state('input_select.nagon_duschar', 'Ingen duschar') and is_state('input_boolean.duschsekvens_giltig', 'on'))\n  or (is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_ljus_last', 'off'))\n) }}"
+          sequence:
+          - action: timer.start
+            target:
+              entity_id: timer.badrum_dusch_120s
+            data:
+              duration: 00:02:00
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id == ''kandidat_rorelse_off'' }}'
+        value_template: '{{ trigger.id == ''badrum_dusch_120s_klar'' }}'
       - condition: template
         value_template: '{{ is_state(''input_select.nagon_duschar'', ''Ingen duschar'')
           }}'
@@ -7893,6 +7909,10 @@
           }}'
       - condition: template
         value_template: '{{ is_state(''binary_sensor.badrumsdorren'', ''off'') }}'
+      - condition: template
+        value_template: '{{ is_state(''binary_sensor.duschdorren'', ''off'') }}'
+      - condition: template
+        value_template: '{{ is_state(''binary_sensor.badrummet_rorelse'', ''off'') }}'
       sequence:
       - action: input_datetime.set_datetime
         target:
@@ -8153,66 +8173,6 @@
             priority: high
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id == ''duschdorr_lang_oppen'' }}'
-      - condition: template
-        value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'')
-          }}'
-      - condition: template
-        value_template: "{% set peak = states('input_number.duschsession_fukt_topp') | float(0)
-          %} {% set current = states('sensor.badrummet_luftfuktighet') | float(0)
-          %} {% set raw = states('input_datetime.duschsession_start') %} {% set bad
-          = ['unknown', 'unavailable', 'none', 'None', ''] %} {% set start_ts = as_timestamp(raw)
-          if raw not in bad and (raw | string) | length > 0 else as_timestamp(now())
-          %} {% set elapsed = as_timestamp(now()) - start_ts %} {{ elapsed >= 180 and
-          peak > 0 and current <= peak - 5 }}"
-      sequence:
-      - variables:
-          elapsed_text: '{% set raw = states(''input_datetime.duschsession_start'')
-            %} {% set start_ts = as_timestamp(raw) if raw not in [''unknown'', ''unavailable'',
-            ''none'', ''None''] and (raw | string) | length > 0 else as_timestamp(now())
-            %} {% set elapsed = [0, (as_timestamp(now()) - start_ts) | int(0)] | max
-            %} {{ elapsed // 60 }}:{{ ''%02d'' | format(elapsed % 60) }}'
-      - action: input_select.select_option
-        target:
-          entity_id: input_select.nagon_duschar
-        data:
-          option: Ingen duschar
-      - action: input_number.set_value
-        target:
-          entity_id: input_number.duschsession_fukt_topp
-        data:
-          value: 0
-      - action: input_number.set_value
-        target:
-          entity_id: input_number.duschsession_fukt_nedgang_ts
-        data:
-          value: 0
-      - action: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.duschsekvens_giltig
-      - action: timer.cancel
-        target:
-          entity_id: timer.duschkandidat
-      - action: notify.mobile_app_ilias_s23_ultra
-        data:
-          message: 'HEMMET {{ now().strftime(''%R'') }}:
-
-            Någon har duschat klart.
-
-            Total tid: {{ elapsed_text }}.
-
-            Avslutat via lång duschdörrsöppning (tork/ventilation).
-
-            '
-          data:
-            ttl: 0
-            priority: high
-      - action: logbook.log
-        data:
-          name: Duschstatus
-          message: Dusch avslutad via lång duschdörrsöppning (≥75 s efter fuktnedgång).
-    - conditions:
-      - condition: template
         value_template: '{{ trigger.id == ''badrumsdorr_oppnad'' }}'
       - condition: template
         value_template: '{{ not is_state(''input_select.nagon_duschar'', ''Ingen duschar'')
@@ -8243,9 +8203,29 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.badrum_dusch_ljus_last
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.duschdorr_oppnad_ts
+        data:
+          datetime: '1970-01-01 00:00:00'
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.duschdorr_stangd_ts
+        data:
+          datetime: '1970-01-01 00:00:00'
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.duschsession_start
+        data:
+          datetime: '1970-01-01 00:00:00'
       - action: timer.cancel
         target:
-          entity_id: timer.duschkandidat
+          entity_id:
+          - timer.duschkandidat
+          - timer.badrum_dusch_120s
       - choose:
         - conditions:
           - condition: template
@@ -8270,8 +8250,7 @@
             message: Duschkandidat avslutades när badrumsdörren öppnades.
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id in [''fukt_andrad'', ''fukt_nedgang_kontroll'']
-          }}'
+        value_template: '{{ trigger.id == ''fukt_andrad'' }}'
       - condition: template
         value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'')
           }}'
@@ -8281,31 +8260,38 @@
             }}'
           fukt_peak: '{{ states(''input_number.duschsession_fukt_topp'') | float(0)
             }}'
-          fukt_decline_ts: '{{ states(''input_number.duschsession_fukt_nedgang_ts'')
-            | float(0) }}'
-          fukt_now_ts: '{{ as_timestamp(now()) }}'
-          fukt_session_start: "{% set raw = states('input_datetime.duschsession_start')
-            %} {% set bad = ['unknown', 'unavailable', 'none', 'None', ''] %} {{
-            as_timestamp(raw) if raw not in bad and (raw | string) | length > 0 else
-            as_timestamp(now()) }}"
-          fukt_session_elapsed: '{{ fukt_now_ts | float - fukt_session_start | float
-            }}'
-          fukt_from_v: "{% if trigger.id == 'fukt_andrad' and trigger.from_state
-            is not none and trigger.from_state.state not in ['unknown', 'unavailable',
-            'none', 'None', ''] %}{{ trigger.from_state.state | float(0) }}{% else
-            %}{{ fukt_current | float }}{% endif %}"
-          fukt_rising: '{{ fukt_current | float > fukt_from_v | float + 0.5 }}'
-          fukt_decline_ok: "{{
-            is_state('binary_sensor.duschdorren', 'off')
-            and fukt_session_elapsed | float >= 180
-            and fukt_peak | float > 0
-            and fukt_current | float <= fukt_peak | float - 12
-            and not (fukt_rising | bool)
-          }}"
-          fukt_end_ok: '{{ fukt_decline_ok | bool and fukt_decline_ts | float > 0
-            and (fukt_now_ts | float - fukt_decline_ts | float) >= 240 and is_state(''binary_sensor.duschdorren'',
-            ''off'') }}'
+          fukt_from_v: "{% if trigger.from_state is not none and trigger.from_state.state
+            not in ['unknown', 'unavailable', 'none', 'None', ''] %}{{ trigger.from_state.state
+            | float(0) }}{% else %}{{ fukt_current | float }}{% endif %}"
+          fukt_dt: "{% if trigger.from_state is not none and trigger.to_state is not
+            none %}{{ (as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed))
+            | float(999) }}{% else %}999{% endif %}"
+          fukt_quick_rise: '{{ (fukt_current | float - fukt_from_v | float) >= 3.0
+            and fukt_dt | float <= 180 }}'
+          fukt_high_and_rising: '{{ fukt_current | float >= 65 and fukt_current | float
+            > fukt_from_v | float }}'
       - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''input_boolean.badrum_dusch_ljus_last'',
+              ''on'') }}'
+          - condition: state
+            entity_id: binary_sensor.badrumsdorren
+            state: 'off'
+          - condition: state
+            entity_id: binary_sensor.duschdorren
+            state: 'off'
+          - condition: template
+            value_template: '{{ (fukt_quick_rise | bool) or (fukt_high_and_rising
+              | bool) }}'
+          sequence:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.badrum_dusch_ljus_last
+          - action: logbook.log
+            data:
+              name: Duschstatus
+              message: Dusch bekräftad igen via fukt — ljuslås släppt.
         - conditions:
           - condition: template
             value_template: '{{ fukt_current | float > fukt_peak | float and is_state(''binary_sensor.duschdorren'',
@@ -8316,88 +8302,6 @@
               entity_id: input_number.duschsession_fukt_topp
             data:
               value: '{{ fukt_current | float }}'
-          - action: input_number.set_value
-            target:
-              entity_id: input_number.duschsession_fukt_nedgang_ts
-            data:
-              value: 0
-        - conditions:
-          - condition: template
-            value_template: '{{ fukt_end_ok | bool }}'
-          sequence:
-          - variables:
-              elapsed_text: '{% set raw = states(''input_datetime.duschsession_start'')
-                %} {% set start_ts = as_timestamp(raw) if raw not in [''unknown'',
-                ''unavailable'', ''none'', ''None''] and (raw | string) | length >
-                0 else as_timestamp(now()) %} {% set elapsed = [0, (as_timestamp(now())
-                - start_ts) | int(0)] | max %} {{ elapsed // 60 }}:{{ ''%02d'' | format(elapsed
-                % 60) }}'
-          - action: input_select.select_option
-            target:
-              entity_id: input_select.nagon_duschar
-            data:
-              option: Ingen duschar
-          - action: input_number.set_value
-            target:
-              entity_id: input_number.duschsession_fukt_topp
-            data:
-              value: 0
-          - action: input_number.set_value
-            target:
-              entity_id: input_number.duschsession_fukt_nedgang_ts
-            data:
-              value: 0
-          - action: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.duschsekvens_giltig
-          - action: timer.cancel
-            target:
-              entity_id: timer.duschkandidat
-          - action: notify.mobile_app_ilias_s23_ultra
-            data:
-              message: 'HEMMET {{ now().strftime(''%R'') }}:
-
-                Någon har duschat klart.
-
-                Total tid: {{ elapsed_text }}.
-
-                Avslutat via fuktnedgång (stängd duschdörr, −12 %).
-
-                '
-              data:
-                ttl: 0
-                priority: high
-          - action: logbook.log
-            data:
-              name: Duschstatus
-              message: 'Dusch avslutad via fuktnedgång. Topp {{ fukt_peak | round(1)
-                }} %, nu {{ fukt_current | round(1) }} %.'
-        - conditions:
-          - condition: template
-            value_template: '{{ fukt_decline_ok | bool and fukt_decline_ts | float
-              == 0 }}'
-          sequence:
-          - action: input_number.set_value
-            target:
-              entity_id: input_number.duschsession_fukt_nedgang_ts
-            data:
-              value: '{{ fukt_now_ts | float }}'
-        - conditions:
-          - condition: template
-            value_template: '{{ not (fukt_decline_ok | bool) and fukt_decline_ts |
-              float > 0 and is_state(''binary_sensor.duschdorren'', ''off'') }}'
-          - condition: template
-            value_template: "{% if trigger.id != 'duschdorr_stangd' %}true{% else
-              %}{% set now_ts = as_timestamp(now()) %} {% set open_raw = states('input_datetime.duschdorr_oppnad_ts')
-              %} {% set open_ts = as_timestamp(open_raw) if open_raw not in ['unknown',
-              'unavailable', 'none', 'None', ''] else 0 %} {% set duration = (now_ts
-              - open_ts) if open_ts > 0 else 999 %} {{ duration >= 20 }}{% endif %}"
-          sequence:
-          - action: input_number.set_value
-            target:
-              entity_id: input_number.duschsession_fukt_nedgang_ts
-            data:
-              value: 0
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''kandidat_timer_klar'' }}'
