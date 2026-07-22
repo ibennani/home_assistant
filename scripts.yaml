@@ -39,19 +39,6 @@ koket_stall_in_belysningen:
   - action: light.turn_on
     target:
       entity_id:
-      - light.led_ovanfor_lilla_arbetsbanken
-      - light.led_ovanfor_stora_arbetsbanken
-    data:
-      brightness_pct: "{% if stadning %} 100 {% elif house_mode in [\"Morgon\",\"Dag\",\"Kväll\"]
-        %}\n  {% if scene == \"Normalt\" %}\n    {% if front_section <= 2 %} 75\n
-        \   {% elif front_section == 3 %} 85\n    {% elif front_section == 4 %} 100\n
-        \   {% else %} 100\n    {% endif %}\n  {% elif scene == \"Maxbelysning\" %}
-        100\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %} 0\n  {% else %} 0\n  {% endif
-        %}\n{% elif house_mode == \"Natt\" %} 0 {% else %} 0 {% endif %}\n"
-      transition: '{{ transition_seconds }}'
-  - action: light.turn_on
-    target:
-      entity_id:
       - light.stjarnan_i_trappan
     data:
       brightness_pct: '{% if is_state("light.koksbelysningen","on") %} 100 {% else
