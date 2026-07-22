@@ -662,6 +662,36 @@
             0
           {% endif %}
 
+    # Batteri- och offlinevarningar för dashboard + mobilnotis
+    - name: Batterivarningar
+      unique_id: batterivarningar
+      state: >-
+        {%- for entity_id in states.group.battery_levels.attributes.entity_id
+            if states(entity_id) not in ['unknown', 'unavailable']
+            and states(entity_id) | int(0) < 30 %}
+        {% set parts = entity_id.split('.') -%}
+        * {{ states[parts[0]][parts[1]].name }}: {{ states(entity_id) }} %
+        {%- endfor %}
+
+        {%- for x in expand('group.temp_sensors_with_bad_battery_indicators')
+            if x.state == 'unavailable'
+            or (((as_timestamp(now()) - (as_timestamp(x.last_updated)) | int(0)) / (12 * 3600)) | int(0) > 0 ) %}
+        {%- if loop.first %}
+        Följande sensorer behöver troligtvis byta batteri:
+        {%- endif %}
+        * {{ x.attributes.friendly_name }}{% if x.state == 'unavailable' %} är offline{% endif %}
+        {%- endfor %}
+
+        {%- set ignored = expand('group.ignored_offline_sensors') | map(attribute='entity_id') | list -%}
+        {%- for x in expand('group.battery_levels')
+            if x.state == 'unavailable' and x.entity_id not in ignored %}
+        {%- if loop.first %}
+
+        Följande batterienheter är offline:
+        {%- endif %}
+        * {{ x.attributes.friendly_name }} är offline
+        {%- endfor %}
+
 # 5. Generell sol-sensor (Soligt ute) med tidsfördröjning
 - triggers:
     # Räkna om när ljusstyrkan på framsidan ändras.

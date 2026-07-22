@@ -364,18 +364,7 @@
   - action: var.set
     data:
       entity_id: var.change_batteries_message
-      value: "{% for entity_id in states.group.battery_levels.attributes.entity_id
-        \ \n    if (  states(entity_id) != 'unknown' \n      and states(entity_id)
-        != 'unavailable' \n      and states(entity_id) | int(default = 0)  < 30 )
-        %}\n{% set parts = entity_id.split('.') -%}\n* {{ states[parts[0]][parts[1]].name
-        }}: {{ states(entity_id) }} %\n{%- endfor %} \n\n{% for x in expand('group.temp_sensors_with_bad_battery_indicators')
-        \nif x.state == \"unavailable\"\nor (((as_timestamp(now()) - (as_timestamp(x.last_updated))
-        | int(default = 0)) / (12 * 3600)) | int(default = 0) > 0 ) -%}\n{%- set tid
-        = ((as_timestamp(now()) - (as_timestamp(x.last_updated)) | int(default = 0))
-        / 3600) | int(default = 0) %} \n{%- if loop.first -%}Följande sensorer behöver
-        troligtvis byta batteri:\n{% else -%}\n{% endif -%}\n*  {{ x.attributes.friendly_name
-        }}\n{%- if x.state == \"unavailable\" %} är offline\n{% else -%} \n{% endif
-        -%}\n{%- endfor %}\n"
+      value: '{{ states(''sensor.batterivarningar'') }}'
   - action: '{% if states("var.change_batteries_message") != "" %} notify.mobile_app_ilias_s23_ultra
       {% else %} script.do_nothing {% endif %}
 
