@@ -161,60 +161,64 @@ battery_levels:
 # Ljusmätare
 #    - sensor.utomhus_framsidan_ljusstyrka_battery
 #    - sensor.utomhus_baksidan_ljusstyrka_battery
-# Tempsensorer    
+# Tempsensorer
     - sensor.vinden_temperatur_battery
-    - sensor.isabelles_rum_temperatur_battery
+    - sensor.isabelles_rum_temp_battery
     - sensor.framsidan_temperatur_batteri
-    - sensor.sovrummet_temperatur_battery
-    - sensor.utomhus_baksidan_temperatur_battery
+    - sensor.temperature_539_battery
+    - sensor.youssef_test_1_battery
     - sensor.wc_temperatur_battery
     - sensor.eriks_rum_temperatur_battery
     - sensor.koket_temperatur_battery
     - sensor.vaxthuset_temperatur_battery
     - sensor.skafferiet_temperatur_battery
-    - sensor.kylskapet_koket_temp_battery
-    - sensor.frysen_i_koket_temperatur_battery
-    - sensor.albins_rum_temperatur_battery
+    - sensor.kylskapet_koket_temperatur_battery
+    - sensor.temperature_528_battery
+    - sensor.albins_rum_temperatur_battery_2
     - sensor.badrummet_temperatur_battery
-    - sensor.badrummet_temperatur_refferens_batteri 
+    - sensor.badrummet_temperatur_referens_batteri
     - sensor.tvattstugan_temperatur_battery
-    - sensor.forradet_tempsensor_batteri
-    - sensor.kylskapet_forradet_tempsensor_battery
+    - sensor.lumi_weather_battery
+    - sensor.kylskapet_forradet_temperatur_battery
     - sensor.frysen_i_forradet_temp_battery
 # Rörelsesensorer
     - sensor.balkongen_rorelse_battery
-    - sensor.baksidan_rorelse_wc_fonster_batteri
-    - sensor.isabelles_rum_rorelse_batteri
+    - sensor.baksidan_rorelse_wc_fonster_battery
+    - sensor.isabelles_rum_rorelse_battery_2
     - sensor.isabelles_rum_skrivbord_rorelse_battery
     - sensor.vardagsrummet_rorelse_battery
     - sensor.vardagsrummet_soffan_rorelse_battery
     - sensor.sovrummet_rorelse_battery
-    - sensor.wc_rorelse_battery
-    - sensor.eriks_rum_rorelse_battery
+    - sensor.wc_rorelse_battery_2
+    - sensor.eriks_rum_rorelse_battery_2
+    - sensor.eriks_rum_skrivbord_rorelse_battery
     - sensor.koket_arbetsbanken_rorelse_battery
     - sensor.koket_rorelse_battery
-    - sensor.koksbordet_rorelse_batteri
-    - sensor.hallen_rorelse_batteri
+    - sensor.koksbordet_rorelse_battery
+    - sensor.hallen_rorelse_battery
     - sensor.albins_rum_rorelse_battery
-    - sensor.rorelse_nedre_trappan_batteri
-    - sensor.badrummet_rorelse_battery
-    - sensor.tvattstugan_rorelse_battery
-    - sensor.brevladan_rorelse_battery           
+    - sensor.nedre_trappan_battery
+    - sensor.ovre_trappan_rorelse_battery
+    - sensor.badrummet_rorelse_battery_2
+    - sensor.tvattstugan_rorelse_battery_2
+    - sensor.rorelse_i_brevladan_battery
+    - sensor.slim_multi_sensor_pir_temperature_illumination_battery_level
 # Fönster och dörrsensorer
     - sensor.isabelles_fonster_battery
-    - sensor.balkongdorren_batteri
-    - sensor.altandorr_baksidan_battery
+    - sensor.balkongdorren_battery
+    - sensor.altandorren_i_sovrummet_battery
     - sensor.wc_fonster_battery
     - sensor.wc_dorr_battery
     - sensor.eriks_fonster_battery
-    - sensor.altandorren_koket_batteri     
+    - sensor.altandorren_koket_battery
     - sensor.skafferidorren_battery
     - sensor.ytterdorren_battery
-    - sensor.eriks_fonster_battery
     - sensor.albins_fonster_battery
     - sensor.badrumsdorren_battery
     - sensor.badrummet_fonster_battery
-    - sensor.brevladans_lucka_battery
+    - sensor.vardagsrummet_fonster_battery
+    - sensor.forradet_dorr_battery
+    - sensor.openclose_759_battery
     - sensor.grinden_baksidan_batteri
 # Rörelse garderoben i sovrummet
     - sensor.garderoben_rorelse_1_battery
@@ -225,7 +229,7 @@ battery_levels:
     - sensor.fjarr_rullgardin_isabelles_rum_batteri
     - sensor.fjarr_rullgardin_vardagsrummet_batteri
     - sensor.fjarr_rullgardin_sovrummet_batteri
-    - sensor.fjarr_rullgardin_eriks_rum_batteri   
+    - sensor.fjarr_rullgardin_eriks_rum_batteri
     - sensor.fjarr_stereon_i_koket_battery
     - sensor.fjarr_isabelles_rum_battery
     - sensor.fjarr_taklampan_i_isabelles_rum_battery
@@ -241,22 +245,22 @@ battery_levels:
     - sensor.rullgardinen_sovrummet_batteri
     - sensor.rullgardin_eriks_rum_batteri
     - sensor.rullgardin_albins_rum_batteri
-# Netatmo
+# Netatmo och regn
     - sensor.netatmo_bennani_vs_regnmatare_battery_percent
     - sensor.netatmo_bennani_vs_vind_utomhus_battery_percent
-    - sensor.netatmo_bennani_vs_utomhus_battery_percent        
+    - sensor.netatmo_bennani_vs_utomhus_battery_percent
+    - sensor.inomhus_regn_battery_percent
 # Flood sensorer
     - sensor.diskmaskinen_flood_sensor_battery
     - sensor.tvattstugan_flood_sensor_battery
-    - sensor.oversvamning_albins_fonster_battery
 # Brandvarnare
     - sensor.brandvarnaren_ovre_trappan_battery
-# Kameror
-    - sensor.aarlo_battery_level_baksidan
 # Vibrationsensorer
-    - sensor.vibrationsensor_1_battery
     - sensor.vaxthuset_vibration_battery
-# Vattenslangen framsidan
+# Övrigt
+    - sensor.elementet_i_sovrummet_battery
+    - sensor.grasklipparen_battery_3
+    - sensor.temperature_852_battery
     - sensor.vattenslangen_batteri
 # # Tandborstar
 #     - sensor.oral_b_black_battery
