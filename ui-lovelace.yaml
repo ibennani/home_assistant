@@ -3729,14 +3729,6 @@ views:
               {% endif -%}
               {%- endfor %}
 
-              {%- for x in expand('group.other_sensors_with_bad_battery_indicators')
-              if x.state == "unavailable" %}
-              {% if loop.first -%}Följande sensorer är offline:
-              {% else -%}
-              {% endif -%}
-              * {{ x.attributes.friendly_name }}
-              {%- endfor %}  
-            
           - type: 'custom:bar-card'
             title: Ljussensorer utomhus
             severity:

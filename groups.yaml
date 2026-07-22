@@ -157,6 +157,8 @@ all_motion_and_open_close_sensors:
 
 battery_levels:
   name: "Batterinivåer"
+  # Direkt batteriövervakning: används av automationen "Mobilnotis: Batteribyte behövs"
+  # (tröskel < 30 %). Lägg bara in enheter med pålitlig batteri-sensor här.
   entities:
 # Ljusmätare
 #    - sensor.utomhus_framsidan_ljusstyrka_battery
@@ -274,13 +276,11 @@ ignored_offline_sensors:
     - sensor.rorelse_badrummet_temperature
 
 
-# Sensorer som är usla på att rapportera batterinivå.
-# Använd den här gruppen för att kontrollera om en sensor "fastnat" på ett värde.
-# Detta kan indikera att batteriet är slut
+# Backup för Aqara-temperaturer som rapporterar batteri opålitligt.
+# Kompletterar battery_levels: här kollas om temp-sensorn slutat uppdateras.
 temp_sensors_with_bad_battery_indicators:
   name: "Tempsensorer (aqara) med dåliga batteriindikatorer"
   entities:
-    # Tempsensorer
     - sensor.utomhus_baksidan_temperature
     - sensor.vinden_temp
     - sensor.isabelles_rum_temp
@@ -291,7 +291,6 @@ temp_sensors_with_bad_battery_indicators:
     - sensor.skafferiet_temp
     - sensor.albins_rum_temp
     - sensor.badrummet_temp
-    - sensor.badrummet_temp
     - sensor.tvattstugan_temp
     - sensor.forradet_temperatur
     - sensor.kylskapet_koket_tempp
@@ -300,49 +299,11 @@ temp_sensors_with_bad_battery_indicators:
     - sensor.frysen_tvattstugan_temp
 
 
+# Tidigare offline-koll för dörr/rörelse utan batteri-sensor.
+# Alla relevanta enheter finns nu i battery_levels — gruppen behålls tom som reserv.
 other_sensors_with_bad_battery_indicators:
   name: "Övriga sensorer (aqara) med dåliga batteriindikatorer"
-  entities:
-    # Dörrar
-    - binary_sensor.balkongdorren
-    - binary_sensor.altandorr_baksidan
-    - binary_sensor.wc_dorr
-    - binary_sensor.altandorr_koket
-    - binary_sensor.ytterdorren
-    - binary_sensor.skafferidorren
-    - binary_sensor.badrumsdorren
-    - binary_sensor.forradet_dorr
-    # Fönser
-    - binary_sensor.isabelles_fonster
-    - binary_sensor.vardagsrummet_fonster
-    - binary_sensor.wc_fonster
-    - binary_sensor.eriks_fonster
-    - binary_sensor.albins_fonster
-    - binary_sensor.badrummet_fonster
-    # Rörelse
-    - binary_sensor.balkongen_rorelse
-    - binary_sensor.isabelles_rum_rorelse
-    - binary_sensor.isabelles_skrivbord_rorelse
-    - binary_sensor.vardagsrummet_rorelse
-    - binary_sensor.vardagsrummet_soffan_rorelse
-    - binary_sensor.ovre_trappan_rorelse
-    - binary_sensor.sovrummet_rorelse
-    - binary_sensor.wc_rorelse
-    - binary_sensor.eriks_rum_rorelse
-    - binary_sensor.eriks_skrivbord_rorelse
-    - binary_sensor.koket_arbetsbanken_rorelse
-    - binary_sensor.koket_rorelse
-    - binary_sensor.koksbordet_rorelse
-    - binary_sensor.hallen_rorelse
-    - binary_sensor.albins_rum_rorelse
-    - binary_sensor.albins_skrivbord_rorelse
-    - binary_sensor.nedre_trappan_rorelse
-    - binary_sensor.badrummet_rorelse
-    - binary_sensor.tvattstugan_rorelse
-    - binary_sensor.tradfri_rorelse_i_garderoben_1
-    - binary_sensor.tradfri_rorelse_i_garderoben_2
-#    - binary_sensor.tradfri_rorelse_i_garderoben_3
-    - binary_sensor.tradfri_rorelse_i_garderoben_4
+  entities: []
 
 
 # Energiåtgång för alla lampor där vi kan mäta energiåtgången

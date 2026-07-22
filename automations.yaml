@@ -375,10 +375,7 @@
         / 3600) | int(default = 0) %} \n{%- if loop.first -%}Följande sensorer behöver
         troligtvis byta batteri:\n{% else -%}\n{% endif -%}\n*  {{ x.attributes.friendly_name
         }}\n{%- if x.state == \"unavailable\" %} är offline\n{% else -%} \n{% endif
-        -%}\n{%- endfor %}\n\n{%- for x in expand('group.other_sensors_with_bad_battery_indicators')\nif
-        x.state == \"unavailable\" -%}\n{% if loop.first -%}Följande sensorer är offline:\n{%-
-        else -%}\n{%- endif %}\n* {{ x.attributes.friendly_name }}\n{%- endfor %}
-        \n"
+        -%}\n{%- endfor %}\n"
   - action: '{% if states("var.change_batteries_message") != "" %} notify.mobile_app_ilias_s23_ultra
       {% else %} script.do_nothing {% endif %}
 
