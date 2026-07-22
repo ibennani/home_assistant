@@ -344,32 +344,37 @@
         {%- endfor -%}
         {{ ns.n }}
       attributes:
-        message: >-
-          {%- for entity_id in states.group.battery_levels.attributes.entity_id
+        message: >
+          {% set ignored = expand('group.ignored_offline_sensors') | map(attribute='entity_id') | list %}
+          {% set sections = [] %}
+          {% set low_battery = [] %}
+          {% for entity_id in states.group.battery_levels.attributes.entity_id
               if states(entity_id) not in ['unknown', 'unavailable']
               and states(entity_id) | int(0) < 30 %}
-          {% set parts = entity_id.split('.') -%}
-          * {{ states[parts[0]][parts[1]].name }}: {{ states(entity_id) }} %
-          {%- endfor %}
-
-          {%- for x in expand('group.temp_sensors_with_bad_battery_indicators')
+          {% set parts = entity_id.split('.') %}
+          {% set low_battery = low_battery + ['* ' ~ states[parts[0]][parts[1]].name ~ ': ' ~ states(entity_id) ~ ' %'] %}
+          {% endfor %}
+          {% if low_battery | length > 0 %}
+          {% set sections = sections + ['**Lågt batteri**'] + low_battery %}
+          {% endif %}
+          {% set temp_items = [] %}
+          {% for x in expand('group.temp_sensors_with_bad_battery_indicators')
               if x.state == 'unavailable'
               or (((as_timestamp(now()) - (as_timestamp(x.last_updated)) | int(0)) / (12 * 3600)) | int(0) > 0 ) %}
-          {%- if loop.first %}
-          Följande sensorer behöver troligtvis byta batteri:
-          {%- endif %}
-          * {{ x.attributes.friendly_name }}{% if x.state == 'unavailable' %} är offline{% endif %}
-          {%- endfor %}
-
-          {%- set ignored = expand('group.ignored_offline_sensors') | map(attribute='entity_id') | list -%}
-          {%- for x in expand('group.battery_levels')
+          {% set temp_items = temp_items + ['* ' ~ x.attributes.friendly_name ~ (' (offline)' if x.state == 'unavailable' else '')] %}
+          {% endfor %}
+          {% if temp_items | length > 0 %}
+          {% set sections = sections + ([''] if sections | length > 0 else []) + ['**Följande sensorer behöver troligtvis byta batteri**'] + temp_items %}
+          {% endif %}
+          {% set offline_items = [] %}
+          {% for x in expand('group.battery_levels')
               if x.state == 'unavailable' and x.entity_id not in ignored %}
-          {%- if loop.first %}
-
-          Följande batterienheter är offline:
-          {%- endif %}
-          * {{ x.attributes.friendly_name }} är offline
-          {%- endfor %}
+          {% set offline_items = offline_items + ['* ' ~ x.attributes.friendly_name ~ ' (offline)'] %}
+          {% endfor %}
+          {% if offline_items | length > 0 %}
+          {% set sections = sections + ([''] if sections | length > 0 else []) + ['**Följande batterienheter är offline**'] + offline_items %}
+          {% endif %}
+          {{ sections | join('\n') }}
 
 
 ###############################################################################
