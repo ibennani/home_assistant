@@ -3884,7 +3884,7 @@ views:
               - sensor.rullgardin_eriks_rum_batteri
               - sensor.rullgardin_albins_rum_batteri
           - type: 'custom:bar-card'
-            title: Netatmo
+            title: Regnmätare
             severity:
               - color: Red
                 from: 0
@@ -3899,10 +3899,7 @@ views:
                 from: 99
                 to: 100
             entities: 
-              - sensor.netatmo_bennani_vs_regnmatare_battery_percent
-              - sensor.netatmo_bennani_vs_vind_utomhus_battery_percent
-              - sensor.netatmo_bennani_vs_utomhus_battery_percent
-              - sensor.inomhus_regn_battery_percent
+              - sensor.regnmatare_battery_percent
           - type: 'custom:bar-card'
             title: Översvämningslarm (flood sensors)
             severity:

@@ -247,8 +247,7 @@ battery_levels:
     - sensor.rullgardin_eriks_rum_batteri
     - sensor.rullgardin_albins_rum_batteri
 # Netatmo och regn
-    - sensor.netatmo_bennani_vs_regnmatare_battery_percent
-    - sensor.inomhus_regn_battery_percent
+    - sensor.regnmatare_battery_percent
 # Flood sensorer
     - sensor.diskmaskinen_flood_sensor_battery
     - sensor.tvattstugan_flood_sensor_battery
