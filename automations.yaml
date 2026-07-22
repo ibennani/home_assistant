@@ -364,7 +364,7 @@
   - action: var.set
     data:
       entity_id: var.change_batteries_message
-      value: '{{ states(''sensor.batterivarningar'') }}'
+      value: '{{ state_attr(''sensor.batterivarningar'', ''message'') }}'
   - action: '{% if states("var.change_batteries_message") != "" %} notify.mobile_app_ilias_s23_ultra
       {% else %} script.do_nothing {% endif %}
 

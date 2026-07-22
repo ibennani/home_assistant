@@ -3706,7 +3706,7 @@ views:
         cards:
           - type: markdown
             title: Enheter som behöver byta batterier
-            content: "{{ states('sensor.batterivarningar') }}"
+            content: "{{ state_attr('sensor.batterivarningar', 'message') }}"
 
           - type: 'custom:bar-card'
             title: Temperatursensorer
