@@ -225,7 +225,6 @@ battery_levels:
 # Rörelse garderoben i sovrummet
     - sensor.garderoben_rorelse_1_battery
     - sensor.garderoben_rorelse_2_battery
-    - sensor.garderoben_rorelse_3_battery
     - sensor.garderoben_rorelse_4_battery
 # fjärrkontroller
     - sensor.fjarr_rullgardin_isabelles_rum_batteri
@@ -282,21 +281,22 @@ temp_sensors_with_bad_battery_indicators:
   name: "Tempsensorer (aqara) med dåliga batteriindikatorer"
   entities:
     - sensor.utomhus_baksidan_temperature
+    - sensor.framsidan_temperatur
     - sensor.vinden_temp
     - sensor.isabelles_rum_temp
     - sensor.sovrummet_temp
     - sensor.wc_temp
     - sensor.eriks_rum_temp
-    - sensor.koket_temp
+    - sensor.koket_temperatur
     - sensor.skafferiet_temp
     - sensor.albins_rum_temp
     - sensor.badrummet_temp
     - sensor.tvattstugan_temp
     - sensor.forradet_temperatur
-    - sensor.kylskapet_koket_tempp
+    - sensor.kylskapet_koket_temp
     - sensor.kylskapet_forradet_temperatur
     - sensor.frysen_koket_temp
-    - sensor.frysen_tvattstugan_temp
+    - sensor.frysen_i_forradet_temperatur
 
 
 # Tidigare offline-koll för dörr/rörelse utan batteri-sensor.

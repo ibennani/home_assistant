@@ -3730,24 +3730,6 @@ views:
               {%- endfor %}
 
           - type: 'custom:bar-card'
-            title: Ljussensorer utomhus
-            severity:
-              - color: Red
-                from: 0
-                to: 30
-              - color: brown
-                from: 31
-                to: 49
-              - color: green
-                from: 50
-                to: 99
-              - color: blue
-                from: 99
-                to: 100
-            entities:               
-              - sensor.utomhus_framsidan_ljusstyrka_battery
-              - sensor.utomhus_baksidan_ljusstyrka_battery  
-          - type: 'custom:bar-card'
             title: Temperatursensorer
             severity:
               - color: Red
@@ -3765,6 +3747,7 @@ views:
             entities: 
               - sensor.vinden_temperatur_battery
               - sensor.isabelles_rum_temp_battery
+              - sensor.framsidan_temperatur_batteri
               - sensor.temperature_539_battery
               - sensor.youssef_test_1_battery
               - sensor.wc_temperatur_battery
@@ -3778,9 +3761,9 @@ views:
               - sensor.badrummet_temperatur_battery
               - sensor.badrummet_temperatur_referens_batteri
               - sensor.tvattstugan_temperatur_battery
-              - sensor.frysen_i_tvattstugan_temperatur_battery
               - sensor.lumi_weather_battery
               - sensor.kylskapet_forradet_temperatur_battery
+              - sensor.frysen_i_forradet_temp_battery
 
           - type: 'custom:bar-card'
             title: Rörelsesensorer
@@ -3850,9 +3833,25 @@ views:
               - sensor.vardagsrummet_fonster_battery
               - sensor.forradet_dorr_battery
               - sensor.openclose_759_battery
+              - sensor.grinden_baksidan_batteri
+          - type: 'custom:bar-card'
+            title: Rörelse garderoben i sovrummet
+            severity:
+              - color: Red
+                from: 0
+                to: 30
+              - color: brown
+                from: 31
+                to: 49
+              - color: green
+                from: 50
+                to: 99
+              - color: blue
+                from: 99
+                to: 100
+            entities:
               - sensor.garderoben_rorelse_1_battery
               - sensor.garderoben_rorelse_2_battery
-              - sensor.garderoben_rorelse_3_battery
               - sensor.garderoben_rorelse_4_battery
 
           - type: 'custom:bar-card'
@@ -3874,7 +3873,7 @@ views:
               - sensor.fjarr_rullgardin_isabelles_rum_batteri
               - sensor.fjarr_rullgardin_vardagsrummet_batteri
               - sensor.fjarr_rullgardin_sovrummet_batteri
-              - sensor.fjarr_rullgardin_eriks_rum_batteri   
+              - sensor.fjarr_rullgardin_eriks_rum_batteri
               - sensor.fjarr_stereon_i_koket_battery
               - sensor.fjarr_isabelles_rum_battery
               - sensor.fjarr_taklampan_i_isabelles_rum_battery
@@ -3977,6 +3976,22 @@ views:
                 to: 100
             entities: 
               - sensor.vaxthuset_vibration_battery
+          - type: 'custom:bar-card'
+            title: Övrigt
+            severity:
+              - color: Red
+                from: 0
+                to: 30
+              - color: brown
+                from: 31
+                to: 49
+              - color: green
+                from: 50
+                to: 99
+              - color: blue
+                from: 99
+                to: 100
+            entities: 
               - sensor.elementet_i_sovrummet_battery
               - sensor.grasklipparen_battery_3
               - sensor.temperature_852_battery
