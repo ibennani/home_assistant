@@ -8907,29 +8907,22 @@
             priority: high
 - id: '1784786961049'
   alias: 'Larmet: Nattlarm - något har öppnats'
-  description: Väntar konfigurerbar tid innan larm om dörr eller fönster fortfarande
-    är öppet. Ger tid att öppna och gå och lägga sig.
+  description: Väntar konfigurerbar tid innan larm om en skalskyddssensor (group.opened_doors_and_windows)
+    fortfarande är öppen. Ger tid att öppna och gå och lägga sig.
   initial_state: true
   mode: restart
   triggers:
   - trigger: state
-    entity_id:
-    - binary_sensor.balkongdorren
-    - binary_sensor.altandorr_baksidan
-    - binary_sensor.altandorr_koket
-    - binary_sensor.ytterdorren
-    - binary_sensor.isabelles_fonster
-    - binary_sensor.vardagsrummet_fonster
-    - binary_sensor.wc_fonster
-    - binary_sensor.eriks_fonster
-    - binary_sensor.albins_fonster
-    - binary_sensor.badrummet_fonster
+    entity_id: !include includes/skalskydd_sensors.yaml
     from: 'off'
     to: 'on'
   conditions:
   - condition: state
     entity_id: input_select.house_alarm_modes
     state: Nattlarm
+  - condition: template
+    value_template: '{{ trigger.entity_id in state_attr(''group.opened_doors_and_windows'',
+      ''entity_id'') }}'
   actions:
   - delay: "{% set configured = states('input_datetime.alarm_nattlarm_delay') %}{{
       configured if configured not in ['00:00:00', 'unknown', 'unavailable', 'none']

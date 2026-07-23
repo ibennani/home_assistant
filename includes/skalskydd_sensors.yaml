@@ -1,0 +1,11 @@
+# Skalskydd: dörr- och fönstersensorer (group.opened_doors_and_windows)
+- binary_sensor.balkongdorren
+- binary_sensor.altandorr_baksidan
+- binary_sensor.altandorr_koket
+- binary_sensor.ytterdorren
+- binary_sensor.isabelles_fonster
+- binary_sensor.vardagsrummet_fonster
+- binary_sensor.wc_fonster
+- binary_sensor.eriks_fonster
+- binary_sensor.albins_fonster
+- binary_sensor.badrummet_fonster
