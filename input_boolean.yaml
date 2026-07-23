@@ -117,7 +117,7 @@
 # Någon står i duschen. Styrs av andra faktorer
   nagon_duschar:
     name: Någon duschar
-# Giltig duschdörrssekvens (öppen 3-60 s, badrumsdörr stängd) väntar på stillhet/fukt
+# Giltig duschdörrssekvens (öppen 3-300 s, badrumsdörr stängd) väntar på stillhet/fukt
   duschsekvens_giltig:
     name: Duschdörrssekvens giltig
     icon: mdi:shower-head
