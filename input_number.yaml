@@ -286,3 +286,49 @@
     max: 9999999999
     step: 1
     mode: box
+
+# Duschstatus — fukttrösklar (justerbara utan YAML-ändring)
+  settings_dusch_fukt_stigning_snabb:
+    name: "Dusch: Snabb fuktstigning (%)"
+    min: 1
+    max: 10
+    step: 0.5
+    initial: 2.5
+    mode: box
+  settings_dusch_fukt_stigning_fonster_s:
+    name: "Dusch: Tidsfönster snabb stigning (s)"
+    min: 60
+    max: 600
+    step: 30
+    initial: 240
+    mode: box
+  settings_dusch_fukt_tidig_stigning:
+    name: "Dusch: Tidig fuktstigning (%)"
+    min: 0.5
+    max: 5
+    step: 0.5
+    initial: 2
+    mode: box
+  settings_dusch_fukt_tidig_fonster_s:
+    name: "Dusch: Tidsfönster tidig stigning (s)"
+    min: 30
+    max: 300
+    step: 15
+    initial: 120
+    mode: box
+  settings_dusch_fukt_tidig_min:
+    name: "Dusch: Min nivå tidig bekräftelse (%)"
+    min: 45
+    max: 70
+    step: 1
+    initial: 55
+    unit_of_measurement: "%"
+    mode: box
+  settings_dusch_fukt_hog_niva:
+    name: "Dusch: Hög fuktnivå (%)"
+    min: 55
+    max: 80
+    step: 1
+    initial: 62
+    unit_of_measurement: "%"
+    mode: box

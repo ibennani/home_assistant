@@ -1381,6 +1381,10 @@
     entity_id: binary_sensor.duschdorren
     to: 'on'
   - trigger: state
+    id: duschdorr_stangd
+    entity_id: binary_sensor.duschdorren
+    to: 'off'
+  - trigger: state
     id: badrumsdorr_oppnad
     entity_id: binary_sensor.badrumsdorren
     to: 'on'
@@ -1582,6 +1586,30 @@
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.badrum_dusch_snapshot_finns
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.duschdorren
+            state: 'off'
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.duschslackning_aktiv
+          - action: light.turn_off
+            target:
+              entity_id:
+              - light.spegeln_badrummet
+              - light.takspottar_badrummet
+              - light.led_badrummet_handfatet
+              - light.led_badrummet_kommoden
+            data:
+              transition: 0
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''duschdorr_stangd'' }}'
+      - condition: template
+        value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar')\n  and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on')\n  and is_state('input_boolean.duschslackning_aktiv', 'off')\n  and is_state('input_boolean.badrum_dusch_ljus_last', 'off') }}"
+      sequence:
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.duschslackning_aktiv
@@ -1661,6 +1689,9 @@
         - conditions:
           - condition: template
             value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'') and is_state(''input_boolean.duschslackning_aktiv'', ''on'') }}'
+          - condition: state
+            entity_id: binary_sensor.duschdorren
+            state: 'off'
           sequence:
           - action: light.turn_off
             target:
@@ -7990,6 +8021,79 @@
         state: 'off'
       - condition: state
         entity_id: binary_sensor.duschdorren
+        state: 'on'
+      - condition: template
+        value_template: "{% set bad = ['unknown', 'unavailable', 'none', 'None', '']
+          %} {% set valid_trigger = trigger.from_state is not none and trigger.to_state
+          is not none and trigger.from_state.state not in bad and trigger.to_state.state
+          not in bad %} {% set from_v = trigger.from_state.state | float(0) if valid_trigger
+          else 0 %} {% set to_v = trigger.to_state.state | float(0) if valid_trigger
+          else 0 %} {% set dt = (as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed))
+          | float(999) if valid_trigger else 999 %} {% set rise = to_v - from_v %} {% set snabb_pct = states('input_number.settings_dusch_fukt_stigning_snabb') | float(2.5) %} {% set snabb_s = states('input_number.settings_dusch_fukt_stigning_fonster_s') | float(240) %} {% set tidig_pct = states('input_number.settings_dusch_fukt_tidig_stigning') | float(2) %} {% set tidig_s = states('input_number.settings_dusch_fukt_tidig_fonster_s') | float(120) %} {% set tidig_min = states('input_number.settings_dusch_fukt_tidig_min') | float(55) %} {% set hog = states('input_number.settings_dusch_fukt_hog_niva') | float(62) %} {% set quick_rise = rise >= snabb_pct and dt <= snabb_s %} {% set early_rise = rise >= tidig_pct and dt <= tidig_s and to_v >= tidig_min %} {% set high_and_rising = to_v >= hog and to_v > from_v %} {{ valid_trigger and (quick_rise or early_rise or high_and_rising) }}"
+      sequence:
+      - variables:
+          was_kandidat: '{{ is_state(''input_select.nagon_duschar'', ''Någon kanske
+            duschar'') }}'
+          elapsed_text: '{% set raw = states(''input_datetime.duschsession_start'')
+            %} {% set start_ts = as_timestamp(raw) if raw not in [''unknown'', ''unavailable'',
+            ''none'', ''None''] and (raw | string) | length > 0 else as_timestamp(now())
+            %} {% set elapsed = [0, (as_timestamp(now()) - start_ts) | int(0)] | max
+            %} {{ elapsed // 60 }}:{{ ''%02d'' | format(elapsed % 60) }}'
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not was_kandidat }}'
+          sequence:
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.duschsession_start
+            data:
+              datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_topp
+        data:
+          value: '{{ [states(''input_number.duschsession_fukt_topp'') | float(0), states(''sensor.badrummet_luftfuktighet'') | float(0)] | max }}'
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.duschsession_fukt_nedgang_ts
+        data:
+          value: 0
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.nagon_duschar
+        data:
+          option: Någon duschar
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.duschsekvens_giltig
+      - action: timer.cancel
+        target:
+          entity_id: timer.duschkandidat
+      - action: notify.mobile_app_ilias_s23_ultra
+        data:
+          message: "{% if was_kandidat %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
+            duschar.\n\nTid sedan start: {{ elapsed_text }}.\n\nBekräftat via fuktökning
+            (öppen duschdörr).\n\n{% else %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
+            duschar.\n\nBekräftat via fuktökning (öppen duschdörr).\n\n{% endif %}"
+          data:
+            ttl: 0
+            priority: high
+      - action: logbook.log
+        data:
+          name: Duschstatus
+          message: Dusch bekräftad via fuktökning med öppen duschdörr — släckning utanför duschen skjuts upp.
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''fukt_andrad'' }}'
+      - condition: template
+        value_template: '{{ is_state(''input_select.nagon_duschar'', ''Ingen duschar'')
+          or is_state(''input_select.nagon_duschar'', ''Någon kanske duschar'') }}'
+      - condition: state
+        entity_id: binary_sensor.badrumsdorren
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.duschdorren
         state: 'off'
       - condition: template
         value_template: "{% set bad = ['unknown', 'unavailable', 'none', 'None', '']
@@ -7998,9 +8102,7 @@
           not in bad %} {% set from_v = trigger.from_state.state | float(0) if valid_trigger
           else 0 %} {% set to_v = trigger.to_state.state | float(0) if valid_trigger
           else 0 %} {% set dt = (as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed))
-          | float(999) if valid_trigger else 999 %} {% set quick_rise = (to_v - from_v)
-          >= 3.0 and dt <= 180 %} {% set high_and_rising = to_v >= 65 and to_v > from_v
-          %} {{ valid_trigger and (quick_rise or high_and_rising) }}"
+          | float(999) if valid_trigger else 999 %} {% set rise = to_v - from_v %} {% set snabb_pct = states('input_number.settings_dusch_fukt_stigning_snabb') | float(2.5) %} {% set snabb_s = states('input_number.settings_dusch_fukt_stigning_fonster_s') | float(240) %} {% set tidig_pct = states('input_number.settings_dusch_fukt_tidig_stigning') | float(2) %} {% set tidig_s = states('input_number.settings_dusch_fukt_tidig_fonster_s') | float(120) %} {% set tidig_min = states('input_number.settings_dusch_fukt_tidig_min') | float(55) %} {% set hog = states('input_number.settings_dusch_fukt_hog_niva') | float(62) %} {% set quick_rise = rise >= snabb_pct and dt <= snabb_s %} {% set early_rise = rise >= tidig_pct and dt <= tidig_s and to_v >= tidig_min %} {% set high_and_rising = to_v >= hog and to_v > from_v %} {{ valid_trigger and (quick_rise or early_rise or high_and_rising) }}"
       sequence:
       - variables:
           was_kandidat: '{{ is_state(''input_select.nagon_duschar'', ''Någon kanske
@@ -8071,10 +8173,8 @@
           not in bad %} {% set from_v = trigger.from_state.state | float(0) if valid_trigger
           else 0 %} {% set to_v = trigger.to_state.state | float(0) if valid_trigger
           else 0 %} {% set dt = (as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed))
-          | float(999) if valid_trigger else 999 %} {% set quick_rise = (to_v - from_v)
-          >= 3.0 and dt <= 180 %} {% set high_and_rising = to_v >= 65 and to_v > from_v
-          %} {{ valid_trigger and is_state('binary_sensor.badrumsdorren', 'off') and
-          (quick_rise or high_and_rising) }}"
+          | float(999) if valid_trigger else 999 %} {% set rise = to_v - from_v %} {% set snabb_pct = states('input_number.settings_dusch_fukt_stigning_snabb') | float(2.5) %} {% set snabb_s = states('input_number.settings_dusch_fukt_stigning_fonster_s') | float(240) %} {% set tidig_pct = states('input_number.settings_dusch_fukt_tidig_stigning') | float(2) %} {% set tidig_s = states('input_number.settings_dusch_fukt_tidig_fonster_s') | float(120) %} {% set tidig_min = states('input_number.settings_dusch_fukt_tidig_min') | float(55) %} {% set hog = states('input_number.settings_dusch_fukt_hog_niva') | float(62) %} {% set quick_rise = rise >= snabb_pct and dt <= snabb_s %} {% set early_rise = rise >= tidig_pct and dt <= tidig_s and to_v >= tidig_min %} {% set high_and_rising = to_v >= hog and to_v > from_v %} {{ valid_trigger and is_state('binary_sensor.badrumsdorren', 'off') and
+          (quick_rise or early_rise or high_and_rising) }}"
       sequence:
       - action: input_datetime.set_datetime
         target:
@@ -8127,10 +8227,8 @@
           not in bad %} {% set from_v = trigger.from_state.state | float(0) if valid_trigger
           else 0 %} {% set to_v = trigger.to_state.state | float(0) if valid_trigger
           else 0 %} {% set dt = (as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed))
-          | float(999) if valid_trigger else 999 %} {% set quick_rise = (to_v - from_v)
-          >= 3.0 and dt <= 180 %} {% set high_and_rising = to_v >= 65 and to_v > from_v
-          %} {{ valid_trigger and is_state('binary_sensor.badrumsdorren', 'off') and
-          (quick_rise or high_and_rising) }}"
+          | float(999) if valid_trigger else 999 %} {% set rise = to_v - from_v %} {% set snabb_pct = states('input_number.settings_dusch_fukt_stigning_snabb') | float(2.5) %} {% set snabb_s = states('input_number.settings_dusch_fukt_stigning_fonster_s') | float(240) %} {% set tidig_pct = states('input_number.settings_dusch_fukt_tidig_stigning') | float(2) %} {% set tidig_s = states('input_number.settings_dusch_fukt_tidig_fonster_s') | float(120) %} {% set tidig_min = states('input_number.settings_dusch_fukt_tidig_min') | float(55) %} {% set hog = states('input_number.settings_dusch_fukt_hog_niva') | float(62) %} {% set quick_rise = rise >= snabb_pct and dt <= snabb_s %} {% set early_rise = rise >= tidig_pct and dt <= tidig_s and to_v >= tidig_min %} {% set high_and_rising = to_v >= hog and to_v > from_v %} {{ valid_trigger and is_state('binary_sensor.badrumsdorren', 'off') and
+          (quick_rise or early_rise or high_and_rising) }}"
       sequence:
       - variables:
           elapsed_text: '{% set raw = states(''input_datetime.duschsession_start'')
@@ -8266,9 +8364,9 @@
           fukt_dt: "{% if trigger.from_state is not none and trigger.to_state is not
             none %}{{ (as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed))
             | float(999) }}{% else %}999{% endif %}"
-          fukt_quick_rise: '{{ (fukt_current | float - fukt_from_v | float) >= 3.0
-            and fukt_dt | float <= 180 }}'
-          fukt_high_and_rising: '{{ fukt_current | float >= 65 and fukt_current | float
+          fukt_quick_rise: '{{ (fukt_current | float - fukt_from_v | float) >= (states(''input_number.settings_dusch_fukt_stigning_snabb'') | float(2.5)) and fukt_dt | float <= (states(''input_number.settings_dusch_fukt_stigning_fonster_s'') | float(240)) }}'
+          fukt_early_rise: '{{ (fukt_current | float - fukt_from_v | float) >= (states(''input_number.settings_dusch_fukt_tidig_stigning'') | float(2)) and fukt_dt | float <= (states(''input_number.settings_dusch_fukt_tidig_fonster_s'') | float(120)) and fukt_current | float >= (states(''input_number.settings_dusch_fukt_tidig_min'') | float(55)) }}'
+          fukt_high_and_rising: '{{ fukt_current | float >= (states(''input_number.settings_dusch_fukt_hog_niva'') | float(62)) and fukt_current | float
             > fukt_from_v | float }}'
       - choose:
         - conditions:
@@ -8282,7 +8380,7 @@
             entity_id: binary_sensor.duschdorren
             state: 'off'
           - condition: template
-            value_template: '{{ (fukt_quick_rise | bool) or (fukt_high_and_rising
+            value_template: '{{ (fukt_quick_rise | bool) or (fukt_early_rise | bool) or (fukt_high_and_rising
               | bool) }}'
           sequence:
           - action: input_boolean.turn_off
