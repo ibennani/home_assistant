@@ -12,26 +12,6 @@
       name: "Google home till nattvolym"
       has_time: true  
   
-  # När ska nattlarmet gå igång (natt mot vardagar)
-    alarm_nattlarm_pa_tid_mot_vardagar:
-      name: "Nattlarm på (sön - tor)"
-      has_time: true    
-  
-  # När ska nattlarmet gå igång (natt mot helgdagar)
-    alarm_nattlarm_pa_tid_mot_helgdagar:
-      name: "Nattlarm på (fre + lör samt när vi är lediga)"
-      has_time: true 
-  
-  # När ska nattlarmet stängas av (vardagar)
-    alarm_nattlarm_av_tid_vardagar:
-      name: "Nattlarm av (mån - fre)"
-      has_time: true    
-  
-  # När ska nattlarmet gå igång (helgdagar/lediga)
-    alarm_nattlarm_av_tid_helgdagar:
-      name: "Nattlarm av (lör + sön samt när vi är lediga)"
-      has_time: true 
-  
   # Hur lång tid kan en dörr vara öppen innan nattlarmet aktiveras?
     alarm_nattlarm_delay:
       name: "Nattlarm fördröjning"

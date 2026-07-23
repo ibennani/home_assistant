@@ -27,7 +27,7 @@
     name: Vi äter
     icon: mdi:food
 
-# Aktivera nattlarmet på de tider som är angivna i GUI om denna switch är på
+# Aktivera nattlarm automatiskt vid Kväll→Natt (via Huslägen) om någon är hemma
   night_alarm_on:
     name: Nattlarmet startar automatiskt
     icon: mdi:alarm-light-outline    

@@ -4269,31 +4269,8 @@ views:
                   - type: entities            
                     title: Nattlarm inställningar
                     entities: 
-                      - input_boolean.night_alarm_on      
-                  - type: horizontal-stack
-                    cards: 
-                      - type: 'custom:time-picker-card'
-                        entity: input_datetime.alarm_nattlarm_pa_tid_mot_vardagar
-                        layout:
-                          name: header
-                          align_controls: center
-                      - type: 'custom:time-picker-card'
-                        entity: input_datetime.alarm_nattlarm_pa_tid_mot_helgdagar
-                        layout:           
-                          name: header
-                          align_controls: center
-                  - type: horizontal-stack
-                    cards:
-                      - type: 'custom:time-picker-card'
-                        entity: input_datetime.alarm_nattlarm_av_tid_vardagar
-                        layout:
-                          name: header
-                          align_controls: center
-                      - type: 'custom:time-picker-card'
-                        entity: input_datetime.alarm_nattlarm_av_tid_helgdagar
-                        layout:           
-                          name: header
-                          align_controls: center
+                      - input_boolean.night_alarm_on
+                      - input_datetime.alarm_nattlarm_delay
               - type: vertical-stack
                 title: Google Home-puckarna
                 cards: 
