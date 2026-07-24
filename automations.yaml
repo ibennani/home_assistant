@@ -11252,7 +11252,7 @@
     - trigger: event
       event_type: tag_scanned
       event_data:
-        tag_id: 0aafa4f11233417696a1b2a45b2c2655
+        tag_id: Badrumm-blipp
   variables:
     device_map:
       "929526afaef9a2acb0e5becc290d7c34": Anna
