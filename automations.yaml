@@ -11243,10 +11243,10 @@
   actions:
     - action: script.git_synka_config
 
-# NFC: notis när Anna, Erik eller Ilias blippar badrum blipp
-- alias: "Mobilnotis: NFC badrum blipp"
+# NFC: notis när Anna, Erik eller Ilias blippar Badrumm-blipp
+- alias: "Mobilnotis: NFC Badrumm-blipp"
   id: nfc_badrum_blipp
-  description: Skickar notis till Ilias när Anna, Erik eller Ilias blippar NFC-taggen badrum blipp.
+  description: Skickar notis till Ilias när Anna, Erik eller Ilias blippar NFC-taggen Badrumm-blipp.
   mode: single
   triggers:
     - trigger: event
@@ -11262,7 +11262,7 @@
   actions:
     - action: notify.mobile_app_ilias_s23_ultra
       data:
-        title: Badrum blipp
+        title: Badrumm-blipp
         message: "{{ vem }} blippade taggen {{ now().strftime('%H:%M') }}"
         data:
           ttl: 0
