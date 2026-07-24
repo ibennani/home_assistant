@@ -370,8 +370,7 @@
 
       '
     data:
-      message: "HEMMET {{ now().strftime('%R') }}: \nBatterybyte behövs:\n{{ states(\"var.change_batteries_message\")
-        }}\n"
+      message: "HEMMET {{ now().strftime('%R') }}:\n{{ states(\"var.change_batteries_message\") }}\n"
 - alias: 'Mobilnotis: Ny version av kritisk mjukvara'
   id: 7918345465560808077sdg8670
   triggers:
