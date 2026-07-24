@@ -1367,6 +1367,10 @@
     entity_id: binary_sensor.badrummet_rorelse
     to: 'on'
   - trigger: state
+    id: lampor_slackta
+    entity_id: light.badrummet_alla_lampor
+    to: 'off'
+  - trigger: state
     id: badrumsdorr_stangd
     entity_id: binary_sensor.badrumsdorren
     to: 'off'
@@ -1443,10 +1447,11 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id in [''tand'', ''badrumsdorr_stangd''] }}'
+        value_template: '{{ trigger.id in [''tand'', ''badrumsdorr_stangd'', ''lampor_slackta'']
+          }}'
       - condition: template
         value_template: "{%- set now_ts = as_timestamp(now()) -%} {%- set door = states.binary_sensor.badrumsdorren
-          -%}\n{%- if trigger.id == 'badrumsdorr_stangd' -%}\n{{\n  is_state('binary_sensor.badrummet_rorelse', 'on')\n  and is_state('light.badrummet_alla_lampor', 'off')\n  and not is_state('timer.badrum_slackning_pagar', 'active')\n}}\n{%- else -%}\n{{\n  is_state('timer.badrum_slackning_pagar', 'active')\n  or (\n    (now_ts - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) < 1\n    and is_state('light.badrummet_alla_lampor', 'off')\n    and (\n      is_state('binary_sensor.badrumsdorren', 'on')\n      or (\n        is_state('binary_sensor.badrumsdorren', 'off')\n        and (now_ts - as_timestamp(door.last_changed)) < 10\n      )\n    )\n  )\n}}\n{%- endif -%}"
+          -%}\n{%- if trigger.id == 'badrumsdorr_stangd' -%}\n{{\n  is_state('binary_sensor.badrummet_rorelse', 'on')\n  and is_state('light.badrummet_alla_lampor', 'off')\n  and not is_state('timer.badrum_slackning_pagar', 'active')\n}}\n{%- elif trigger.id == 'lampor_slackta' -%}\n{{\n  is_state('binary_sensor.badrummet_rorelse', 'on')\n  and not is_state('timer.badrum_slackning_pagar', 'active')\n}}\n{%- else -%}\n{{\n  is_state('timer.badrum_slackning_pagar', 'active')\n  or (\n    is_state('binary_sensor.badrummet_rorelse', 'on')\n    and is_state('light.badrummet_alla_lampor', 'off')\n    and (\n      is_state('binary_sensor.badrumsdorren', 'on')\n      or (\n        is_state('binary_sensor.badrumsdorren', 'off')\n        and (now_ts - as_timestamp(door.last_changed)) < 10\n      )\n    )\n  )\n}}\n{%- endif -%}"
       sequence:
       - choose:
         - conditions:
@@ -1456,39 +1461,38 @@
           - action: timer.cancel
             target:
               entity_id: timer.badrum_slackning_pagar
-        default:
-        - variables:
-            is_night: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
-            lux: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) }}"
-            is_cleaning: '{{ is_state(''input_boolean.stadning_pagar'', ''on'') }}'
-            day_brightness: "{% if is_cleaning %}100{% elif lux < 300 %}30{% elif lux <= 2000 %}35{% elif lux <= 13000 %}40{% else %}99{% endif %}"
-        - choose:
-          - conditions:
-            - condition: template
-              value_template: '{{ is_night }}'
-            sequence:
-            - action: light.turn_on
-              target:
-                entity_id: light.led_badrummet_kommoden
-              data:
-                brightness_pct: 2
-                transition: 0
-            - action: light.turn_on
-              target:
-                entity_id: light.led_badrummet_duschen
-              data:
-                brightness_pct: 1
-                transition: 0
-          default:
+      - variables:
+          is_night: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
+          lux: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) }}"
+          is_cleaning: '{{ is_state(''input_boolean.stadning_pagar'', ''on'') }}'
+          day_brightness: "{% if is_cleaning %}100{% elif lux < 300 %}30{% elif lux <= 2000 %}35{% elif lux <= 13000 %}40{% else %}99{% endif %}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_night }}'
+          sequence:
           - action: light.turn_on
             target:
-              entity_id:
-              - light.takspottar_badrummet
-              - light.led_badrummet_handfatet
-              - light.led_badrummet_kommoden
+              entity_id: light.led_badrummet_kommoden
             data:
-              brightness_pct: '{{ day_brightness }}'
+              brightness_pct: 2
               transition: 0
+          - action: light.turn_on
+            target:
+              entity_id: light.led_badrummet_duschen
+            data:
+              brightness_pct: 1
+              transition: 0
+        default:
+        - action: light.turn_on
+          target:
+            entity_id:
+            - light.takspottar_badrummet
+            - light.led_badrummet_handfatet
+            - light.led_badrummet_kommoden
+          data:
+            brightness_pct: '{{ day_brightness }}'
+            transition: 0
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''slack'' }}'
@@ -1499,7 +1503,7 @@
         target:
           entity_id: timer.badrum_slackning_pagar
         data:
-          duration: 00:00:15
+          duration: 00:00:30
       - action: light.turn_off
         target:
           entity_id:

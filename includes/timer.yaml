@@ -35,6 +35,10 @@ hallen_uppdimmad_belysning:
 badrum_dusch_120s:
   duration: '00:02:00'
 
+# Badrum: släckning pågår (rörelse under fasen avbryter och tänder igen)
+badrum_slackning_pagar:
+  duration: '00:00:30'
+
 # Väntar på fuktbekräftelse efter Någon kanske duschar
 duschkandidat:
   duration: '00:08:00'
