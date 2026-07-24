@@ -1473,12 +1473,6 @@
               data:
                 brightness_pct: 2
                 transition: 0
-            - action: light.turn_on
-              target:
-                entity_id: light.led_badrummet_duschen
-              data:
-                brightness_pct: 1
-                transition: 0
           default:
           - action: light.turn_on
             target:
@@ -1506,8 +1500,6 @@
           - light.takspottar_badrummet
           - light.led_badrummet_handfatet
           - light.led_badrummet_kommoden
-          - light.led_badrummet_duschen
-          - light.takspott_duschen
           - light.spegeln_badrummet
         data:
           transition: 10
@@ -1545,29 +1537,6 @@
           - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.duschslackning_aktiv
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: "{{
-  is_state('input_select.nagon_duschar', 'Ingen duschar')
-  and not is_state('input_select.house_time_modes', 'Natt')
-  and is_state('light.takspott_duschen', 'off')
-  and is_state('light.led_badrummet_duschen', 'off')
-}}"
-          sequence:
-          - variables:
-              dusch_lux: "{{
-  states('sensor.utomhus_framsidan_ljusstyrka') | int(0)
-}}"
-              dusch_brightness: '{{ 20 if (dusch_lux | int(0)) < 2000 else 30 }}'
-          - action: light.turn_on
-            target:
-              entity_id:
-              - light.takspott_duschen
-              - light.led_badrummet_duschen
-            data:
-              brightness_pct: '{{ dusch_brightness }}'
-              transition: 0
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''dusch_bekraftad'' }}'
@@ -9680,10 +9649,10 @@
   alias: 'Status: Någon duschar'
   description: 'Hanterar duschstatus i tre steg. Kandidat kräver stängd badrumsdörr,
     duschdörr öppen 3-60 sekunder och 120 sekunder efter stängd duschdörr utan rörelse
-    vid timerutgång. Kraftig fuktökning med båda dörrar stängda bekräftar direkt till
-    Någon duschar. Fukt kan även bekräfta via giltig duschdörrssekvens, eller bekräfta
-    från kandidat. Avslut endast när badrumsdörren öppnas. Fukt spåras under session
-    för toppvärde och för att släppa ljuslås efter paus.
+    vid timerutgång. Kandidat ligger kvar tills badrums- eller duschdörr öppnas, eller
+    rörelse avbryter. Kraftig fuktökning bekräftar till Någon duschar. Bekräftad session
+    avslutas endast när badrumsdörren öppnas. Fukt spåras under session för toppvärde
+    och för att släppa ljuslås efter paus.
 
     '
   triggers:
@@ -9708,11 +9677,6 @@
     entity_id: binary_sensor.badrumsdorren
     to: 'on'
   - trigger: event
-    id: kandidat_timer_klar
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.duschkandidat
-  - trigger: event
     id: badrum_dusch_120s_klar
     event_type: timer.finished
     event_data:
@@ -9724,6 +9688,36 @@
       - condition: template
         value_template: '{{ trigger.id == ''duschdorr_oppnad'' }}'
       sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon kanske
+              duschar'') }}'
+          sequence:
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.nagon_duschar
+            data:
+              option: Ingen duschar
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.duschsession_fukt_topp
+            data:
+              value: 0
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.duschsession_fukt_nedgang_ts
+            data:
+              value: 0
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.duschsession_start
+            data:
+              datetime: '1970-01-01 00:00:00'
+          - action: logbook.log
+            data:
+              name: Duschstatus
+              message: Duschkandidat avslutades när duschdörren öppnades.
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
@@ -9805,11 +9799,6 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
-      - action: timer.start
-        target:
-          entity_id: timer.duschkandidat
-        data:
-          duration: 00:08:00
       - action: notify.mobile_app_ilias_s23_ultra
         data:
           message: 'HEMMET {{ now().strftime(''%R'') }}:
@@ -9850,9 +9839,6 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
-      - action: timer.cancel
-        target:
-          entity_id: timer.duschkandidat
       - action: logbook.log
         data:
           name: Duschstatus
@@ -9914,9 +9900,6 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
-      - action: timer.cancel
-        target:
-          entity_id: timer.duschkandidat
       - action: notify.mobile_app_ilias_s23_ultra
         data:
           message: "{% if was_kandidat %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
@@ -9987,9 +9970,6 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
-      - action: timer.cancel
-        target:
-          entity_id: timer.duschkandidat
       - action: notify.mobile_app_ilias_s23_ultra
         data:
           message: "{% if was_kandidat %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
@@ -10046,9 +10026,6 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
-      - action: timer.cancel
-        target:
-          entity_id: timer.duschkandidat
       - action: notify.mobile_app_ilias_s23_ultra
         data:
           message: 'HEMMET {{ now().strftime(''%R'') }}:
@@ -10101,9 +10078,6 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschsekvens_giltig
-      - action: timer.cancel
-        target:
-          entity_id: timer.duschkandidat
       - action: notify.mobile_app_ilias_s23_ultra
         data:
           message: 'HEMMET {{ now().strftime(''%R'') }}:
@@ -10168,9 +10142,7 @@
           datetime: '1970-01-01 00:00:00'
       - action: timer.cancel
         target:
-          entity_id:
-          - timer.duschkandidat
-          - timer.badrum_dusch_120s
+          entity_id: timer.badrum_dusch_120s
       - choose:
         - conditions:
           - condition: template
@@ -10247,35 +10219,6 @@
               entity_id: input_number.duschsession_fukt_topp
             data:
               value: '{{ fukt_current | float }}'
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.id == ''kandidat_timer_klar'' }}'
-      - condition: template
-        value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon kanske
-          duschar'') }}'
-      sequence:
-      - action: input_select.select_option
-        target:
-          entity_id: input_select.nagon_duschar
-        data:
-          option: Ingen duschar
-      - action: input_number.set_value
-        target:
-          entity_id: input_number.duschsession_fukt_topp
-        data:
-          value: 0
-      - action: input_number.set_value
-        target:
-          entity_id: input_number.duschsession_fukt_nedgang_ts
-        data:
-          value: 0
-      - action: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.duschsekvens_giltig
-      - action: logbook.log
-        data:
-          name: Duschstatus
-          message: Duschkandidat avslutades utan fuktbekräftelse.
   mode: single
 - id: '1766189407568'
   alias: 'Belysning: Kör script som styr belysningen i Isabelles rum'
