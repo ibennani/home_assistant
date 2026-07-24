@@ -6592,7 +6592,6 @@
       value_template: "{{ state_attr(trigger.entity_id, 'in_zones') | default([], true) | length == 0 }}"
   - variables:
       notification_message: >
-        HEMMET {{ now().strftime('%R') }}: 
         {%- if trigger.entity_id == 'person.anna_bennani' -%}
           {%- set person = 'Anna' -%}
         {%- elif trigger.entity_id == 'device_tracker.albins_iphone_12_gps_tracker' -%}
@@ -6804,7 +6803,7 @@
                 {%- endif -%}
   - action: notify.mobile_app_ilias_s23_ultra
     data:
-      message: "{{ notification_message }}"
+      message: "HEMMET {{ now().strftime('%R') }}: \n{{ notification_message }}"
       data:
         ttl: 0
         priority: high

@@ -324,7 +324,7 @@ def build_message_template() -> str:
     body += "\n        {%- else -%}\n          {{ person }} zonhändelse ({{ zone_slug }}/{{ event }})\n        {%- endif -%}"
     # Fix first branch from elif to if
     body = body.replace("        {%- elif zone_slug ==", "        {%- if zone_slug ==", 1)
-    return "HEMMET {{ now().strftime('%R') }}: \n" + body
+    return body
 
 
 def build_automation() -> str:
@@ -356,7 +356,7 @@ def build_automation() -> str:
     lines += [
         "  - action: notify.mobile_app_ilias_s23_ultra",
         "    data:",
-        "      message: \"{{ notification_message }}\"",
+        "      message: \"HEMMET {{ now().strftime('%R') }}: \\n{{ notification_message }}\"",
         "      data:",
         "        ttl: 0",
         "        priority: high",
