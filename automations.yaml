@@ -4771,197 +4771,2046 @@
           entity_id: input_boolean.stadning_pagar
 - id: '7918348674111555999'
   alias: 'Mobilnotis Ilias: Vilka kommer hem och går hemifrån'
+  mode: parallel
   triggers:
-  - trigger: state
-    entity_id:
-    - person.anna_bennani
-    - device_tracker.albins_iphone_12_gps_tracker
-    - device_tracker.annelies_iphone
-    - device_tracker.erik_s23
-    - device_tracker.ulrikas_iphone
-    - device_tracker.jockesiphone
-    - device_tracker.mariesiphone
-    - device_tracker.android56cbe288b1a113c8
-    - device_tracker.youssef_honor_8
-    - device_tracker.zaksiphone
-    - device_tracker.safiabennani
-    - device_tracker.78521aac945e
-    - device_tracker.84c7ea28ca07
-    - device_tracker.adinas_iphone
-    - device_tracker.hannas_iphone_7
-    - device_tracker.marias_iphone
-  conditions:
-  - condition: template
-    value_template: '{{ not trigger.from_state.state == trigger.to_state.state  }}
-
-      '
+  - trigger: zone.entered
+    id: entered_home
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.home
+  - trigger: zone.left
+    id: left_home
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.home
+  - trigger: zone.entered
+    id: entered_annas_jobb
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.annas_jobb
+  - trigger: zone.left
+    id: left_annas_jobb
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.annas_jobb
+  - trigger: zone.entered
+    id: entered_eriks_skola
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.eriks_skola
+  - trigger: zone.left
+    id: left_eriks_skola
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.eriks_skola
+  - trigger: zone.entered
+    id: entered_ilias_jobb
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ilias_jobb
+  - trigger: zone.left
+    id: left_ilias_jobb
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ilias_jobb
+  - trigger: zone.entered
+    id: entered_kth_campus
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.kth_campus
+  - trigger: zone.left
+    id: left_kth_campus
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.kth_campus
+  - trigger: zone.entered
+    id: entered_kth_flemmingsberg
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.kth_flemmingsberg
+  - trigger: zone.left
+    id: left_kth_flemmingsberg
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.kth_flemmingsberg
+  - trigger: zone.entered
+    id: entered_albins_mamma
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.albins_mamma
+  - trigger: zone.left
+    id: left_albins_mamma
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.albins_mamma
+  - trigger: zone.entered
+    id: entered_isabelles_jobb
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.isabelles_jobb
+  - trigger: zone.left
+    id: left_isabelles_jobb
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.isabelles_jobb
+  - trigger: zone.entered
+    id: entered_albin
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.albin
+  - trigger: zone.left
+    id: left_albin
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.albin
+  - trigger: zone.entered
+    id: entered_grasko
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.grasko
+  - trigger: zone.left
+    id: left_grasko
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.grasko
+  - trigger: zone.entered
+    id: entered_isabelles_mormor
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.isabelles_mormor
+  - trigger: zone.left
+    id: left_isabelles_mormor
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.isabelles_mormor
+  - trigger: zone.entered
+    id: entered_isabelles_skola
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.isabelles_skola
+  - trigger: zone.left
+    id: left_isabelles_skola
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.isabelles_skola
+  - trigger: zone.entered
+    id: entered_goteborg_c
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.goteborg_c
+  - trigger: zone.left
+    id: left_goteborg_c
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.goteborg_c
+  - trigger: zone.entered
+    id: entered_isabelles_moster_jenny
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.isabelles_moster_jenny
+  - trigger: zone.left
+    id: left_isabelles_moster_jenny
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.isabelles_moster_jenny
+  - trigger: zone.entered
+    id: entered_adrian
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.adrian
+  - trigger: zone.left
+    id: left_adrian
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.adrian
+  - trigger: zone.entered
+    id: entered_knut
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.knut
+  - trigger: zone.left
+    id: left_knut
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.knut
+  - trigger: zone.entered
+    id: entered_milo
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.milo
+  - trigger: zone.left
+    id: left_milo
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.milo
+  - trigger: zone.entered
+    id: entered_hemma_hos_rio
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.hemma_hos_rio
+  - trigger: zone.left
+    id: left_hemma_hos_rio
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.hemma_hos_rio
+  - trigger: zone.entered
+    id: entered_ellio_i_tanum
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ellio_i_tanum
+  - trigger: zone.left
+    id: left_ellio_i_tanum
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ellio_i_tanum
+  - trigger: zone.entered
+    id: entered_digg_sundsvall
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.digg_sundsvall
+  - trigger: zone.left
+    id: left_digg_sundsvall
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.digg_sundsvall
+  - trigger: zone.entered
+    id: entered_ostra_sjukhuset
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ostra_sjukhuset
+  - trigger: zone.left
+    id: left_ostra_sjukhuset
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ostra_sjukhuset
+  - trigger: zone.entered
+    id: entered_stromstad
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.stromstad
+  - trigger: zone.left
+    id: left_stromstad
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.stromstad
+  - trigger: zone.entered
+    id: entered_ik_sodra_skarpnack
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ik_sodra_skarpnack
+  - trigger: zone.left
+    id: left_ik_sodra_skarpnack
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ik_sodra_skarpnack
+  - trigger: zone.entered
+    id: entered_torvallahallen
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.torvallahallen
+  - trigger: zone.left
+    id: left_torvallahallen
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.torvallahallen
+  - trigger: zone.entered
+    id: entered_zaki_och_hanna
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.zaki_och_hanna
+  - trigger: zone.left
+    id: left_zaki_och_hanna
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.zaki_och_hanna
+  - trigger: zone.entered
+    id: entered_maria
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.maria
+  - trigger: zone.left
+    id: left_maria
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.maria
+  - trigger: zone.entered
+    id: entered_sixten
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.sixten
+  - trigger: zone.left
+    id: left_sixten
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.sixten
+  - trigger: zone.entered
+    id: entered_oslo
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.oslo
+  - trigger: zone.left
+    id: left_oslo
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.oslo
+  - trigger: zone.entered
+    id: entered_farmor_och_farfar
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.farmor_och_farfar
+  - trigger: zone.left
+    id: left_farmor_och_farfar
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.farmor_och_farfar
+  - trigger: zone.entered
+    id: entered_solveig_och_lennart
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.solveig_och_lennart
+  - trigger: zone.left
+    id: left_solveig_och_lennart
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.solveig_och_lennart
+  - trigger: zone.entered
+    id: entered_bengt
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.bengt
+  - trigger: zone.left
+    id: left_bengt
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.bengt
+  - trigger: zone.entered
+    id: entered_farsta_centrum
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.farsta_centrum
+  - trigger: zone.left
+    id: left_farsta_centrum
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.farsta_centrum
+  - trigger: zone.entered
+    id: entered_farsta_strand_pendeltagstation
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.farsta_strand_pendeltagstation
+  - trigger: zone.left
+    id: left_farsta_strand_pendeltagstation
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.farsta_strand_pendeltagstation
+  - trigger: zone.entered
+    id: entered_ellio_i_norge
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ellio_i_norge
+  - trigger: zone.left
+    id: left_ellio_i_norge
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.ellio_i_norge
+  - trigger: zone.entered
+    id: entered_eina
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.eina
+  - trigger: zone.left
+    id: left_eina
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.eina
+  - trigger: zone.entered
+    id: entered_gjovik
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.gjovik
+  - trigger: zone.left
+    id: left_gjovik
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.gjovik
+  - trigger: zone.entered
+    id: entered_norge_2
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.norge_2
+  - trigger: zone.left
+    id: left_norge_2
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.norge_2
+  - trigger: zone.entered
+    id: entered_sahlgrenska_sjukhuset
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.sahlgrenska_sjukhuset
+  - trigger: zone.left
+    id: left_sahlgrenska_sjukhuset
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.sahlgrenska_sjukhuset
+  - trigger: zone.entered
+    id: entered_molndahls_sjukhus
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.molndahls_sjukhus
+  - trigger: zone.left
+    id: left_molndahls_sjukhus
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.molndahls_sjukhus
+  - trigger: zone.entered
+    id: entered_stefan
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.stefan
+  - trigger: zone.left
+    id: left_stefan
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.stefan
+  - trigger: zone.entered
+    id: entered_elins_jobb
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.elins_jobb
+  - trigger: zone.left
+    id: left_elins_jobb
+    target:
+      entity_id:
+      - person.anna_bennani
+      - device_tracker.albins_iphone_12_gps_tracker
+      - device_tracker.annelies_iphone
+      - device_tracker.erik_s23
+      - device_tracker.ulrikas_iphone
+      - device_tracker.jockesiphone
+      - device_tracker.mariesiphone
+      - device_tracker.android56cbe288b1a113c8
+      - device_tracker.youssef_honor_8
+      - device_tracker.zaksiphone
+      - device_tracker.safiabennani
+      - device_tracker.78521aac945e
+      - device_tracker.84c7ea28ca07
+      - device_tracker.adinas_iphone
+      - device_tracker.hannas_iphone_7
+      - device_tracker.marias_iphone
+    options:
+      zone: zone.elins_jobb
   actions:
+  - variables:
+      zone_slug: >-
+        {% if trigger.id.startswith('entered_') %}{{ trigger.id[8:] }}{% else %}{{ trigger.id[5:] }}{% endif %}
+      is_left: "{{ trigger.id.startswith('left_') }}"
+  - if:
+    - condition: template
+      value_template: "{{ is_left }}"
+    then:
+    - delay:
+        seconds: 5
+    - condition: template
+      value_template: "{{ state_attr(trigger.entity_id, 'in_zones') | default([], true) | length == 0 }}"
+  - variables:
+      notification_message: >
+        HEMMET {{ now().strftime('%R') }}: 
+        {%- if trigger.entity_id == 'person.anna_bennani' -%}
+          {%- set person = 'Anna' -%}
+        {%- elif trigger.entity_id == 'device_tracker.albins_iphone_12_gps_tracker' -%}
+          {%- set person = 'Albin' -%}
+        {%- elif trigger.entity_id == 'device_tracker.annelies_iphone' -%}
+          {%- set person = 'Isabelle' -%}
+        {%- elif trigger.entity_id == 'device_tracker.erik_s23' -%}
+          {%- set person = 'Erik' -%}
+        {%- elif trigger.entity_id == 'device_tracker.ulrikas_iphone' -%}
+          {%- set person = 'Ulrika' -%}
+        {%- elif trigger.entity_id == 'device_tracker.jockesiphone' -%}
+          {%- set person = 'Jocke' -%}
+        {%- elif trigger.entity_id == 'device_tracker.mariesiphone' -%}
+          {%- set person = 'Mie' -%}
+        {%- elif trigger.entity_id == 'device_tracker.android56cbe288b1a113c8' -%}
+          {%- set person = 'Elin' -%}
+        {%- elif trigger.entity_id == 'device_tracker.youssef_honor_8' -%}
+          {%- set person = 'Youssef' -%}
+        {%- elif trigger.entity_id == 'device_tracker.zaksiphone' -%}
+          {%- set person = 'Zaki' -%}
+        {%- elif trigger.entity_id == 'device_tracker.safiabennani' -%}
+          {%- set person = 'Safia' -%}
+        {%- elif trigger.entity_id == 'device_tracker.78521aac945e' -%}
+          {%- set person = 'Solveig' -%}
+        {%- elif trigger.entity_id == 'device_tracker.84c7ea28ca07' -%}
+          {%- set person = 'Sarah' -%}
+        {%- elif trigger.entity_id == 'device_tracker.adinas_iphone' -%}
+          {%- set person = 'Adina' -%}
+        {%- elif trigger.entity_id == 'device_tracker.hannas_iphone_7' -%}
+          {%- set person = 'Hanna' -%}
+        {%- elif trigger.entity_id == 'device_tracker.marias_iphone' -%}
+          {%- set person = 'Maria' -%}
+        {%- else -%}
+          {%- set person = 'Okänd' -%}
+        {%- endif -%}
+        {%- if trigger.id.startswith('entered_') -%}
+          {%- set event = 'entered' -%}
+          {%- set zone_slug = trigger.id[8:] -%}
+        {%- else -%}
+          {%- set event = 'left' -%}
+          {%- set zone_slug = trigger.id[5:] -%}
+        {%- endif -%}
+                {%- if zone_slug == 'home' and event == 'entered' -%}
+                  {{ person }} är hemma
+                {%- elif zone_slug == 'home' and event == 'left' -%}
+                  {{ person }} har gått hemifrån
+                {%- elif zone_slug == 'annas_jobb' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Anna' %}är på jobbet {% else %}är på Annas jobb{% endif %}
+                {%- elif zone_slug == 'annas_jobb' and event == 'left' -%}
+                  {{ person }} {% if person == 'Anna' %}har lämnat jobbet {% else %}har lämnat Annas jobb{% endif %}
+                {%- elif zone_slug == 'eriks_skola' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Erik' %}är i skolan {% else %}är i Eriks skola{% endif %}
+                {%- elif zone_slug == 'eriks_skola' and event == 'left' -%}
+                  {{ person }} {% if person == 'Erik' %}har lämnat skolan {% else %}har lämnat Eriks skola{% endif %}
+                {%- elif zone_slug == 'ilias_jobb' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Ilias' %}är på jobbet {% else %}är på Ilias jobb{% endif %}
+                {%- elif zone_slug == 'ilias_jobb' and event == 'left' -%}
+                  {{ person }} {% if person == 'Ilias' %}har lämnat jobbet {% else %}har lämnat Ilias jobb{% endif %}
+                {%- elif zone_slug == 'kth_campus' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Albin' %}är på KTH {% else %}är på KTH{% endif %}
+                {%- elif zone_slug == 'kth_campus' and event == 'left' -%}
+                  {{ person }} {% if person == 'Albin' %}har lämnat KTH {% else %}har lämnat KTH{% endif %}
+                {%- elif zone_slug == 'kth_flemmingsberg' and event == 'entered' -%}
+                  {{ person }} är på Youssef och Emma
+                {%- elif zone_slug == 'kth_flemmingsberg' and event == 'left' -%}
+                  {{ person }} har lämnat Youssef och Emma
+                {%- elif zone_slug == 'albins_mamma' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Albin' %}är hos mamma {% else %}är hos Albins mamma{% endif %}
+                {%- elif zone_slug == 'albins_mamma' and event == 'left' -%}
+                  {{ person }} {% if person == 'Albin' %}har åkt hemifrån mamma {% else %}har åkt ifrån Albins mamma{% endif %}
+                {%- elif zone_slug == 'isabelles_jobb' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Isabelle' %}är på jobbet {% else %}är på Isabelles jobb{% endif %}
+                {%- elif zone_slug == 'isabelles_jobb' and event == 'left' -%}
+                  {{ person }} {% if person == 'Isabelle' %}har lämnat jobbet {% else %}har lämnat Isabelles jobb{% endif %}
+                {%- elif zone_slug == 'albin' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Albin' %}är i sitt hem {% else %}är hemma hos Albin{% endif %}
+                {%- elif zone_slug == 'albin' and event == 'left' -%}
+                  {{ person }} {% if person == 'Albin' %}har lämnat sitt hem {% else %}har åkt hemifrån Albin{% endif %}
+                {%- elif zone_slug == 'grasko' and event == 'entered' -%}
+                  {{ person }} är på Gräskö
+                {%- elif zone_slug == 'grasko' and event == 'left' -%}
+                  {{ person }} har lämnat Gräskö
+                {%- elif zone_slug == 'isabelles_mormor' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Isabelle' %}är hos mormor {% else %}är hos Isabelles mormor{% endif %}
+                {%- elif zone_slug == 'isabelles_mormor' and event == 'left' -%}
+                  {{ person }} {% if person == 'Isabelle' %}har åkt hemifrån mormor {% else %}har åkt ifrån Isabelles mormor{% endif %}
+                {%- elif zone_slug == 'isabelles_skola' and event == 'entered' -%}
+                  {{ person }} {% if person == 'Isabelle' %}är i skolan {% else %}är i Isabelles skola{% endif %}
+                {%- elif zone_slug == 'isabelles_skola' and event == 'left' -%}
+                  {{ person }} {% if person == 'Isabelle' %}har lämnat skolan {% else %}har lämnat Isabelles skola{% endif %}
+                {%- elif zone_slug == 'goteborg_c' and event == 'entered' -%}
+                  {{ person }} är på Göteborg Central
+                {%- elif zone_slug == 'goteborg_c' and event == 'left' -%}
+                  {{ person }} har lämnat Göteborg Central
+                {%- elif zone_slug == 'isabelles_moster_jenny' and event == 'entered' -%}
+                  {{ person }} är hos moster Jenny
+                {%- elif zone_slug == 'isabelles_moster_jenny' and event == 'left' -%}
+                  {{ person }} har lämnat moster Jenny
+                {%- elif zone_slug == 'adrian' and event == 'entered' -%}
+                  {{ person }} är hos Adrian
+                {%- elif zone_slug == 'adrian' and event == 'left' -%}
+                  {{ person }} har lämnat Adrian
+                {%- elif zone_slug == 'knut' and event == 'entered' -%}
+                  {{ person }} är hos Knut
+                {%- elif zone_slug == 'knut' and event == 'left' -%}
+                  {{ person }} har lämnat Knut
+                {%- elif zone_slug == 'milo' and event == 'entered' -%}
+                  {{ person }} är hos Milo
+                {%- elif zone_slug == 'milo' and event == 'left' -%}
+                  {{ person }} har lämnat Milo
+                {%- elif zone_slug == 'hemma_hos_rio' and event == 'entered' -%}
+                  {{ person }} är hos Rio i Norge
+                {%- elif zone_slug == 'hemma_hos_rio' and event == 'left' -%}
+                  {{ person }} har lämnat Rio i Norge
+                {%- elif zone_slug == 'ellio_i_tanum' and event == 'entered' -%}
+                  {{ person }} är hos Selma i Tanum
+                {%- elif zone_slug == 'ellio_i_tanum' and event == 'left' -%}
+                  {{ person }} har lämnat Selma i Tanum
+                {%- elif zone_slug == 'digg_sundsvall' and event == 'entered' -%}
+                  {{ person }} är på Stockholm centralstation
+                {%- elif zone_slug == 'digg_sundsvall' and event == 'left' -%}
+                  {{ person }} har lämnat Stockholm centralstation
+                {%- elif zone_slug == 'ostra_sjukhuset' and event == 'entered' -%}
+                  {{ person }} är på Östra sjukhuset
+                {%- elif zone_slug == 'ostra_sjukhuset' and event == 'left' -%}
+                  {{ person }} har lämnat Östra sjukhuset
+                {%- elif zone_slug == 'stromstad' and event == 'entered' -%}
+                  {{ person }} är i Strömstad
+                {%- elif zone_slug == 'stromstad' and event == 'left' -%}
+                  {{ person }} har lämnat Strömstad
+                {%- elif zone_slug == 'ik_sodra_skarpnack' and event == 'entered' -%}
+                  {{ person }} är i judohallen i Skarpnäck
+                {%- elif zone_slug == 'ik_sodra_skarpnack' and event == 'left' -%}
+                  {{ person }} har lämnat judohallen i Skarpnäck
+                {%- elif zone_slug == 'torvallahallen' and event == 'entered' -%}
+                  {{ person }} är i Torvallahallen
+                {%- elif zone_slug == 'torvallahallen' and event == 'left' -%}
+                  {{ person }} har lämnat Torvallahallen
+                {%- elif zone_slug == 'zaki_och_hanna' and event == 'entered' -%}
+                  {{ person }} är hos Zaki och Hanna
+                {%- elif zone_slug == 'zaki_och_hanna' and event == 'left' -%}
+                  {{ person }} har lämnat Zaki och Hanna
+                {%- elif zone_slug == 'maria' and event == 'entered' -%}
+                  {{ person }} är hos Maria
+                {%- elif zone_slug == 'maria' and event == 'left' -%}
+                  {{ person }} har lämnat Maria
+                {%- elif zone_slug == 'sixten' and event == 'entered' -%}
+                  {{ person }} är hemma hos Sixten
+                {%- elif zone_slug == 'sixten' and event == 'left' -%}
+                  {{ person }} har lämnat Sixten
+                {%- elif zone_slug == 'oslo' and event == 'entered' -%}
+                  {{ person }} är i Oslo
+                {%- elif zone_slug == 'oslo' and event == 'left' -%}
+                  {{ person }} har lämnat Oslo
+                {%- elif zone_slug == 'farmor_och_farfar' and event == 'entered' -%}
+                  {{ person }} är hos farmor och farfar
+                {%- elif zone_slug == 'farmor_och_farfar' and event == 'left' -%}
+                  {{ person }} har lämnat farmor och farfar
+                {%- elif zone_slug == 'solveig_och_lennart' and event == 'entered' -%}
+                  {{ person }} är hos Solveig och Lennart i Västerås
+                {%- elif zone_slug == 'solveig_och_lennart' and event == 'left' -%}
+                  {{ person }} har lämnat Solveig och Lennart i Västerås
+                {%- elif zone_slug == 'bengt' and event == 'entered' -%}
+                  {{ person }} är hos Bengt i Nol
+                {%- elif zone_slug == 'bengt' and event == 'left' -%}
+                  {{ person }} har lämnat Bengt i Nol
+                {%- elif zone_slug == 'farsta_centrum' and event == 'entered' -%}
+                  {{ person }} är i Farsta centrum
+                {%- elif zone_slug == 'farsta_centrum' and event == 'left' -%}
+                  {{ person }} har lämnat Farsta centrum
+                {%- elif zone_slug == 'farsta_strand_pendeltagstation' and event == 'entered' -%}
+                  {{ person }} är på Farsta strand pendeltågstation
+                {%- elif zone_slug == 'farsta_strand_pendeltagstation' and event == 'left' -%}
+                  {{ person }} har lämnat Farsta strand pendeltågstation
+                {%- elif zone_slug == 'ellio_i_norge' and event == 'entered' -%}
+                  {{ person }} är hos Selma i Norge
+                {%- elif zone_slug == 'ellio_i_norge' and event == 'left' -%}
+                  {{ person }} har lämnat Selma i Norge
+                {%- elif zone_slug == 'eina' and event == 'entered' -%}
+                  {{ person }} är i Eina
+                {%- elif zone_slug == 'eina' and event == 'left' -%}
+                  {{ person }} har lämnat Eina
+                {%- elif zone_slug == 'gjovik' and event == 'entered' -%}
+                  {{ person }} är i Gjövik
+                {%- elif zone_slug == 'gjovik' and event == 'left' -%}
+                  {{ person }} har lämnat Gjövik
+                {%- elif zone_slug == 'norge_2' and event == 'entered' -%}
+                  {{ person }} är i Norge 2
+                {%- elif zone_slug == 'norge_2' and event == 'left' -%}
+                  {{ person }} har lämnat Norge 2
+                {%- elif zone_slug == 'sahlgrenska_sjukhuset' and event == 'entered' -%}
+                  {{ person }} är på Sahlgrenska sjukhuset
+                {%- elif zone_slug == 'sahlgrenska_sjukhuset' and event == 'left' -%}
+                  {{ person }} har lämnat Sahlgrenska sjukhuset
+                {%- elif zone_slug == 'molndahls_sjukhus' and event == 'entered' -%}
+                  {{ person }} är på Mölndahls sjukhus
+                {%- elif zone_slug == 'molndahls_sjukhus' and event == 'left' -%}
+                  {{ person }} har lämnat Mölndahls sjukhus
+                {%- elif zone_slug == 'stefan' and event == 'entered' -%}
+                  {{ person }} är hos Stefan
+                {%- elif zone_slug == 'stefan' and event == 'left' -%}
+                  {{ person }} har åkt ifrån Stefan
+                {%- elif zone_slug == 'elins_jobb' and event == 'entered' -%}
+                  {{ person }} är på Elins jobb
+                {%- elif zone_slug == 'elins_jobb' and event == 'left' -%}
+                  {{ person }} har lämnat Elins jobb
+                {%- else -%}
+                  {{ person }} zonhändelse ({{ zone_slug }}/{{ event }})
+                {%- endif -%}
   - action: notify.mobile_app_ilias_s23_ultra
     data:
-      message: "HEMMET {{ now().strftime('%R') }}: \n{%- if trigger.entity_id == \"device_tracker.ilias_s23_ultra\"
-        %}\n  {% set person = \"Ilias\" %}  \n{%- elif trigger.entity_id == \"person.anna_bennani\"
-        %}\n  {% set person = \"Anna\" %}\n{%- elif trigger.entity_id == \"device_tracker.albins_iphone_12_gps_tracker\"
-        %}\n  {% set person = \"Albin\" %} \n{%- elif trigger.entity_id == \"device_tracker.annelies_iphone\"
-        %}\n  {% set person = \"Isabelle\" %}   \n{%- elif trigger.entity_id == \"device_tracker.erik_s23\"
-        %}\n  {% set person = \"Erik\" %}   \n{%- elif trigger.entity_id == \"device_tracker.ulrikas_iphone\"
-        %}\n  {% set person = \"Ulrika\" %}  \n{%- elif trigger.entity_id == \"device_tracker.jockesiphone\"
-        %}\n  {% set person = \"Jocke\" %}\n{%- elif trigger.entity_id == \"device_tracker.mariesiphone\"
-        %}\n  {% set person = \"Mie\" %}\n{%- elif trigger.entity_id == \"device_tracker.android56cbe288b1a113c8\"
-        %}\n  {% set person = \"Elin\" %}\n{%- elif trigger.entity_id == \"device_tracker.youssef_honor_8\"
-        %}\n  {% set person = \"Youssef\" %}\n{%- elif trigger.entity_id == \"device_tracker.zaksiphonex\"
-        %}\n  {% set person = \"Zaki\" %}\n{%- elif trigger.entity_id == \"device_tracker.safiabennani_2\"
-        %}\n  {% set person = \"Safia\" %}\n{%- elif trigger.entity_id == \"device_tracker.78521aac945e\"
-        %}\n  {% set person = \"Solveig\" %}    \n{%- elif trigger.entity_id == \"device_tracker.84c7ea28ca07\"
-        %}\n  {% set person = \"Sarah\" %}      \n{%- elif trigger.entity_id == \"device_tracker.adinas_iphone\"
-        %}\n  {% set person = \"Adina\" %} \n{%- elif trigger.entity_id == \"device_tracker.hannas_iphone_7\"
-        %}\n  {% set person = \"Hanna\" %}      \n{%- elif trigger.entity_id == \"device_tracker.marias_iphone\"
-        %}\n  {% set person = \"Maria\" %} \n{% endif %}\n{%- if   trigger.to_state.state
-        == 'home' -%} {{ person }} är hemma\n{%- elif trigger.from_state.state ==
-        'home' and trigger.to_state.state == 'not_home' -%} {{ person }} har gått
-        hemifrån\n{%- elif trigger.to_state.state == 'Annas jobb' -%} {{ person }}
-        {% if person == \"Anna\" %}är på jobbet {% else %}är på Annas jobb{% endif
-        %}\n{%- elif trigger.from_state.state == 'Annas jobb' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} {% if person == \"Anna\" %}har lämnat jobbet
-        {% else %}har lämnat Annas jobb{% endif %} \n{%- elif trigger.to_state.state
-        == 'Eriks skola' -%} {{ person }} {% if person == \"Erik\" %}är i skolan {%
-        else %}är i Eriks skola{% endif %} \n{%- elif trigger.from_state.state ==
-        'Eriks skola' and trigger.to_state.state == 'not_home' -%} {{ person }} {%
-        if person == \"Erik\" %}har lämnat skolan {% else %}har lämnat Eriks skola{%
-        endif %} \n{%- elif trigger.to_state.state == 'Ilias jobb' -%} {{ person }}
-        {% if person == \"Ilias\" %}är på jobbet {% else %}är på Ilias jobb{% endif
-        %} \n{%- elif trigger.from_state.state == 'Ilias jobb' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} {% if person == \"Ilias\" %}har lämnat jobbet
-        {% else %}har lämnat Ilias jobb{% endif %}\n{%- elif trigger.to_state.state
-        == 'KTH Campus' -%} {{ person }} {% if person == \"Albin\" %}är på KTH {%
-        else %}är på KTH{% endif %}\n{%- elif trigger.from_state.state == 'KTH Campus'
-        and trigger.to_state.state == 'not_home' -%} {{ person }} {% if person ==
-        \"Albin\" %}har lämnat KTH {% else %}har lämnat KTH{% endif %} \n{%- elif
-        trigger.to_state.state == 'Youssef och Emma' -%} {{ person }} {% if person
-        == \"Albin\" %}är på Youssef och Emma {% else %}är på Youssef och Emma{% endif
-        %} \n{%- elif trigger.from_state.state == 'Youssef och Emma' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} {% if person == \"Albin\" %}har lämnat Youssef
-        och Emma{% else %}har lämnat Youssef och Emma{% endif %} \n{%- elif trigger.to_state.state
-        == 'Albins mamma' -%} {{ person }} {% if person == \"Albin\" %}är hos mamma
-        {% else %}är hos Albins mamma{% endif %} \n{%- elif trigger.from_state.state
-        == 'Albins mamma' and trigger.to_state.state == 'not_home' -%} {{ person }}
-        {% if person == \"Albin\" %}har åkt hemifrån mamma {% else %}har åkt ifrån
-        Albins mamma{% endif %}  \n{%- elif trigger.to_state.state == 'Albins jobb'
-        -%} {{ person }} {% if person == \"Albin\" %}är på jobbet {% else %}är på
-        Albins jobb{% endif %} \n{%- elif trigger.from_state.state == 'Albins jobb'
-        and trigger.to_state.state == 'not_home' -%} {{ person }} {% if person ==
-        \"Albin\" %}har lämnat jobbet {% else %}har lämnat Albins jobb{% endif %}
-        \ \n{%- elif trigger.to_state.state == 'Isabelles jobb' -%} {{ person }} {%
-        if person == \"Isabelle\" %}är på jobbet {% else %}är på Isabelles jobb{%
-        endif %} \n{%- elif trigger.from_state.state == 'Isabelles jobb' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} {% if person == \"Isabelle\" %}har lämnat jobbet
-        {% else %}har lämnat Isabelles jobb{% endif %}  \n{%- elif trigger.to_state.state
-        == 'Albins hem' -%} {{ person }} {% if person == \"Albin\" %}är i sitt hem
-        {% else %}är hemma hos Albin{% endif %} \n{%- elif trigger.from_state.state
-        == 'Albins hem' and trigger.to_state.state == 'not_home' -%} {{ person }}
-        {% if person == \"Albin\" %}har lämnat sitt hem {% else %}har åkt hemifrån
-        Albin{% endif %}  \n{%- elif trigger.to_state.state == 'Gräskö' -%} {{ person
-        }} {% if person == \"Albin\" %}är på Gräskö {% else %}är på Gräskö{% endif
-        %} \n{%- elif trigger.from_state.state == 'Gräskö' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} {% if person == \"Albin\" %}har lämnat Gräskö
-        {% else %}har lämnat Gräskö{% endif %}  \n{%- elif trigger.to_state.state
-        == 'Isabelles mormor' -%} {{ person }} {% if person == \"Isabelle\" %}är hos
-        mormor {% else %}är hos Isabelles mormor{% endif %} \n{%- elif trigger.from_state.state
-        == 'Isabelles mormor' and trigger.to_state.state == 'not_home' -%} {{ person
-        }} {% if person == \"Isabelle\" %}har åkt hemifrån mormor {% else %}har åkt
-        ifrån Isabelles mormor{% endif %}            \n{%- elif trigger.to_state.state
-        == 'Isabelles skola' -%} {{ person }} {% if person == \"Isabelle\" %}är i
-        skolan {% else %}är i Isabelles skola{% endif %} \n{%- elif trigger.from_state.state
-        == 'Isabelles skola' and trigger.to_state.state == 'not_home' -%} {{ person
-        }} {% if person == \"Isabelle\" %}har lämnat skolan {% else %}har lämnat Isabelles
-        skola{% endif %}            \n{%- elif trigger.to_state.state == 'Göteborg
-        C' -%} {{ person }} är på Göteborg Central\n{%- elif trigger.from_state.state
-        == 'Göteborg C' and trigger.to_state.state == 'not_home' -%} {{ person }}
-        har lämnat Göteborg Central \n{%- elif trigger.to_state.state == 'Isabelles
-        moster Jenny' -%} {{ person }} är hos moster Jenny\n{%- elif trigger.from_state.state
-        == 'Isabelles moster Jenny' and trigger.to_state.state == 'not_home' -%} {{
-        person }} har lämnat moster Jenny\n{%- elif trigger.to_state.state == 'Adrian'
-        -%} {{ person }} är hos Adrian\n{%- elif trigger.from_state.state == 'Adrian'
-        and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat Adrian\n{%-
-        elif trigger.to_state.state == 'Knut' -%} {{ person }} är hos Knut\n{%- elif
-        trigger.from_state.state == 'Knut' and trigger.to_state.state == 'not_home'
-        -%} {{ person }} har lämnat Knut\n{%- elif trigger.to_state.state == 'Milo'
-        -%} {{ person }} är hos Milo\n{%- elif trigger.from_state.state == 'Milo'
-        and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat Milo\n{%-
-        elif trigger.to_state.state == 'Rio' -%} {{ person }} är hos Rio i Norge\n{%-
-        elif trigger.from_state.state == 'Rio' and trigger.to_state.state == 'not_home'
-        -%} {{ person }} har lämnat Rio i Norge\n{%- elif trigger.to_state.state ==
-        'Selma i Tanum' -%} {{ person }} är hos Selma i Tanum\n{%- elif trigger.from_state.state
-        == 'Selma i Tanum' and trigger.to_state.state == 'not_home' -%} {{ person
-        }} har lämnat Selma i Tanum\n{%- elif trigger.to_state.state == 'Stockholm
-        C' -%} {{ person }} är på Stockholm centralstation\n{%- elif trigger.from_state.state
-        == 'Stockholm C' and trigger.to_state.state == 'not_home' -%} {{ person }}
-        har lämnat Stockholm centralstation\n{%- elif trigger.to_state.state == 'Östra
-        sjukhuset' -%} {{ person }} är på Östra sjukhuset\n{%- elif trigger.from_state.state
-        == 'Östra sjukhuset' and trigger.to_state.state == 'not_home' -%} {{ person
-        }} har lämnat Östra sjukhuset\n{%- elif trigger.to_state.state == 'Strömstad'
-        -%} {{ person }} är i Strömstad\n{%- elif trigger.from_state.state == 'Strömstad'
-        and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat Strömstad\n{%-
-        elif trigger.to_state.state == 'IK Södra Skarpnäck' -%} {{ person }} är i
-        judohallen i Skarpnäck\n{%- elif trigger.from_state.state == 'IK Södra Skarpnäck'
-        and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat judohallen
-        i Skarpnäck\n{%- elif trigger.to_state.state == 'Torvallahallen' -%} {{ person
-        }} är i Torvallahallen\n{%- elif trigger.from_state.state == 'Torvallahallen'
-        and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat Torvallahallen\n{%-
-        elif trigger.to_state.state == 'Zaki och Hanna' -%} {{ person }} är hos Zaki
-        och Hanna\n{%- elif trigger.from_state.state == 'Zaki och Hanna' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} har lämnat Zaki och Hanna\n{%- elif trigger.to_state.state
-        == 'Maria' -%} {{ person }} är hos Maria\n{%- elif trigger.from_state.state
-        == 'Maria' and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat
-        Maria\n{%- elif trigger.to_state.state == 'Sixten' -%} {{ person }} är hemma
-        hos Sixten\n{%- elif trigger.from_state.state == 'Sixten' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} har lämnat Sixten\n{%- elif trigger.to_state.state
-        == 'Oslo' -%} {{ person }} är i Oslo\n{%- elif trigger.from_state.state ==
-        'Oslo' and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat
-        Oslo\n{%- elif trigger.to_state.state == 'Farmor och farfar' -%} {{ person
-        }} är hos farmor och farfar\n{%- elif trigger.from_state.state == 'Farmor
-        och farfar' and trigger.to_state.state == 'not_home' -%} {{ person }} har
-        lämnat farmor och farfar\n{%- elif trigger.to_state.state == 'Solveig och
-        Lennart' -%} {{ person }} är hos Solveig och Lennart i Västerås\n{%- elif
-        trigger.from_state.state == 'Solveig och Lennart' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} har lämnat Solveig och Lennart i Västerås\n{%-
-        elif trigger.to_state.state == 'Bengt' -%} {{ person }} är hos Bengt i Nol\n{%-
-        elif trigger.from_state.state == 'Bengt' and trigger.to_state.state == 'not_home'
-        -%} {{ person }} har lämnat Bengt i Nol\n{%- elif trigger.to_state.state ==
-        'Farsta centrum' -%} {{ person }} är i Farsta centrum\n{%- elif trigger.from_state.state
-        == 'Farsta centrum' and trigger.to_state.state == 'not_home' -%} {{ person
-        }} har lämnat Farsta centrum\n{%- elif trigger.to_state.state == 'Farsta strand
-        pendeltågstation' -%} {{ person }} är på Farsta strand pendeltågstation\n{%-
-        elif trigger.from_state.state == 'Farsta strand pendeltågstation' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} har lämnat Farsta strand pendeltågstation\n{%-
-        elif trigger.to_state.state == 'Selma i Norge' -%} {{ person }} är hos Selma
-        i Norge\n{%- elif trigger.from_state.state == 'Selma i Norge' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} har lämnat Selma i Norge\n{%- elif trigger.to_state.state
-        == 'Eina' -%} {{ person }} är i Eina\n{%- elif trigger.from_state.state ==
-        'Eina' and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat
-        Eina\n{%- elif trigger.to_state.state == 'Gjövik' -%} {{ person }} är i Gjövik\n{%-
-        elif trigger.from_state.state == 'Gjövik' and trigger.to_state.state == 'not_home'
-        -%} {{ person }} har lämnat Gjövik\n{%- elif trigger.to_state.state == 'Norge
-        2' -%} {{ person }} är i Norge 2\n{%- elif trigger.from_state.state == 'Norge
-        2' and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat Norge
-        2\n{%- elif trigger.to_state.state == 'Sahlgrenska sjukhuset' -%} {{ person
-        }} är på Sahlgrenska sjukhuset\n{%- elif trigger.from_state.state == 'Sahlgrenska
-        sjukhuset' and trigger.to_state.state == 'not_home' -%} {{ person }} har lämnat
-        Sahlgrenska sjukhuset\n{%- elif trigger.to_state.state == 'Mölndahls sjukhus'
-        -%} {{ person }} är på Mölndahls sjukhus\n{%- elif trigger.from_state.state
-        == 'Mölndahls sjukhus' and trigger.to_state.state == 'not_home' -%} {{ person
-        }} har lämnat Mölndahls sjukhus     \n{%- elif trigger.to_state.state == 'Stefan'
-        -%} {{ person }} är hos Stefan\n{%- elif trigger.from_state.state == 'Stefan'
-        and trigger.to_state.state == 'not_home' -%} {{ person }} har åkt ifrån Stefan
-        \  \n{%- elif trigger.to_state.state == 'Elins jobb' -%} {{ person }} är på
-        Elins jobb\n{%- elif trigger.from_state.state == 'Elins jobb' and trigger.to_state.state
-        == 'not_home' -%} {{ person }} har lämnat Elins jobb         \n{% else %}
-        {{ person }} nya state är {{ trigger.to_state.state }}\n{% endif %}\n"
+      message: "{{ notification_message }}"
       data:
         ttl: 0
         priority: high
   - action: homeassistant.update_entity
     entity_id: sensor.people_home_count
-  mode: parallel
+
 - alias: 'Mobilnotis Anna: Vilka kommer hem och går hemifrån'
   id: '791834010101014158674'
   mode: parallel
