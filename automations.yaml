@@ -11261,7 +11261,7 @@
     - action: notify.mobile_app_ilias_s23_ultra
       data:
         title: Badrummet under spegeln
-        message: "{{ vem }} blippade taggen {{ now().strftime('%H:%M') }}"
+        message: "{{ vem }} blippade taggen {{ now().strftime('%H:%M:%S') }}"
         data:
           ttl: 0
           priority: high
