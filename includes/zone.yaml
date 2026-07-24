@@ -2,7 +2,7 @@
 - name: Home
   latitude: 59.237731498047985
   longitude: 18.087033927440647
-  radius: 80
+  radius: 130
   icon: mdi:home
 
 # Sjukhus (namn utan avslutande mellanslag – måste matcha automations.yaml)
