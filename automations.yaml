@@ -11250,9 +11250,7 @@
   mode: single
   triggers:
     - trigger: state
-      entity_id:
-        - tag.badrummet_under_spegeln
-        - tag.badrumm_blipp
+      entity_id: tag.badrummet_under_spegeln
   variables:
     device_map:
       "929526afaef9a2acb0e5becc290d7c34": Anna
