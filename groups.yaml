@@ -168,7 +168,6 @@ battery_levels:
     - sensor.temperature_528_battery
     - sensor.albins_rum_temperatur_battery_2
     - sensor.badrummet_temperatur_battery
-    - sensor.badrummet_temperatur_referens_batteri
     - sensor.tvattstugan_temperatur_battery
     - sensor.lumi_weather_battery
     - sensor.kylskapet_forradet_temperatur_battery
