@@ -1603,7 +1603,7 @@
               - light.led_badrummet_handfatet
               - light.led_badrummet_kommoden
             data:
-              transition: 0
+              transition: 5
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''duschdorr_stangd'' }}'
@@ -1621,7 +1621,7 @@
           - light.led_badrummet_handfatet
           - light.led_badrummet_kommoden
         data:
-          transition: 0
+          transition: 5
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''badrum_dusch_120s_klar'' }}'
@@ -1701,7 +1701,7 @@
               - light.led_badrummet_handfatet
               - light.led_badrummet_kommoden
             data:
-              transition: 0
+              transition: 5
         - conditions:
           - condition: template
             value_template: '{{ is_state(''input_boolean.badrum_dusch_snapshot_finns'', ''on'') and is_state(''input_select.nagon_duschar'', ''Ingen duschar'') }}'
