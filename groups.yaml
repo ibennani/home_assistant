@@ -259,6 +259,10 @@ ignored_offline_sensors:
   name: "Unavailable sensors that i don't care about"
   entities:
     - sensor.rorelse_badrummet_temperature
+    - sensor.badrummet_temperatur_referens_batteri
+    - sensor.badrummet_temp_referens
+    - sensor.badrummet_luftfuktighet_referens
+    - sensor.badrummet_lufttryck_referens
 
 
 # Backup för Aqara-temperaturer som rapporterar batteri opålitligt.
