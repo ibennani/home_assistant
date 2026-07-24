@@ -1500,6 +1500,8 @@
           - light.takspottar_badrummet
           - light.led_badrummet_handfatet
           - light.led_badrummet_kommoden
+          - light.led_badrummet_duschen
+          - light.takspott_duschen
           - light.spegeln_badrummet
         data:
           transition: 10
