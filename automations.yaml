@@ -11242,3 +11242,28 @@
       event_type: cursor_git_synk
   actions:
     - action: script.git_synka_config
+
+# NFC: notis när Anna, Erik eller Ilias blippar badrum blipp
+- alias: "Mobilnotis: NFC badrum blipp"
+  id: nfc_badrum_blipp
+  description: Skickar notis till Ilias när Anna, Erik eller Ilias blippar NFC-taggen badrum blipp.
+  mode: single
+  triggers:
+    - trigger: event
+      event_type: tag_scanned
+      event_data:
+        tag_id: 0aafa4f11233417696a1b2a45b2c2655
+  variables:
+    device_map:
+      "929526afaef9a2acb0e5becc290d7c34": Anna
+      "bf89f3a7b19d34ddd87e5cf49c752ca7": Erik
+      "e258bafb30239f66c247b133a4522e9f": Ilias
+    vem: "{{ device_map.get(trigger.event.data.device_id, 'Okänd') }}"
+  actions:
+    - action: notify.mobile_app_ilias_s23_ultra
+      data:
+        title: Badrum blipp
+        message: "{{ vem }} blippade taggen {{ now().strftime('%H:%M') }}"
+        data:
+          ttl: 0
+          priority: high
