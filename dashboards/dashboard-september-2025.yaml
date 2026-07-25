@@ -1065,6 +1065,44 @@ views:
         unit: '%'
         min: 0
         max: 100
+    - type: horizontal-stack
+      title: Kyl
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.kylskapet_koket_temp
+        unit: °C
+        min: 0
+        max: 10
+        severity:
+          green: 0
+          yellow: 7
+          red: 10
+      - type: gauge
+        name: Luftfuktighet
+        entity: sensor.kylskapet_koket_luftfuktighet
+        unit: '%'
+        min: 0
+        max: 100
+    - type: horizontal-stack
+      title: Frys
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.frysen_koket_temp
+        unit: °C
+        min: -25
+        max: 0
+        severity:
+          green: -18
+          yellow: -15
+          red: -10
+      - type: gauge
+        name: Luftfuktighet
+        entity: sensor.frysen_koket_luftfuktighet
+        unit: '%'
+        min: 0
+        max: 100
     - type: entities
       title: Belysning
       icon: mdi:lightbulb
@@ -1368,6 +1406,44 @@ views:
       - type: gauge
         name: Luftfuktighet
         entity: sensor.forradet_luftfuktighet
+        unit: '%'
+        min: 0
+        max: 100
+    - type: horizontal-stack
+      title: Kyl
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.kylskapet_forradet_temperatur
+        unit: °C
+        min: 0
+        max: 10
+        severity:
+          green: 0
+          yellow: 10
+          red: 15
+      - type: gauge
+        name: Luftfuktighet
+        entity: sensor.kylskapet_forradet_luftfuktighet
+        unit: '%'
+        min: 0
+        max: 100
+    - type: horizontal-stack
+      title: Frys
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.frysen_i_forradet_temperatur
+        unit: °C
+        min: -25
+        max: 0
+        severity:
+          green: -18
+          yellow: -15
+          red: -10
+      - type: gauge
+        name: Luftfuktighet
+        entity: sensor.frysen_i_forradet_luftfuktighet
         unit: '%'
         min: 0
         max: 100
