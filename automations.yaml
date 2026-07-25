@@ -4394,7 +4394,9 @@
         value_template: '{{ trigger.id in [''select_changed'', ''lux_above_2000'',
           ''lux_below_2000''] }}'
       sequence:
-      - action: script.annas_rum_stall_in_belysningen
+      - action: script.turn_on
+        target:
+          entity_id: script.annas_rum_stall_in_belysningen
     - conditions:
       - condition: template
         value_template: "{{ trigger.id == 'anna_state'\n   and lux >= 2000\n   and
@@ -4448,9 +4450,13 @@
                 else %} Släckt\n      {% endif %}\n    {% else %}\n      Tänt\n    {%
                 endif %}\n  {% else %}\n    Släckt\n  {% endif %}\n{% endif %}\n"
         default:
-        - action: script.do_nothing
+        - action: script.turn_on
+          target:
+            entity_id: script.do_nothing
     default:
-    - action: script.do_nothing
+    - action: script.turn_on
+      target:
+        entity_id: script.do_nothing
   mode: restart
 - alias: 'Belysning: Välj Trådkorgarna normalbelysning när Anna är hemma på dagen'
   id: 015091598558904098dg498fsf890dgdgr
