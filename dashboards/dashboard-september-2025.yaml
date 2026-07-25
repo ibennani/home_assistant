@@ -1636,6 +1636,77 @@ views:
         toggle: true
         step: 1
         name: Fasaden 2
+    - type: horizontal-stack
+      title: Växthuset
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.vaxthuset_temperatur
+        unit: °C
+        min: -25
+        max: 50
+        severity:
+          green: 18
+          yellow: 24
+          red: 30
+      - type: gauge
+        name: Luftfuktighet
+        entity: sensor.vaxthuset_luftfuktighet
+        unit: '%'
+        min: 0
+        max: 100
+    - type: entities
+      show_header_toggle: false
+      entities:
+      - entity: switch.vattenslang_framsidan
+        name: Vattenslangen
+    - type: custom:config-template-card
+      entities:
+      - lawn_mower.grasklipparen
+      - binary_sensor.grasklipparen_charging
+      - sensor.grasklipparen_error_3
+      card:
+        type: vertical-stack
+        cards:
+        - type: markdown
+          content: '### Gräsklipparen ({% set s = states(''lawn_mower.grasklipparen'') %}{% if s == ''mowing''
+            %}klipper{% elif s == ''returning'' %}på väg hem{% elif s == ''paused'' %}pausad{% elif s == ''rain_delayed''
+            %}regnfördröjning{% elif s == ''starting'' %}startar{% elif s == ''edgecut'' %}kantklippning{% elif s == ''zoning''
+            %}zonklippning{% elif s == ''searching_zone'' %}söker zon{% elif s == ''idle'' %}vilande{% elif s == ''escaped_digital_fence''
+            %}utanför staket{% elif s == ''docked'' and is_state(''binary_sensor.grasklipparen_charging'', ''on'') %}laddar{%
+            elif s == ''docked'' %}i ladstationen{% elif s == ''error'' %}fel{% elif s == ''unavailable'' %}otillgänglig{%
+            elif s == ''unknown'' %}okänt{% else %}{{ s | replace(''_'', '' '') }}{% endif %})'
+        - type: entities
+          show_header_toggle: false
+          entities:
+          - entity: sensor.grasklipparen_battery_3
+            name: Batteri
+        - type: horizontal-stack
+          cards:
+          - type: button
+            name: Start
+            icon: mdi:play
+            tap_action:
+              action: call-service
+              service: lawn_mower.start_mowing
+              target:
+                entity_id: lawn_mower.grasklipparen
+          - type: button
+            name: Paus
+            icon: mdi:pause
+            tap_action:
+              action: call-service
+              service: lawn_mower.pause
+              target:
+                entity_id: lawn_mower.grasklipparen
+          - type: button
+            name: Hem
+            icon: mdi:home
+            tap_action:
+              action: call-service
+              service: lawn_mower.dock
+              target:
+                entity_id: lawn_mower.grasklipparen
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
@@ -5664,19 +5735,6 @@ views:
       - sensor.hp_color_laserjet_mfp_m277dw_cyan_cartridge_hp_cf401x
       - sensor.hp_color_laserjet_mfp_m277dw_magenta_cartridge_hp_cf403x
       - sensor.hp_color_laserjet_mfp_m277dw_yellow_cartridge_hp_cf402x
-- title: Gräsklipparen
-  icon: mdi:robot-mower
-  path: lawn-mover
-  cards:
-  - type: vertical-stack
-    cards:
-    - type: horizontal-stack
-      title: Gräsklipparen
-      cards:
-      - type: entities
-        title: Gräsklipparen
-        entities:
-        - vacuum.grasklipparen_lx812i
 - title: Vitvaror
   icon: mdi:washing-machine
   path: vitvaror
