@@ -23,7 +23,7 @@
     - sensor.annas_rum_temp
     - sensor.koket_temp
     - sensor.skafferiet_temp
-    - sensor.albins_rum_temp
+    - sensor.eriks_rum_temp
     - sensor.badrummet_temp
     - sensor.tvattstugan_temp
     - sensor.forradet_temperatur
@@ -42,7 +42,7 @@
     - sensor.annas_rum_temp
     - sensor.koket_temp
     - sensor.skafferiet_temp
-    - sensor.albins_rum_temp
+    - sensor.eriks_rum_temp
     - sensor.badrummet_temp
     - sensor.tvattstugan_temp
     - sensor.forradet_temperatur
@@ -61,7 +61,7 @@
     - sensor.annas_rum_temp
     - sensor.koket_temp
     - sensor.skafferiet_temp
-    - sensor.albins_rum_temp
+    - sensor.eriks_rum_temp
     - sensor.badrummet_temp
     - sensor.tvattstugan_temp
     - sensor.forradet_temperatur
@@ -80,7 +80,7 @@
     - sensor.annas_rum_luftfuktighet
     - sensor.koket_luftfuktighet
     - sensor.skafferiet_luftfuktighet
-    - sensor.albins_rum_luftfuktighet
+    - sensor.eriks_rum_luftfuktighet
     - sensor.badrummet_luftfuktighet
     - sensor.tvattstugan_luftfuktighet
     - sensor.forradet_luftfuktighet
@@ -99,7 +99,7 @@
     - sensor.annas_rum_luftfuktighet
     - sensor.koket_luftfuktighet
     - sensor.skafferiet_luftfuktighet
-    - sensor.albins_rum_luftfuktighet
+    - sensor.eriks_rum_luftfuktighet
     - sensor.badrummet_luftfuktighet
     - sensor.tvattstugan_luftfuktighet
     - sensor.forradet_luftfuktighet
@@ -118,7 +118,7 @@
     - sensor.annas_rum_luftfuktighet
     - sensor.koket_luftfuktighet
     - sensor.skafferiet_luftfuktighet
-    - sensor.albins_rum_luftfuktighet
+    - sensor.eriks_rum_luftfuktighet
     - sensor.badrummet_luftfuktighet
     - sensor.tvattstugan_luftfuktighet
     - sensor.forradet_luftfuktighet

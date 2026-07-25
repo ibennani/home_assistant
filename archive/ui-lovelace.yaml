@@ -460,13 +460,13 @@ views:
                 step: 1
               - type: divider
               - type: custom:slider-entity-row
-                entity: light.taklampan_albins_fonster_level
-                name: Albins rum (fönstret)
+                entity: light.taklampan_eriks_fonster_level
+                name: Eriks rum (fönstret)
                 toggle: true
                 step: 1
               - type: custom:slider-entity-row
-                entity: light.taklampan_albins_sang_level 
-                name: Albins rum (sängen)
+                entity: light.taklampan_eriks_sang_level 
+                name: Eriks rum (sängen)
                 toggle: true
                 step: 1
               - type: custom:slider-entity-row
@@ -538,16 +538,16 @@ views:
               - type: divider
               - light.lampan_brudkistan
               - type: divider
-              - light.albins_myslampa
-              - light.hyllan_ovanfor_albins_sang
+              - light.eriks_myslampa
+              - light.hyllan_ovanfor_eriks_sang
               - type: custom:slider-entity-row
                 entity: light.led_strip_ovanfor_fotoljen
                 name: LED ovanför fotöljen
                 toggle: true
                 step: 1
               - type: custom:slider-entity-row
-                entity: light.albins_garderob
-                name: Albins garderob
+                entity: light.eriks_garderob
+                name: Eriks garderob
                 toggle: true
                 step: 1
       - type: vertical-stack
@@ -626,7 +626,7 @@ views:
               - input_select.sovrummet_belysning
               - input_select.annas_rum_belysning
               - input_select.koket_belysning
-              - input_select.albins_rum_belysning
+              - input_select.eriks_rum_belysning
           - type: entities
             title: Inställningar för belysningen
             show_header_toggle: false
@@ -756,10 +756,10 @@ views:
               #       secondary: Uppdaterades {{ as_timestamp( states.sensor.hallen_ljusstyrka.last_changed) | timestamp_local  }}
               #       state: "{{ states('sensor.hallen_ljusstyrka') | int }} lux"
               #     - type: custom:template-entity-row  
-              #       entity: sensor.albins_rum_ljusstyrka
-              #       name: Albins rum
-              #       secondary: Uppdaterades {{ as_timestamp( states.sensor.albins_rum_ljusstyrka.last_changed) | timestamp_local  }}
-              #       state: "{{ states('sensor.albins_rum_ljusstyrka') | int }} lux"
+              #       entity: sensor.eriks_rum_ljusstyrka
+              #       name: Eriks rum
+              #       secondary: Uppdaterades {{ as_timestamp( states.sensor.eriks_rum_ljusstyrka.last_changed) | timestamp_local  }}
+              #       state: "{{ states('sensor.eriks_rum_ljusstyrka') | int }} lux"
               #     - type: custom:template-entity-row  
               #       entity: sensor.nedre_trappan_ljusstyrka
               #       name: Nedre trappan
@@ -798,8 +798,8 @@ views:
               #       name: Köket
               #     - entity: sensor.hallen_ljusstyrka
               #       name: Hallen
-              #     - entity: sensor.albins_rum_ljusstyrka
-              #       name: Albins rum
+              #     - entity: sensor.eriks_rum_ljusstyrka
+              #       name: Eriks rum
               #     - entity: sensor.nedre_trappan_ljusstyrka
               #       name: Nedre trappan
               #     - entity: sensor.badrummet_ljusstyrka
@@ -977,15 +977,15 @@ views:
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
-                    entity: binary_sensor.albins_fonster
+                    entity: binary_sensor.eriks_fonster
                     icon: mdi:window-closed-variant
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.albins_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.eriks_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
-                      {% if is_state('binary_sensor.albins_fonster','on') %} Nu 
+                      {% if is_state('binary_sensor.eriks_fonster','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_fonster', 'last_changed') or now())) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row 
@@ -1251,27 +1251,27 @@ views:
                       {% endif %}
                   - type: divider
                   - type: custom:template-entity-row
-                    entity: binary_sensor.albins_rum_rorelse
-                    name: Albins rum
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    entity: binary_sensor.eriks_rum_rorelse
+                    name: Eriks rum
+                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
-                      {% if is_state('binary_sensor.albins_rum_rorelse', 'on') %} Nu 
+                      {% if is_state('binary_sensor.eriks_rum_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
-                    entity: binary_sensor.albins_skrivbord_rorelse
-                    name: Albins skrivbord
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.albins_skrivbord_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    entity: binary_sensor.eriks_skrivbord_rorelse
+                    name: Eriks skrivbord
+                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.eriks_skrivbord_rorelse', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
-                      {% if is_state('binary_sensor.albins_skrivbord_rorelse', 'on') %} Nu 
+                      {% if is_state('binary_sensor.eriks_skrivbord_rorelse', 'on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_skrivbord_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_skrivbord_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_skrivbord_rorelse', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_skrivbord_rorelse', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_skrivbord_rorelse', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_skrivbord_rorelse', 'last_changed') or now())) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row
@@ -1445,12 +1445,12 @@ views:
                     name: Hallen
                     color: green
                     color_off: red
-                  - entity: binary_sensor.albins_rum_rorelse
-                    name: Albins rum
+                  - entity: binary_sensor.eriks_rum_rorelse
+                    name: Eriks rum
                     color: green
                     color_off: red
-                  - entity: binary_sensor.albins_skrivbord_rorelse
-                    name: Albins skrivbord
+                  - entity: binary_sensor.eriks_skrivbord_rorelse
+                    name: Eriks skrivbord
                     color: green
                     color_off: red
                   - entity: binary_sensor.nedre_trappan_rorelse
@@ -1523,15 +1523,15 @@ views:
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
                   - type: custom:template-entity-row    
-                    entity: binary_sensor.oversvamning_albins_fonster
-                    name: Albins fönster
-                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.oversvamning_albins_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
+                    entity: binary_sensor.oversvamning_eriks_fonster
+                    name: Eriks fönster
+                    secondary: Senast {{ as_timestamp(state_attr('binary_sensor.oversvamning_eriks_fonster', 'last_updated') or now()) | timestamp_custom('%a %Y-%m-%d kl %H:%M:%S') }}
                     state: >
                       {% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_4','on') %} Nu 
                       {% else %} 
-                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_albins_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
-                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_albins_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
-                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_albins_fonster', 'last_changed') or now())) | int % 60 %}
+                        {% set timmar = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_eriks_fonster', 'last_changed') or now())) | int / (60*60)) |round(0, "floor") %}
+                        {% set minuter = ((as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_eriks_fonster', 'last_changed') or now())) | int / 60) |round(0, "floor") - (timmar * 60) %}
+                        {% set sekunder = (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.oversvamning_eriks_fonster', 'last_changed') or now())) | int % 60 %}
                         {{timmar}}:{{minuter| timestamp_custom("%S", false)}}:{{sekunder| timestamp_custom("%S", false)}}
                       {% endif %}
   - title: Temperaturer
@@ -1866,13 +1866,13 @@ views:
                     min: 900
                     max: 1100    
           - type: vertical-stack
-            title: Albins rum
+            title: Eriks rum
             cards: 
               - type: horizontal-stack
                 cards:
                   - type: gauge
                     name: Temperatur
-                    entity: sensor.albins_rum_temp
+                    entity: sensor.eriks_rum_temp
                     unit: "°C"
                     min: -10
                     max: 50
@@ -1882,13 +1882,13 @@ views:
                       red: 30
                   - type: gauge
                     name: Luftfuktighet
-                    entity: sensor.albins_rum_luftfuktighet
+                    entity: sensor.eriks_rum_luftfuktighet
                     unit: "%"
                     min: 0
                     max: 100
                   - type: gauge
                     name: Lufttryck
-                    entity: sensor.albins_rum_lufttryck
+                    entity: sensor.eriks_rum_lufttryck
                     unit: "hpa"
                     min: 900
                     max: 1100
@@ -2589,15 +2589,15 @@ views:
                   - value: 120
                     color: "#ff0505"                
           - type: vertical-stack
-            title: Albins rum
+            title: Eriks rum
             cards:
               - type: entities
                 entities:
-                  - switch.albins_flakt
+                  - switch.eriks_flakt
               - type: 'custom:mini-graph-card'
                 name: Partiklar ppb
                 entities: 
-                  - entity: sensor.luftkvalitet_ppb_albins_rum
+                  - entity: sensor.luftkvalitet_ppb_eriks_rum
                     name: "Luftkvalitet ppb"
                     show_state: true
                     state_adaptive_color: true
@@ -2630,7 +2630,7 @@ views:
               - type: 'custom:mini-graph-card'
                 name: Partiklar ppm2,5
                 entities: 
-                  - entity: sensor.luftkvalitet_albins_rum_pm25
+                  - entity: sensor.luftkvalitet_eriks_rum_pm25
                     name: "Partiklar pm2,5"
                     show_state: true
                     state_adaptive_color: true
@@ -3033,12 +3033,12 @@ views:
               - media_player.pucken_bakom_stereon_i_vardagsrummet
               - media_player.annas_stereo
               - media_player.hogtalarna_i_koket              
-              - media_player.albins_stereo
+              - media_player.eriks_stereo
           - type: entities
             title: Chromecast Video
             entities: 
               - media_player.kd_65xd8505
-              - media_player.albins_tv    
+              - media_player.eriks_tv    
           - type: entities
             title: Chromecast (Grupper)
             entities: 
@@ -3084,7 +3084,7 @@ views:
               - media_player.googlehome_sovrummet
               - media_player.googlehome_annas_rum
               - media_player.googlehome_koket
-              - media_player.googlehome_albins_rum      
+              - media_player.googlehome_eriks_rum      
       - type: vertical-stack
         title: Läs upp text
         cards: 
@@ -3683,7 +3683,7 @@ views:
               - cover.rullgardin_vardagsrummet
               - cover.rullgardin_sovrummet
               - cover.rullgardin_annas_rum
-              - cover.rullgardin_albins_rum
+              - cover.rullgardin_eriks_rum
   - title: Kameror
     visible: 
       - user: 19d971cd430d457e90fe70b83c9d5df1
@@ -3736,7 +3736,7 @@ views:
               - sensor.skafferiet_temperatur_battery
               - sensor.kylskapet_koket_temperatur_battery
               - sensor.temperature_528_battery
-              - sensor.albins_rum_temperatur_battery_2
+              - sensor.eriks_rum_temperatur_battery_2
               - sensor.badrummet_temperatur_battery
               - sensor.tvattstugan_temperatur_battery
               - sensor.lumi_weather_battery
@@ -3773,7 +3773,7 @@ views:
               - sensor.koket_rorelse_battery
               - sensor.koksbordet_rorelse_battery
               - sensor.hallen_rorelse_battery
-              - sensor.albins_rum_rorelse_battery
+              - sensor.eriks_rum_rorelse_battery
               - sensor.nedre_trappan_battery
               - sensor.ovre_trappan_rorelse_battery
               - sensor.badrummet_rorelse_battery_2
@@ -3805,7 +3805,7 @@ views:
               - sensor.altandorren_koket_battery
               - sensor.skafferidorren_battery
               - sensor.ytterdorren_battery
-              - sensor.albins_fonster_battery
+              - sensor.eriks_fonster_battery
               - sensor.badrumsdorren_battery
               - sensor.badrummet_fonster_battery
               - sensor.vardagsrummet_fonster_battery
@@ -3856,8 +3856,8 @@ views:
               - sensor.fjarr_ilias_rum_battery
               - sensor.fjarr_taklampan_i_ilias_rum_battery
               - sensor.fjarr_sovrummet_battery
-              - sensor.fjarr_albins_rum_battery
-              - sensor.fjarr_2_albins_rum_battery
+              - sensor.fjarr_eriks_rum_battery
+              - sensor.fjarr_2_eriks_rum_battery
               - sensor.fjarr_badrummet_battery
 
           - type: 'custom:bar-card'
@@ -3881,7 +3881,7 @@ views:
               - sensor.rullgardin_vardagsrummet_batteri
               - sensor.rullgardinen_sovrummet_batteri
               - sensor.rullgardin_annas_rum_batteri
-              - sensor.rullgardin_albins_rum_batteri
+              - sensor.rullgardin_eriks_rum_batteri
           - type: 'custom:bar-card'
             title: Regnmätare
             severity:

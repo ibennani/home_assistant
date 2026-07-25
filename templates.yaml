@@ -158,7 +158,7 @@
         states('sensor.annas_rum_lufttryck') | float,
         states('sensor.koket_lufttryck') | float,
         states('sensor.skafferiet_lufttryck') | float,
-        states('sensor.albins_rum_lufttryck') | float,
+        states('sensor.eriks_rum_lufttryck') | float,
         states('sensor.badrummet_lufttryck') | float,
         states('sensor.tvattstugan_lufttryck') | float,
         states('sensor.forradet_lufttryck') | float
@@ -176,7 +176,7 @@
         states('sensor.annas_rum_lufttryck') | float,
         states('sensor.koket_lufttryck') | float,
         states('sensor.skafferiet_lufttryck') | float,
-        states('sensor.albins_rum_lufttryck') | float,
+        states('sensor.eriks_rum_lufttryck') | float,
         states('sensor.badrummet_lufttryck') | float,
         states('sensor.tvattstugan_lufttryck') | float,
         states('sensor.forradet_lufttryck') | float
@@ -194,7 +194,7 @@
         states('sensor.annas_rum_lufttryck') | float,
         states('sensor.koket_lufttryck') | float,
         states('sensor.skafferiet_lufttryck') | float,
-        states('sensor.albins_rum_lufttryck') | float,
+        states('sensor.eriks_rum_lufttryck') | float,
         states('sensor.badrummet_lufttryck') | float,
         states('sensor.tvattstugan_lufttryck') | float,
         states('sensor.forradet_lufttryck') | float

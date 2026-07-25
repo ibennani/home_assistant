@@ -20,7 +20,7 @@
     - media_player.googlehome_sovrummet
     - media_player.googlehome_annas_rum
     - media_player.googlehome_koket
-    - media_player.googlehome_albins_rum
+    - media_player.googlehome_eriks_rum
   commands:
     volume_set:
       service: media_player.volume_set
@@ -31,7 +31,7 @@
           - media_player.googlehome_sovrummet
           - media_player.googlehome_annas_rum
           - media_player.googlehome_koket
-          - media_player.googlehome_albins_rum
+          - media_player.googlehome_eriks_rum
         volume_level: "{{ volume_level }}"
 
 - platform: universal
@@ -42,11 +42,11 @@
     - media_player.googlehome_sovrummet
     - media_player.googlehome_annas_rum
     - media_player.googlehome_koket
-    - media_player.googlehome_albins_rum
+    - media_player.googlehome_eriks_rum
     - media_player.stereon_i_vardagsrummet
     - media_player.annas_stereo
     - media_player.hogtalarna_i_koket
-    - media_player.albins_stereo
+    - media_player.eriks_stereo
   commands:
     volume_set:
       service: media_player.volume_set
@@ -57,11 +57,11 @@
           - media_player.googlehome_sovrummet
           - media_player.googlehome_annas_rum
           - media_player.googlehome_koket
-          - media_player.googlehome_albins_rum
+          - media_player.googlehome_eriks_rum
           - media_player.stereon_i_vardagsrummet
           - media_player.annas_stereo
           - media_player.hogtalarna_i_koket
-          - media_player.albins_stereo
+          - media_player.eriks_stereo
         volume_level: "{{ volume_level }}"
 
 - platform: universal
@@ -70,7 +70,7 @@
     - media_player.stereon_i_vardagsrummet
     - media_player.annas_stereo
     - media_player.hogtalarna_i_koket
-    - media_player.albins_stereo
+    - media_player.eriks_stereo
   commands:
     volume_set:
       service: media_player.volume_set
@@ -79,5 +79,5 @@
           - media_player.stereon_i_vardagsrummet
           - media_player.annas_stereo
           - media_player.hogtalarna_i_koket
-          - media_player.albins_stereo
+          - media_player.eriks_stereo
         volume_level: "{{ volume_level }}"

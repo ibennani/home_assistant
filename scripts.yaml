@@ -325,7 +325,7 @@ styr_belysningen_nar_alla_gatt_hemifran:
         rapid_transition: 'on'
   - action: input_select.select_option
     target:
-      entity_id: input_select.albins_rum_belysning
+      entity_id: input_select.eriks_rum_belysning
     data:
       option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag","Natt"]
         %} Släckt {% else %} Mysigt {% endif %}
@@ -462,16 +462,16 @@ dagsbelysning:
       entity_id: script.koket_stall_in_belysningen
   - action: input_select.select_option
     target:
-      entity_id: input_select.albins_rum_belysning
+      entity_id: input_select.eriks_rum_belysning
     data:
-      option: "{% if is_state(\"device_tracker.erik_s23\",\"home\") %} {{ states(\"input_select.albins_rum_belysning\")
-        }} {% elif is_state(\"input_boolean.gaster_hemma\",\"on\") %} {{ states(\"input_select.albins_rum_belysning\")
-        }} {% elif is_state(\"input_boolean.stadning_pagar\",\"on\") %} {{ states(\"input_select.albins_rum_belysning\")
-        }} {% elif (is_state(\"binary_sensor.albins_rum_rorelse\",\"off\")\n      and
-        (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_changed') or now())
+      option: "{% if is_state(\"device_tracker.erik_s23\",\"home\") %} {{ states(\"input_select.eriks_rum_belysning\")
+        }} {% elif is_state(\"input_boolean.gaster_hemma\",\"on\") %} {{ states(\"input_select.eriks_rum_belysning\")
+        }} {% elif is_state(\"input_boolean.stadning_pagar\",\"on\") %} {{ states(\"input_select.eriks_rum_belysning\")
+        }} {% elif (is_state(\"binary_sensor.eriks_rum_rorelse\",\"off\")\n      and
+        (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())
         | int(default = 0) > 60 * 3)) %} Släckt\n{% else %}\n  {% if states(\"sensor.utomhus_framsidan_ljusstyrka\")
-        | int(default = 0) < 2000 %} \n    {% if states(\"input_select.albins_rum_belysning\")
-        in [\"Tänt\",\"Taklamporna\"] %} Tänt\n    {% elif states(\"input_select.albins_rum_belysning\")
+        | int(default = 0) < 2000 %} \n    {% if states(\"input_select.eriks_rum_belysning\")
+        in [\"Tänt\",\"Taklamporna\"] %} Tänt\n    {% elif states(\"input_select.eriks_rum_belysning\")
         in [\"Mysigt\",\"Släckt\"] %} Mysigt\n    {% else %} Mysigt\n    {% endif
         %}\n  {% else %} Släckt\n  {% endif %}\n{% endif %}\n"
   - action: input_select.select_option
@@ -549,17 +549,17 @@ kvallsbelysning:
         rapid_transition: 'on'
   - action: input_select.select_option
     target:
-      entity_id: input_select.albins_rum_belysning
+      entity_id: input_select.eriks_rum_belysning
     data:
       option: "{% if is_state(\"zone.home\",\"0\") %} Släckt  {% elif is_state(\"input_boolean.gaster_hemma\",\"on\")
         \n    or is_state(\"input_boolean.stadning_pagar\",\"on\")\n    or is_state(\"var.morgoninfo_koket_redan_upplast\",\"false\")
-        %} \n  {{ states(\"input_select.albins_rum_belysning\") }}\n{% elif is_state(\"cover.rullgardin_albins_rum\",\"closed\")
-        %} \n  {{ states(\"input_select.albins_rum_belysning\") }}  \n{% elif states(\"input_select.albins_rum_belysning\")
-        in [\"Tänt\",\"Taklamporna\"] %} Tänt  {% elif states(\"input_select.albins_rum_belysning\")
+        %} \n  {{ states(\"input_select.eriks_rum_belysning\") }}\n{% elif is_state(\"cover.rullgardin_eriks_rum\",\"closed\")
+        %} \n  {{ states(\"input_select.eriks_rum_belysning\") }}  \n{% elif states(\"input_select.eriks_rum_belysning\")
+        in [\"Tänt\",\"Taklamporna\"] %} Tänt  {% elif states(\"input_select.eriks_rum_belysning\")
         in [\"Mysigt\",\"Släckt\"] %} Mysigt  {% else %} Mysigt  {% endif %}\n"
   - action: script.turn_on
     target:
-      entity_id: script.albins_rum_stall_in_belysningen
+      entity_id: script.eriks_rum_stall_in_belysningen
   - action: light.turn_on
     entity_id:
     - light.takspottarna_hallen_level
@@ -630,12 +630,12 @@ nattbelysning:
         rapid_transition: 'on'
   - action: input_select.select_option
     target:
-      entity_id: input_select.albins_rum_belysning
+      entity_id: input_select.eriks_rum_belysning
     data:
-      option: "{% if is_state(\"device_tracker.erik_s23\",\"home\") and not is_state(\"input_select.albins_rum_belysning\",\"Släckt\")
+      option: "{% if is_state(\"device_tracker.erik_s23\",\"home\") and not is_state(\"input_select.eriks_rum_belysning\",\"Släckt\")
         %} Minimalt {% elif is_state(\"input_boolean.gaster_hemma\",\"on\") %} {{
-        states(\"input_select.albins_rum_belysning\") }} {% elif (is_state(\"binary_sensor.albins_rum_rorelse\",\"off\")\n
-        \     and (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.albins_rum_rorelse', 'last_changed') or now())
+        states(\"input_select.eriks_rum_belysning\") }} {% elif (is_state(\"binary_sensor.eriks_rum_rorelse\",\"off\")\n
+        \     and (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())
         | int(default = 0) > 60 * 3)) %} Släckt\n{% else %} Släckt {% endif %}\n"
   - action: input_select.select_option
     entity_id: input_select.nedre_trappan_belysning
@@ -663,7 +663,7 @@ tand_alla_lampor_pa_maxbelysning:
       option: Städning
   - action: input_select.select_option
     target:
-      entity_id: input_select.albins_rum_belysning
+      entity_id: input_select.eriks_rum_belysning
     data:
       option: Städning
   - action: input_select.select_option
@@ -687,7 +687,7 @@ tand_alla_lampor_pa_maxbelysning:
       - script.vardagsrummet_stall_in_belysningen
       - script.sovrummet_stall_in_belysningen
       - script.annas_rum_stall_in_belysningen
-      - script.albins_rum_stall_in_belysningen
+      - script.eriks_rum_stall_in_belysningen
       - script.ovre_trappan_stall_in_belysningen
       - script.nedre_trappan_stall_in_belysningen
   - action: script.turn_on
@@ -709,8 +709,8 @@ tand_alla_lampor_pa_maxbelysning:
       - light.takspottarna_koksluckorna_level
       - light.takspottarna_trappan_level
       - light.taklampan_nedre_trappan_level
-      - light.taklampan_albins_fonster_level
-      - light.taklampan_albins_sang_level
+      - light.taklampan_eriks_fonster_level
+      - light.taklampan_eriks_sang_level
       - light.taklampa_wc
       - light.wc_spegelskap
       - light.wc_handfat
@@ -730,7 +730,7 @@ stang_av_allt:
   sequence:
   - action: light.turn_off
     entity_id:
-    - light.albins_myslampa
+    - light.eriks_myslampa
     - light.configuration_tool_3
     - light.elljusstaken_i_koksfonstret
     - light.annas_jordglob
@@ -757,8 +757,8 @@ stang_av_allt:
     - light.lamporna_ovanfor_ilias_sang
     - light.taklampa_vardagsrummet
     - light.taklampa_sovrummet_level
-    - light.taklampan_albins_fonster_level
-    - light.taklampan_albins_sang_level
+    - light.taklampan_eriks_fonster_level
+    - light.taklampan_eriks_sang_level
     - light.taklampan_annas_rum_level
     - light.taklampan_ilias_rum_level
     - light.taklampan_nedre_trappan_level
@@ -773,11 +773,11 @@ stang_av_allt:
     - light.forradet
   - action: homeassistant.turn_off
     entity_id:
-    - media_player.albins_biosalong
-    - media_player.albins_stereo
-    - media_player.albins_tv
+    - media_player.eriks_biosalong
+    - media_player.eriks_stereo
+    - media_player.eriks_tv
     - media_player.alla_hogtalare
-    - media_player.googlehome_albins_rum
+    - media_player.googlehome_eriks_rum
     - media_player.googlehome_alla_puckar
     - media_player.googlehome_annas_rum
     - media_player.googlehome_infopuckarna
@@ -1128,7 +1128,7 @@ nedre_trappan_stall_in_belysningen:
   - variables:
       mode: '{{ states(''input_select.nedre_trappan_belysning'') }}'
       huslage: '{{ states(''input_select.house_time_modes'') }}'
-      albins_rum: '{{ states(''input_select.albins_rum_belysning'') }}'
+      eriks_rum: '{{ states(''input_select.eriks_rum_belysning'') }}'
       jul: '{{ is_state(''input_boolean.julbelysning'',''on'') }}'
       lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
       ingen_rorelse_5min: '{{ is_state(''binary_sensor.nedre_trappan_rorelse'',''off'')
@@ -1237,7 +1237,7 @@ nedre_trappan_stall_in_belysningen:
               entity_id: light.lampan_brudkistan
         - conditions:
           - condition: template
-            value_template: '{{ huslage == ''Kväll'' and albins_rum in [''Minimalt'',''Släckt'']
+            value_template: '{{ huslage == ''Kväll'' and eriks_rum in [''Minimalt'',''Släckt'']
               }}'
           sequence:
           - action: light.turn_off
@@ -1269,29 +1269,29 @@ nedre_trappan_stall_in_belysningen:
         entity_id:
         - light.taklampan_nedre_trappan_level
         - light.lampan_brudkistan
-albins_rum_stall_in_belysningen:
-  alias: Ställ in belysningen i Albins rum
+eriks_rum_stall_in_belysningen:
+  alias: Ställ in belysningen i Eriks rum
   mode: restart
   sequence:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ states('input_select.albins_rum_belysning') in\n   ['Tänt',
+        value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt',
           'Mysigt', 'Läsning', 'Städning'] }}\n"
       sequence:
       - action: light.turn_on
         target:
           entity_id:
-          - light.albins_myslampa
+          - light.eriks_myslampa
     default:
     - action: light.turn_off
       target:
         entity_id:
-        - light.albins_myslampa
+        - light.eriks_myslampa
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ states('input_select.albins_rum_belysning') in\n   ['Tänt',
+        value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt',
           'Mysigt', 'Läsning', 'Minimalt', 'Städning'] }}\n"
       sequence:
       - action: light.turn_on
@@ -1306,26 +1306,26 @@ albins_rum_stall_in_belysningen:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ states('input_select.albins_rum_belysning') in\n   ['Tänt',
+        value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt',
           'Taklamporna', 'Städning'] }}\n"
       sequence:
       - action: light.turn_on
         target:
           entity_id:
-          - light.taklampan_albins_fonster_level
-          - light.taklampan_albins_sang_level
+          - light.taklampan_eriks_fonster_level
+          - light.taklampan_eriks_sang_level
         data:
           brightness_pct: 100
     default:
     - action: light.turn_off
       target:
         entity_id:
-        - light.taklampan_albins_fonster_level
-        - light.taklampan_albins_sang_level
+        - light.taklampan_eriks_fonster_level
+        - light.taklampan_eriks_sang_level
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ states('input_select.albins_rum_belysning') in\n   ['Tänt',
+        value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt',
           'Läsning', 'Mysigt', 'Städning'] }}\n"
       sequence:
       - action: light.turn_on
@@ -1334,7 +1334,7 @@ albins_rum_stall_in_belysningen:
           - light.led_strip_ovanfor_fotoljen
           - light.led_under_annas_byra
         data:
-          brightness_pct: "{% set lage = states('input_select.albins_rum_belysning')
+          brightness_pct: "{% set lage = states('input_select.eriks_rum_belysning')
             %} {% if lage == 'Tänt' %}\n  50\n{% elif lage == 'Läsning' %}\n  100\n{%
             elif lage == 'Mysigt' %}\n  1\n{% elif lage == 'Städning' %}\n  100\n{%
             else %}\n  50\n{% endif %}\n"
@@ -1351,7 +1351,7 @@ albins_rum_stall_in_belysningen:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ states('input_select.albins_rum_belysning') == 'Släckt'\n
+        value_template: "{{ states('input_select.eriks_rum_belysning') == 'Släckt'\n
           \  and now() >= today_at('21:30') }}\n"
       sequence:
       - action: light.turn_off
@@ -1665,7 +1665,7 @@ om_huslarmet_triggas:
         in \n  [\n    'binary_sensor.balkongdorren',\n    'binary_sensor.altandorr_baksidan',\n
         \   'binary_sensor.altandorr_koket',\n    'binary_sensor.ytterdorren',\n    'binary_sensor.ilias_fonster',\n
         \   'binary_sensor.vardagsrummet_fonster',\n    'binary_sensor.wc_fonster',\n
-        \   'binary_sensor.annas_fonster',\n    'binary_sensor.albins_fonster',\n
+        \   'binary_sensor.annas_fonster',\n    'binary_sensor.eriks_fonster',\n
         \   'binary_sensor.badrummet_fonster',\n    'binary_sensor.ilias_rum_rorelse',\n
         \   'binary_sensor.ilias_skrivbord_rorelse',\n    'binary_sensor.vardagsrummet_rorelse',\n
         \   'binary_sensor.vardagsrummet_soffan_rorelse',\n    'binary_sensor.ovre_trappan_rorelse',\n
@@ -1673,7 +1673,7 @@ om_huslarmet_triggas:
         \   'binary_sensor.annas_rum_rorelse',\n    'binary_sensor.koket_rorelse',\n
         \   'binary_sensor.koket_arbetsbanken_rorelse',\n    'binary_sensor.koksbordet_rorelse',\n
         \   'binary_sensor.hallen_rorelse',\n    'binary_sensor.nedre_trappan_rorelse',\n
-        \   'binary_sensor.albins_rum_rorelse',\n    'binary_sensor.tvattstugan_rorelse'\n
+        \   'binary_sensor.eriks_rum_rorelse',\n    'binary_sensor.tvattstugan_rorelse'\n
         \ ]\n%}\n  {%- set sensor = states[entity_id] %}\n  {%- if sensor.state ==
         'on' %}\n    {%- set friendly_name = sensor.attributes.friendly_name %}\n
         \   {%- if ns.triggered_sensors_str != '' %}\n      {%- set ns.triggered_sensors_str

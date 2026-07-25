@@ -60,7 +60,7 @@
       - Stereon i vardagsrummet
       - Annas stereo
       - Högtalarna i köket
-      - Albins stereo
+      - Eriks stereo
       - Alla puckar
       - Infopuckarna
       - Pucken i Ilias rum
@@ -68,7 +68,7 @@
       - Pucken i sovrummet
       - Pucken i Annas rum
       - Pucken i köket
-      - Pucken i Albins rum
+      - Pucken i Eriks rum
     initial: Välj högtalare
     icon: mdi:speaker
 
@@ -173,9 +173,9 @@
     icon: mdi:food   
 
 
-# Belysningen i Albins rum
-  albins_rum_belysning:
-    name: Belysning i Albins rum
+# Belysningen i Eriks rum
+  eriks_rum_belysning:
+    name: Belysning i Eriks rum
     options:
       - Tänt
       - Taklamporna

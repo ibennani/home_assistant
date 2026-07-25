@@ -20,8 +20,8 @@ lights_taklampor:
     - light.takspottarna_skafferiet_level
     - light.taklampan_nedre_trappan_level
     - light.vagglampor_badrummet      
-    - light.taklampan_albins_fonster_level
-    - light.taklampan_albins_sang_level
+    - light.taklampan_eriks_fonster_level
+    - light.taklampan_eriks_sang_level
 
 
 lights_mysbelysning:
@@ -37,7 +37,7 @@ lights_mysbelysning:
       - switch.lampa_annas_fonster_switch
       - switch.lampa_annas_jordglob_switch
       - light.annas_myshorna      
-      - switch.albins_lavalampa_switch
+      - switch.eriks_lavalampa_switch
       - switch.lampa_pa_nedre_frysen_switch
 
 
@@ -82,11 +82,11 @@ lights_sanglamporna_sovrummet:
     - switch.lampa_annas_sang_switch
 
 
-lights_taklamporna_i_albins_rum:
-  name: "Taklamporna i Albins rum"
+lights_taklamporna_i_eriks_rum:
+  name: "Taklamporna i Eriks rum"
   entities:
-    - light.taklampan_albins_fonster_level
-    - light.taklampan_albins_sang_level
+    - light.taklampan_eriks_fonster_level
+    - light.taklampan_eriks_sang_level
 
 rorelse_i_koket:
   name: "Rörelse i köket"
@@ -125,7 +125,7 @@ all_motion_and_open_close_sensors:
     - binary_sensor.vardagsrummet_fonster
     - binary_sensor.wc_fonster
     - binary_sensor.annas_fonster
-    - binary_sensor.albins_fonster   
+    - binary_sensor.eriks_fonster   
     - binary_sensor.badrummet_fonster  
     - binary_sensor.ilias_rum_rorelse
     - binary_sensor.ilias_skrivbord_rorelse
@@ -140,7 +140,7 @@ all_motion_and_open_close_sensors:
     - binary_sensor.koksbordet_rorelse
     - binary_sensor.hallen_rorelse
     - binary_sensor.nedre_trappan_rorelse
-    - binary_sensor.albins_rum_rorelse    
+    - binary_sensor.eriks_rum_rorelse    
     - binary_sensor.tvattstugan_rorelse
     - binary_sensor.grinden_baksidan
 
@@ -166,7 +166,7 @@ battery_levels:
     - sensor.skafferiet_temperatur_battery
     - sensor.kylskapet_koket_temperatur_battery
     - sensor.temperature_528_battery
-    - sensor.albins_rum_temperatur_battery_2
+    - sensor.eriks_rum_temperatur_battery_2
     - sensor.badrummet_temperatur_battery
     - sensor.tvattstugan_temperatur_battery
     - sensor.lumi_weather_battery
@@ -187,7 +187,7 @@ battery_levels:
     - sensor.koket_rorelse_battery
     - sensor.koksbordet_rorelse_battery
     - sensor.hallen_rorelse_battery
-    - sensor.albins_rum_rorelse_battery
+    - sensor.eriks_rum_rorelse_battery
     - sensor.nedre_trappan_battery
     - sensor.ovre_trappan_rorelse_battery
     - sensor.badrummet_rorelse_battery_2
@@ -204,7 +204,7 @@ battery_levels:
     - sensor.altandorren_koket_battery
     - sensor.skafferidorren_battery
     - sensor.ytterdorren_battery
-    - sensor.albins_fonster_battery
+    - sensor.eriks_fonster_battery
     - sensor.badrumsdorren_battery
     - sensor.badrummet_fonster_battery
     - sensor.vardagsrummet_fonster_battery
@@ -225,8 +225,8 @@ battery_levels:
     - sensor.fjarr_taklampan_i_ilias_rum_battery
     - sensor.fjarr_sovrummet_battery
     # - sensor.lilla_lampknappen_wc_batteri
-    - sensor.fjarr_albins_rum_battery
-    - sensor.fjarr_2_albins_rum_battery
+    - sensor.fjarr_eriks_rum_battery
+    - sensor.fjarr_2_eriks_rum_battery
     - sensor.fjarr_badrummet_battery
 # Rullgardiner
     - sensor.rullgardin_ilias_rum_batteri
@@ -234,7 +234,7 @@ battery_levels:
     - sensor.rullgardin_vardagsrummet_batteri
     - sensor.rullgardinen_sovrummet_batteri
     - sensor.rullgardin_annas_rum_batteri
-    - sensor.rullgardin_albins_rum_batteri
+    - sensor.rullgardin_eriks_rum_batteri
 # Netatmo och regn
     - sensor.regnmatare_battery_percent
 # Flood sensorer
@@ -279,7 +279,7 @@ temp_sensors_with_bad_battery_indicators:
     - sensor.annas_rum_temp
     - sensor.koket_temperatur
     - sensor.skafferiet_temp
-    - sensor.albins_rum_temp
+    - sensor.eriks_rum_temp
     - sensor.badrummet_temp
     - sensor.tvattstugan_temp
     - sensor.forradet_temperatur
@@ -317,8 +317,8 @@ energi_just_nu_kallor:
     - sensor.dimmer_2_power_4   # Takspottarna i skafferiet
     - sensor.dimmer_2_power_18  # Takspottarna i hallen
     - sensor.dimmer_2_power_3   # Taklampan i nedre trappan
-    - sensor.dimmer_2_power_14  # Taklampan ovanför Albins fönster
-    - sensor.dimmer_2_power_15  # Taklampan ovanför Albins säng
+    - sensor.dimmer_2_power_14  # Taklampan ovanför Eriks fönster
+    - sensor.dimmer_2_power_15  # Taklampan ovanför Eriks säng
     - sensor.dimmer_2_power_23  # Tvättstugan
     - sensor.takspottar_badrummet_power  # Takspottarna i badrummet
     - sensor.takspott_duschen_power      # Takspotten i duschen
@@ -335,7 +335,7 @@ energi_just_nu_kallor:
     - sensor.rgbw_controller_2_electric_consumption_w_2            # LED ovanför stora arbetsbänken
     - sensor.elljusstaken_i_koksfonstret_power                     # Elljusstaken i köksfönstret
     - sensor.smart_energy_plug_in_switch_electric_consumption_w_2  # Brudkistan
-    - sensor.smart_energy_plug_in_switch_electric_consumption_w_5  # Albins myslampa
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w_5  # Eriks myslampa
 
     # Funktionsbelysning
     - sensor.rgbw_controller_2_electric_consumption_w_3  # WC spegelskåp och handfat
