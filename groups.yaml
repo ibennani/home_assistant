@@ -165,7 +165,7 @@ battery_levels:
     - sensor.vaxthuset_temperatur_battery
     - sensor.skafferiet_temperatur_battery
     - sensor.kylskapet_koket_temperatur_battery
-    - sensor.temperature_528_battery
+    - sensor.frysen_koket_temp_battery
     - sensor.eriks_rum_temperatur_battery_2
     - sensor.badrummet_temperatur_battery
     - sensor.tvattstugan_temperatur_battery
