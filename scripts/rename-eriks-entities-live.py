@@ -63,6 +63,12 @@ DISPLAY_REPLACEMENTS = [
     ("Pucken i Eriks rum", "Pucken i Annas rum"),
     ("Belysning i Eriks rum", "Belysning i Annas rum"),
     ("GH Eriks rum", "GH Annas rum"),
+    ("Brandvarnaren i Eriks rum", "Brandvarnaren i Annas rum"),
+    ("Skrivbordet i Eriks rum", "Skrivbordet i Annas rum"),
+    ("Taklampan i Eriks rum", "Taklampan i Annas rum"),
+    ("Lampan i Eriks fönster", "Lampan i Annas fönster"),
+    ("Eriks rum skrivbord rörelse", "Annas rum skrivbord rörelse"),
+    ("Eriks rum rörelse", "Annas rum rörelse"),
     ("Eriks myshörna", "Annas myshörna"),
     ("Eriks myshöna", "Annas myshörna"),
     ("Eriks skrivbord", "Annas skrivbord"),
@@ -149,7 +155,12 @@ def should_process_entity(entity_id: str, name: str | None) -> bool:
         or "Eriks myshöna" in name
         or "Eriks skrivbord" in name
         or "Eriks stereo" in name
+        or "Pucken i Eriks" in name
         or "Taklampan i Eriks" in name
+        or "Brandvarnaren i Eriks" in name
+        or "Skrivbordet i Eriks" in name
+        or "Rullgardinen i Eriks" in name
+        or "Lampan i Eriks" in name
     ):
         return True
     return False
@@ -221,9 +232,13 @@ async def main() -> int:
             current_name = entry.get("name")
             original_name = entry.get("original_name") or ""
             base = current_name if current_name else original_name
-            if not should_process_entity(entity_id, base):
+            alt = original_name if current_name else ""
+            if not should_process_entity(entity_id, base) and not should_process_entity(entity_id, alt):
                 continue
             new_name = transform_name(base)
+            if new_name == base and alt:
+                new_name = transform_name(alt)
+                base = alt
             if new_name == base:
                 skipped += 1
                 continue
