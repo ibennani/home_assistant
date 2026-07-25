@@ -953,11 +953,6 @@ views:
         toggle: true
         step: 1
         name: LED-listan bakom meshkorgarna
-      - type: custom:slider-entity-row
-        entity: light.annas_jordglob
-        toggle: true
-        step: 1
-        name: Jordgloben
     - type: entities
       title: Fönster och dörrar
       icon: mdi:door-sliding-open
@@ -1344,6 +1339,11 @@ views:
         toggle: true
         step: 1
         name: Led under Eriks byrå
+      - type: custom:slider-entity-row
+        entity: light.eriks_jordglob
+        toggle: true
+        step: 1
+        name: Jordgloben
     - type: entities
       title: Fönster och dörrar
       icon: mdi:door-sliding-open
@@ -2037,7 +2037,6 @@ views:
         name: Bakom trådkorgarna
         toggle: true
         step: 1
-      - light.annas_jordglob
       - type: divider
       - light.hoga_skapet_i_koket
       - light.lampan_vid_fotoljen
@@ -2071,6 +2070,7 @@ views:
       - light.lampan_brudkistan
       - type: divider
       - light.eriks_myslampa
+      - light.eriks_jordglob
       - type: custom:slider-entity-row
         entity: light.led_strip_ovanfor_fotoljen
         name: LED ovanför Eriks säng
