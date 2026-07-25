@@ -16,8 +16,15 @@ alwaysApply: true
 - Känsliga värden endast i `.env` (lokalt) eller HA:s `secrets.yaml`.
 
 ## Syfte
-- Versionera automatiseringar, skript och dokumentation.
+- Versionera automatiseringar, skript, grupper, dashboard och dokumentation.
 - Mål: chatt via WhatsApp med Assist/Conversation.
+
+## Dashboard (Översikt)
+
+- **Källa:** `dashboards/dashboard-september-2025.yaml` (registreras i `includes/lovelace.yaml`).
+- **Redigera i git** — använd inte MCP `ha_config_set_dashboard` eller storage för vanliga ändringar.
+- **Exportera** med `python3 scripts/export-dashboard-from-ha.py` endast när UI-ändringar ska in i repot.
+- Efter push till `main`: git-synk + hård refresh i webbläsaren.
 
 ## Deploy till live HA (obligatoriskt för agenter)
 

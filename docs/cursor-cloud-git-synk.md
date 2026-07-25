@@ -15,7 +15,7 @@ Molnet når din HA via **MCP + Nabu Casa**. Git-synk sker via tjänster i HA —
 | Komponent | Syfte |
 |-----------|--------|
 | `shell_command.git_pull` | `git fetch` + `reset --hard origin/main` i `/config` |
-| `script.git_synka_config` | Pull + reload core/automations/templates |
+| `script.git_synka_config` | Pull + reload core/automations/templates/groups |
 | `automation` **System: Git-synk från GitHub** | Triggas av event `cursor_git_synk` |
 
 Logg: `/config/git-pull.log` (gitignorerad via `*.log`).
@@ -52,13 +52,22 @@ Därefter: verifiera med `ha_get_system_health(include="config_check")`.
 
 Dashboarden `dashboard-september-2025` versioneras i git som `dashboards/dashboard-september-2025.yaml` och registreras i `includes/lovelace.yaml`.
 
-Efter ändringar i dashboard-YAML: samma git-synk som ovan, sedan ladda om sidan i webbläsaren (hård refresh om kort inte uppdateras).
+### Standardarbetsflöde (agenter)
 
-Exportera aktuell live-kopia från HA till repot:
+1. **Redigera YAML i repot** — `dashboards/dashboard-september-2025.yaml` (inte storage/MCP `ha_config_set_dashboard`).
+2. Committa och pusha till `main`.
+3. Kör git-synk (event `cursor_git_synk` eller `script.git_synka_config`).
+4. Hård refresh i webbläsaren om kort inte uppdateras.
+
+### Exportera från live (endast vid behov)
+
+Om någon ändrat dashboarden i HA UI och git ska fånga upp det:
 
 ```bash
 python3 scripts/export-dashboard-from-ha.py
 ```
+
+Granska diff, committa, pusha och synka. Storage-kopian i `.storage/lovelace.dashboard_september_2025` används inte längre som källa — YAML i git gäller efter synk.
 
 ## Manuellt i HA UI
 

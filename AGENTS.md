@@ -32,3 +32,7 @@ Steg-för-steg: [docs/cursor-cloud-mcp-steg.md](docs/cursor-cloud-mcp-steg.md). 
 ### Säkerhet
 
 Följ `.cursor/rules/ha-projekt.mdc`: committa aldrig token, `secrets.yaml`, `.env` eller webhook-URL.
+
+## Dashboard
+
+Översikt-dashboarden versioneras som `dashboards/dashboard-september-2025.yaml`. Agenter redigerar den filen i git — inte live storage. Se [docs/cursor-cloud-git-synk.md](docs/cursor-cloud-git-synk.md).

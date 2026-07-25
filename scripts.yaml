@@ -1942,3 +1942,4 @@ git_synka_config:
     - action: homeassistant.reload_core_config
     - action: automation.reload
     - action: template.reload
+    - action: group.reload
