@@ -733,7 +733,7 @@ stang_av_allt:
     - light.eriks_myslampa
     - light.configuration_tool_3
     - light.elljusstaken_i_koksfonstret
-    - light.annas_jordglob
+    - light.eriks_jordglob
     - light.annas_myshorna
     - light.annas_rum
     - light.lampan_bakom_tv
@@ -1297,12 +1297,12 @@ eriks_rum_stall_in_belysningen:
       - action: light.turn_on
         target:
           entity_id:
-          - light.annas_jordglob
+          - light.eriks_jordglob
     default:
     - action: light.turn_off
       target:
         entity_id:
-        - light.annas_jordglob
+        - light.eriks_jordglob
   - choose:
     - conditions:
       - condition: template
@@ -1332,7 +1332,7 @@ eriks_rum_stall_in_belysningen:
         target:
           entity_id:
           - light.led_strip_ovanfor_fotoljen
-          - light.led_under_annas_byra
+          - light.led_under_eriks_byra
         data:
           brightness_pct: "{% set lage = states('input_select.eriks_rum_belysning')
             %} {% if lage == 'Tänt' %}\n  50\n{% elif lage == 'Läsning' %}\n  100\n{%
@@ -1345,7 +1345,7 @@ eriks_rum_stall_in_belysningen:
       target:
         entity_id:
         - light.led_strip_ovanfor_fotoljen
-        - light.led_under_annas_byra
+        - light.led_under_eriks_byra
       data:
         transition: 1
   - choose:
