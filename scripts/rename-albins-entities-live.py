@@ -30,8 +30,11 @@ SLUG_REPLACEMENTS = [
     ("rullgardin_albins_rum_batteri", "rullgardin_eriks_rum_batteri"),
     ("googlehome_albins_rum_las_upp", "googlehome_eriks_rum_las_upp"),
     ("albins_rum_stall_in_belysningen", "eriks_rum_stall_in_belysningen"),
+    ("taklampan_ovanfor_albins_fonster", "taklampan_ovanfor_eriks_fonster"),
+    ("taklampan_ovanfor_albins_sang", "taklampan_ovanfor_eriks_sang"),
     ("taklampan_albins_fonster_level", "taklampan_eriks_fonster_level"),
     ("taklampan_albins_sang_level", "taklampan_eriks_sang_level"),
+    ("luftkvalitet_albins_rum", "luftkvalitet_eriks_rum"),
     ("albins_lavalampa_switch", "eriks_lavalampa_switch"),
     ("albins_rum_luftfuktighet", "eriks_rum_luftfuktighet"),
     ("albins_skrivbord_rorelse", "eriks_skrivbord_rorelse"),
@@ -67,6 +70,13 @@ DISPLAY_REPLACEMENTS = [
     ("Albins fönster", "Eriks fönster"),
     ("Albins stereo", "Eriks stereo"),
     ("Albins myslampa", "Eriks myslampa"),
+    ("Albins fläkt", "Eriks fläkt"),
+    ("Albins TV", "Eriks TV"),
+    ("Luftkvalitet Albins rum", "Luftkvalitet Eriks rum"),
+    ("Fjärr 2 Albins rum", "Fjärr 2 Eriks rum"),
+    ("Albins rum rörelse", "Eriks rum rörelse"),
+    ("Albins rum skrivbord rörelse", "Eriks rum skrivbord rörelse"),
+    ("Albins rum temperatur", "Eriks rum temperatur"),
     ("Taklampan ovanför Albins fönster", "Taklampan ovanför Eriks fönster"),
     ("Taklampan ovanför Albins säng", "Taklampan ovanför Eriks säng"),
     ("i Albins rum", "i Eriks rum"),
@@ -96,6 +106,7 @@ ROOM_ENTITY_PATTERNS = [
     re.compile(r"fjarr_2_albins"),
     re.compile(r"rullgardin_albins"),
     re.compile(r"taklampan_albins"),
+    re.compile(r"taklampan_ovanfor_albins"),
     re.compile(r"albins_lavalampa"),
     re.compile(r"hyllan_ovanfor_albins"),
     re.compile(r"oversvamning_albins"),
@@ -153,6 +164,13 @@ def should_process_entity(entity_id: str, name: str | None) -> bool:
         or "Albins skrivbord" in name
         or "Albins stereo" in name
         or "Albins myslampa" in name
+        or "Albins fläkt" in name
+        or "Albins TV" in name
+        or "Luftkvalitet Albins rum" in name
+        or "Albins rum rörelse" in name
+        or "Albins rum skrivbord" in name
+        or "Albins rum temperatur" in name
+        or "Fjärr 2 Albins rum" in name
         or "Pucken i Albins" in name
         or "Taklampan" in name and "Albins" in name
         or "Taklamporna i Albins" in name
