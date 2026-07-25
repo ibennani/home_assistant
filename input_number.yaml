@@ -155,7 +155,7 @@
     mode: box
 
 
-### När ska Eriks rullgardin dras ner resp åka upp
+### När ska Annas rullgardin dras ner resp åka upp
 
 # azimuth-vinklel för när rullgardinen ska dras upp
   settings_rullgardiner_annas_rum_azimuth_upp:
