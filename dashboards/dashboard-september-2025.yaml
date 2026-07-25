@@ -1736,7 +1736,8 @@ views:
       entities:
       - entity: switch.vattenslang_framsidan
         name: Vattenslangen
-    - type: custom:config-template-card
+    - &grasklippare_panel
+      type: custom:config-template-card
       entities:
       - lawn_mower.grasklipparen
       - binary_sensor.grasklipparen_charging
@@ -5860,6 +5861,11 @@ views:
       - sensor.hp_color_laserjet_mfp_m277dw_cyan_cartridge_hp_cf401x
       - sensor.hp_color_laserjet_mfp_m277dw_magenta_cartridge_hp_cf403x
       - sensor.hp_color_laserjet_mfp_m277dw_yellow_cartridge_hp_cf402x
+- title: Gräsklipparen
+  icon: mdi:robot-mower
+  path: lawn-mover
+  cards:
+  - *grasklippare_panel
 - title: Vitvaror
   icon: mdi:washing-machine
   path: vitvaror
