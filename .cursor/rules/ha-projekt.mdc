@@ -19,6 +19,12 @@ alwaysApply: true
 - Versionera automatiseringar, skript, grupper, dashboard och dokumentation.
 - Mål: chatt via WhatsApp med Assist/Conversation.
 
+## Terminologi: frontend
+
+När användaren säger **frontend** menar de `dashboards/dashboard-september-2025.yaml` — den faktiska Översikt/HA Management-dashboarden som används i vardagen.
+
+Det avser **inte** Lovelace-redigeraren i Home Assistant, storage-dashboards eller generiskt "Lovelace som teknik".
+
 ## Dashboard (Översikt)
 
 - **Källa:** `dashboards/dashboard-september-2025.yaml` (registreras i `includes/lovelace.yaml`).
