@@ -1487,10 +1487,10 @@ views:
       icon: mdi:lightbulb
       entities:
       - type: custom:slider-entity-row
-        entity: light.led_badrummet_duschen
+        entity: light.led_strip_i_duschen
         toggle: true
         step: 1
-        name: LED-strippen
+        name: LED-strip
       - type: custom:slider-entity-row
         entity: light.takspott_duschen
         toggle: true
@@ -1992,8 +1992,8 @@ views:
         toggle: true
         step: 1
       - type: custom:slider-entity-row
-        entity: light.led_badrummet_duschen
-        name: I duschen
+        entity: light.led_strip_i_duschen
+        name: LED-strip
         toggle: true
         step: 1
       - type: custom:slider-entity-row
