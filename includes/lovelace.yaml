@@ -1,0 +1,11 @@
+# Lovelace-dashboards som versioneras i git.
+# Standard-dashboard (Översikt) laddas från YAML i stället för storage.
+mode: storage
+dashboards:
+  dashboard-september-2025:
+    mode: yaml
+    title: Översikt
+    icon: mdi:laptop
+    show_in_sidebar: true
+    require_admin: false
+    filename: dashboards/dashboard-september-2025.yaml

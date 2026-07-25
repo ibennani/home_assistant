@@ -48,6 +48,18 @@ ha_call_write_tool(
 
 Därefter: verifiera med `ha_get_system_health(include="config_check")`.
 
+## Dashboard (Översikt)
+
+Dashboarden `dashboard-september-2025` versioneras i git som `dashboards/dashboard-september-2025.yaml` och registreras i `includes/lovelace.yaml`.
+
+Efter ändringar i dashboard-YAML: samma git-synk som ovan, sedan ladda om sidan i webbläsaren (hård refresh om kort inte uppdateras).
+
+Exportera aktuell live-kopia från HA till repot:
+
+```bash
+python3 scripts/export-dashboard-from-ha.py
+```
+
 ## Manuellt i HA UI
 
 Kör skriptet **Git: Synka /config från GitHub** eller tryck på knappen om du lagt till en i dashboard.

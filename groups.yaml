@@ -165,7 +165,7 @@ battery_levels:
     - sensor.vaxthuset_temperatur_battery
     - sensor.skafferiet_temperatur_battery
     - sensor.kylskapet_koket_temperatur_battery
-    - sensor.temperature_528_battery
+    - sensor.frysen_koket_temp_battery
     - sensor.eriks_rum_temperatur_battery_2
     - sensor.badrummet_temperatur_battery
     - sensor.tvattstugan_temperatur_battery
@@ -257,12 +257,7 @@ battery_levels:
 # Sensorer som kan vara unavaliable men som vi ändå bortser ifrån
 ignored_offline_sensors:
   name: "Unavailable sensors that i don't care about"
-  entities:
-    - sensor.rorelse_badrummet_temperature
-    - sensor.badrummet_temperatur_referens_batteri
-    - sensor.badrummet_temp_referens
-    - sensor.badrummet_luftfuktighet_referens
-    - sensor.badrummet_lufttryck_referens
+  entities: []
 
 
 # Backup för Aqara-temperaturer som rapporterar batteri opålitligt.

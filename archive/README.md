@@ -4,6 +4,6 @@ Filer här används inte av live Home Assistant — de behålls som referens ell
 
 ## ui-lovelace.yaml
 
-Tidigare YAML-dashboard. Ersatt av storage-dashboarden **Översikt** (`dashboard-september-2025`), som redigeras i HA UI eller via MCP (`ha_config_set_dashboard`).
+Tidigare YAML-dashboard (ersatt). Live-dashboarden **Översikt** versioneras nu i `dashboards/dashboard-september-2025.yaml` och laddas via `includes/lovelace.yaml`.
 
-`configuration.yaml` laddar inte denna fil. Batterivyn **Nivåer** underhålls via `groups.yaml` (varningar/notiser) och storage-dashboarden (bar-cards).
+`configuration.yaml` laddar inte denna fil. Batterivyn **Nivåer** underhålls via `groups.yaml` (varningar/notiser) och dashboard-YAML.
