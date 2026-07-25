@@ -112,6 +112,10 @@
 # Toggle som avgör om vattenspridaren ska stara automatiskt
   vattenspridaren_audostart:
     name: Vattenspridaren autostart
+# Sant mellan kl 01 och 03 när schemalagd bevattning körs
+  bevattning_framsidan_pagar:
+    name: Bevattning framsidan pågår
+    initial: off
 
 
 # Någon står i duschen. Styrs av andra faktorer

@@ -9103,6 +9103,14 @@
       - condition: trigger
         id: starta
       sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.bevattning_framsidan_pagar
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.vattenspridaren_senaste_avstangning
+        data:
+          datetime: '1970-01-01 00:00:00'
       - action: switch.turn_on
         target:
           entity_id: switch.vattenslang_framsidan
@@ -9116,6 +9124,9 @@
       - condition: trigger
         id: stoppa
       sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.bevattning_framsidan_pagar
       - action: switch.turn_off
         target:
           entity_id: switch.vattenslang_framsidan
@@ -9127,6 +9138,42 @@
             ttl: 0
             priority: high
   id: f7c5a4adbdb94384975b6a340a2355af
+- alias: 'Bevattning: Återstart vid avstängning under nattbevattning'
+  id: '1783637970063'
+  mode: single
+  description: Sätter på vattenslangen igen om den stängs av under bevattningsfönstret,
+    men inte om den stängs av igen inom 10 minuter.
+  triggers:
+  - trigger: state
+    entity_id: switch.vattenslang_framsidan
+    from: 'on'
+    to: 'off'
+  conditions:
+  - condition: state
+    entity_id: input_boolean.vattenspridaren_audostart
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.bevattning_framsidan_pagar
+    state: 'on'
+  actions:
+  - variables:
+      seconds_since_last_off: "{% set last = states('input_datetime.vattenspridaren_senaste_avstangning')
+        %} {% if last in ['unknown', 'unavailable', ''] or last.startswith('1970')
+        %}\n  999999\n{% else %}\n  {{ (as_timestamp(now()) - as_timestamp(last)) |
+        int }}\n{% endif %}\n"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ seconds_since_last_off >= 600 }}'
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.vattenslang_framsidan
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.vattenspridaren_senaste_avstangning
+    data:
+      datetime: '{{ now().strftime(''%Y-%m-%d %H:%M:%S'') }}'
 - id: meddela_rorelse_baksidan
   alias: 'Mobilnotis: Rörelse på baksidan'
   description: 'Mobilnotis: Rörelse på baksidan'

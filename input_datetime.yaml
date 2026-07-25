@@ -97,3 +97,8 @@
       has_date: true
       has_time: true
       icon: mdi:shower-head
+    vattenspridaren_senaste_avstangning:
+      name: "Vattenspridaren senaste avstängning"
+      has_date: true
+      has_time: true
+      icon: mdi:sprinkler
