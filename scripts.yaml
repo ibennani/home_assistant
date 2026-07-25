@@ -1732,7 +1732,7 @@ test_fraga_om_att_tanda_en_lampa:
         intent_package_name: io.homeassistant.companion.android
         channel: voice
   mode: single
-ilias_rum_styr_belysningen:
+ilias_rum_stall_in_belysningen:
   alias: Ställ in belysningen i Ilias rum
   mode: restart
   sequence:
