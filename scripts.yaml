@@ -266,7 +266,7 @@ styr_belysningen_nar_alla_gatt_hemifran:
   sequence:
   - action: input_select.select_option
     target:
-      entity_id: input_select.isabelles_rum_belysning
+      entity_id: input_select.ilias_rum_belysning
     data:
       option: '{% if   is_state("input_boolean.stastadning_pagar","on") %} Städning
         {% elif states("input_select.house_time_modes") in ["Morgon","Dag","Natt"]
@@ -275,7 +275,7 @@ styr_belysningen_nar_alla_gatt_hemifran:
         '
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: input_select.select_option
     target:
       entity_id: input_select.vardagsrummet_belysning
@@ -353,10 +353,10 @@ morgonbelysning:
   sequence:
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: input_select.select_option
     target:
       entity_id: input_select.vardagsrummet_belysning
@@ -416,10 +416,10 @@ dagsbelysning:
   sequence:
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: input_select.select_option
     target:
       entity_id: input_select.vardagsrummet_belysning
@@ -485,10 +485,10 @@ kvallsbelysning:
   sequence:
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: input_select.select_option
     target:
       entity_id: input_select.vardagsrummet_belysning
@@ -580,10 +580,10 @@ nattbelysning:
   sequence:
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: script.turn_on
     target:
-      entity_id: script.isabelles_rum_stall_in_belysningen
+      entity_id: script.ilias_rum_stall_in_belysningen
   - action: input_select.select_option
     data:
       entity_id: input_select.vardagsrummet_belysning
@@ -678,7 +678,7 @@ tand_alla_lampor_pa_maxbelysning:
       option: Städning
   - action: input_select.select_option
     target:
-      entity_id: input_select.isabelles_rum_belysning
+      entity_id: input_select.ilias_rum_belysning
     data:
       option: Städning
   - action: script.turn_on
@@ -699,7 +699,7 @@ tand_alla_lampor_pa_maxbelysning:
   - action: light.turn_on
     target:
       entity_id:
-      - light.taklampan_isabelles_rum_level
+      - light.taklampan_ilias_rum_level
       - light.taklampa_vardagsrummet
       - light.taklampan_ovre_trappan_level
       - light.taklampa_sovrummet_level
@@ -752,15 +752,15 @@ stang_av_allt:
     - light.lampan_vid_balkongdorren
     - light.lamporna_i_garderoben
     - light.smyckeskapet
-    - light.lamporna_i_isabelles_fonster
+    - light.lamporna_i_ilias_fonster
     - light.lamporna_i_koksfonstret
-    - light.lamporna_ovanfor_isabelles_sang
+    - light.lamporna_ovanfor_ilias_sang
     - light.taklampa_vardagsrummet
     - light.taklampa_sovrummet_level
     - light.taklampan_albins_fonster_level
     - light.taklampan_albins_sang_level
     - light.taklampan_eriks_rum_level
-    - light.taklampan_isabelles_rum_level
+    - light.taklampan_ilias_rum_level
     - light.taklampan_nedre_trappan_level
     - light.taklampan_ovre_trappan_level
     - light.takspottarna_hallen_level
@@ -781,7 +781,7 @@ stang_av_allt:
     - media_player.googlehome_alla_puckar
     - media_player.googlehome_eriks_rum
     - media_player.googlehome_infopuckarna
-    - media_player.googlehome_isabelles_rum
+    - media_player.googlehome_ilias_rum
     - media_player.googlehome_koket
     - media_player.googlehome_sovrummet
     - media_player.googlehome_vardagsrummet
@@ -799,7 +799,7 @@ las_test:
   sequence:
   - action: script.las_text_i_valfri_device
     data:
-      hogtalare: media_player.googlehome_isabelles_rum
+      hogtalare: media_player.googlehome_ilias_rum
       meddelande: Nu har posten kommit.
       volym: 0.2
       voice: MattiasNeural
@@ -1627,12 +1627,12 @@ testa_ljudet_ghm:
   sequence:
   - action: media_player.volume_set
     target:
-      entity_id: media_player.googlehome_isabelles_rum
+      entity_id: media_player.googlehome_ilias_rum
     data:
       volume_level: 0
   - action: media_player.turn_on
     target:
-      entity_id: media_player.googlehome_isabelles_rum
+      entity_id: media_player.googlehome_ilias_rum
 skriv_till_fil_2024_6:
   alias: Skriv till fil i 2024.6
   sequence:
@@ -1663,11 +1663,11 @@ om_huslarmet_triggas:
       message: "HEMMET {{ now().strftime('%R') }}:\n*** HUSLARM ***   {%- set ns =
         namespace(triggered_sensors_str='', triggered_count=1) %} {%- for entity_id
         in \n  [\n    'binary_sensor.balkongdorren',\n    'binary_sensor.altandorr_baksidan',\n
-        \   'binary_sensor.altandorr_koket',\n    'binary_sensor.ytterdorren',\n    'binary_sensor.isabelles_fonster',\n
+        \   'binary_sensor.altandorr_koket',\n    'binary_sensor.ytterdorren',\n    'binary_sensor.ilias_fonster',\n
         \   'binary_sensor.vardagsrummet_fonster',\n    'binary_sensor.wc_fonster',\n
         \   'binary_sensor.eriks_fonster',\n    'binary_sensor.albins_fonster',\n
-        \   'binary_sensor.badrummet_fonster',\n    'binary_sensor.isabelles_rum_rorelse',\n
-        \   'binary_sensor.isabelles_skrivbord_rorelse',\n    'binary_sensor.vardagsrummet_rorelse',\n
+        \   'binary_sensor.badrummet_fonster',\n    'binary_sensor.ilias_rum_rorelse',\n
+        \   'binary_sensor.ilias_skrivbord_rorelse',\n    'binary_sensor.vardagsrummet_rorelse',\n
         \   'binary_sensor.vardagsrummet_soffan_rorelse',\n    'binary_sensor.ovre_trappan_rorelse',\n
         \   'binary_sensor.sovrummet_rorelse',\n    'binary_sensor.wc_rorelse',\n
         \   'binary_sensor.eriks_rum_rorelse',\n    'binary_sensor.koket_rorelse',\n
@@ -1732,20 +1732,20 @@ test_fraga_om_att_tanda_en_lampa:
         intent_package_name: io.homeassistant.companion.android
         channel: voice
   mode: single
-isabelles_rum_styr_belysningen:
-  alias: Ställ in belysningen i Isabelles rum
+ilias_rum_styr_belysningen:
+  alias: Ställ in belysningen i Ilias rum
   mode: restart
   sequence:
   - condition: template
-    value_template: '{{ states(''input_select.isabelles_rum_belysning'') not in [''unknown'',
+    value_template: '{{ states(''input_select.ilias_rum_belysning'') not in [''unknown'',
       ''unavailable'', ''none'', ''''] }}'
   - variables:
-      isabelles_mode: '{{ states(''input_select.isabelles_rum_belysning'') | trim
+      ilias_mode: '{{ states(''input_select.ilias_rum_belysning'') | trim
         }}'
-      light_tak: light.taklampan_isabelles_rum_level
-      light_fonster: light.lamporna_i_isabelles_fonster
-      light_sang: light.lamporna_ovanfor_isabelles_sang
-      light_mys: light.isabelles_myslampa
+      light_tak: light.taklampan_ilias_rum_level
+      light_fonster: light.lamporna_i_ilias_fonster
+      light_sang: light.lamporna_ovanfor_ilias_sang
+      light_mys: light.ilias_myslampa
       tak_available: '{{ states(light_tak) not in [''unavailable'', ''unknown''] }}'
       fonster_available: '{{ states(light_fonster) not in [''unavailable'', ''unknown'']
         }}'
@@ -1755,111 +1755,111 @@ isabelles_rum_styr_belysningen:
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ isabelles_mode == ''Städning'' }}'
+        value_template: '{{ ilias_mode == ''Städning'' }}'
       sequence:
       - action: '{% if tak_available %} light.turn_on {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.taklampan_isabelles_rum_level
+          entity_id: light.taklampan_ilias_rum_level
         data:
           brightness_pct: 100
     - conditions:
       - condition: template
-        value_template: '{{ isabelles_mode == ''Tänt'' }}'
+        value_template: '{{ ilias_mode == ''Tänt'' }}'
       sequence:
       - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.taklampan_isabelles_rum_level
+          entity_id: light.taklampan_ilias_rum_level
       - action: '{% if fonster_available %} light.turn_on {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.lamporna_i_isabelles_fonster
+          entity_id: light.lamporna_i_ilias_fonster
       - action: '{% if sang_available %} light.turn_on {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.lamporna_ovanfor_isabelles_sang
+          entity_id: light.lamporna_ovanfor_ilias_sang
       - action: '{% if mys_available %} light.turn_on {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.isabelles_myslampa
+          entity_id: light.ilias_myslampa
     - conditions:
       - condition: template
-        value_template: '{{ isabelles_mode == ''Lamporna i fönstret'' }}'
+        value_template: '{{ ilias_mode == ''Lamporna i fönstret'' }}'
       sequence:
       - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.taklampan_isabelles_rum_level
+          entity_id: light.taklampan_ilias_rum_level
       - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.lamporna_ovanfor_isabelles_sang
+          entity_id: light.lamporna_ovanfor_ilias_sang
       - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.isabelles_myslampa
+          entity_id: light.ilias_myslampa
       - action: '{% if fonster_available %} light.turn_on {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.lamporna_i_isabelles_fonster
+          entity_id: light.lamporna_i_ilias_fonster
     - conditions:
       - condition: template
-        value_template: '{{ isabelles_mode == ''Sängen'' }}'
+        value_template: '{{ ilias_mode == ''Sängen'' }}'
       sequence:
       - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.taklampan_isabelles_rum_level
+          entity_id: light.taklampan_ilias_rum_level
       - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.lamporna_i_isabelles_fonster
+          entity_id: light.lamporna_i_ilias_fonster
       - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.isabelles_myslampa
+          entity_id: light.ilias_myslampa
       - action: '{% if sang_available %} light.turn_on {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.lamporna_ovanfor_isabelles_sang
+          entity_id: light.lamporna_ovanfor_ilias_sang
     - conditions:
       - condition: template
-        value_template: '{{ isabelles_mode == ''Myslampan'' }}'
+        value_template: '{{ ilias_mode == ''Myslampan'' }}'
       sequence:
       - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.taklampan_isabelles_rum_level
+          entity_id: light.taklampan_ilias_rum_level
       - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.lamporna_i_isabelles_fonster
+          entity_id: light.lamporna_i_ilias_fonster
       - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.lamporna_ovanfor_isabelles_sang
+          entity_id: light.lamporna_ovanfor_ilias_sang
       - action: '{% if mys_available %} light.turn_on {% else %} script.do_nothing
           {% endif %}'
         target:
-          entity_id: light.isabelles_myslampa
+          entity_id: light.ilias_myslampa
     default:
     - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
         {% endif %}'
       target:
-        entity_id: light.taklampan_isabelles_rum_level
+        entity_id: light.taklampan_ilias_rum_level
     - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing
         {% endif %}'
       target:
-        entity_id: light.lamporna_i_isabelles_fonster
+        entity_id: light.lamporna_i_ilias_fonster
     - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing
         {% endif %}'
       target:
-        entity_id: light.lamporna_ovanfor_isabelles_sang
+        entity_id: light.lamporna_ovanfor_ilias_sang
     - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing
         {% endif %}'
       target:
-        entity_id: light.isabelles_myslampa
+        entity_id: light.ilias_myslampa
 media_lyssna_pa_radio:
   alias: 'Media: Lyssna på radio'
   mode: restart
@@ -1878,7 +1878,7 @@ media_lyssna_pa_radio:
   - variables:
       speaker_entity: "{% if speaker_option == 'Högtalarna i köket' %}\n  media_player.hogtalarna_i_koket\n{%
         elif speaker_option == 'Morgonhögtalarna' %}\n  media_player.morgonhogtalarna\n{%
-        elif speaker_option == 'Pucken i Isabelles rum' %}\n  media_player.googlehome_isabelles_rum\n{%
+        elif speaker_option == 'Pucken i Ilias rum' %}\n  media_player.googlehome_ilias_rum\n{%
         else %}\n  {{ none }}\n{% endif %}\n"
   - action: input_select.select_option
     target:
@@ -1903,8 +1903,8 @@ media_lyssna_pa_radio:
         %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif
         t < '11:00:00' %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges Radio
         P4 Stockholm\n  {% endif %}\n{% endif %}\n"
-test_spela_p1_i_isabelles_rum_med_tyst_start:
-  alias: Spela P1 i Isabelles rum med tyst start
+test_spela_p1_i_ilias_rum_med_tyst_start:
+  alias: Spela P1 i Ilias rum med tyst start
   sequence:
   - action: media_player.volume_set
     target:

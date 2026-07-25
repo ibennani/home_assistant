@@ -15,7 +15,7 @@
 - platform: universal
   name: alla_puckar_ha_grupp
   children:
-    - media_player.googlehome_isabelles_rum
+    - media_player.googlehome_ilias_rum
     - media_player.googlehome_vardagsrummet
     - media_player.googlehome_sovrummet
     - media_player.googlehome_eriks_rum
@@ -26,7 +26,7 @@
       service: media_player.volume_set
       data_template:
         entity_id:
-          - media_player.googlehome_isabelles_rum
+          - media_player.googlehome_ilias_rum
           - media_player.googlehome_vardagsrummet
           - media_player.googlehome_sovrummet
           - media_player.googlehome_eriks_rum
@@ -37,7 +37,7 @@
 - platform: universal
   name: alla_hogtalare_ha_grupp
   children:
-    - media_player.googlehome_isabelles_rum
+    - media_player.googlehome_ilias_rum
     - media_player.googlehome_vardagsrummet
     - media_player.googlehome_sovrummet
     - media_player.googlehome_eriks_rum
@@ -52,7 +52,7 @@
       service: media_player.volume_set
       data_template:
         entity_id:
-          - media_player.googlehome_isabelles_rum
+          - media_player.googlehome_ilias_rum
           - media_player.googlehome_vardagsrummet
           - media_player.googlehome_sovrummet
           - media_player.googlehome_eriks_rum

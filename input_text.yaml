@@ -24,8 +24,8 @@
       initial: ""
 
   # En input-textbox för Google home i köket
-    googlehome_isabelles_rum_las_upp:
-      name: GH Isabelles rum
+    googlehome_ilias_rum_las_upp:
+      name: GH Ilias rum
       initial: "" 
 
   # En input-textbox för Google home i sovrummet

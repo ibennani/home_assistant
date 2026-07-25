@@ -16,7 +16,7 @@
   type: mean
   round_digits: 1
   entity_ids:
-    - sensor.isabelles_rum_temp
+    - sensor.ilias_rum_temp
     - sensor.netatmo_bennani_vs_inomhus_temperature
     - sensor.sovrummet_temp
     - sensor.wc_temp
@@ -35,7 +35,7 @@
   type: min
   round_digits: 1
   entity_ids:
-    - sensor.isabelles_rum_temp
+    - sensor.ilias_rum_temp
     - sensor.netatmo_bennani_vs_inomhus_temperature
     - sensor.sovrummet_temp
     - sensor.wc_temp
@@ -54,7 +54,7 @@
   type: max
   round_digits: 1
   entity_ids:
-    - sensor.isabelles_rum_temp
+    - sensor.ilias_rum_temp
     - sensor.netatmo_bennani_vs_inomhus_temperature
     - sensor.sovrummet_temp
     - sensor.wc_temp
@@ -73,7 +73,7 @@
   type: mean
   round_digits: 1
   entity_ids:
-    - sensor.isabelles_rum_luftfuktighet
+    - sensor.ilias_rum_luftfuktighet
     - sensor.netatmo_bennani_vs_inomhus_humidity
     - sensor.sovrummet_luftfuktighet
     - sensor.wc_luftfuktighet
@@ -92,7 +92,7 @@
   type: min
   round_digits: 1
   entity_ids:
-    - sensor.isabelles_rum_luftfuktighet
+    - sensor.ilias_rum_luftfuktighet
     - sensor.netatmo_bennani_vs_inomhus_humidity
     - sensor.sovrummet_luftfuktighet
     - sensor.wc_luftfuktighet
@@ -111,7 +111,7 @@
   type: max
   round_digits: 1
   entity_ids:
-    - sensor.isabelles_rum_luftfuktighet
+    - sensor.ilias_rum_luftfuktighet
     - sensor.netatmo_bennani_vs_inomhus_humidity
     - sensor.sovrummet_luftfuktighet
     - sensor.wc_luftfuktighet

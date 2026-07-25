@@ -44,7 +44,7 @@
       - Ingen högtalare
       - Högtalarna i köket
       - Morgonhögtalarna
-      - Pucken i Isabelles rum
+      - Pucken i Ilias rum
     initial: Ingen högtalare
     icon: mdi:speaker
 
@@ -63,7 +63,7 @@
       - Albins stereo
       - Alla puckar
       - Infopuckarna
-      - Pucken i Isabelles rum
+      - Pucken i Ilias rum
       - Pucken i vardsgsrummet
       - Pucken i sovrummet
       - Pucken i Eriks rum
@@ -96,9 +96,9 @@
     icon: mdi:translate         
 
 
-# Belysningen i Isabelles rum
-  isabelles_rum_belysning:
-    name: Belysning i Isabelles rum
+# Belysningen i Ilias rum
+  ilias_rum_belysning:
+    name: Belysning i Ilias rum
     options:
       - Tänt
       - Sängen

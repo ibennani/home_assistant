@@ -67,7 +67,7 @@
       unit_of_measurement: lx
       state: >-
         {% set framsidan = states('sensor.utomhus_framsidan_ljusstyrka') | float(0) %}
-        {% set fonstret = states('sensor.isabelles_fonster_ljusstyrka') | float(0) %}
+        {% set fonstret = states('sensor.ilias_fonster_ljusstyrka') | float(0) %}
         {% if is_state('light.ljusslingan_pa_balkongen', 'on') %}
           {{ framsidan }}
         {% else %}
@@ -90,7 +90,7 @@
       unit_of_measurement: hPa
       state: >-
         {% set sensors = [
-          states('sensor.isabelles_rum_lufttryck') | float(0),
+          states('sensor.ilias_rum_lufttryck') | float(0),
           states('sensor.netatmo_bennani_vs_inomhus_pressure') | float(0),
           states('sensor.sovrummet_lufttryck') | float(0),
           states('sensor.wc_lufttryck') | float(0),
@@ -109,7 +109,7 @@
       unit_of_measurement: hPa
       state: >-
         {% set sensors = [
-          states('sensor.isabelles_rum_lufttryck') | float(0),
+          states('sensor.ilias_rum_lufttryck') | float(0),
           states('sensor.netatmo_bennani_vs_inomhus_pressure') | float(0),
           states('sensor.sovrummet_lufttryck') | float(0),
           states('sensor.wc_lufttryck') | float(0),
@@ -128,7 +128,7 @@
       unit_of_measurement: hPa
       state: >-
         {% set sensors = [
-          states('sensor.isabelles_rum_lufttryck') | float(0),
+          states('sensor.ilias_rum_lufttryck') | float(0),
           states('sensor.netatmo_bennani_vs_inomhus_pressure') | float(0),
           states('sensor.sovrummet_lufttryck') | float(0),
           states('sensor.wc_lufttryck') | float(0),

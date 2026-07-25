@@ -151,7 +151,7 @@
     name: Lufttryck inomhus
     state: |
       {% set sensors = [
-        states('sensor.isabelles_rum_lufttryck') | float,
+        states('sensor.ilias_rum_lufttryck') | float,
         states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
         states('sensor.sovrummet_lufttryck') | float,
         states('sensor.wc_lufttryck') | float,
@@ -169,7 +169,7 @@
     name: Lufttryck inomhus min
     state: |
       {% set sensors = [
-        states('sensor.isabelles_rum_lufttryck') | float,
+        states('sensor.ilias_rum_lufttryck') | float,
         states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
         states('sensor.sovrummet_lufttryck') | float,
         states('sensor.wc_lufttryck') | float,
@@ -187,7 +187,7 @@
     name: Lufttryck inomhus max
     state: |
       {% set sensors = [
-        states('sensor.isabelles_rum_lufttryck') | float,
+        states('sensor.ilias_rum_lufttryck') | float,
         states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
         states('sensor.sovrummet_lufttryck') | float,
         states('sensor.wc_lufttryck') | float,
@@ -203,7 +203,7 @@
   - default_entity_id: sensor.ljusstyrka_framsidan_maximal
     unique_id: 05s6df0a1sg0asg8dd1asgr1aaasgddda
     name: Ljusstyrka framsidan maximal
-    state: "{% set framsidan = states(\"sensor.utomhus_framsidan_ljusstyrka\") | float %} {% set fonstret = states(\"sensor.isabelles_fonster_ljusstyrka\") | float %} {% if is_state(\"light.ljusslingan_pa_balkongen\",\"on\") %} {{ states(\"sensor.utomhus_framsidan_ljusstyrka\") | float }} {% else %} {{ [ framsidan , fonstret ] | max }} {% endif %} \n"
+    state: "{% set framsidan = states(\"sensor.utomhus_framsidan_ljusstyrka\") | float %} {% set fonstret = states(\"sensor.ilias_fonster_ljusstyrka\") | float %} {% if is_state(\"light.ljusslingan_pa_balkongen\",\"on\") %} {{ states(\"sensor.utomhus_framsidan_ljusstyrka\") | float }} {% else %} {{ [ framsidan , fonstret ] | max }} {% endif %} \n"
     unit_of_measurement: lx
   - default_entity_id: sensor.blixtinfo
     name: Info om den senaste blixten

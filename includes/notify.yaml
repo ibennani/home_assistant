@@ -37,10 +37,10 @@
 #   device_id: ada9095aac5942269222ceedf2c43c83
 #   name: Larmplattan i hallen
 
-# Google home mini i Isabelles rum
+# Google home mini i Ilias rum
 - platform: tts
-  name: pucken_i_isabelles_rum
+  name: pucken_i_ilias_rum
   tts_service: tts.google_say
-  media_player: media_player.googlehome_isabelles_rum
+  media_player: media_player.googlehome_ilias_rum
 
 

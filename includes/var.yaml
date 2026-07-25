@@ -111,9 +111,9 @@ textupplasning_text:
   restore: false
 
 # Dimningsriktning
-dimming_direction_isabeles_taklampa:
+dimming_direction_ilias_taklampa:
   initial_value: "Upp"
-  friendly_name: "Dimma Isabelles taklampa vid långtryck"
+  friendly_name: "Dimma Ilias taklampa vid långtryck"
   restore: true
 
 dimming_direction_fjarr_hogtalarna_i_koket:

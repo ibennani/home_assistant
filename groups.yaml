@@ -7,7 +7,7 @@ lights_taklampor:
   name: Alla taklampor
   icon: mdi:ceiling-light
   entities:
-    - light.taklampan_isabelles_rum_level
+    - light.taklampan_ilias_rum_level
     - light.taklampa_vardagsrummet
     - light.taklampan_ovre_trappan_level
     - light.toaletten_handfatet
@@ -70,7 +70,7 @@ family_phones:
 rullgardiner_framsidan:
   name: "Rullgardiner mot framsidan"
   entities:
-    - cover.rullgardin_isabelles_rum
+    - cover.rullgardin_ilias_rum
     - cover.rullgardin_balkongdorren
     - cover.rullgardin_vardagsrummet  
 
@@ -121,14 +121,14 @@ all_motion_and_open_close_sensors:
     - binary_sensor.altandorr_baksidan
     - binary_sensor.altandorr_koket
     - binary_sensor.ytterdorren
-    - binary_sensor.isabelles_fonster
+    - binary_sensor.ilias_fonster
     - binary_sensor.vardagsrummet_fonster
     - binary_sensor.wc_fonster
     - binary_sensor.eriks_fonster
     - binary_sensor.albins_fonster   
     - binary_sensor.badrummet_fonster  
-    - binary_sensor.isabelles_rum_rorelse
-    - binary_sensor.isabelles_skrivbord_rorelse
+    - binary_sensor.ilias_rum_rorelse
+    - binary_sensor.ilias_skrivbord_rorelse
     - binary_sensor.vardagsrummet_rorelse
     - binary_sensor.vardagsrummet_soffan_rorelse
     - binary_sensor.ovre_trappan_rorelse
@@ -155,7 +155,7 @@ battery_levels:
 #    - sensor.utomhus_baksidan_ljusstyrka_battery
 # Tempsensorer
     - sensor.vinden_temperatur_battery
-    - sensor.isabelles_rum_temp_battery
+    - sensor.ilias_rum_temp_battery
     - sensor.framsidan_temperatur_batteri
     - sensor.temperature_539_battery
     - sensor.youssef_test_1_battery
@@ -175,8 +175,8 @@ battery_levels:
 # Rörelsesensorer
     - sensor.balkongen_rorelse_battery
     - sensor.baksidan_rorelse_wc_fonster_battery
-    - sensor.isabelles_rum_rorelse_battery_2
-    - sensor.isabelles_rum_skrivbord_rorelse_battery
+    - sensor.ilias_rum_rorelse_battery_2
+    - sensor.ilias_rum_skrivbord_rorelse_battery
     - sensor.vardagsrummet_rorelse_battery
     - sensor.vardagsrummet_soffan_rorelse_battery
     - sensor.sovrummet_rorelse_battery
@@ -195,7 +195,7 @@ battery_levels:
     - sensor.rorelse_i_brevladan_battery
     - sensor.slim_multi_sensor_pir_temperature_illumination_battery_level
 # Fönster och dörrsensorer
-    - sensor.isabelles_fonster_battery
+    - sensor.ilias_fonster_battery
     - sensor.balkongdorren_battery
     - sensor.altandorren_i_sovrummet_battery
     - sensor.wc_fonster_battery
@@ -216,20 +216,20 @@ battery_levels:
     - sensor.garderoben_rorelse_2_battery
     - sensor.garderoben_rorelse_4_battery
 # fjärrkontroller
-    - sensor.fjarr_rullgardin_isabelles_rum_batteri
+    - sensor.fjarr_rullgardin_ilias_rum_batteri
     - sensor.fjarr_rullgardin_vardagsrummet_batteri
     - sensor.fjarr_rullgardin_sovrummet_batteri
     - sensor.fjarr_rullgardin_eriks_rum_batteri
     - sensor.fjarr_stereon_i_koket_battery
-    - sensor.fjarr_isabelles_rum_battery
-    - sensor.fjarr_taklampan_i_isabelles_rum_battery
+    - sensor.fjarr_ilias_rum_battery
+    - sensor.fjarr_taklampan_i_ilias_rum_battery
     - sensor.fjarr_sovrummet_battery
     # - sensor.lilla_lampknappen_wc_batteri
     - sensor.fjarr_albins_rum_battery
     - sensor.fjarr_2_albins_rum_battery
     - sensor.fjarr_badrummet_battery
 # Rullgardiner
-    - sensor.rullgardin_isabelles_rum_batteri
+    - sensor.rullgardin_ilias_rum_batteri
     - sensor.rullgardin_balkongdorren_batteri
     - sensor.rullgardin_vardagsrummet_batteri
     - sensor.rullgardinen_sovrummet_batteri
@@ -273,7 +273,7 @@ temp_sensors_with_bad_battery_indicators:
     - sensor.utomhus_baksidan_temperature
     - sensor.framsidan_temperatur
     - sensor.vinden_temp
-    - sensor.isabelles_rum_temp
+    - sensor.ilias_rum_temp
     - sensor.sovrummet_temp
     - sensor.wc_temp
     - sensor.eriks_rum_temp
@@ -302,7 +302,7 @@ energi_just_nu_kallor:
   icon: mdi:flash
   entities:
     # Taklampor
-    - sensor.dimmer_2_power_16  # Taklampan i Isabelles rum
+    - sensor.dimmer_2_power_16  # Taklampan i Ilias rum
     - sensor.dimmer_2_power_11  # Taklampan i vardagsrummet
     - sensor.dimmer_2_power_2   # Taklampan i övre trappan
     - sensor.dimmer_2_power_21  # Taklampan i sovrummet
@@ -326,9 +326,9 @@ energi_just_nu_kallor:
     - sensor.takspottarna_i_forradet_power  # Förrådet
 
     # Mysbelysning
-    - sensor.smart_energy_plug_in_switch_electric_consumption_w    # Isabelles fönster
-    - sensor.smart_energy_plug_in_switch_electric_consumption_w_4  # Isabelles myslampa
-    - sensor.smart_energy_plug_in_switch_electric_consumption_w_3  # Lamporna ovanför Isabelles säng
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w    # Ilias fönster
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w_4  # Ilias myslampa
+    - sensor.smart_energy_plug_in_switch_electric_consumption_w_3  # Lamporna ovanför Ilias säng
     - sensor.lampan_balkongdorren_energi                           # Lampan vid balkongdörren
     - sensor.smart_energy_plug_in_switch_electric_consumption_w_6  # Eriks fönster
     - sensor.led_ovanfor_lilla_arbetsbanken_electric_consumption_w # LED ovanför lilla arbetsbänken
