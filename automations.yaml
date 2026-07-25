@@ -34,7 +34,7 @@
       - media_player.googlehome_ilias_rum
       - media_player.googlehome_vardagsrummet
       - media_player.googlehome_sovrummet
-      - media_player.googlehome_eriks_rum
+      - media_player.googlehome_annas_rum
       - media_player.googlehome_koket
       - media_player.googlehome_albins_rum
     data:
@@ -495,7 +495,7 @@
     - binary_sensor.ilias_fonster
     - binary_sensor.vardagsrummet_fonster
     - binary_sensor.wc_fonster
-    - binary_sensor.eriks_fonster
+    - binary_sensor.annas_fonster
     - binary_sensor.albins_fonster
     - binary_sensor.badrummet_fonster
     - binary_sensor.skafferidorren
@@ -799,11 +799,11 @@
         }}\n{% endif %}\n"
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
       option: "{% if states(\"sensor.time\") == \"07:00\" \n  and now().strftime('%u')
         | int(default=0) in [1,2,3,4,5] \n  and states(\"sensor.utomhus_baksidan_ljusstyrka\")
-        | int(default = 0) < 2000%} Tänt\n{% else %} {{ states('input_select.eriks_rum_belysning')
+        | int(default = 0) < 2000%} Tänt\n{% else %} {{ states('input_select.annas_rum_belysning')
         }} {% endif %}\n"
   - action: input_select.select_option
     target:
@@ -863,18 +863,18 @@
     entity_id:
     - sensor.hur_ljust_ar_det_pa_framsidan
     - sensor.hur_ljust_ar_det_pa_baksidan
-- alias: 'Belysning: Eriks myshörna återställ efter unavailable'
+- alias: 'Belysning: Annas myshörna återställ efter unavailable'
   id: 7918667sdf5sadf90htj06674
   mode: restart
   triggers:
   - trigger: template
-    value_template: '{{ not is_state("light.eriks_myshorna","unavailable") }}
+    value_template: '{{ not is_state("light.annas_myshorna","unavailable") }}
 
       '
   action:
   - action: script.turn_on
     target:
-      entity_id: script.stall_in_ljuset_i_eriks_myshorna
+      entity_id: script.stall_in_ljuset_i_annas_myshorna
 - alias: 'Belysning: Släck viss belysning när ingen rör sig i de allmänna utrymmena
     på natten'
   id: '216051980231'
@@ -967,7 +967,7 @@
     entity_id: input_boolean.stadning_pagar
   - trigger: template
     value_template: "{{  ( states(\"input_select.sovrummet_belysning\") in [\"Släckt\",\"Mysigt\"]\n
-      \   or states(\"input_select.eriks_rum_belysning\") in [\"Släckt\",\"Mysigt\"]
+      \   or states(\"input_select.annas_rum_belysning\") in [\"Släckt\",\"Mysigt\"]
       )\n  and (now().strftime('%R') >= \"21:00\"\n    or now().strftime('%R') < \"06:00\"
       ) }}      \n"
   - trigger: template
@@ -1869,10 +1869,10 @@
         '
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
       option: '{% if states("sensor.utomhus_framsidan_ljusstyrka") | int(default =
-        0) < 2000 %} Tänt {% else %} {{ state("input_select.eriks_rum_belysning")
+        0) < 2000 %} Tänt {% else %} {{ state("input_select.annas_rum_belysning")
         }} {% endif %}
 
         '
@@ -3392,12 +3392,12 @@
         i Ilias rum\") %} media_player.googlehome_ilias_rum {% elif is_state(\"input_select.textupplasning_device\",\"Pucken
         i vardsgsrummet\") %} media_player.googlehome_vardagsrummet {% elif is_state(\"input_select.textupplasning_device\",\"Pucken
         i sovrummet\") %} media_player.googlehome_sovrummet {% elif is_state(\"input_select.textupplasning_device\",\"Pucken
-        i Eriks rum\") %} media_player.googlehome_eriks_rum {% elif is_state(\"input_select.textupplasning_device\",\"Pucken
+        i Annas rum\") %} media_player.googlehome_annas_rum {% elif is_state(\"input_select.textupplasning_device\",\"Pucken
         i köket\") %} media_player.googlehome_koket {% elif is_state(\"input_select.textupplasning_device\",\"Pucken
         i Albins rum\") %} media_player.googlehome_albins_rum {% elif is_state(\"input_select.textupplasning_device\",\"Stereon
         i vardagsrummet\") %} media_player.pucken_bakom_stereon_i_vardagsrummet {%
-        elif is_state(\"input_select.textupplasning_device\",\"Eriks stereo\") %}
-        media_player.eriks_stereo {% elif is_state(\"input_select.textupplasning_device\",\"Högtalarna
+        elif is_state(\"input_select.textupplasning_device\",\"Annas stereo\") %}
+        media_player.annas_stereo {% elif is_state(\"input_select.textupplasning_device\",\"Högtalarna
         i köket\") %} media_player.hogtalarna_i_koket {% elif is_state(\"input_select.textupplasning_device\",\"Albins
         stereo\") %} media_player.albins_stereo {% else %} none {% endif %}  \n"
   - action: "{% if (states(\"input_number.textupplasning_volym\") | float(default
@@ -3476,7 +3476,7 @@
     entity_id:
     - media_player.googlehome_vardagsrummet
     - media_player.googlehome_ilias_rum
-    - media_player.googlehome_eriks_rum
+    - media_player.googlehome_annas_rum
     - media_player.googlehome_koket
     - media_player.googlehome_albins_rum
     - media_player.googlehome_sovrummet
@@ -3580,7 +3580,7 @@
       - media_player.pucken_bakom_stereon_i_vardagsrummet
       - media_player.googlehome_koket
       - media_player.googlehome_albins_rum
-      - media_player.googlehome_eriks_rum
+      - media_player.googlehome_annas_rum
       - media_player.googlehome_ilias_rum
       - media_player.googlehome_vardagsrummet
       - media_player.googlehome_sovrummet
@@ -4357,13 +4357,13 @@
     target:
       entity_id: script.vardagsrummet_stall_in_belysningen
 - id: 015091598558904098dg498fsf890
-  alias: 'Belysning: Styr och verkställ belysningen i Eriks rum'
+  alias: 'Belysning: Styr och verkställ belysningen i Annas rum'
   triggers:
   - trigger: event
     id: remote
     event_type: deconz_event
     event_data:
-      id: fjarr_eriks_rum
+      id: fjarr_annas_rum
   - trigger: state
     id: anna_state
     entity_id: person.anna_bennani
@@ -4378,12 +4378,12 @@
   - trigger: state
     id: select_changed
     entity_id:
-    - input_select.eriks_rum_belysning
+    - input_select.annas_rum_belysning
   actions:
   - variables:
       lux: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | int(0) }}'
       mode_house: '{{ states(''input_select.house_time_modes'') }}'
-      current: '{{ states(''input_select.eriks_rum_belysning'') }}'
+      current: '{{ states(''input_select.annas_rum_belysning'') }}'
       jul: '{{ is_state(''input_boolean.julbelysning'', ''on'') }}'
       anna_home: '{{ is_state(''person.anna_bennani'', ''home'') }}'
       ev: '{{ trigger.event.data.event | int(0) if trigger.id == ''remote'' else 0
@@ -4394,7 +4394,7 @@
         value_template: '{{ trigger.id in [''select_changed'', ''lux_above_2000'',
           ''lux_below_2000''] }}'
       sequence:
-      - action: script.eriks_rum_stall_in_belysningen
+      - action: script.annas_rum_stall_in_belysningen
     - conditions:
       - condition: template
         value_template: "{{ trigger.id == 'anna_state'\n   and lux >= 2000\n   and
@@ -4402,7 +4402,7 @@
       sequence:
       - action: input_select.select_option
         target:
-          entity_id: input_select.eriks_rum_belysning
+          entity_id: input_select.annas_rum_belysning
         data:
           option: "{% if anna_home %}\n  Trådkorgarna normalbelysning\n{% else %}\n
             \ {{ 'Tänt' if jul else 'Släckt' }}\n{% endif %}\n"
@@ -4417,7 +4417,7 @@
           sequence:
           - action: input_select.select_option
             data:
-              entity_id: input_select.eriks_rum_belysning
+              entity_id: input_select.annas_rum_belysning
               option: "{% if mode_house in ['Morgon','Dag','Kväll'] %}\n  {% if current
                 in ['Släckt','Mysigt','Trådkorgarna maxbelysning'] %} Tänt\n  {% else
                 %} Släckt\n  {% endif %}\n{% elif mode_house == 'Natt' %}\n  {% if
@@ -4429,7 +4429,7 @@
           sequence:
           - action: input_select.select_option
             data:
-              entity_id: input_select.eriks_rum_belysning
+              entity_id: input_select.annas_rum_belysning
               option: '{% if current == ''Mysigt'' %} Tänt {% else %} Mysigt {% endif
                 %}
 
@@ -4440,7 +4440,7 @@
           sequence:
           - action: input_select.select_option
             data:
-              entity_id: input_select.eriks_rum_belysning
+              entity_id: input_select.annas_rum_belysning
               option: "{% if current != 'Trådkorgarna maxbelysning' %}\n  Trådkorgarna
                 maxbelysning\n{% else %}\n  {% if mode_house in ['Morgon','Kväll']
                 %}\n    Tänt\n  {% elif mode_house == 'Dag' %}\n    {% if lux >= 2000
@@ -4463,7 +4463,7 @@
   - delay: 00:00:05
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
       option: "{% set anna_home = is_state('person.anna_bennani', 'home') %} {% set
         time_mode_day = is_state('input_select.house_time_modes', 'Dag') %} {% set
@@ -4471,7 +4471,7 @@
         >= 2000 %} {% set vakna = states(\"var.morgoninfo_koket_redan_upplast\") ==
         \"true\" %}\n{% if time_mode_day and light_intensity_high and vakna %}\n  {%
         if anna_home %} Trådkorgarna normalbelysning\n  {% else %} Släckt\n  {% endif
-        %}\n{% else %} {{ states(\"input_select.eriks_rum_belysning\") }} {% endif
+        %}\n{% else %} {{ states(\"input_select.annas_rum_belysning\") }} {% endif
         %}\n"
 - alias: 'Belysning: Styr sovrummet med den fyrkantiga IKEA-fjärren'
   id: 015091598558904098dg498fsfasge0
@@ -7748,8 +7748,8 @@
         target:
           entity_id: cover.rullgardin_ilias_rum
   mode: restart
-- id: automation_eriks_rum_rullgardin_automatic_logic_v3
-  alias: 'Rullgardiner: Styr rullgardinen i Eriks rum'
+- id: automation_annas_rum_rullgardin_automatic_logic_v3
+  alias: 'Rullgardiner: Styr rullgardinen i Annas rum'
   triggers:
   - trigger: state
     entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
@@ -7778,21 +7778,21 @@
       sequence:
       - action: cover.open_cover
         target:
-          entity_id: cover.rullgardin_eriks_rum
+          entity_id: cover.rullgardin_annas_rum
     - conditions:
       - condition: template
         value_template: '{{ sun_protection and not is_evening}}'
       sequence:
       - action: cover.close_cover
         target:
-          entity_id: cover.rullgardin_eriks_rum
+          entity_id: cover.rullgardin_annas_rum
     - conditions:
       - condition: template
         value_template: '{{ not sun_protection and not is_evening}}'
       sequence:
       - action: cover.open_cover
         target:
-          entity_id: cover.rullgardin_eriks_rum
+          entity_id: cover.rullgardin_annas_rum
   mode: restart
   variables:
     is_evening: '{{ states(''input_select.house_time_modes'') in [''Kväll'', ''Natt'']
@@ -7950,8 +7950,8 @@
       - cover.rullgardin_vardagsrummet
       fjarr_rullgardin_sovrummet:
       - cover.rullgardin_sovrummet
-      fjarr_rullgardin_eriks_rum:
-      - cover.rullgardin_eriks_rum
+      fjarr_rullgardin_annas_rum:
+      - cover.rullgardin_annas_rum
   condition:
   - condition: template
     value_template: '{{ trigger.event.data.id in cover_map and trigger.event.data.event
@@ -8043,16 +8043,16 @@
       entity_id: script.sovrummet_stall_in_belysningen
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
       option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag"] %}
-        Släckt {% else %} {{ state("input_select.eriks_rum_belysning") }} {% endif
+        Släckt {% else %} {{ state("input_select.annas_rum_belysning") }} {% endif
         %}
 
         '
   - action: script.turn_on
     target:
-      entity_id: script.eriks_rum_stall_in_belysningen
+      entity_id: script.annas_rum_stall_in_belysningen
   - action: input_select.select_option
     target:
       entity_id: input_select.koket_belysning
@@ -9116,7 +9116,7 @@
         hogtalare: media_player.googlehome_sovrummet
     - action: script.tysta_kopplingspling_vid_casting
       data:
-        hogtalare: media_player.googlehome_eriks_rum
+        hogtalare: media_player.googlehome_annas_rum
     - action: script.tysta_kopplingspling_vid_casting
       data:
         hogtalare: media_player.googlehome_koket
@@ -9125,7 +9125,7 @@
         hogtalare: media_player.googlehome_albins_rum
   - wait_template: '{{  is_state("media_player.googlehome_ilias_rum","idle") and
       is_state("media_player.googlehome_vardagsrummet","idle")  and is_state("media_player.googlehome_sovrummet","idle")  and
-      is_state("media_player.googlehome_eriks_rum","idle")  and is_state("media_player.googlehome_koket","idle")  and
+      is_state("media_player.googlehome_annas_rum","idle")  and is_state("media_player.googlehome_koket","idle")  and
       is_state("media_player.googlehome_albins_rum","idle") }}
 
       '
@@ -9141,7 +9141,7 @@
       - media_player.googlehome_ilias_rum
       - media_player.googlehome_vardagsrummet
       - media_player.googlehome_sovrummet
-      - media_player.googlehome_eriks_rum
+      - media_player.googlehome_annas_rum
       - media_player.googlehome_koket
       - media_player.googlehome_albins_rum
     data:
@@ -9149,7 +9149,7 @@
       media_content_type: audio/mpeg
   - wait_template: '{{  is_state("media_player.googlehome_ilias_rum","playing")
       and is_state("media_player.googlehome_vardagsrummet","playing")  and is_state("media_player.googlehome_sovrummet","playing")  and
-      is_state("media_player.googlehome_eriks_rum","playing")  and is_state("media_player.googlehome_koket","playing")  and
+      is_state("media_player.googlehome_annas_rum","playing")  and is_state("media_player.googlehome_koket","playing")  and
       is_state("media_player.googlehome_albins_rum","playing") }}
 
       '
@@ -9157,7 +9157,7 @@
     continue_on_timeout: false
   - wait_template: '{{  is_state("media_player.googlehome_ilias_rum","idle") and
       is_state("media_player.googlehome_vardagsrummet","idle")  and is_state("media_player.googlehome_sovrummet","idle")  and
-      is_state("media_player.googlehome_eriks_rum","idle")  and is_state("media_player.googlehome_koket","idle")  and
+      is_state("media_player.googlehome_annas_rum","idle")  and is_state("media_player.googlehome_koket","idle")  and
       is_state("media_player.googlehome_albins_rum","idle") }}
 
       '
@@ -9169,7 +9169,7 @@
       - media_player.googlehome_ilias_rum
       - media_player.googlehome_vardagsrummet
       - media_player.googlehome_sovrummet
-      - media_player.googlehome_eriks_rum
+      - media_player.googlehome_annas_rum
       - media_player.googlehome_koket
       - media_player.googlehome_albins_rum
 - alias: 'Bevattning: Vattna växter på framsidan'
@@ -10897,7 +10897,7 @@
     - binary_sensor.ilias_fonster
     - binary_sensor.vardagsrummet_fonster
     - binary_sensor.wc_fonster
-    - binary_sensor.eriks_fonster
+    - binary_sensor.annas_fonster
     - binary_sensor.albins_fonster
     - binary_sensor.badrummet_fonster
     - binary_sensor.ilias_rum_rorelse
@@ -10907,7 +10907,7 @@
     - binary_sensor.ovre_trappan_rorelse
     - binary_sensor.sovrummet_rorelse
     - binary_sensor.wc_rorelse
-    - binary_sensor.eriks_rum_rorelse
+    - binary_sensor.annas_rum_rorelse
     - binary_sensor.koket_rorelse
     - binary_sensor.koket_arbetsbanken_rorelse
     - binary_sensor.koksbordet_rorelse
@@ -10930,12 +10930,12 @@
             value_template: "{{ expand('binary_sensor.balkongdorren',\n          'binary_sensor.altandorr_baksidan',\n
               \         'binary_sensor.altandorr_koket',\n          'binary_sensor.ytterdorren',\n
               \         'binary_sensor.ilias_fonster',\n          'binary_sensor.vardagsrummet_fonster',\n
-              \         'binary_sensor.wc_fonster',\n          'binary_sensor.eriks_fonster',\n
+              \         'binary_sensor.wc_fonster',\n          'binary_sensor.annas_fonster',\n
               \         'binary_sensor.albins_fonster',\n          'binary_sensor.badrummet_fonster',\n
               \         'binary_sensor.ilias_rum_rorelse',\n          'binary_sensor.ilias_skrivbord_rorelse',\n
               \         'binary_sensor.vardagsrummet_rorelse',\n          'binary_sensor.vardagsrummet_soffan_rorelse',\n
               \         'binary_sensor.ovre_trappan_rorelse',\n          'binary_sensor.sovrummet_rorelse',\n
-              \         'binary_sensor.wc_rorelse',\n          'binary_sensor.eriks_rum_rorelse',\n
+              \         'binary_sensor.wc_rorelse',\n          'binary_sensor.annas_rum_rorelse',\n
               \         'binary_sensor.koket_rorelse',\n          'binary_sensor.koket_arbetsbanken_rorelse',\n
               \         'binary_sensor.koksbordet_rorelse',\n          'binary_sensor.hallen_rorelse',\n
               \         'binary_sensor.nedre_trappan_rorelse',\n          'binary_sensor.albins_rum_rorelse',\n
@@ -10947,12 +10947,12 @@
             value_template: "{{ expand('binary_sensor.balkongdorren',\n          'binary_sensor.altandorr_baksidan',\n
               \         'binary_sensor.altandorr_koket',\n          'binary_sensor.ytterdorren',\n
               \         'binary_sensor.ilias_fonster',\n          'binary_sensor.vardagsrummet_fonster',\n
-              \         'binary_sensor.wc_fonster',\n          'binary_sensor.eriks_fonster',\n
+              \         'binary_sensor.wc_fonster',\n          'binary_sensor.annas_fonster',\n
               \         'binary_sensor.albins_fonster',\n          'binary_sensor.badrummet_fonster',\n
               \         'binary_sensor.ilias_rum_rorelse',\n          'binary_sensor.ilias_skrivbord_rorelse',\n
               \         'binary_sensor.vardagsrummet_rorelse',\n          'binary_sensor.vardagsrummet_soffan_rorelse',\n
               \         'binary_sensor.ovre_trappan_rorelse',\n          'binary_sensor.sovrummet_rorelse',\n
-              \         'binary_sensor.wc_rorelse',\n          'binary_sensor.eriks_rum_rorelse',\n
+              \         'binary_sensor.wc_rorelse',\n          'binary_sensor.annas_rum_rorelse',\n
               \         'binary_sensor.koket_rorelse',\n          'binary_sensor.koket_arbetsbanken_rorelse',\n
               \         'binary_sensor.koksbordet_rorelse',\n          'binary_sensor.hallen_rorelse',\n
               \         'binary_sensor.nedre_trappan_rorelse',\n          'binary_sensor.albins_rum_rorelse',\n

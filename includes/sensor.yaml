@@ -20,7 +20,7 @@
     - sensor.netatmo_bennani_vs_inomhus_temperature
     - sensor.sovrummet_temp
     - sensor.wc_temp
-    - sensor.eriks_rum_temp
+    - sensor.annas_rum_temp
     - sensor.koket_temp
     - sensor.skafferiet_temp
     - sensor.albins_rum_temp
@@ -39,7 +39,7 @@
     - sensor.netatmo_bennani_vs_inomhus_temperature
     - sensor.sovrummet_temp
     - sensor.wc_temp
-    - sensor.eriks_rum_temp
+    - sensor.annas_rum_temp
     - sensor.koket_temp
     - sensor.skafferiet_temp
     - sensor.albins_rum_temp
@@ -58,7 +58,7 @@
     - sensor.netatmo_bennani_vs_inomhus_temperature
     - sensor.sovrummet_temp
     - sensor.wc_temp
-    - sensor.eriks_rum_temp
+    - sensor.annas_rum_temp
     - sensor.koket_temp
     - sensor.skafferiet_temp
     - sensor.albins_rum_temp
@@ -77,7 +77,7 @@
     - sensor.netatmo_bennani_vs_inomhus_humidity
     - sensor.sovrummet_luftfuktighet
     - sensor.wc_luftfuktighet
-    - sensor.eriks_rum_luftfuktighet
+    - sensor.annas_rum_luftfuktighet
     - sensor.koket_luftfuktighet
     - sensor.skafferiet_luftfuktighet
     - sensor.albins_rum_luftfuktighet
@@ -96,7 +96,7 @@
     - sensor.netatmo_bennani_vs_inomhus_humidity
     - sensor.sovrummet_luftfuktighet
     - sensor.wc_luftfuktighet
-    - sensor.eriks_rum_luftfuktighet
+    - sensor.annas_rum_luftfuktighet
     - sensor.koket_luftfuktighet
     - sensor.skafferiet_luftfuktighet
     - sensor.albins_rum_luftfuktighet
@@ -115,7 +115,7 @@
     - sensor.netatmo_bennani_vs_inomhus_humidity
     - sensor.sovrummet_luftfuktighet
     - sensor.wc_luftfuktighet
-    - sensor.eriks_rum_luftfuktighet
+    - sensor.annas_rum_luftfuktighet
     - sensor.koket_luftfuktighet
     - sensor.skafferiet_luftfuktighet
     - sensor.albins_rum_luftfuktighet

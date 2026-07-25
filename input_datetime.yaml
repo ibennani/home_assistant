@@ -17,9 +17,9 @@
       name: "Nattlarm fördröjning"
       has_time: true        
   
-  # När på kvällen ska Eriks myshörna lysa svagare när man släcker taklampan?
-    eriks_myshorna_nattljus_tid:
-      name: "Eriks myshörna nattljus from kl"
+  # När på kvällen ska Annas myshörna lysa svagare när man släcker taklampan?
+    annas_myshorna_nattljus_tid:
+      name: "Annas myshörna nattljus from kl"
       has_time: true       
   
   

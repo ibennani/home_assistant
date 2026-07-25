@@ -64,9 +64,9 @@
     max: 300
     step: 15  
 
-# Sätt natt-ljusstyrkan under Eriks myshörna
-  eriks_myshorna_nattljusstyrka:
-    name: Eriks myshörna nattljusstyrka
+# Sätt natt-ljusstyrkan under Annas myshörna
+  annas_myshorna_nattljusstyrka:
+    name: Annas myshörna nattljusstyrka
 #    initial: 20
     min: 0
     max: 100
@@ -158,15 +158,15 @@
 ### När ska Eriks rullgardin dras ner resp åka upp
 
 # azimuth-vinklel för när rullgardinen ska dras upp
-  settings_rullgardiner_eriks_rum_azimuth_upp:
+  settings_rullgardiner_annas_rum_azimuth_upp:
     name: "Azimuth (dra upp)"
     min: 100
     max: 200
     step: 1
     mode: box
 
-# elevation-vinklel för rullgardinen i Eriks rum ska dras ner
-  settings_rullgardiner_eriks_rum_elevation_ner:
+# elevation-vinklel för rullgardinen i Annas rum ska dras ner
+  settings_rullgardiner_annas_rum_elevation_ner:
     name: "Elevation (dra ner)"
     min: 0
     max: 50

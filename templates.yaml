@@ -155,7 +155,7 @@
         states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
         states('sensor.sovrummet_lufttryck') | float,
         states('sensor.wc_lufttryck') | float,
-        states('sensor.eriks_rum_lufttryck') | float,
+        states('sensor.annas_rum_lufttryck') | float,
         states('sensor.koket_lufttryck') | float,
         states('sensor.skafferiet_lufttryck') | float,
         states('sensor.albins_rum_lufttryck') | float,
@@ -173,7 +173,7 @@
         states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
         states('sensor.sovrummet_lufttryck') | float,
         states('sensor.wc_lufttryck') | float,
-        states('sensor.eriks_rum_lufttryck') | float,
+        states('sensor.annas_rum_lufttryck') | float,
         states('sensor.koket_lufttryck') | float,
         states('sensor.skafferiet_lufttryck') | float,
         states('sensor.albins_rum_lufttryck') | float,
@@ -191,7 +191,7 @@
         states('sensor.netatmo_bennani_vs_inomhus_pressure') | float,
         states('sensor.sovrummet_lufttryck') | float,
         states('sensor.wc_lufttryck') | float,
-        states('sensor.eriks_rum_lufttryck') | float,
+        states('sensor.annas_rum_lufttryck') | float,
         states('sensor.koket_lufttryck') | float,
         states('sensor.skafferiet_lufttryck') | float,
         states('sensor.albins_rum_lufttryck') | float,
@@ -252,7 +252,7 @@
   - default_entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
     name: Solen lyser in genom fönstren på baksidan
     state: |
-      {{ is_state("input_select.house_time_modes","Dag")  and is_state("binary_sensor.soligt_baksidan","on") and states("sensor.sun_azimuth") | int < states("input_number.settings_rullgardiner_eriks_rum_azimuth_upp") | int and states("sensor.sun_elevation") | int > states("input_number.settings_rullgardiner_eriks_rum_elevation_ner") | int }}
+      {{ is_state("input_select.house_time_modes","Dag")  and is_state("binary_sensor.soligt_baksidan","on") and states("sensor.sun_azimuth") | int < states("input_number.settings_rullgardiner_annas_rum_azimuth_upp") | int and states("sensor.sun_elevation") | int > states("input_number.settings_rullgardiner_annas_rum_elevation_ner") | int }}
   - default_entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
     name: Det är ljust på framsidan dagtid (vinter och snö)
     state: "{{ is_state(\"input_select.house_time_modes\",\"Dag\") \n    and states(\"sensor.netatmo_bennani_vs_utomhus_temperature\") | int < -1 \n    and states(\"sensor.utomhus_framsidan_ljusstyrka\") | int > 8000 }}\n"

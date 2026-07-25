@@ -299,7 +299,7 @@ styr_belysningen_nar_alla_gatt_hemifran:
       entity_id: script.sovrummet_stall_in_belysningen
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
       option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag","Natt"]
         %} Släckt {% else %} Tänt {% endif %}
@@ -307,7 +307,7 @@ styr_belysningen_nar_alla_gatt_hemifran:
         '
   - action: script.turn_on
     target:
-      entity_id: script.eriks_rum_stall_in_belysningen
+      entity_id: script.annas_rum_stall_in_belysningen
   - action: script.turn_on
     target:
       entity_id: script.ovre_trappan_stall_in_belysningen
@@ -374,9 +374,9 @@ morgonbelysning:
         '
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
-      option: '{{ states("input_select.eriks_rum_belysning") }}
+      option: '{{ states("input_select.annas_rum_belysning") }}
 
         '
   - action: script.turn_on
@@ -432,7 +432,7 @@ dagsbelysning:
       option: Släckt
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
       option: "{% if is_state(\"device_tracker.anna_s22_ultra\",\"home\") \n  and
         is_state(\"var.morgoninfo_koket_redan_upplast\",\"true\") %} Trådkorgarna
@@ -508,19 +508,19 @@ kvallsbelysning:
         \ {% endif %}\n{% endif %}\n"
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
       option: "{% if is_state(\"input_boolean.stadning_pagar\",\"true\") %} Tänt {%
         elif is_state(\"var.morgoninfo_koket_redan_upplast\",\"true\") \n  and now().strftime('%R')
         > \"07:15\" %} \n  {% if states(\"input_select.house_time_modes\") in [\"Dag\"]
-        %}\n    {% if not states(\"input_select.eriks_rum_belysning\") in [\"Städning\",\"Trådkorgarna
-        maxbelysning\"] %} Tänt\n    {% else %} {{ states(\"input_select.eriks_rum_belysning\")
+        %}\n    {% if not states(\"input_select.annas_rum_belysning\") in [\"Städning\",\"Trådkorgarna
+        maxbelysning\"] %} Tänt\n    {% else %} {{ states(\"input_select.annas_rum_belysning\")
         }}\n    {% endif %}        \n  {% elif states(\"input_select.house_time_modes\")
-        in [\"Kväll\"] %}\n    {% if not states(\"input_select.eriks_rum_belysning\")
+        in [\"Kväll\"] %}\n    {% if not states(\"input_select.annas_rum_belysning\")
         in [\"Städning\",\"Trådkorgarna maxbelysning\"] %} Tänt\n    {% else %} {{
-        states(\"input_select.eriks_rum_belysning\") }}\n    {% endif %} \n  {% else
-        %} {{ states(\"input_select.eriks_rum_belysning\") }}\n  {% endif %}\n{% else
-        %} {{ states(\"input_select.eriks_rum_belysning\") }} {% endif %}\n"
+        states(\"input_select.annas_rum_belysning\") }}\n    {% endif %} \n  {% else
+        %} {{ states(\"input_select.annas_rum_belysning\") }}\n  {% endif %}\n{% else
+        %} {{ states(\"input_select.annas_rum_belysning\") }} {% endif %}\n"
   - action: script.turn_on
     target:
       entity_id: script.ovre_trappan_stall_in_belysningen
@@ -603,9 +603,9 @@ nattbelysning:
         }}\n{% else %} Släckt {% endif %}\n"
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
-      option: '{% if is_state("zone.home","0") %} Släckt {% elif is_state("input_select.eriks_rum_belysning","Släckt")
+      option: '{% if is_state("zone.home","0") %} Släckt {% elif is_state("input_select.annas_rum_belysning","Släckt")
         %} Släckt {% else %} Släckt {% endif %}
 
         '
@@ -658,7 +658,7 @@ tand_alla_lampor_pa_maxbelysning:
       option: Städning
   - action: input_select.select_option
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: input_select.annas_rum_belysning
     data:
       option: Städning
   - action: input_select.select_option
@@ -686,7 +686,7 @@ tand_alla_lampor_pa_maxbelysning:
       entity_id:
       - script.vardagsrummet_stall_in_belysningen
       - script.sovrummet_stall_in_belysningen
-      - script.eriks_rum_stall_in_belysningen
+      - script.annas_rum_stall_in_belysningen
       - script.albins_rum_stall_in_belysningen
       - script.ovre_trappan_stall_in_belysningen
       - script.nedre_trappan_stall_in_belysningen
@@ -703,7 +703,7 @@ tand_alla_lampor_pa_maxbelysning:
       - light.taklampa_vardagsrummet
       - light.taklampan_ovre_trappan_level
       - light.taklampa_sovrummet_level
-      - light.taklampan_eriks_rum_level
+      - light.taklampan_annas_rum_level
       - light.takspottarna_hallen_level
       - light.takspottarna_kokstaket_level
       - light.takspottarna_koksluckorna_level
@@ -733,16 +733,16 @@ stang_av_allt:
     - light.albins_myslampa
     - light.configuration_tool_3
     - light.elljusstaken_i_koksfonstret
-    - light.eriks_jordglob
-    - light.eriks_myshorna
-    - light.eriks_rum
+    - light.annas_jordglob
+    - light.annas_myshorna
+    - light.annas_rum
     - light.lampan_bakom_tv
     - light.karvarna_i_vardagsrummet
     - light.koket_arbetsbanken
     - light.led_lister_ovanfor_arbetsbankarna
     - light.koksbelysningen
     - light.koksfonstret
-    - light.lampan_i_eriks_fonster
+    - light.lampan_i_annas_fonster
     - light.klotlampan_pa_hyllan
     - light.lampan_i_sovrumsfonstret
     - light.lampan_brudkistan
@@ -759,7 +759,7 @@ stang_av_allt:
     - light.taklampa_sovrummet_level
     - light.taklampan_albins_fonster_level
     - light.taklampan_albins_sang_level
-    - light.taklampan_eriks_rum_level
+    - light.taklampan_annas_rum_level
     - light.taklampan_ilias_rum_level
     - light.taklampan_nedre_trappan_level
     - light.taklampan_ovre_trappan_level
@@ -779,7 +779,7 @@ stang_av_allt:
     - media_player.alla_hogtalare
     - media_player.googlehome_albins_rum
     - media_player.googlehome_alla_puckar
-    - media_player.googlehome_eriks_rum
+    - media_player.googlehome_annas_rum
     - media_player.googlehome_infopuckarna
     - media_player.googlehome_ilias_rum
     - media_player.googlehome_koket
@@ -982,7 +982,7 @@ ovre_trappan_stall_in_belysningen:
       brightness_pct: "{% if is_state(\"input_boolean.stadning_pagar\", \"on\") %}\n
         \ 100\n{% elif states(\"input_select.house_time_modes\") in [\"Morgon\", \"Dag\"]
         and is_state(\"zone.home\", \"0\") %}\n  0\n{% elif (\n    states(\"input_select.sovrummet_belysning\")
-        in [\"Släckt\", \"Mysigt\"] or\n    states(\"input_select.eriks_rum_belysning\")
+        in [\"Släckt\", \"Mysigt\"] or\n    states(\"input_select.annas_rum_belysning\")
         in [\"Släckt\", \"Mysigt\"]\n  ) and (\n    now().strftime('%R') >= \"21:00\"
         or now().strftime('%R') < \"06:00\"\n  ) %}\n  0\n{% elif states(\"input_select.vardagsrummet_belysning\")
         == \"TV\" %}\n  {% set ljusstyrka = states(\"sensor.utomhus_framsidan_ljusstyrka\")
@@ -1041,82 +1041,82 @@ sovrummet_stall_in_belysningen:
     entity_id:
     - light.lamporna_i_garderoben
     - light.smyckeskapet
-eriks_rum_stall_in_belysningen:
-  alias: Ställ in belysningen i Eriks rum
+annas_rum_stall_in_belysningen:
+  alias: Ställ in belysningen i Annas rum
   mode: restart
   sequence:
-  - action: "{% if states(\"input_select.eriks_rum_belysning\") in [\"Släckt\",\"Mysigt\"]
-      %} light.turn_off {% elif states(\"input_select.eriks_rum_belysning\") in [\"Trådkorgarna
+  - action: "{% if states(\"input_select.annas_rum_belysning\") in [\"Släckt\",\"Mysigt\"]
+      %} light.turn_off {% elif states(\"input_select.annas_rum_belysning\") in [\"Trådkorgarna
       normalbelysning\",\"Trådkorgarna maxbelysning\"] %}\n  {% if states(\"input_select.house_time_modes\")
       in [\"Morgon\",\"Kväll\"] %} light.turn_on\n  {% elif is_state(\"input_select.house_time_modes\",\"Dag\")
       %}\n    {% if states(\"sensor.utomhus_baksidan_ljusstyrka\") | int(default=0)
       >= 2000 %} light.turn_off\n    {% else %} light.turn_on\n    {% endif %}\n  {%
       else %} light.turn_off\n  {% endif %}\n{% else %} light.turn_on {% endif %}\n"
     entity_id:
-    - light.lampan_i_eriks_fonster
+    - light.lampan_i_annas_fonster
     - light.klotlampan_pa_hyllan
   - action: light.turn_on
     entity_id:
-    - light.taklampan_eriks_rum_level
+    - light.taklampan_annas_rum_level
     data:
-      brightness_pct: "{% set oforandrat_ljus = (state_attr(\"light.taklampan_eriks_rum_level\",\"brightness\")
-        | float(default = 0.0) / 2.55 ) | float(default = 0.0) %} {% if   states(\"input_select.eriks_rum_belysning\")
-        in [\"Städning\"] or is_state(\"input_boolean.stadning_pagar\", \"on\") %} 100  {% elif states(\"input_select.eriks_rum_belysning\")
-        in [\"Släckt\"] %} 0 {% elif states(\"input_select.eriks_rum_belysning\")
-        in [\"Mysigt\"] %} 0 {% elif states(\"input_select.eriks_rum_belysning\")
-        in [\"Tänt\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.eriks_rum_belysning\")
-        in [\"Trådkorgarna normalbelysning\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.eriks_rum_belysning\")
+      brightness_pct: "{% set oforandrat_ljus = (state_attr(\"light.taklampan_annas_rum_level\",\"brightness\")
+        | float(default = 0.0) / 2.55 ) | float(default = 0.0) %} {% if   states(\"input_select.annas_rum_belysning\")
+        in [\"Städning\"] or is_state(\"input_boolean.stadning_pagar\", \"on\") %} 100  {% elif states(\"input_select.annas_rum_belysning\")
+        in [\"Släckt\"] %} 0 {% elif states(\"input_select.annas_rum_belysning\")
+        in [\"Mysigt\"] %} 0 {% elif states(\"input_select.annas_rum_belysning\")
+        in [\"Tänt\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.annas_rum_belysning\")
+        in [\"Trådkorgarna normalbelysning\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.annas_rum_belysning\")
         in [\"Trådkorgarna maxbelysning\"] %} {{ oforandrat_ljus }} {% elif is_state(\"zone.home\",\"0\")
-        \n    and is_state(\"input_select.house_time_modes\",\"Kväll\")\n    and states(\"input_select.eriks_rum_belysning\")
+        \n    and is_state(\"input_select.house_time_modes\",\"Kväll\")\n    and states(\"input_select.annas_rum_belysning\")
         in [\"Tänt\"]  %} 10\n{% else %} {{ oforandrat_ljus }} {% endif %}\n"
   - action: script.turn_on
     target:
-      entity_id: script.stall_in_ljuset_i_eriks_myshorna
+      entity_id: script.stall_in_ljuset_i_annas_myshorna
   - action: light.turn_on
     entity_id:
     - light.led_bakom_meshkorgarna
     data:
       brightness_pct: '{% if is_state("input_boolean.stadning_pagar","on") %} 100   {%
-        elif states("input_select.eriks_rum_belysning") in ["Städning"] %} 100  {%
-        elif states("input_select.eriks_rum_belysning") in ["Tänt"] %} 1  {% elif
-        states("input_select.eriks_rum_belysning") in ["Trådkorgarna normalbelysning"]
-        %} 1  {% elif states("input_select.eriks_rum_belysning") in ["Trådkorgarna
-        maxbelysning"] %} 20   {% elif states("input_select.eriks_rum_belysning")
-        in ["Mysigt"] %} 0  {% elif states("input_select.eriks_rum_belysning") in
+        elif states("input_select.annas_rum_belysning") in ["Städning"] %} 100  {%
+        elif states("input_select.annas_rum_belysning") in ["Tänt"] %} 1  {% elif
+        states("input_select.annas_rum_belysning") in ["Trådkorgarna normalbelysning"]
+        %} 1  {% elif states("input_select.annas_rum_belysning") in ["Trådkorgarna
+        maxbelysning"] %} 20   {% elif states("input_select.annas_rum_belysning")
+        in ["Mysigt"] %} 0  {% elif states("input_select.annas_rum_belysning") in
         ["Släckt"] %} 0  {% endif %}
 
         '
       rgbw_color: "{% if is_state(\"input_boolean.stadning_pagar\",\"on\") %} [0,
-        0, 0, 255]  {% elif states(\"input_select.eriks_rum_belysning\") in [\"Städning\"]
-        %} [0, 0, 0, 255]  {% elif states(\"input_select.eriks_rum_belysning\") in
-        [\"Tänt\"] %} [0, 0, 0, 150]  {% elif states(\"input_select.eriks_rum_belysning\")
-        in [\"Trådkorgarna normalbelysning\"] %} [0, 0, 0, 150]  {% elif states(\"input_select.eriks_rum_belysning\")
-        in [\"Trådkorgarna maxbelysning\"] %} [0, 0, 0, 255]  {% elif states(\"input_select.eriks_rum_belysning\")
-        in [\"Mysigt\"] %} [0, 0, 0, 100]  {% elif states(\"input_select.eriks_rum_belysning\")
+        0, 0, 255]  {% elif states(\"input_select.annas_rum_belysning\") in [\"Städning\"]
+        %} [0, 0, 0, 255]  {% elif states(\"input_select.annas_rum_belysning\") in
+        [\"Tänt\"] %} [0, 0, 0, 150]  {% elif states(\"input_select.annas_rum_belysning\")
+        in [\"Trådkorgarna normalbelysning\"] %} [0, 0, 0, 150]  {% elif states(\"input_select.annas_rum_belysning\")
+        in [\"Trådkorgarna maxbelysning\"] %} [0, 0, 0, 255]  {% elif states(\"input_select.annas_rum_belysning\")
+        in [\"Mysigt\"] %} [0, 0, 0, 100]  {% elif states(\"input_select.annas_rum_belysning\")
         in [\"Släckt\"] %} [0, 0, 0, 100]  {% endif %} \n"
       transition: 2
-stall_in_ljuset_i_eriks_myshorna:
-  alias: Ställ in ljuset i Eriks myshörna
+stall_in_ljuset_i_annas_myshorna:
+  alias: Ställ in ljuset i Annas myshörna
   mode: restart
   sequence:
   - action: light.turn_on
     entity_id:
-    - light.eriks_myshorna
+    - light.annas_myshorna
     data:
-      brightness_pct: "{% if states(\"input_select.eriks_rum_belysning\") in [\"Städning\"]
-        %} 100  {% elif is_state(\"input_select.eriks_rum_belysning\",\"Trådkorgarna
-        maxbelysning\") %} 100  {% elif states(\"input_select.eriks_rum_belysning\")
+      brightness_pct: "{% if states(\"input_select.annas_rum_belysning\") in [\"Städning\"]
+        %} 100  {% elif is_state(\"input_select.annas_rum_belysning\",\"Trådkorgarna
+        maxbelysning\") %} 100  {% elif states(\"input_select.annas_rum_belysning\")
         in [\"Tänt\",\"Trådkorgarna normalbelysning\"] %}\n  {% set ljus_baksidan
         = states(\"sensor.utomhus_baksidan_ljusstyrka\") | int(default=0) %}\n  {%
         if ljus_baksidan >= 2000 %} 50\n  {% elif ljus_baksidan >= 1000 and ljus_baksidan
         < 2000 %} 25\n  {% elif ljus_baksidan < 1000 %} 15\n  {% else %} 0\n  {% endif
-        %}\n{% elif is_state(\"input_select.eriks_rum_belysning\",\"Mysigt\") %} 15
+        %}\n{% elif is_state(\"input_select.annas_rum_belysning\",\"Mysigt\") %} 15
         \ {% else %} 0  {% endif %}\n"
-      color_temp_kelvin: '{% if states("input_select.eriks_rum_belysning") in ["Städning"]
-        %} 3900  {% elif is_state("input_select.eriks_rum_belysning","Trådkorgarna
-        normalbelysning") %} 2000  {% elif is_state("input_select.eriks_rum_belysning","Trådkorgarna
-        maxbelysning") %} 3900  {% elif is_state("input_select.eriks_rum_belysning","Tänt")
-        %} 2000  {% elif is_state("input_select.eriks_rum_belysning","Mysigt") %}
+      color_temp_kelvin: '{% if states("input_select.annas_rum_belysning") in ["Städning"]
+        %} 3900  {% elif is_state("input_select.annas_rum_belysning","Trådkorgarna
+        normalbelysning") %} 2000  {% elif is_state("input_select.annas_rum_belysning","Trådkorgarna
+        maxbelysning") %} 3900  {% elif is_state("input_select.annas_rum_belysning","Tänt")
+        %} 2000  {% elif is_state("input_select.annas_rum_belysning","Mysigt") %}
         2000  {% else %} 2000 {% endif %}
 
         '
@@ -1297,12 +1297,12 @@ albins_rum_stall_in_belysningen:
       - action: light.turn_on
         target:
           entity_id:
-          - light.eriks_jordglob
+          - light.annas_jordglob
     default:
     - action: light.turn_off
       target:
         entity_id:
-        - light.eriks_jordglob
+        - light.annas_jordglob
   - choose:
     - conditions:
       - condition: template
@@ -1332,7 +1332,7 @@ albins_rum_stall_in_belysningen:
         target:
           entity_id:
           - light.led_strip_ovanfor_fotoljen
-          - light.led_under_eriks_byra
+          - light.led_under_annas_byra
         data:
           brightness_pct: "{% set lage = states('input_select.albins_rum_belysning')
             %} {% if lage == 'Tänt' %}\n  50\n{% elif lage == 'Läsning' %}\n  100\n{%
@@ -1345,7 +1345,7 @@ albins_rum_stall_in_belysningen:
       target:
         entity_id:
         - light.led_strip_ovanfor_fotoljen
-        - light.led_under_eriks_byra
+        - light.led_under_annas_byra
       data:
         transition: 1
   - choose:
@@ -1665,12 +1665,12 @@ om_huslarmet_triggas:
         in \n  [\n    'binary_sensor.balkongdorren',\n    'binary_sensor.altandorr_baksidan',\n
         \   'binary_sensor.altandorr_koket',\n    'binary_sensor.ytterdorren',\n    'binary_sensor.ilias_fonster',\n
         \   'binary_sensor.vardagsrummet_fonster',\n    'binary_sensor.wc_fonster',\n
-        \   'binary_sensor.eriks_fonster',\n    'binary_sensor.albins_fonster',\n
+        \   'binary_sensor.annas_fonster',\n    'binary_sensor.albins_fonster',\n
         \   'binary_sensor.badrummet_fonster',\n    'binary_sensor.ilias_rum_rorelse',\n
         \   'binary_sensor.ilias_skrivbord_rorelse',\n    'binary_sensor.vardagsrummet_rorelse',\n
         \   'binary_sensor.vardagsrummet_soffan_rorelse',\n    'binary_sensor.ovre_trappan_rorelse',\n
         \   'binary_sensor.sovrummet_rorelse',\n    'binary_sensor.wc_rorelse',\n
-        \   'binary_sensor.eriks_rum_rorelse',\n    'binary_sensor.koket_rorelse',\n
+        \   'binary_sensor.annas_rum_rorelse',\n    'binary_sensor.koket_rorelse',\n
         \   'binary_sensor.koket_arbetsbanken_rorelse',\n    'binary_sensor.koksbordet_rorelse',\n
         \   'binary_sensor.hallen_rorelse',\n    'binary_sensor.nedre_trappan_rorelse',\n
         \   'binary_sensor.albins_rum_rorelse',\n    'binary_sensor.tvattstugan_rorelse'\n

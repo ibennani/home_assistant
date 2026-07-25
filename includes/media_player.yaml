@@ -18,7 +18,7 @@
     - media_player.googlehome_ilias_rum
     - media_player.googlehome_vardagsrummet
     - media_player.googlehome_sovrummet
-    - media_player.googlehome_eriks_rum
+    - media_player.googlehome_annas_rum
     - media_player.googlehome_koket
     - media_player.googlehome_albins_rum
   commands:
@@ -29,7 +29,7 @@
           - media_player.googlehome_ilias_rum
           - media_player.googlehome_vardagsrummet
           - media_player.googlehome_sovrummet
-          - media_player.googlehome_eriks_rum
+          - media_player.googlehome_annas_rum
           - media_player.googlehome_koket
           - media_player.googlehome_albins_rum
         volume_level: "{{ volume_level }}"
@@ -40,11 +40,11 @@
     - media_player.googlehome_ilias_rum
     - media_player.googlehome_vardagsrummet
     - media_player.googlehome_sovrummet
-    - media_player.googlehome_eriks_rum
+    - media_player.googlehome_annas_rum
     - media_player.googlehome_koket
     - media_player.googlehome_albins_rum
     - media_player.stereon_i_vardagsrummet
-    - media_player.eriks_stereo
+    - media_player.annas_stereo
     - media_player.hogtalarna_i_koket
     - media_player.albins_stereo
   commands:
@@ -55,11 +55,11 @@
           - media_player.googlehome_ilias_rum
           - media_player.googlehome_vardagsrummet
           - media_player.googlehome_sovrummet
-          - media_player.googlehome_eriks_rum
+          - media_player.googlehome_annas_rum
           - media_player.googlehome_koket
           - media_player.googlehome_albins_rum
           - media_player.stereon_i_vardagsrummet
-          - media_player.eriks_stereo
+          - media_player.annas_stereo
           - media_player.hogtalarna_i_koket
           - media_player.albins_stereo
         volume_level: "{{ volume_level }}"
@@ -68,7 +68,7 @@
   name: de_basta_hogtalarna_ha_grupp
   children:
     - media_player.stereon_i_vardagsrummet
-    - media_player.eriks_stereo
+    - media_player.annas_stereo
     - media_player.hogtalarna_i_koket
     - media_player.albins_stereo
   commands:
@@ -77,7 +77,7 @@
       data_template:
         entity_id:
           - media_player.stereon_i_vardagsrummet
-          - media_player.eriks_stereo
+          - media_player.annas_stereo
           - media_player.hogtalarna_i_koket
           - media_player.albins_stereo
         volume_level: "{{ volume_level }}"

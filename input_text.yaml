@@ -34,9 +34,9 @@
       initial: ""
 
 
-  # En input-textbox för Google home i Eriks rum
-    googlehome_eriks_rum_las_upp:
-      name: GH Eriks rum
+  # En input-textbox för Google home i Annas rum
+    googlehome_annas_rum_las_upp:
+      name: GH Annas rum
       initial: ""
 
   # En input-textbox för Google home i köket
