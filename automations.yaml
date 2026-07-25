@@ -10470,7 +10470,7 @@
     house_mode: '{{ states(''input_select.house_time_modes'') }}'
     lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
     light_entity: light.taklampan_ilias_rum_level
-    dir_helper: input_boolean.ilias_rum_taklampa_dim_senast_upp
+    dir_helper: input_boolean.input_boolean_ilias_rum_taklampa_dim_senast_upp
     dim_step_pct: 2
     dim_tick_seconds: 0.1
     dim_max_ticks: 80
