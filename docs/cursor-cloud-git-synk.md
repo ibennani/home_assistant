@@ -15,7 +15,7 @@ Molnet når din HA via **MCP + Nabu Casa**. Git-synk sker via tjänster i HA —
 | Komponent | Syfte |
 |-----------|--------|
 | `shell_command.git_pull` | `git fetch` + `reset --hard origin/main` i `/config` |
-| `script.git_synka_config` | Pull + reload core/automations/templates/groups |
+| `script.git_synka_config` | Pull + reload core/automations/scripts/templates/groups |
 | `automation` **System: Git-synk från GitHub** | Triggas av event `cursor_git_synk` |
 
 Logg: `/config/git-pull.log` (gitignorerad via `*.log`).

@@ -1941,5 +1941,6 @@ git_synka_config:
         seconds: 8
     - action: homeassistant.reload_core_config
     - action: automation.reload
+    - action: script.reload
     - action: template.reload
     - action: group.reload
