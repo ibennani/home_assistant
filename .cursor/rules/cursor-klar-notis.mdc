@@ -1,0 +1,59 @@
+---
+description: Skicka mobilnotis till Ilias när agenten är klar och väntar på input
+globs:
+alwaysApply: true
+---
+
+# Cursor klar — mobilnotis
+
+## När
+
+Skicka notis **innan** du avslutar svaret när **alla** dessa gäller:
+
+1. Du är klar med det du kunde göra i den här omgången.
+2. Du **väntar på input, beslut eller godkännande** från användaren innan du kan fortsätta.
+3. Du har **inte** redan skickat en klar-notis för samma vänteläge i samma konversation.
+
+Skicka **inte** notis om du fortfarande jobbar, bara ställer en frivillig följdfråga, eller redan har levererat ett färdigt svar utan väntan.
+
+## Hur (MCP)
+
+Använd `ha_call_service` mot `notify.mobile_app_ilias_s23_ultra`.
+
+Hämta klockslag i HA:s tidszon (t.ex. via `ha_eval_template` med `{{ now().strftime('%H:%M') }}`) — gissa inte tiden.
+
+Exempel:
+
+```json
+{
+  "domain": "notify",
+  "service": "mobile_app_ilias_s23_ultra",
+  "data": {
+    "title": "Cursor: 14:46",
+    "message": "Nu är jag klar, Home Assistant. PR #42 är mergad och git-synk verifierad.",
+    "data": {
+      "ttl": 0,
+      "priority": "high",
+      "vibration": "1000, 300, 1000, 300, 1000"
+    }
+  }
+}
+```
+
+## Format (obligatoriskt)
+
+| Fält | Värde |
+|------|--------|
+| **Rubrik** | `Cursor: [HH:MM]` — 24-timmarsformat, HA:s lokala tid |
+| **Meddelande** | Börjar med exakt: `Nu är jag klar, Home Assistant.` följt av **en kort mening** (max en mening) som beskriver vad som hände eller vad du väntar på |
+| **Vibration** | Tre långa vibrationer: `1000, 300, 1000, 300, 1000` (millisekunder) |
+| **Övrigt** | `ttl: 0`, `priority: high` |
+
+### Exempel på meddelanden
+
+- `Nu är jag klar, Home Assistant. Automationen för garageporten är deployad — vill du att jag testar live?`
+- `Nu är jag klar, Home Assistant. Jag hittade felet i template-sensorn och föreslår en fix — ska jag implementera?`
+
+## Om MCP inte är tillgängligt
+
+Om Home Assistant MCP saknas eller notisen misslyckas: skriv tydligt i chatten att du väntar på input, och nämn att mobilnotisen inte kunde skickas.
