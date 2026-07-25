@@ -952,7 +952,7 @@ views:
         entity: light.led_bakom_meshkorgarna
         toggle: true
         step: 1
-        name: LED-listan bakom meshkorgarna
+        name: LED-listen bakom meshkorgarna
     - type: entities
       title: Fönster och dörrar
       icon: mdi:door-sliding-open
@@ -1143,17 +1143,17 @@ views:
         entity: light.led_lister_ovanfor_arbetsbankarna
         toggle: true
         step: 1
-        name: LED-listerna ovanför bänkarna
+        name: LED-listen ovanför bänkarna
       - type: custom:slider-entity-row
         entity: light.led_ovanfor_lilla_arbetsbanken
         toggle: true
         step: 1
-        name: LED-listan ovanför lilla bänken
+        name: LED-listen ovanför lilla bänken
       - type: custom:slider-entity-row
         entity: light.led_ovanfor_stora_arbetsbanken
         toggle: true
         step: 1
-        name: LED-listan ovanför stora bänken
+        name: LED-listen ovanför stora bänken
       - type: custom:slider-entity-row
         entity: light.koksfonstret
         toggle: true
@@ -1333,12 +1333,12 @@ views:
         entity: light.led_strip_ovanfor_fotoljen
         toggle: true
         step: 1
-        name: LED-listan under hyllorna
+        name: LED-listen under hyllorna
       - type: custom:slider-entity-row
         entity: light.led_under_eriks_byra
         toggle: true
         step: 1
-        name: Led under Eriks byrå
+        name: LED-listen under Eriks byrå
       - type: custom:slider-entity-row
         entity: light.eriks_jordglob
         toggle: true
@@ -1553,7 +1553,7 @@ views:
         entity: light.led_badrummet_kommoden
         toggle: true
         step: 1
-        name: LED-listan under kommoden
+        name: LED-listen under kommoden
       - type: custom:slider-entity-row
         entity: light.spegeln_badrummet
         toggle: true
@@ -1983,7 +1983,7 @@ views:
       - type: divider
       - type: custom:slider-entity-row
         entity: light.led_badrummet_handfatet
-        name: Led-list ovanför handfat
+        name: LED-listen ovanför handfat
         toggle: true
         step: 1
       - type: custom:slider-entity-row
@@ -1993,7 +1993,7 @@ views:
         step: 1
       - type: custom:slider-entity-row
         entity: light.led_badrummet_duschen
-        name: Led-list i duschen
+        name: LED-listen i duschen
         toggle: true
         step: 1
       - type: custom:slider-entity-row
@@ -2042,17 +2042,17 @@ views:
       - light.lampan_vid_fotoljen
       - type: custom:slider-entity-row
         entity: light.led_lister_ovanfor_arbetsbankarna
-        name: LED ovanför arbetsbänkarna
+        name: LED-listen ovanför arbetsbänkarna
         toggle: true
         step: 1
       - type: custom:slider-entity-row
         entity: light.led_ovanfor_lilla_arbetsbanken
-        name: LED ovanför lilla arbetsbänken
+        name: LED-listen ovanför lilla arbetsbänken
         toggle: true
         step: 1
       - type: custom:slider-entity-row
         entity: light.led_ovanfor_stora_arbetsbanken
-        name: LED ovanför stora arbetsbänken
+        name: LED-listen ovanför stora arbetsbänken
         toggle: true
         step: 1
       - type: custom:slider-entity-row
@@ -2073,17 +2073,17 @@ views:
       - light.eriks_jordglob
       - type: custom:slider-entity-row
         entity: light.led_strip_ovanfor_fotoljen
-        name: LED ovanför Eriks säng
+        name: LED-listen ovanför Eriks säng
         toggle: true
         step: 1
       - type: custom:slider-entity-row
         entity: light.led_under_eriks_byra
-        name: Led under Eriks byrå
+        name: LED-listen under Eriks byrå
         toggle: true
         step: 1
       - type: custom:slider-entity-row
         entity: light.led_badrummet_kommoden
-        name: Led-list under kommoden i badrummet
+        name: LED-listen under kommoden i badrummet
         toggle: true
         step: 1
   - type: vertical-stack
