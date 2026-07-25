@@ -1332,6 +1332,7 @@ eriks_rum_stall_in_belysningen:
         target:
           entity_id:
           - light.led_strip_ovanfor_fotoljen
+          - light.led_under_eriks_byra
         data:
           brightness_pct: "{% set lage = states('input_select.eriks_rum_belysning')
             %} {% if lage == 'Tänt' %}\n  50\n{% elif lage == 'Läsning' %}\n  100\n{%
@@ -1344,6 +1345,7 @@ eriks_rum_stall_in_belysningen:
       target:
         entity_id:
         - light.led_strip_ovanfor_fotoljen
+        - light.led_under_eriks_byra
       data:
         transition: 1
   - choose:
