@@ -8,10 +8,10 @@ function $parcel$export(e, n, v, s) {
 var $parcel$modules = {};
 var $parcel$inits = {};
 
-var parcelRequire = $parcel$global["parcelRequire55a1"];
+var parcelRequire = $parcel$global["parcelRequireSlLocal"];
 
 if (parcelRequire == null) {
-  parcelRequire = function(id) {
+  parcelRequire = function (id) {
     if (id in $parcel$modules) {
       return $parcel$modules[id].exports;
     }
@@ -32,7 +32,7 @@ if (parcelRequire == null) {
     $parcel$inits[id] = init;
   };
 
-  $parcel$global["parcelRequire55a1"] = parcelRequire;
+  $parcel$global["parcelRequireSlLocal"] = parcelRequire;
 }
 
 var parcelRegister = parcelRequire.register;
@@ -1810,7 +1810,7 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
     }
     // configuration card is loaded in async manner
     static async getConfigElement() {
-        return await (parcelRequire("3gXF4")).then(()=>document.createElement("hasl4-departure-card-editor"));
+        return document.createElement("div");
     }
     static{
         this.getStubConfig = ()=>({
