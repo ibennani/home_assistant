@@ -4588,10 +4588,89 @@
   - trigger: state
     entity_id:
     - input_select.eriks_rum_belysning
+  conditions:
+  - condition: state
+    entity_id: input_boolean.eriks_rum_uppdaterar_lage
+    state: 'off'
   action:
   - action: script.turn_on
     target:
       entity_id: script.eriks_rum_stall_in_belysningen
+- alias: 'Belysning: Sätt Tänt i Eriks rum vid väggbrytare'
+  id: eriks_rum_vaggbrytare_tant_20260726
+  mode: queued
+  triggers:
+  - trigger: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: 68eced0544441316d0b09825025692de
+      property_key: '001'
+      value: KeyPressed
+    id: fonster_s1
+  - trigger: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: 68eced0544441316d0b09825025692de
+      property_key: '002'
+      value: KeyPressed
+    id: fonster_s2
+  - trigger: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: 68eced0544441316d0b09825025692de
+      property_key: '001'
+      value: KeyPressed2x
+    id: fonster_s1_dubbel
+  - trigger: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: 68eced0544441316d0b09825025692de
+      property_key: '002'
+      value: KeyPressed2x
+    id: fonster_s2_dubbel
+  - trigger: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: b9089fd44259fa7aba3f6fcd18ea384c
+      property_key: '001'
+      value: KeyPressed
+    id: sang_s1
+  - trigger: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: b9089fd44259fa7aba3f6fcd18ea384c
+      property_key: '002'
+      value: KeyPressed
+    id: sang_s2
+  - trigger: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: b9089fd44259fa7aba3f6fcd18ea384c
+      property_key: '001'
+      value: KeyPressed2x
+    id: sang_s1_dubbel
+  - trigger: event
+    event_type: zwave_js_value_notification
+    event_data:
+      device_id: b9089fd44259fa7aba3f6fcd18ea384c
+      property_key: '002'
+      value: KeyPressed2x
+    id: sang_s2_dubbel
+  actions:
+  - variables:
+      lampa: "{% if trigger.id.startswith('fonster') %}\n  light.taklampan_eriks_fonster_level\n{%
+        else %}\n  light.taklampan_eriks_sang_level\n{% endif %}\n"
+  - delay: '00:00:00.300'
+  - condition: template
+    value_template: '{{ is_state(lampa, ''on'') }}'
+  - condition: template
+    value_template: '{{ states(''input_select.eriks_rum_belysning'') != ''Tänt'' }}'
+  - action: script.turn_on
+    target:
+      entity_id: script.eriks_rum_satt_lage_ui
+    data:
+      variables:
+        lage: Tänt
 - alias: 'Belysning: Styr belysningen i garderoben i Eriks rum'
   id: dfgjsg1f8h1k81il8ö8br8yj018hf5
   mode: restart
