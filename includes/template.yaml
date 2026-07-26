@@ -876,24 +876,29 @@
       event: start
     - trigger: state
       entity_id: sensor.departure_sensor_eksharadsgatan_departures
+      attribute: departures
   sensor:
     - name: Ekshäradsgatan buss 742 departures
       unique_id: eksharadsgatan_buss_742_departures
       state: >
         {% set deps = state_attr('sensor.departure_sensor_eksharadsgatan_departures', 'departures') | default([]) %}
-        {{ deps
-           | selectattr('line.designation', 'eq', '742')
-           | selectattr('direction_code', 'eq', '2')
-           | selectattr('destination', 'eq', 'Huddinge sjukhus')
-           | list | length }}
+        {% set ns = namespace(n=0) %}
+        {% for d in deps %}
+          {% if d.line.designation == '742' and d.direction_code == '2' and d.destination == 'Huddinge sjukhus' %}
+            {% set ns.n = ns.n + 1 %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.n }}
       attributes:
         departures: >
           {% set deps = state_attr('sensor.departure_sensor_eksharadsgatan_departures', 'departures') | default([]) %}
-          {{ deps
-             | selectattr('line.designation', 'eq', '742')
-             | selectattr('direction_code', 'eq', '2')
-             | selectattr('destination', 'eq', 'Huddinge sjukhus')
-             | list }}
+          {% set ns = namespace(items=[]) %}
+          {% for d in deps %}
+            {% if d.line.designation == '742' and d.direction_code == '2' and d.destination == 'Huddinge sjukhus' %}
+              {% set ns.items = ns.items + [d] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
 
 # Kollektivtrafik — pendeltåg filtrerat från Farsta strand (endast tåg linje 4x, riktning 2)
 - trigger:
