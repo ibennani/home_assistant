@@ -6,7 +6,7 @@ title: HA Management
 resources:
 - url: /hacsfiles/bar-card/bar-card.js
   type: module
-- url: /hacsfiles/lovelace-hasl-departure-card/hasl4-departure-card.js?v=20260726b
+- url: /local/hasl4-departure-card.js?v=20260726c
   type: module
 - url: /hacsfiles/bignumber-card/bignumber-card.js
   type: module
@@ -6560,7 +6560,7 @@ views:
     - type: vertical-stack
       cards:
       - type: custom:hasl4-departure-card
-        title: Buss 742 — Ekshäradsgatan till Huddinge sjukhus
+        title: Ekshäradsgatan
         entities:
         - sensor.departure_sensor_eksharadsgatan_departures
         show_header: true
@@ -6570,18 +6570,18 @@ views:
         max_departures: 6
         direction: '2'
         hide_departed: true
-        show_updated: true
+        show_updated: false
         language: sv-SE
       - type: custom:hasl4-departure-card
-        title: Pendeltåg — Farsta strand mot Stockholm (via Odenplan)
+        title: Farsta strand
         entities:
-        - sensor.departure_sensor_farsta_strand_station_departures
+        - sensor.farsta_strand_pendeltag_departures
         show_header: true
         show_icon: true
         show_departures: true
         show_time_always: true
         max_departures: 6
-        direction: '2'
+        direction: '0'
         hide_departed: true
-        show_updated: true
+        show_updated: false
         language: sv-SE
