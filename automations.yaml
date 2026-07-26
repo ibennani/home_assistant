@@ -8062,7 +8062,8 @@
       target:
         entity_id: script.koket_stall_in_belysningen
       data:
-        rapid_transition: 'on'
+        variables:
+          rapid_transition: 'on'
 - id: '790264970'
   alias: 'Belysning: 433-fjärrkontrollen styr belysningen i köket'
   triggers:
