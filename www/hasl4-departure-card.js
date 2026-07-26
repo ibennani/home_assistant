@@ -2074,12 +2074,25 @@ function $66d5822390d71e6e$var$isDepartureAttrs(item) {
 }
 
 
-customElements.define("hasl4-departure-card-sl", (0, $66d5822390d71e6e$export$7ded24e6705f9c64));
+const $66d5822390d71e6e$var$Hasl4DepartureCard = (0, $66d5822390d71e6e$export$7ded24e6705f9c64);
+
+if (!customElements.get("hasl4-departure-card-sl")) {
+    customElements.define("hasl4-departure-card-sl", $66d5822390d71e6e$var$Hasl4DepartureCard);
+}
+if (!customElements.get("hasl4-departure-card")) {
+    customElements.define("hasl4-departure-card", class extends $66d5822390d71e6e$var$Hasl4DepartureCard {});
+}
+
 window.customCards = window.customCards || [];
 window.customCards.push({
     type: "hasl4-departure-card-sl",
     name: "HASL4 Departure card (SL)",
     description: "Show departure times for SL Trafik with SL bus styling"
+});
+window.customCards.push({
+    type: "hasl4-departure-card",
+    name: "HASL4 Departure card",
+    description: "Show departure times for SL Trafik"
 });
 
 
