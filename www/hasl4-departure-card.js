@@ -1612,6 +1612,7 @@ const $57faf62096e30446$var$lineColorsStyles = (0, $j8KxL.css)`
     }
 
     .bus.red {
+        background-color: #d71d24;
         color: #fff;
         border: none;
     }
@@ -1946,7 +1947,7 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
             if (!departures) return 0, $l56HR.nothing;
             const isMany = this.isManyEntitiesSet();
             const destinationRegex = this.config?.regex ? {
-                search: new RegExp(this.config.regex.search),
+                search: new RegExp(this.config.regex.search, "g"),
                 replace: this.config.regex.replace
             } : undefined;
             return (0, $l56HR.html)`
