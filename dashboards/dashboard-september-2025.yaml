@@ -6552,7 +6552,7 @@ views:
   path: kollektivtrafik
   icon: mdi:train
   type: sections
-  max_columns: 2
+  max_columns: 1
   dense_section_placement: true
   sections:
   - type: grid
@@ -6561,37 +6561,18 @@ views:
       heading: Buss 742
       heading_style: title
       icon: mdi:bus
-    - type: markdown
-      content: |
-        {% set eksharad = 'sensor.departure_sensor_eksharadsgatan_station_departures' %}
-        {% if states(eksharad) not in ['unknown', 'unavailable', ''] %}
-        **Ekshäradsgatan → Huddinge sjukhus**
-        {% set source = eksharad %}
-        {% else %}
-        **Ekshäradsgatan → Huddinge sjukhus** *(väntar på HASL-sensor för hållplats 740069100)*
-
-        Visar buss 742 från Farsta strand tills dess:
-        {% set source = 'sensor.departure_sensor_farsta_strand_station_departures' %}
-        {% endif %}
-        {% set deps = state_attr(source, 'departures') | default([], true) %}
-        {% set rows = namespace(items=[]) %}
-        {% for d in deps %}
-          {% if d.line.designation == '742' and 'Huddinge sjukhus' in d.destination %}
-            {% set rows.items = rows.items + [d] %}
-          {% endif %}
-        {% endfor %}
-        {% if rows.items | length == 0 %}
-        Inga avgångar hittades just nu.
-        {% else %}
-        | Linje | Destination | Avgång | Status |
-        |:---:|:---|:---:|:---|
-        {% for d in rows.items[:6] %}
-        | {{ d.line.designation }} | {{ d.destination }} | {{ as_timestamp(d.expected) | timestamp_custom('%H:%M', true) }} | {% if d.state == 'CANCELLED' %}Inställd{% elif d.scheduled != d.expected %}Försenad{% else %}I tid{% endif %} |
-        {% endfor %}
-        {% endif %}
-      entity_id:
-      - sensor.departure_sensor_farsta_strand_station_departures
-      - sensor.departure_sensor_eksharadsgatan_station_departures
+    - type: custom:hasl4-departure-card
+      title: Ekshäradsgatan → Huddinge sjukhus
+      entities:
+      - sensor.departure_sensor_eksharadsgatan_departures
+      show_header: true
+      show_icon: true
+      show_departures: true
+      max_departures: 6
+      direction: 2
+      hide_departed: true
+      show_updated: true
+      language: sv-SE
   - type: grid
     cards:
     - type: heading
