@@ -6,8 +6,6 @@ title: HA Management
 resources:
 - url: /hacsfiles/bar-card/bar-card.js
   type: module
-- url: /local/hasl4-departure-card.js?v=20260726k
-  type: module
 - url: /hacsfiles/bignumber-card/bignumber-card.js
   type: module
 - url: /hacsfiles/lovelace-time-picker-card/time-picker-card.js
