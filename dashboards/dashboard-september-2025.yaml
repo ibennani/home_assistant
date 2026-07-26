@@ -1216,6 +1216,11 @@ views:
           green: 18
           yellow: 24
           red: 30
+    - type: entities
+      entities:
+      - entity: switch.diskmaskinen_switch
+        name: Diskmaskinen
+        icon: mdi:dishwasher
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
@@ -1656,6 +1661,14 @@ views:
           green: 18
           yellow: 24
           red: 30
+    - type: entities
+      entities:
+      - entity: switch.tvattmaskinen_switch
+        name: Tvättmaskinen
+        icon: mdi:washing-machine
+      - entity: switch.luftavfuktaren_switch
+        name: Luftavfuktaren
+        icon: mdi:fan
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
