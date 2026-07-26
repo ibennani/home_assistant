@@ -11148,14 +11148,14 @@
     local_only: false
     trigger: webhook
   actions:
-  - action: notify.mobile_app_ilias_s23_ultra
-    data:
-      title: 'Info från Cursor på jobbdatorn: '
-      message: '{{ trigger.json.message if trigger.json.message is defined else ''Nu
-        är jag klar'' }}'
+    - action: notify.mobile_app_ilias_s23_ultra
       data:
-        ttl: 0
-        priority: high
+        title: "Cursor: {{ now().strftime('%H:%M') }}"
+        message: "Nu är jag klar, Home Assistant. {{ trigger.json.beskrivning | default(trigger.json.message) | default('Öppna Cursor och läs senaste svaret.') }}"
+        data:
+          ttl: 0
+          priority: high
+          vibration: "1000, 300, 1000, 300, 1000"
 - id: '1780140607388'
   alias: 'Z-Wave: Övervaka nod-tapp och eskalera'
   description: Sätter en baslinje 3 min efter start. Om antalet aktiva noder minskar,  erbjuds
@@ -11333,6 +11333,20 @@
       event_type: cursor_git_synk
   actions:
     - action: script.git_synka_config
+
+# Cursor: mobilnotis när agent är klar (anropas via event cursor_agent_klar)
+- alias: "Cursor: Agent klar — mobilnotis"
+  id: 'cursor_agent_klar'
+  description: "Skickar mobilnotis till Elias S23 Ultra när en Cursor-agent är klar. Anropas via event cursor_agent_klar."
+  mode: single
+  triggers:
+    - trigger: event
+      event_type: cursor_agent_klar
+  actions:
+    - action: script.cursor_klar_notis
+      data:
+        variables:
+          beskrivning: "{{ trigger.event.data.beskrivning | default('Öppna Cursor och läs senaste svaret.') }}"
 
 # NFC: notis när Anna, Erik eller Ilias blippar Badrummet under spegeln
 - alias: "Mobilnotis: NFC Badrummet under spegeln"
