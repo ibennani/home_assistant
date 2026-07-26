@@ -107,6 +107,8 @@
     name: WC S1 blockera enkeltryck efter håll
   wc_s2_block_tap:
     name: WC S2 blockera enkeltryck efter håll
+  eriks_rum_uppdaterar_lage:
+    name: Eriks rum uppdaterar läge (blockerar lampstyrning)
 
 
 # Toggle som avgör om vattenspridaren ska stara automatiskt

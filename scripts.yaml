@@ -1284,6 +1284,27 @@ eriks_rum_satt_lage:
   - action: script.turn_on
     target:
       entity_id: script.eriks_rum_stall_in_belysningen
+eriks_rum_satt_lage_ui:
+  alias: Uppdatera bara belysningsläge i Eriks rum
+  mode: queued
+  description: Sätter input_select utan att styra lamporna (används vid väggbrytare)
+  fields:
+    lage:
+      description: Belysningsläge i Eriks rum
+      example: Tänt
+  sequence:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.eriks_rum_uppdaterar_lage
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.eriks_rum_belysning
+    data:
+      option: '{{ lage }}'
+  - delay: '00:00:02'
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.eriks_rum_uppdaterar_lage
 eriks_rum_stall_in_belysningen:
   alias: Ställ in belysningen i Eriks rum
   mode: restart
