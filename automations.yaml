@@ -1808,15 +1808,16 @@
         }} {% endif %}
 
         '
-  - action: input_select.select_option
+  - action: script.turn_on
     target:
-      entity_id: input_select.eriks_rum_belysning
+      entity_id: script.eriks_rum_satt_lage
     data:
-      option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag"] %}
-        Mysigt {% else %} {{ state("input_select.eriks_rum_belysning") }} {% endif
-        %}
+      variables:
+        lage: '{% if states("input_select.house_time_modes") in ["Morgon","Dag"] %}
+          Mysigt {% else %} {{ state("input_select.eriks_rum_belysning") }} {% endif
+          %}
 
-        '
+          '
 - id: '7918348059014'
   alias: 'Belysning: Styr belysningen i nedre trappan'
   triggers:
@@ -4505,9 +4506,10 @@
       current_mode: '{{ states(''input_select.eriks_rum_belysning'') }}'
       remote_event_code: '{{ trigger.event.data.event | int(0) if trigger.id == ''remote_event''
         else 0 }}'
-      default_mode_when_erik_away: "{% if house_mode in ['Morgon', 'Kväll'] %}\n  Mysigt\n{%
-        elif house_mode == 'Dag' %}\n  {% if lux_back > 2000 %} Släckt {% else %}
-        Mysigt {% endif %}\n{% else %}\n  Släckt\n{% endif %}"
+      default_mode_when_erik_away: "{% if states('zone.home') | int(0) == 0 %}\n  Släckt\n{%
+        elif house_mode in ['Morgon', 'Kväll'] %}\n  Mysigt\n{% elif house_mode ==
+        'Dag' %}\n  {% if lux_back > 2000 %} Släckt {% else %} Mysigt {% endif %}\n{%
+        else %}\n  Släckt\n{% endif %}"
       default_mode_when_erik_home: Mysigt
   - choose:
     - conditions:
@@ -4515,24 +4517,28 @@
         value_template: '{{ trigger.id == ''remote_event'' and remote_event_code ==
           1002 }}'
       sequence:
-      - action: input_select.select_option
+      - action: script.turn_on
+        target:
+          entity_id: script.eriks_rum_satt_lage
         data:
-          entity_id: input_select.eriks_rum_belysning
-          option: "{% if current_mode != 'Släckt' %}\n  Släckt\n{% else %}\n  {% if
-            house_mode == 'Morgon' %}\n    Taklamporna\n  {% elif house_mode == 'Dag'
-            %}\n    {% if lux_back > 2000 %} Taklamporna {% else %} Tänt {% endif
-            %}\n  {% elif house_mode in ['Kväll', 'Natt'] %}\n    Tänt\n  {% else
-            %}\n    Släckt\n  {% endif %}\n{% endif %}"
+          variables:
+            lage: "{% if current_mode != 'Släckt' %}\n  Släckt\n{% else %}\n  {% if
+              house_mode == 'Morgon' %}\n    Taklamporna\n  {% elif house_mode == 'Dag'
+              %}\n    {% if lux_back > 2000 %} Taklamporna {% else %} Tänt {% endif
+              %}\n  {% elif house_mode in ['Kväll', 'Natt'] %}\n    Tänt\n  {% else
+              %}\n    Släckt\n  {% endif %}\n{% endif %}"
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''remote_event'' and remote_event_code ==
           1001 }}'
       sequence:
-      - action: input_select.select_option
+      - action: script.turn_on
+        target:
+          entity_id: script.eriks_rum_satt_lage
         data:
-          entity_id: input_select.eriks_rum_belysning
-          option: "{% if current_mode == 'Mysigt' %}\n  {% if lux_back > 2000 %} Taklamporna
-            {% else %} Tänt {% endif %}\n{% else %}\n  Mysigt\n{% endif %}"
+          variables:
+            lage: "{% if current_mode == 'Mysigt' %}\n  {% if lux_back > 2000 %} Taklamporna
+              {% else %} Tänt {% endif %}\n{% else %}\n  Mysigt\n{% endif %}"
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''remote_event'' and remote_event_code ==
@@ -4556,19 +4562,23 @@
         value_template: '{{ trigger.id == ''remote_event'' and remote_event_code ==
           2001 }}'
       sequence:
-      - action: input_select.select_option
+      - action: script.turn_on
+        target:
+          entity_id: script.eriks_rum_satt_lage
         data:
-          entity_id: input_select.eriks_rum_belysning
-          option: Läsning
+          variables:
+            lage: Läsning
     - conditions:
       - condition: template
         value_template: '{{ trigger.id in [''erik_home'', ''erik_away''] }}'
       sequence:
-      - action: input_select.select_option
+      - action: script.turn_on
+        target:
+          entity_id: script.eriks_rum_satt_lage
         data:
-          entity_id: input_select.eriks_rum_belysning
-          option: "{% if trigger.id == 'erik_home' %}\n  {{ default_mode_when_erik_home
-            }}\n{% else %}\n  {{ default_mode_when_erik_away }}\n{% endif %}"
+          variables:
+            lage: "{% if trigger.id == 'erik_home' %}\n  {{ default_mode_when_erik_home
+              }}\n{% else %}\n  {{ default_mode_when_erik_away }}\n{% endif %}"
     default: []
   mode: restart
 - alias: 'Belysning: Kör script som styr belysningen i Eriks rum'
@@ -8008,18 +8018,16 @@
     entity_id: input_select.nedre_trappan_belysning
     data:
       option: Släckt
-  - action: input_select.select_option
-    target:
-      entity_id: input_select.eriks_rum_belysning
-    data:
-      option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag"] %}
-        Släckt {% else %} {{ state("input_select.eriks_rum_belysning") }} {% endif
-        %}
-
-        '
   - action: script.turn_on
     target:
-      entity_id: script.eriks_rum_stall_in_belysningen
+      entity_id: script.eriks_rum_satt_lage
+    data:
+      variables:
+        lage: '{% if states("input_select.house_time_modes") in ["Morgon","Dag"] %}
+          Släckt {% else %} {{ state("input_select.eriks_rum_belysning") }} {% endif
+          %}
+
+          '
   - action: homeassistant.turn_off
     entity_id:
     - media_player.hogtalarna_i_koket
