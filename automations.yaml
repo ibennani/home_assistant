@@ -1017,11 +1017,36 @@
   triggers:
   - trigger: state
     entity_id: light.koket_ingen_lampa_1
-  action:
-  - action: "{% if is_state(\"light.koket_ingen_lampa_1\",\"on\") %} light.turn_on
-      {% elif is_state(\"light.koket_ingen_lampa_1\",\"off\") %} light.turn_off {%
-      else %} script.do_nothing {% endif %} \n"
-    entity_id: light.stralkastaren
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.koket_ingen_lampa_1
+        state: "on"
+      - condition: template
+        value_template: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) <= 300 }}"
+      sequence:
+      - action: light.turn_on
+        target:
+          entity_id: light.stralkastaren
+    - conditions:
+      - condition: state
+        entity_id: light.koket_ingen_lampa_1
+        state: "off"
+      sequence:
+      - action: light.turn_off
+        target:
+          entity_id: light.stralkastaren
+    - conditions:
+      - condition: state
+        entity_id: light.koket_ingen_lampa_1
+        state: "on"
+      - condition: template
+        value_template: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) > 300 }}"
+      sequence:
+      - action: light.turn_off
+        target:
+          entity_id: light.stralkastaren
 # Tänd / släck strålkastaren om något rör sig på framsidan
 # Ring-rörelsen rapporteras som event (event.front_door_motion), inte on/off.
 # Släckning kräver 3 min utan rörelse och att båda dörrarna är stängda.
@@ -9421,7 +9446,7 @@
   mode: single
 - id: '1765582268846'
   alias: 'Belysning: Styr belysningen på framsidan'
-  description: ''
+  description: 'Släcker fasad, träd/buskar och strålkastare om lux > 300, även vid manuell tändning.'
   triggers:
   - id: front_lux_gt_1000
     trigger: template
@@ -9453,6 +9478,18 @@
   - id: ilias_rum_belysning_changed
     trigger: state
     entity_id: input_select.ilias_rum_belysning
+  - id: stralkastaren_state_changed
+    trigger: state
+    entity_id: light.stralkastaren
+    to: "on"
+  - id: fasadbelysningen_state_changed
+    trigger: state
+    entity_id: light.fasadbelysningen
+    to: "on"
+  - id: trad_och_buskar_state_changed
+    trigger: state
+    entity_id: light.trad_och_buskar_pa_framsidan
+    to: "on"
   actions:
   - variables:
       front_lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
@@ -9472,7 +9509,7 @@
         (house_time_mode != ''Natt'') }}
 
         '
-      stralkastare_should_turn_off: '{{ front_lux >= front_lux_low_threshold }}
+      stralkastare_should_turn_off: '{{ front_lux > front_lux_low_threshold }}
 
         '
       balkong_allowed_evening: '{{ (ilias_belysning_lage in [''Tänt'', ''Städning'',
