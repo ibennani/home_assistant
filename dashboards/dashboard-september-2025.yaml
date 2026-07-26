@@ -1060,44 +1060,6 @@ views:
         unit: '%'
         min: 0
         max: 100
-    - type: horizontal-stack
-      title: Kyl
-      cards:
-      - type: gauge
-        name: Temperatur
-        entity: sensor.kylskapet_koket_temp
-        unit: °C
-        min: 0
-        max: 10
-        severity:
-          green: 0
-          yellow: 7
-          red: 10
-      - type: gauge
-        name: Luftfuktighet
-        entity: sensor.kylskapet_koket_luftfuktighet
-        unit: '%'
-        min: 0
-        max: 100
-    - type: horizontal-stack
-      title: Frys
-      cards:
-      - type: gauge
-        name: Temperatur
-        entity: sensor.frysen_koket_temp
-        unit: °C
-        min: -25
-        max: 0
-        severity:
-          green: -18
-          yellow: -15
-          red: -10
-      - type: gauge
-        name: Luftfuktighet
-        entity: sensor.frysen_koket_luftfuktighet
-        unit: '%'
-        min: 0
-        max: 100
     - type: entities
       title: Belysning
       icon: mdi:lightbulb
@@ -1203,6 +1165,44 @@ views:
         name: Pucken
       - entity: media_player.hogtalarna_i_koket
         name: Högtalarna
+    - type: horizontal-stack
+      title: Kyl
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.kylskapet_koket_temp
+        unit: °C
+        min: 0
+        max: 10
+        severity:
+          green: 0
+          yellow: 7
+          red: 10
+      - type: gauge
+        name: Luftfuktighet
+        entity: sensor.kylskapet_koket_luftfuktighet
+        unit: '%'
+        min: 0
+        max: 100
+    - type: horizontal-stack
+      title: Frys
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.frysen_koket_temp
+        unit: °C
+        min: -25
+        max: 0
+        severity:
+          green: -18
+          yellow: -15
+          red: -10
+      - type: gauge
+        name: Luftfuktighet
+        entity: sensor.frysen_koket_luftfuktighet
+        unit: '%'
+        min: 0
+        max: 100
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
@@ -1409,6 +1409,32 @@ views:
         unit: '%'
         min: 0
         max: 100
+    - type: entities
+      title: Belysning
+      icon: mdi:lightbulb
+      entities:
+      - type: custom:slider-entity-row
+        entity: light.forradet
+        toggle: true
+        step: 1
+        name: Takspottarna
+    - type: entities
+      title: Fönster och dörrar
+      icon: mdi:door-sliding-open
+      entities:
+      - type: custom:template-entity-row
+        entity: binary_sensor.forradet_dorr
+        state: '{% if is_state(''binary_sensor.forradet_dorr'', ''on'') or is_state(''binary_sensor.forradet_dorr'', ''open'')
+          %}Öppen{% else %}Stängd{% endif %}'
+        name: Dörren
+    - type: entities
+      title: Rörelse
+      icon: mdi:motion-sensor
+      entities:
+      - type: custom:template-entity-row
+        entity: binary_sensor.forradet_rorelse
+        name: Rörelsen
+        state: '{% if is_state(''binary_sensor.forradet_rorelse'', ''on'') %}Rörelse{% else %}Ingen rörelse{% endif %}'
     - type: horizontal-stack
       title: Kyl
       cards:
@@ -1447,32 +1473,6 @@ views:
         unit: '%'
         min: 0
         max: 100
-    - type: entities
-      title: Belysning
-      icon: mdi:lightbulb
-      entities:
-      - type: custom:slider-entity-row
-        entity: light.forradet
-        toggle: true
-        step: 1
-        name: Takspottarna
-    - type: entities
-      title: Fönster och dörrar
-      icon: mdi:door-sliding-open
-      entities:
-      - type: custom:template-entity-row
-        entity: binary_sensor.forradet_dorr
-        state: '{% if is_state(''binary_sensor.forradet_dorr'', ''on'') or is_state(''binary_sensor.forradet_dorr'', ''open'')
-          %}Öppen{% else %}Stängd{% endif %}'
-        name: Dörren
-    - type: entities
-      title: Rörelse
-      icon: mdi:motion-sensor
-      entities:
-      - type: custom:template-entity-row
-        entity: binary_sensor.forradet_rorelse
-        name: Rörelsen
-        state: '{% if is_state(''binary_sensor.forradet_rorelse'', ''on'') %}Rörelse{% else %}Ingen rörelse{% endif %}'
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
