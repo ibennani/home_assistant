@@ -6,7 +6,7 @@ title: HA Management
 resources:
 - url: /hacsfiles/bar-card/bar-card.js
   type: module
-- url: /local/hasl4-departure-card.js?v=20260726i
+- url: /local/hasl4-departure-card.js?v=20260726j
   type: module
 - url: /hacsfiles/bignumber-card/bignumber-card.js
   type: module
@@ -6579,8 +6579,7 @@ views:
       cards:
       - type: custom:hasl4-departure-card-sl
         title: Ekshäradsgatan
-        entities:
-        - sensor.eksharadsgatan_buss_742_departures
+        entity: sensor.eksharadsgatan_buss_742_departures
         show_entity_name: false
         show_header: true
         show_icon: true
@@ -6591,13 +6590,9 @@ views:
         hide_departed: true
         show_updated: false
         language: sv-SE
-        regex:
-          search: '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$'
-          replace: ''
       - type: custom:hasl4-departure-card-sl
         title: Farsta strand
-        entities:
-        - sensor.farsta_strand_pendeltag_departures
+        entity: sensor.farsta_strand_pendeltag_departures
         show_entity_name: false
         show_header: true
         show_icon: true
@@ -6608,6 +6603,3 @@ views:
         hide_departed: true
         show_updated: false
         language: sv-SE
-        regex:
-          search: '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$'
-          replace: ''
