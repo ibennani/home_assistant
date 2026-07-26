@@ -35,7 +35,7 @@ lights_mysbelysning:
       - light.spottarna_bakom_spisen_level
       - light.hue_color_candle # Tillfällig lampa - hue i trappan
       - switch.lampa_annas_fonster_switch
-      - switch.lampa_annas_jordglob_switch
+      - light.eriks_jordglob
       - light.annas_myshorna      
       - switch.eriks_lavalampa_switch
       - switch.lampa_pa_nedre_frysen_switch
