@@ -6,9 +6,9 @@ title: HA Management
 resources:
 - url: /hacsfiles/bar-card/bar-card.js
   type: module
-- url: /local/hasl4-departure-card.js?v=20260726e
+- url: /local/hasl4-bus-red-patch.js?v=20260726f
   type: module
-- url: /local/hasl4-bus-red-patch.js?v=20260726e
+- url: /local/hasl4-departure-card.js?v=20260726f
   type: module
 - url: /hacsfiles/bignumber-card/bignumber-card.js
   type: module
@@ -6559,6 +6559,12 @@ views:
   sections:
   - type: grid
     cards:
+    - clock_style: digital
+      clock_size: large
+      time_format: language
+      show_seconds: true
+      no_background: false
+      type: clock
     - type: vertical-stack
       cards:
       - type: custom:hasl4-departure-card
