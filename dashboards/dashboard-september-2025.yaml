@@ -6563,6 +6563,7 @@ views:
         title: Ekshäradsgatan
         entities:
         - sensor.departure_sensor_eksharadsgatan_departures
+        show_entity_name: false
         show_header: true
         show_icon: true
         show_departures: true
@@ -6576,12 +6577,13 @@ views:
         title: Farsta strand
         entities:
         - sensor.farsta_strand_pendeltag_departures
+        show_entity_name: false
         show_header: true
         show_icon: true
         show_departures: true
         show_time_always: true
         max_departures: 6
-        direction: '0'
+        direction: 0
         hide_departed: true
         show_updated: false
         language: sv-SE
