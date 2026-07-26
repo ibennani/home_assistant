@@ -90,11 +90,6 @@ shell_command:
     2>&1 | tee -a /config/git-pull.log
     && echo "--- $(date -Iseconds) ---" >> /config/git-pull.log
 
-rest_command:
-  sl_farsta_pendeltag:
-    url: https://transport.integration.sl.se/v1/sites/9180/departures?transport=TRAIN&forecast=60
-    method: GET
-
 #######################################################
 # Media
 #######################################################
