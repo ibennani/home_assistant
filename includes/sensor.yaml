@@ -132,13 +132,3 @@
   entity_ids:
     - sensor.utomhus_baksidan_ljusstyrka
     - sensor.ljusstyrka_framsidan_maximal
-
-# Kollektivtrafik — SL Transport API för pendeltåg (kort tåg via deviations)
-- platform: rest
-  name: Farsta strand SL pendeltåg
-  unique_id: farsta_strand_sl_pendeltag_departures
-  resource: https://transport.integration.sl.se/v1/sites/9180/departures?transport=TRAIN&forecast=60
-  scan_interval: 60
-  value_template: "{{ value_json.departures | length }}"
-  json_attributes:
-    - departures
