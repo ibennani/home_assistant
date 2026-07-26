@@ -1,0 +1,33 @@
+---
+description: Gör inga ändringar utan uttrycklig begäran från användaren
+globs:
+alwaysApply: true
+---
+
+# Ändra inte utan uttrycklig begäran
+
+## Princip
+
+Gör **inga** ändringar i kod, konfiguration, dokumentation eller live-system om användaren inte uttryckligen bett om det.
+
+## Vad som räknas som uttrycklig begäran
+
+- Direkta imperativ: "ändra", "fixa", "lägg till", "ta bort", "uppdatera", "deploya", "committa"
+- Tydligt godkännande efter förslag: "ja, gör det", "kör på", "implementera det"
+
+## Vad som inte räknas
+
+- Frågor om hur något fungerar
+- Förfrågningar om analys, förklaring eller förslag
+- Antaganden om vad användaren "nog menar"
+
+## Vid osäkerhet
+
+1. Beskriv vad som behöver ändras och varför.
+2. Fråga om användaren vill att du ska genomföra ändringen.
+3. Vänta på uttryckligt godkännande innan du redigerar filer, committar, pushar, mergar eller deployar.
+
+## Undantag
+
+- Obligatoriska säkerhetsregler (t.ex. committa aldrig hemligheter) gäller alltid.
+- Läsning, sökning och diagnostik utan att ändra något är alltid tillåtet.

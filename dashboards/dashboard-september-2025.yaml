@@ -5260,56 +5260,6 @@ views:
           color: '#9d26ff'
       state_color: true
     - type: entities
-      title: Annas skrivbord
-      show_header_toggle: false
-      entities:
-      - type: custom:mini-graph-card
-        name: El-förbrukning senaste 24 timmarna
-        icon: mdi:power-plug
-        entities:
-        - entity: sensor.skrivbordet_i_eriks_rum_power
-          name: ''
-          show_state: true
-          state_adaptive_color: true
-        align_icon: left
-        align_header: left
-        align_state: left
-        height: 150
-        line_width: 1
-        hour24: true
-        hours_to_show: 24
-        group_by: minute
-        points_per_hour: 60
-        aminate: true
-        decimals: 0
-        show:
-          fill: true
-          extrema: true
-          average: true
-          labels: true
-          graph: line
-        color_thresholds_transition: hard
-        color_thresholds:
-        - value: 0
-          color: '#8296fa'
-        - value: 500
-          color: '#4dff59'
-        - value: 1000
-          color: '#beff4d'
-        - value: 1500
-          color: '#fff426'
-        - value: 2000
-          color: '#ff9a26'
-        - value: 2500
-          color: '#ff2626'
-        - value: 3000
-          color: '#fa2593'
-        - value: 3500
-          color: '#ff26a5'
-        - value: 4000
-          color: '#9d26ff'
-      state_color: true
-    - type: entities
       title: Diskmaskinen
       show_header_toggle: false
       entities:
