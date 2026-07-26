@@ -4,7 +4,7 @@
  */
 (function () {
   const STYLE_ID = "hasl-sl-bus-red-style";
-  const BUS_RED = "#d71d24";
+  const BUS_RED = "#9e0e13";
   const STYLE_TEXT = `
     .line-icon.bus_red,
     .line-icon.bus.red,

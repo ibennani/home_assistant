@@ -1612,19 +1612,19 @@ const $57faf62096e30446$var$lineColorsStyles = (0, $j8KxL.css)`
     }
 
     .bus_red {
-        background-color: #d71d24;
+        background-color: #9e0e13;
         color: #fff;
         border: none;
     }
 
     .bus.red {
-        background-color: #d71d24;
+        background-color: #9e0e13;
         color: #fff;
         border: none;
     }
 
     .red {
-        background-color: #d71d24;
+        background-color: #9e0e13;
     }
     .blue {
         background-color: #0089ca;
