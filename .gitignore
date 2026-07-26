@@ -57,5 +57,8 @@ venv/
 # Cursor MCP (webhook-URL innehåller hemlig sökväg)
 .cursor/mcp.json
 
+# Cursor hook-state (senaste agentsvar mellan afterAgentResponse och stop)
+.cursor/hooks/state/
+
 # Cursor-chattmigrering (innehåller full chattdata)
 scripts/_ha_chat_migration_backup.json
