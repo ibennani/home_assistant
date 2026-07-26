@@ -948,3 +948,20 @@
             {% endif %}
           {% endfor %}
           {{ ns.items }}
+
+# Kollektivtrafik — SL Transport API för pendeltåg (deviations, t.ex. kort tåg)
+- trigger:
+    - trigger: time_pattern
+      minutes: "/1"
+    - trigger: homeassistant
+      event: start
+  action:
+    - action: rest.get
+      response_variable: sl_farsta
+      url: https://transport.integration.sl.se/v1/sites/9180/departures?transport=TRAIN&forecast=60
+  sensor:
+    - name: Farsta strand SL pendeltåg
+      unique_id: farsta_strand_sl_pendeltag_departures
+      state: "{{ sl_farsta.json().departures | default([]) | length }}"
+      attributes:
+        departures: "{{ sl_farsta.json().departures | default([]) }}"
