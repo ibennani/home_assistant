@@ -1611,6 +1611,12 @@ const $57faf62096e30446$var$lineColorsStyles = (0, $j8KxL.css)`
         color: var(--primary-text-color);
     }
 
+    .bus_red {
+        background-color: #d71d24;
+        color: #fff;
+        border: none;
+    }
+
     .bus.red {
         background-color: #d71d24;
         color: #fff;
@@ -1891,8 +1897,7 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
         let cls = "";
         switch(type){
             case (0, $829f1babd4ccc0b8$export$6d07abd9f0bba447).BUS:
-                cls = `bus bus_${line}`;
-                cls = group === "bl\xe5buss" ? `${cls} blue` : `${cls} red`;
+                cls = group === "bl\xe5buss" ? `bus bus_${line} blue` : `bus_red bus_${line}`;
                 break;
             case (0, $829f1babd4ccc0b8$export$6d07abd9f0bba447).METRO:
                 cls = `metro metro_${line}`;
