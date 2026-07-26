@@ -30,17 +30,33 @@ alwaysApply: true
 
 Molnet når **inte** SSH/LAN. Använd **MCP + Nabu Casa**.
 
-### Efter YAML-ändringar i git (automatiseringar, scripts, configuration)
+### Slutför hela deploy-kedjan (obligatoriskt)
 
-1. Committa och pusha till `main`.
-2. Synka till HA-servern (välj ett sätt):
+Efter YAML-ändringar räcker det **inte** med en öppen PR eller MCP-deploy i förväg. Agenten ska alltid slutföra:
 
-   **A — Event (när YAML är laddad):**
+1. **Committa och pusha** (feature branch + PR, eller direkt till `main` om användaren uttryckligen bett om det).
+2. **Merga till `main`** när ändringen ligger på feature branch och är verifierad:
+   - Draft: `gh pr ready <nr>`
+   - Merge: `gh pr merge <nr> --merge --delete-branch`
+   - **Fråga inte användaren** om merge — gör det som sista deploy-steg.
+3. **Git-synk** (alltid efter att `main` uppdaterats):
+   ```
+   ha_call_write_tool(name="ha_call_event", arguments={"event_type": "cursor_git_synk"})
+   ```
+   Vänta ~10 s innan verifiering.
+4. **Verifiera**: `ha_get_system_health(include="config_check")` + spot-check (t.ex. `ha_config_get_automation`, `ha_search`).
+5. **Källa till sanning**: För YAML i repot — använd **git-synk**, inte `ha_config_set_automation`/`ha_config_set_script` som primär deploy. Direkt MCP-deploy skapar tillfällig drift mellan live och `/config` tills synk körts.
+
+### Git-synk (detaljer)
+
+Synka till HA-servern (välj ett sätt om eventet misslyckas):
+
+   **A — Event (standard):**
    ```
    ha_call_write_tool(name="ha_call_event", arguments={"event_type": "cursor_git_synk"})
    ```
 
-   **B — Skript (när YAML är laddad):**
+   **B — Skript:**
    ```
    ha_call_write_tool(name="ha_call_service", arguments={
      "domain": "script", "service": "git_synka_config",
@@ -58,14 +74,11 @@ Molnet når **inte** SSH/LAN. Använd **MCP + Nabu Casa**.
    ha_reload_core(target="all")  # om config_check är giltig
    ```
 
-3. Verifiera: `ha_get_system_health` med `include: config_check`.
-4. Bekräfta att ändringen finns live (t.ex. `ha_config_get_automation`, `ha_search`).
-
 **Fråga aldrig användaren om git pull eller SSH** — kör synken via MCP ovan.
 
-### Nya/redigerade automatiseringar (utan YAML-deploy)
+### Nödfall: direkt MCP utan git
 
-Använd `ha_config_set_automation` direkt i live HA när ändringen inte ska vänta på git-synk.
+Använd `ha_config_set_automation` / `ha_config_set_script` **endast** när ändringen måste live omedelbart och git-synk inte hinner — följ då ändå med merge + git-synk så `/config` och repot hamnar i fas.
 
 ### Referens
 - [docs/cursor-cloud-git-synk.md](../docs/cursor-cloud-git-synk.md)
