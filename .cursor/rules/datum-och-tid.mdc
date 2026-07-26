@@ -1,0 +1,27 @@
+---
+description: Undvik fel vid datum, veckodagar och relativa tidsuttryck
+globs:
+alwaysApply: true
+---
+
+# Datum och tid
+
+## Källsanning
+- Använd alltid aktuellt datum och tid från `user_info` / systemet som utgångspunkt.
+- Gissa aldrig veckodag, månad eller år.
+
+## Relativa uttryck
+Innan du skriver "idag", "igår", "i förrgår" eller liknande:
+1. Räkna ut det exakta datumet utifrån aktuell tid.
+2. Verifiera veckodagen för det datumet (via beräkning eller verktyg).
+3. Skriv datum och veckodag tillsammans bara när båda är verifierade.
+
+Exempel: Om idag är söndag 19 juli 2026 är igår **lördag 18 juli 2026** — inte fredag.
+
+## Vid svar till användaren
+- Prioritera exakta klockslag och datum från Home Assistant eller annan källa.
+- Veckodag är sekundär information: inkludera den endast om den är kontrollerad.
+- Om du är osäker på veckodagen, skriv datumet utan veckodag i stället för att gissa.
+
+## Verifiering
+Vid tidsberäkningar eller datum i svar: använd `ha_eval_template`, shell (`date`) eller motsvarande för att bekräfta före du skriver ut resultatet.
