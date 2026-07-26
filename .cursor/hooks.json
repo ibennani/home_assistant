@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterAgentResponse": [
+      {
+        "command": ".cursor/hooks/cursor-klar-notis.sh after-response"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/cursor-klar-notis.sh stop"
+      }
+    ]
+  }
+}

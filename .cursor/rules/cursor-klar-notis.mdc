@@ -6,46 +6,28 @@ alwaysApply: true
 
 # Cursor klar — mobilnotis
 
-## När (obligatoriskt)
+## Automatiskt (primärt)
 
-Skicka notis som **sista MCP-anrop** innan du avslutar svaret när **alla** dessa gäller:
+Notis skickas **automatiskt** när agenten är klar via Cursor-hooken `.cursor/hooks.json` → `stop` → `script.cursor_klar_notis` på Elias S23 Ultra.
 
-1. Du är klar med det du kunde göra i den här omgången.
-2. Du **väntar på input, beslut eller godkännande** från användaren innan du kan fortsätta.
-3. Du har **inte** redan skickat en klar-notis för samma vänteläge i samma konversation.
+Hooken:
+1. Sparar senaste agentsvaret (`afterAgentResponse`)
+2. Vid `stop` med `status: completed` skickar den eventet `cursor_agent_klar` till Home Assistant
+3. Formaterar rubrik, text och tre långa vibrationer via `script.cursor_klar_notis`
 
-Skicka **inte** notis om du fortfarande jobbar, bara ställer en frivillig följdfråga, eller redan har levererat ett färdigt svar utan väntan.
+**Agenter ska normalt inte skicka notis manuellt** — undvik dubbla notiser.
 
-**Hoppa aldrig över detta steg** — enbart text i chatten räcker inte.
+Kräver `HA_URL` + `HA_TOKEN` (eller `HA_MCP_WEBHOOK_URL` som härleder bas-URL) som Cursor Secrets eller i lokal `.env`.
 
-## Hur (MCP) — primärt
+## Manuellt (endast om hooken misslyckades)
 
-Anropa HA-eventet `cursor_agent_klar` via `ha_call_write_tool`:
+Om du uttryckligen vet att hooken inte körde (t.ex. MCP-notis saknas trots avslutat svar), anropa som backup:
 
 ```json
 {
   "name": "ha_call_event",
   "arguments": {
     "event_type": "cursor_agent_klar",
-    "data": {
-      "beskrivning": "PR #42 mergad och git-synk verifierad — vill du att jag testar live?"
-    }
-  }
-}
-```
-
-Eventet triggar automationen som kör `script.cursor_klar_notis` och skickar till **Elias S23 Ultra** (`notify.mobile_app_ilias_s23_ultra`).
-
-## Alternativ (direkt script)
-
-Om eventet misslyckas, anropa scriptet direkt:
-
-```json
-{
-  "name": "ha_call_service",
-  "arguments": {
-    "domain": "script",
-    "service": "cursor_klar_notis",
     "data": {
       "beskrivning": "Kort beskrivning här."
     }
@@ -59,16 +41,13 @@ Om eventet misslyckas, anropa scriptet direkt:
 |------|--------|
 | **Mål** | Elias S23 Ultra (`notify.mobile_app_ilias_s23_ultra`) |
 | **Rubrik** | `Cursor: [HH:MM]` — 24-timmarsformat, HA:s lokala tid |
-| **Meddelande** | `Nu är jag klar, Home Assistant.` + din `beskrivning` (max en mening) |
+| **Meddelande** | `Nu är jag klar, Home Assistant.` + kort beskrivning (max en mening) |
 | **Vibration** | Tre långa: `1000, 300, 1000, 300, 1000` ms |
 
 `beskrivning` ska vara **en kort mening** — inte upprepa prefixet "Nu är jag klar".
 
-### Exempel på beskrivning
+## Felsökning
 
-- `Automationen för garageporten är deployad — vill du att jag testar live?`
-- `Jag hittade felet i template-sensorn och föreslår en fix — ska jag implementera?`
-
-## Om MCP inte är tillgängligt
-
-Om Home Assistant MCP saknas eller notisen misslyckas: skriv tydligt i chatten att du väntar på input, och nämn att mobilnotisen inte kunde skickas.
+- Ingen notis trots klar agent: kontrollera att `HA_URL` finns i Cursor Secrets (Cloud) eller `.env` (lokal)
+- Testa hooken manuellt: `echo '{"status":"completed"}' | .cursor/hooks/cursor-klar-notis.sh stop`
+- Testa HA-kedjan: `ha_call_event` med `cursor_agent_klar`
