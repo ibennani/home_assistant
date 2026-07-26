@@ -869,3 +869,28 @@
         {% else %}
           mdi:weather-cloudy
         {% endif %}
+
+# Kollektivtrafik — pendeltåg filtrerat från Farsta strand (endast tåg linje 4x, riktning 2)
+- trigger:
+    - trigger: homeassistant
+      event: start
+    - trigger: state
+      entity_id: sensor.departure_sensor_farsta_strand_station_departures
+  sensor:
+    - name: Farsta strand pendeltåg departures
+      unique_id: farsta_strand_pendeltag_departures
+      state: >
+        {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
+        {{ deps
+           | selectattr('line.transport_mode', 'eq', 'TRAIN')
+           | selectattr('direction_code', 'eq', '2')
+           | selectattr('line.designation', 'match', '^4')
+           | list | length }}
+      attributes:
+        departures: >
+          {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
+          {{ deps
+             | selectattr('line.transport_mode', 'eq', 'TRAIN')
+             | selectattr('direction_code', 'eq', '2')
+             | selectattr('line.designation', 'match', '^4')
+             | list }}
