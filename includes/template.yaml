@@ -907,6 +907,9 @@
     - trigger: state
       entity_id: sensor.departure_sensor_farsta_strand_station_departures
       attribute: departures
+    - trigger: state
+      entity_id: sensor.farsta_strand_sl_pendeltag_departures
+      attribute: departures
   sensor:
     - name: Farsta strand pendeltåg departures
       unique_id: farsta_strand_pendeltag_departures
@@ -922,12 +925,26 @@
       attributes:
         departures: >
           {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
+          {% set sl_deps = state_attr('sensor.farsta_strand_sl_pendeltag_departures', 'departures') | default([]) %}
           {% set dest_pat = '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$' %}
           {% set ns = namespace(items=[]) %}
           {% for d in deps %}
             {% if d.line.transport_mode == 'TRAIN' and d.direction_code == '2' and d.line.designation is match('^4') %}
               {% set dest = d.destination | regex_replace(dest_pat, '') %}
-              {% set ns.items = ns.items + [d | combine({'destination': dest})] %}
+              {% set time_key = (d.expected | string)[:16] %}
+              {% set devs = namespace(list=[]) %}
+              {% for s in sl_deps %}
+                {% if s.line.designation == d.line.designation and (s.direction_code | string) == (d.direction_code | string) and (s.expected | string)[:16] == time_key and (s.destination | regex_replace(dest_pat, '') | trim) == dest %}
+                  {% for dev in s.deviations | default([]) %}
+                    {% set devs.list = devs.list + [{'message': dev.message, 'importance_level': dev.importance | default(5)}] %}
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+              {% set item = d | combine({'destination': dest}) %}
+              {% if devs.list | length > 0 %}
+                {% set item = item | combine({'deviations': devs.list}) %}
+              {% endif %}
+              {% set ns.items = ns.items + [item] %}
             {% endif %}
           {% endfor %}
           {{ ns.items }}

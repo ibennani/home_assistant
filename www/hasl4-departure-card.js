@@ -1738,6 +1738,13 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         text-decoration: unset;
     }
 
+    .short-train {
+        color: #0abcfc;
+        font-size: smaller;
+        margin-left: 0.35em;
+        text-transform: lowercase;
+    }
+
     .mr1 {
         margin-right: 8px;
     }
@@ -1971,7 +1978,16 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                 const isAtThePlatform = diff === 0;
                 const isDeparted = diff < 0;
                 const hasDeviations = (dep.deviations?.length || 0) > 0;
-                const mostImportantDeviation = dep.deviations?.sort((a, b)=>b.importance_level - a.importance_level)?.[0];
+                const isShortTrain = (dep.deviations || []).some((dev)=>{
+                    const msg = (dev.message || dev.text || "").toLowerCase();
+                    return msg.includes("kort tåg") || msg.includes("kort tag");
+                });
+                const otherDeviations = (dep.deviations || []).filter((dev)=>{
+                    const msg = (dev.message || dev.text || "").toLowerCase();
+                    return !msg.includes("kort tåg") && !msg.includes("kort tag");
+                });
+                const hasOtherDeviations = otherDeviations.length > 0;
+                const mostImportantDeviation = otherDeviations.sort((a, b)=>(b.importance_level || 0) - (a.importance_level || 0))?.[0];
                 const departureTime = this.config?.show_time_always ? expectedAt.toLocaleTimeString(lang, {
                     hour: "numeric",
                     minute: "numeric"
@@ -2004,12 +2020,13 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                         ${this.config?.hide_line_number ? (0, $l56HR.nothing) : (0, $l56HR.html)`
                             <div class="col icon">
                                 <span class="line-icon mr1 ${lineIconClass}">${dep.line.designation}</span>
-                                ${hasDeviations ? (0, $l56HR.html)`<ha-icon class="warning" icon="mdi:alert"/>` : (0, $l56HR.nothing)}
+                                ${hasDeviations && !isShortTrain ? (0, $l56HR.html)`<ha-icon class="warning" icon="mdi:alert"/>` : (0, $l56HR.nothing)}
                             </div>
                         `}
                         <div class="col main left">
                             ${destination}
-                            ${hasDeviations ? (0, $l56HR.html)`<span class="warning-message">${mostImportantDeviation.message}</span>` : (0, $l56HR.nothing)}
+                            ${isShortTrain ? (0, $l56HR.html)`<span class="short-train">kort tåg</span>` : (0, $l56HR.nothing)}
+                            ${hasOtherDeviations ? (0, $l56HR.html)`<span class="warning-message">${mostImportantDeviation.message}</span>` : (0, $l56HR.nothing)}
                         </div>
                         <div class="col right">
                             <span class="leaves-in">${departureTime}</span>
