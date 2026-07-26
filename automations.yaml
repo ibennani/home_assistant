@@ -1432,7 +1432,7 @@
           - light.takspottar_badrummet
           - light.led_badrummet_handfatet
           - light.led_badrummet_kommoden
-          - light.led_badrummet_duschen
+          - light.led_strip_i_duschen
           - light.takspott_duschen
           - light.spegeln_badrummet
         data:
@@ -1478,7 +1478,7 @@
   is_state('input_select.nagon_duschar', 'Ingen duschar')
   and not is_state('input_select.house_time_modes', 'Natt')
   and is_state('light.takspott_duschen', 'off')
-  and is_state('light.led_badrummet_duschen', 'off')
+  and is_state('light.led_strip_i_duschen', 'off')
 }}"
           sequence:
           - variables:
@@ -1490,7 +1490,7 @@
             target:
               entity_id:
               - light.takspott_duschen
-              - light.led_badrummet_duschen
+              - light.led_strip_i_duschen
             data:
               brightness_pct: '{{ dusch_brightness }}'
               transition: 0
@@ -9671,7 +9671,7 @@
 - id: '1765585518927'
   alias: 'Status: Någon duschar'
   description: 'Hanterar duschstatus i tre steg. Kandidat kräver stängd badrumsdörr,
-    duschdörr öppen 3-60 sekunder och 120 sekunder efter stängd duschdörr utan rörelse
+    duschdörr öppen 3-300 sekunder och 120 sekunder efter stängd duschdörr utan rörelse
     vid timerutgång. Kandidat ligger kvar tills badrums- eller duschdörr öppnas, eller
     rörelse avbryter. Kraftig fuktökning bekräftar till Någon duschar. Bekräftad session
     avslutas endast när badrumsdörren öppnas. Fukt spåras under session för toppvärde
@@ -9774,7 +9774,7 @@
               if open_raw not in ['unknown', 'unavailable', 'none', 'None', ''] else
               0 %} {% set duration = (now_ts - open_ts) if open_ts > 0 else 0 %} {{
               is_state('binary_sensor.badrumsdorren', 'off') and open_ts > 0 and duration
-              >= 3 and duration <= 60 }}"
+              >= 3 and duration <= 300 }}"
           sequence:
           - action: input_boolean.turn_on
             target:
@@ -9945,9 +9945,6 @@
       - condition: state
         entity_id: binary_sensor.badrumsdorren
         state: 'off'
-      - condition: state
-        entity_id: binary_sensor.duschdorren
-        state: 'off'
       - condition: template
         value_template: "{% set bad = ['unknown', 'unavailable', 'none', 'None', '']
           %} {% set valid_trigger = trigger.from_state is not none and trigger.to_state
@@ -9997,16 +9994,15 @@
         data:
           message: "{% if was_kandidat %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
             duschar.\n\nTid sedan start: {{ elapsed_text }}.\n\nBekräftat via kraftig
-            fuktökning (båda dörrar stängda).\n\n{% else %}\nHEMMET {{ now().strftime('%R')
-            }}:\n\nNågon duschar.\n\nBekräftat via kraftig fuktökning (båda dörrar
-            stängda).\n\n{% endif %}"
+            fuktökning.\n\n{% else %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
+            duschar.\n\nBekräftat via kraftig fuktökning.\n\n{% endif %}"
           data:
             ttl: 0
             priority: high
       - action: logbook.log
         data:
           name: Duschstatus
-          message: Dusch bekräftad via kraftig fuktökning med stängd badrums- och duschdörr.
+          message: Dusch bekräftad via kraftig fuktökning med stängd badrumsdörr.
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''fukt_andrad'' }}'

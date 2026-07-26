@@ -952,12 +952,7 @@ views:
         entity: light.led_bakom_meshkorgarna
         toggle: true
         step: 1
-        name: LED-listan bakom meshkorgarna
-      - type: custom:slider-entity-row
-        entity: light.led_under_annas_byra
-        toggle: true
-        step: 1
-        name: LED-listan under byrån
+        name: Bakom meshkorgarna
     - type: entities
       title: Fönster och dörrar
       icon: mdi:door-sliding-open
@@ -1338,7 +1333,12 @@ views:
         entity: light.led_strip_ovanfor_fotoljen
         toggle: true
         step: 1
-        name: LED-listan under hyllorna
+        name: Under hyllorna
+      - type: custom:slider-entity-row
+        entity: light.led_under_eriks_byra
+        toggle: true
+        step: 1
+        name: Under Eriks byrå
       - type: custom:slider-entity-row
         entity: light.eriks_jordglob
         toggle: true
@@ -1487,10 +1487,10 @@ views:
       icon: mdi:lightbulb
       entities:
       - type: custom:slider-entity-row
-        entity: light.led_badrummet_duschen
+        entity: light.led_strip_i_duschen
         toggle: true
         step: 1
-        name: LED-strippen
+        name: LED-strip
       - type: custom:slider-entity-row
         entity: light.takspott_duschen
         toggle: true
@@ -1998,8 +1998,8 @@ views:
         toggle: true
         step: 1
       - type: custom:slider-entity-row
-        entity: light.led_badrummet_duschen
-        name: Led-list i duschen
+        entity: light.led_strip_i_duschen
+        name: LED-strip
         toggle: true
         step: 1
       - type: custom:slider-entity-row
@@ -2043,7 +2043,6 @@ views:
         name: Bakom trådkorgarna
         toggle: true
         step: 1
-      - light.led_under_annas_byra
       - type: divider
       - light.hoga_skapet_i_koket
       - light.lampan_vid_fotoljen
@@ -2080,7 +2079,12 @@ views:
       - light.eriks_jordglob
       - type: custom:slider-entity-row
         entity: light.led_strip_ovanfor_fotoljen
-        name: LED ovanför Eriks säng
+        name: Ovanför Eriks säng
+        toggle: true
+        step: 1
+      - type: custom:slider-entity-row
+        entity: light.led_under_eriks_byra
+        name: Under Eriks byrå
         toggle: true
         step: 1
       - type: custom:slider-entity-row
@@ -5841,11 +5845,6 @@ views:
       - sensor.hp_color_laserjet_mfp_m277dw_cyan_cartridge_hp_cf401x
       - sensor.hp_color_laserjet_mfp_m277dw_magenta_cartridge_hp_cf403x
       - sensor.hp_color_laserjet_mfp_m277dw_yellow_cartridge_hp_cf402x
-- title: Gräsklipparen
-  icon: mdi:robot-mower
-  path: lawn-mover
-  cards:
-  - *grasklippare_panel
 - title: Vitvaror
   icon: mdi:washing-machine
   path: vitvaror

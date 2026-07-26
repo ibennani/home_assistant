@@ -32,7 +32,7 @@
     - light.takspottar_badrummet
     - light.takspott_duschen
     - light.spegeln_badrummet
-    - light.led_badrummet_duschen
+    - light.led_strip_i_duschen
     - light.led_badrummet_handfatet
     - light.led_badrummet_kommoden
     
