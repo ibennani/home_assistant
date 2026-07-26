@@ -11345,8 +11345,7 @@
   actions:
     - action: script.cursor_klar_notis
       data:
-        variables:
-          beskrivning: "{{ trigger.event.data.beskrivning | default('Öppna Cursor och läs senaste svaret.') }}"
+        beskrivning: "{{ trigger.event.data.beskrivning | default('Öppna Cursor och läs senaste svaret.') }}"
 
 # NFC: notis när Anna, Erik eller Ilias blippar Badrummet under spegeln
 - alias: "Mobilnotis: NFC Badrummet under spegeln"
