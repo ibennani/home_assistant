@@ -6597,7 +6597,7 @@ views:
         show_departures: true
         show_time_always: true
         max_departures: 6
-        direction: 0
+        direction: 2
         hide_departed: true
         show_updated: false
         language: sv-SE

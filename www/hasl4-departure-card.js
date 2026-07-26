@@ -1741,6 +1741,7 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
     .short-train {
         color: #0abcfc;
         font-size: smaller;
+        font-weight: 600;
         margin-left: 0.35em;
         text-transform: lowercase;
     }
@@ -1978,14 +1979,8 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                 const isAtThePlatform = diff === 0;
                 const isDeparted = diff < 0;
                 const hasDeviations = (dep.deviations?.length || 0) > 0;
-                const isShortTrain = (dep.deviations || []).some((dev)=>{
-                    const msg = (dev.message || dev.text || "").toLowerCase();
-                    return msg.includes("kort tåg") || msg.includes("kort tag");
-                });
-                const otherDeviations = (dep.deviations || []).filter((dev)=>{
-                    const msg = (dev.message || dev.text || "").toLowerCase();
-                    return !msg.includes("kort tåg") && !msg.includes("kort tag");
-                });
+                const isShortTrain = (dep.deviations || []).some($66d5822390d71e6e$var$isShortTrainDeviation);
+                const otherDeviations = (dep.deviations || []).filter((dev)=>!$66d5822390d71e6e$var$isShortTrainDeviation(dev));
                 const hasOtherDeviations = otherDeviations.length > 0;
                 const mostImportantDeviation = otherDeviations.sort((a, b)=>(b.importance_level || 0) - (a.importance_level || 0))?.[0];
                 const departureTime = this.config?.show_time_always ? expectedAt.toLocaleTimeString(lang, {
@@ -2069,6 +2064,10 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
 ], $66d5822390d71e6e$export$7ded24e6705f9c64.prototype, "hass", void 0);
 const $66d5822390d71e6e$var$isEntityInfoAction = (a)=>a.entityId !== undefined;
 const $66d5822390d71e6e$var$isServiceCallAction = (a)=>a.service !== undefined;
+const $66d5822390d71e6e$var$isShortTrainDeviation = (dev)=>{
+    const msg = `${dev.message || dev.text || dev.title || ""}`.toLowerCase();
+    return msg.includes("kort tåg") || msg.includes("kort tag") || msg.includes("short train");
+};
 function $66d5822390d71e6e$var$isDepartureAttrs(item) {
     return item.departures !== undefined;
 }

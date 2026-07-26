@@ -900,13 +900,10 @@
           {% endfor %}
           {{ ns.items }}
 
-# Kollektivtrafik — pendeltåg filtrerat från Farsta strand (endast tåg linje 4x, riktning 2)
+# Kollektivtrafik — pendeltåg från Farsta strand (SL Transport API, linje 4x riktning 2)
 - trigger:
     - trigger: homeassistant
       event: start
-    - trigger: state
-      entity_id: sensor.departure_sensor_farsta_strand_station_departures
-      attribute: departures
     - trigger: state
       entity_id: sensor.farsta_strand_sl_pendeltag
       attribute: departures
@@ -914,33 +911,40 @@
     - name: Farsta strand pendeltåg departures
       unique_id: farsta_strand_pendeltag_departures
       state: >
-        {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
+        {% set deps = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') | default([], true) %}
         {% set ns = namespace(n=0) %}
         {% for d in deps %}
-          {% if d.line.transport_mode == 'TRAIN' and d.direction_code == '2' and d.line.designation is match('^4') %}
+          {% if d.line.transport_mode == 'TRAIN' and (d.direction_code | string) == '2' and d.line.designation is match('^4') %}
             {% set ns.n = ns.n + 1 %}
           {% endif %}
         {% endfor %}
         {{ ns.n }}
       attributes:
         departures: >
-          {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
-          {% set sl_deps = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') | default([], true) %}
+          {% set deps = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') | default([], true) %}
           {% set dest_pat = '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$' %}
           {% set ns = namespace(items=[]) %}
           {% for d in deps %}
-            {% if d.line.transport_mode == 'TRAIN' and d.direction_code == '2' and d.line.designation is match('^4') %}
-              {% set dest = d.destination | regex_replace(dest_pat, '') %}
-              {% set time_key = (d.expected | string)[:16] %}
+            {% if d.line.transport_mode == 'TRAIN' and (d.direction_code | string) == '2' and d.line.designation is match('^4') %}
+              {% set dest = d.destination | regex_replace(dest_pat, '') | trim %}
               {% set devs = namespace(list=[]) %}
-              {% for s in sl_deps %}
-                {% if s.line.designation == d.line.designation and (s.direction_code | string) == (d.direction_code | string) and (s.expected | string)[:16] == time_key and (s.destination | regex_replace(dest_pat, '') | trim) == dest %}
-                  {% for dev in s.deviations | default([]) %}
-                    {% set devs.list = devs.list + [{'message': dev.message, 'importance_level': dev.importance | default(5)}] %}
-                  {% endfor %}
-                {% endif %}
+              {% for dev in d.deviations | default([]) %}
+                {% set devs.list = devs.list + [{
+                  'message': dev.message | default(''),
+                  'importance_level': dev.importance_level | default(dev.importance | default(5))
+                }] %}
               {% endfor %}
-              {% set item = d | combine({'destination': dest}) %}
+              {% set item = {
+                'destination': dest,
+                'direction': d.direction,
+                'direction_code': d.direction_code,
+                'state': d.state,
+                'display': d.display,
+                'stop_point': d.stop_point,
+                'line': d.line,
+                'scheduled': d.scheduled,
+                'expected': d.expected
+              } %}
               {% if devs.list | length > 0 %}
                 {% set item = item | combine({'deviations': devs.list}) %}
               {% endif %}
