@@ -2002,3 +2002,22 @@ git_synka_config:
     - action: script.reload
     - action: template.reload
     - action: group.reload
+
+cursor_klar_notis:
+  alias: "Cursor: Agent klar — mobilnotis"
+  description: "Skickar klar-notis till Elias S23 Ultra. Anropas av Cursor-agenter via MCP."
+  mode: single
+  fields:
+    beskrivning:
+      description: "Kort beskrivning (max en mening) av vad som hänt eller vad som behövs"
+      example: "PR #42 mergad och git-synk klar — vill du testa live?"
+      required: true
+  sequence:
+    - action: notify.mobile_app_ilias_s23_ultra
+      data:
+        title: "Cursor: {{ now().strftime('%H:%M') }}"
+        message: "Nu är jag klar, Home Assistant. {{ beskrivning }}"
+        data:
+          ttl: 0
+          priority: high
+          vibration: "1000, 300, 1000, 300, 1000"
