@@ -6,7 +6,7 @@ title: HA Management
 resources:
 - url: /hacsfiles/bar-card/bar-card.js
   type: module
-- url: /hacsfiles/lovelace-hasl-departure-card/hasl4-departure-card.js
+- url: /hacsfiles/lovelace-hasl-departure-card/hasl4-departure-card.js?v=20260726
   type: module
 - url: /hacsfiles/bignumber-card/bignumber-card.js
   type: module
@@ -6557,37 +6557,27 @@ views:
   sections:
   - type: grid
     cards:
-    - type: heading
-      heading: Buss 742
-      heading_style: title
-      icon: mdi:bus
-    - type: custom:hasl4-departure-card
-      title: Ekshäradsgatan → Huddinge sjukhus
-      entities:
-      - sensor.departure_sensor_eksharadsgatan_departures
-      show_header: true
-      show_icon: true
-      show_departures: true
-      max_departures: 6
-      direction: 2
-      hide_departed: true
-      show_updated: true
-      language: sv-SE
-  - type: grid
-    cards:
-    - type: heading
-      heading: Pendeltåg
-      heading_style: title
-      icon: mdi:train
-    - type: custom:hasl4-departure-card
-      title: Farsta strand → Stockholm (via Odenplan)
-      entities:
-      - sensor.departure_sensor_farsta_strand_station_departures
-      show_header: true
-      show_icon: true
-      show_departures: true
-      max_departures: 6
-      direction: 2
-      hide_departed: true
-      show_updated: true
-      language: sv-SE
+    - type: vertical-stack
+      cards:
+      - type: custom:hasl4-departure-card
+        title: Buss 742 — Ekshäradsgatan till Huddinge sjukhus
+        entity: sensor.departure_sensor_eksharadsgatan_departures
+        show_header: true
+        show_icon: true
+        show_departures: true
+        max_departures: 6
+        direction: 2
+        hide_departed: true
+        show_updated: true
+        language: sv-SE
+      - type: custom:hasl4-departure-card
+        title: Pendeltåg — Farsta strand mot Stockholm (via Odenplan)
+        entity: sensor.departure_sensor_farsta_strand_station_departures
+        show_header: true
+        show_icon: true
+        show_departures: true
+        max_departures: 6
+        direction: 2
+        hide_departed: true
+        show_updated: true
+        language: sv-SE
