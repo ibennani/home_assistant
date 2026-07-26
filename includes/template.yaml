@@ -925,7 +925,7 @@
       attributes:
         departures: >
           {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
-          {% set sl_deps = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') | default([]) %}
+          {% set sl_deps = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') | default([], true) %}
           {% set dest_pat = '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$' %}
           {% set ns = namespace(items=[]) %}
           {% for d in deps %}
@@ -955,10 +955,8 @@
       minutes: "/1"
     - trigger: homeassistant
       event: start
-  action:
-    - action: rest.get
-      data:
-        url: https://transport.integration.sl.se/v1/sites/9180/departures?transport=TRAIN&forecast=60
+  actions:
+    - action: rest_command.sl_farsta_pendeltag
       response_variable: sl_farsta
   sensor:
     - name: Farsta strand SL pendeltåg
