@@ -870,6 +870,31 @@
           mdi:weather-cloudy
         {% endif %}
 
+# Kollektivtrafik — buss 742 mot Huddinge sjukhus (Ekshäradsgatan)
+- trigger:
+    - trigger: homeassistant
+      event: start
+    - trigger: state
+      entity_id: sensor.departure_sensor_eksharadsgatan_departures
+  sensor:
+    - name: Ekshäradsgatan buss 742 departures
+      unique_id: eksharadsgatan_buss_742_departures
+      state: >
+        {% set deps = state_attr('sensor.departure_sensor_eksharadsgatan_departures', 'departures') | default([]) %}
+        {{ deps
+           | selectattr('line.designation', 'eq', '742')
+           | selectattr('direction_code', 'eq', '2')
+           | selectattr('destination', 'eq', 'Huddinge sjukhus')
+           | list | length }}
+      attributes:
+        departures: >
+          {% set deps = state_attr('sensor.departure_sensor_eksharadsgatan_departures', 'departures') | default([]) %}
+          {{ deps
+             | selectattr('line.designation', 'eq', '742')
+             | selectattr('direction_code', 'eq', '2')
+             | selectattr('destination', 'eq', 'Huddinge sjukhus')
+             | list }}
+
 # Kollektivtrafik — pendeltåg filtrerat från Farsta strand (endast tåg linje 4x, riktning 2)
 - trigger:
     - trigger: homeassistant
