@@ -1203,6 +1203,19 @@ views:
         unit: '%'
         min: 0
         max: 100
+    - type: horizontal-stack
+      title: Bakom diskmaskinen
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.floodsensor_koket_temperature
+        unit: °C
+        min: 0
+        max: 40
+        severity:
+          green: 18
+          yellow: 24
+          red: 30
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
@@ -1630,6 +1643,19 @@ views:
         entity: binary_sensor.tvattstugan_rorelse
         name: Rörelsen
         state: '{% if is_state(''binary_sensor.tvattstugan_rorelse'', ''on'') %}Rörelse{% else %}Ingen rörelse{% endif %}'
+    - type: horizontal-stack
+      title: Bakom tvättmaskinen
+      cards:
+      - type: gauge
+        name: Temperatur
+        entity: sensor.floodsensor_tvattstugan_temperature
+        unit: °C
+        min: 0
+        max: 40
+        severity:
+          green: 18
+          yellow: 24
+          red: 30
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
