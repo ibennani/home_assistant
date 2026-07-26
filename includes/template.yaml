@@ -963,6 +963,10 @@
   sensor:
     - name: Farsta strand SL pendeltåg
       unique_id: farsta_strand_sl_pendeltag_departures
-      state: "{{ sl_farsta.json().departures | default([]) | length }}"
+      state: >
+        {% set body = sl_farsta.content | default('') | from_json(default={}) %}
+        {{ body.departures | default([]) | length }}
       attributes:
-        departures: "{{ sl_farsta.json().departures | default([]) }}"
+        departures: >
+          {% set body = sl_farsta.content | default('') | from_json(default={}) %}
+          {{ body.departures | default([]) }}
