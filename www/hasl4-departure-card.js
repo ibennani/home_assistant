@@ -1458,7 +1458,7 @@ const $8ae640dd6c4226ad$var$defaultTranslation = {
     min: "min",
     last_updated: "Last updated",
     now: "Now",
-    // configuration translations
+    cancelled: "Cancelled",
     editor_show_name: "Show card name",
     editor_entities: "Entities",
     editor_departures: "Departures",
@@ -1490,7 +1490,7 @@ const $8ae640dd6c4226ad$export$150b732325d14d04 = {
         min: "min",
         last_updated: "Senast uppdaterad",
         now: "Nu",
-        editor_show_name: "Visa kortnamn",
+        cancelled: "Inställt",
         editor_entities: "Enheter",
         editor_departures: "Avg\xe5ngar",
         editor_title: "Kortnamn",
@@ -1519,7 +1519,7 @@ const $8ae640dd6c4226ad$export$150b732325d14d04 = {
         min: "min",
         last_updated: "Mis \xe0 jour",
         now: "Maintenant",
-        editor_show_name: "Afficher le nom de la carte",
+        cancelled: "Supprimé",
         editor_entities: "Entit\xe9s",
         editor_departures: "D\xe9parts",
         editor_title: "Nom de la carte",
@@ -1746,7 +1746,29 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         text-transform: lowercase;
     }
 
+    .old-time {
+        text-decoration: line-through;
+        opacity: 0.65;
+        margin-right: 0.35em;
+    }
+
+    .new-time {
+        color: #0abcfc;
+        font-weight: 600;
+    }
+
+    .cancelled-time {
+        color: #e53935;
+        font-weight: 600;
+    }
+
+    .leaves-in {
+        white-space: nowrap;
+    }
+
     .mr1 {
+        margin-right: 8px;
+    }
         margin-right: 8px;
     }
 
@@ -1777,7 +1799,24 @@ const $66d5822390d71e6e$var$diffMinutes = (from, to)=>{
     const diffMinutes = Math.ceil((from.getTime() - to.getTime()) / 1000 / 60);
     return diffMinutes;
 };
-
+const $66d5822390d71e6e$var$parseDepartureDate = (value)=>{
+    if (!value) return null;
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+};
+const $66d5822390d71e6e$var$formatDepartureClock = (date, lang)=>date.toLocaleTimeString(lang, {
+        hour: "numeric",
+        minute: "numeric"
+    });
+const $66d5822390d71e6e$var$isCancelledDeparture = (dep)=>{
+    const state = (dep.state || "").toUpperCase();
+    const journeyState = (dep.journey?.state || "").toUpperCase();
+    return state === "CANCELLED" || state === "INHIBITED" || journeyState === "CANCELLED";
+};
+const $66d5822390d71e6e$var$isDelayedDeparture = (scheduledAt, expectedAt)=>{
+    if (!scheduledAt || !expectedAt) return false;
+    return Math.round((expectedAt.getTime() - scheduledAt.getTime()) / 1000 / 60) >= 1;
+};
 class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
     static{
         this.styles = (0, $57faf62096e30446$export$2e2bcd8739ae039);
@@ -1974,19 +2013,26 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                     </div>` : (0, $l56HR.nothing)}
 
                 ${departures.map((dep)=>{
-                const expectedAt = new Date(dep.expected);
-                const diff = $66d5822390d71e6e$var$diffMinutes(expectedAt, now);
+                const scheduledAt = $66d5822390d71e6e$var$parseDepartureDate(dep.scheduled);
+                const expectedAt = $66d5822390d71e6e$var$parseDepartureDate(dep.expected) || scheduledAt;
+                const diff = expectedAt ? $66d5822390d71e6e$var$diffMinutes(expectedAt, now) : 0;
                 const isAtThePlatform = diff === 0;
                 const isDeparted = diff < 0;
+                const isCancelled = $66d5822390d71e6e$var$isCancelledDeparture(dep);
+                const isDelayed = !isCancelled && $66d5822390d71e6e$var$isDelayedDeparture(scheduledAt, expectedAt);
                 const hasDeviations = (dep.deviations?.length || 0) > 0;
                 const isShortTrain = (dep.deviations || []).some($66d5822390d71e6e$var$isShortTrainDeviation);
                 const otherDeviations = (dep.deviations || []).filter((dev)=>!$66d5822390d71e6e$var$isShortTrainDeviation(dev));
                 const hasOtherDeviations = otherDeviations.length > 0;
                 const mostImportantDeviation = otherDeviations.sort((a, b)=>(b.importance_level || 0) - (a.importance_level || 0))?.[0];
-                const departureTime = this.config?.show_time_always ? expectedAt.toLocaleTimeString(lang, {
-                    hour: "numeric",
-                    minute: "numeric"
-                }) : (()=>{
+                const departureTime = (()=>{
+                    if (isCancelled) return (0, $l56HR.html)`<span class="cancelled-time">${_("cancelled")}</span>`;
+                    if (isDelayed && scheduledAt && expectedAt) {
+                        const newTime = this.config?.show_time_always ? $66d5822390d71e6e$var$formatDepartureClock(expectedAt, lang) : isAtThePlatform ? _("now") : (0, $l56HR.html)`<ha-relative-time .hass=${this.hass} .datetime=${expectedAt}></ha-relative-time>`;
+                        return (0, $l56HR.html)`<span class="old-time">${$66d5822390d71e6e$var$formatDepartureClock(scheduledAt, lang)}</span><span class="new-time">${newTime}</span>`;
+                    }
+                    if (!expectedAt) return "";
+                    if (this.config?.show_time_always) return $66d5822390d71e6e$var$formatDepartureClock(expectedAt, lang);
                     return isAtThePlatform ? _("now") : (0, $l56HR.html)`<ha-relative-time .hass=${this.hass} .datetime=${expectedAt}></ha-relative-time>`;
                 })();
                 const icon = {
