@@ -1931,6 +1931,28 @@ test_spela_p1_i_ilias_rum_med_tyst_start:
   mode: restart
   icon: mdi:radio
 
+grasklipparen_starta:
+  alias: "Gräsklipparen: Starta klippning"
+  description: Startar gräsklipparen och meddelar om regnfördröjning blockerar start.
+  mode: single
+  sequence:
+    - action: lawn_mower.start_mowing
+      target:
+        entity_id: lawn_mower.grasklipparen
+    - delay:
+        seconds: 5
+    - if:
+      - condition: state
+        entity_id: lawn_mower.grasklipparen
+        state: rain_delayed
+      then:
+        - action: notify.mobile_app_ilias_s23_ultra
+          data:
+            message: "HEMMET {{ now().strftime('%R') }}: Gräsklipparen är i regnfördröjning och startade inte. Stäng av regnfördröjning i Worx-appen eller vänta tills den gått ut."
+            data:
+              ttl: 0
+              priority: high
+
 git_synka_config:
   alias: "Git: Synka /config från GitHub"
   description: "Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP."
