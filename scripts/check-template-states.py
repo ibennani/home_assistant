@@ -16,6 +16,8 @@ ENTITY_OVERRIDES = {
     "indoor_pressure_min_05s6df0a1sg0asg81asg8r0aasgsa": "sensor.lufttryck_inomhus_min",
     "indoor_pressure_max_05s6df0a1sg0asg8dd1asgr1aaasg": "sensor.lufttryck_inomhus_max",
     "belysning_energi_totalt_kwh": "sensor.belysning_energi_totalt",
+    "belysning_energiforbrukning_just_nu": "sensor.belysning_energiforbrukning_just_nu",
+    "belysning_energi_unavailable_count": "sensor.belysning_energi_unavailable_count",
 }
 
 

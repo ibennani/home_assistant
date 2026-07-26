@@ -478,6 +478,7 @@
         - sensor.dimmer_2_electric_consumption_kwh_9
         - sensor.dimmer_2_electric_consumption_kwh_8
         - sensor.dimmer_2_electric_consumption_kwh_17
+        - sensor.smart_energy_plug_in_switch_electric_consumption_kwh_4
   sensor:
     - name: "Belysning energi totalt"
       unique_id: belysning_energi_totalt_kwh
@@ -485,14 +486,89 @@
       device_class: energy
       state_class: total_increasing
       state: >-
-        {% set entities = ['sensor.dimmer_2_electric_consumption_kwh_16','sensor.dimmer_2_electric_consumption_kwh_11','sensor.dimmer_2_electric_consumption_kwh_2','sensor.dimmer_2_electric_consumption_kwh_21','sensor.wc_taklampa_electric_consumption_kwh_24','sensor.dimmer_2_electric_consumption_kwh_13','sensor.dimmer_2_electric_consumption_kwh_18','sensor.dimmer_2_electric_consumption_kwh_12','sensor.dimmer_2_electric_consumption_kwh','sensor.dimmer_2_electric_consumption_kwh_20','sensor.dimmer_2_electric_consumption_kwh_22','sensor.dimmer_2_electric_consumption_kwh_19','sensor.dimmer_2_electric_consumption_kwh_4','sensor.dimmer_2_electric_consumption_kwh_3','sensor.dimmer_2_electric_consumption_kwh_14','sensor.dimmer_2_electric_consumption_kwh_15','sensor.takspottarna_i_forradet_electric_consumption_kwh','sensor.takspottar_badrummet_electric_consumption_kwh','sensor.takspott_duschen_electric_consumption_kwh','sensor.dimmer_2_electric_consumption_kwh_23','sensor.smart_energy_plug_in_switch_electric_consumption_kwh','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_3','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_6','sensor.led_ovanfor_lilla_arbetsbanken_electric_consumption_kwh','sensor.rgbw_controller_2_electric_consumption_kwh_2','sensor.dimmer_2_electric_consumption_kwh_6','sensor.consumption_742','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_2','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_5','sensor.rgbw_controller_2_electric_consumption_kwh_3','sensor.dimmer_2_electric_consumption_kwh_5','sensor.dimmer_2_electric_consumption_kwh_10','sensor.dimmer_2_electric_consumption_kwh_9','sensor.dimmer_2_electric_consumption_kwh_8','sensor.dimmer_2_electric_consumption_kwh_17'] %}
+        {% set entities = ['sensor.dimmer_2_electric_consumption_kwh_16','sensor.dimmer_2_electric_consumption_kwh_11','sensor.dimmer_2_electric_consumption_kwh_2','sensor.dimmer_2_electric_consumption_kwh_21','sensor.wc_taklampa_electric_consumption_kwh_24','sensor.dimmer_2_electric_consumption_kwh_13','sensor.dimmer_2_electric_consumption_kwh_18','sensor.dimmer_2_electric_consumption_kwh_12','sensor.dimmer_2_electric_consumption_kwh','sensor.dimmer_2_electric_consumption_kwh_20','sensor.dimmer_2_electric_consumption_kwh_22','sensor.dimmer_2_electric_consumption_kwh_19','sensor.dimmer_2_electric_consumption_kwh_4','sensor.dimmer_2_electric_consumption_kwh_3','sensor.dimmer_2_electric_consumption_kwh_14','sensor.dimmer_2_electric_consumption_kwh_15','sensor.takspottarna_i_forradet_electric_consumption_kwh','sensor.takspottar_badrummet_electric_consumption_kwh','sensor.takspott_duschen_electric_consumption_kwh','sensor.dimmer_2_electric_consumption_kwh_23','sensor.smart_energy_plug_in_switch_electric_consumption_kwh','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_3','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_6','sensor.led_ovanfor_lilla_arbetsbanken_electric_consumption_kwh','sensor.rgbw_controller_2_electric_consumption_kwh_2','sensor.dimmer_2_electric_consumption_kwh_6','sensor.consumption_742','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_2','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_5','sensor.rgbw_controller_2_electric_consumption_kwh_3','sensor.dimmer_2_electric_consumption_kwh_5','sensor.dimmer_2_electric_consumption_kwh_10','sensor.dimmer_2_electric_consumption_kwh_9','sensor.dimmer_2_electric_consumption_kwh_8','sensor.dimmer_2_electric_consumption_kwh_17','sensor.smart_energy_plug_in_switch_electric_consumption_kwh_4'] %}
         {% set ns = namespace(total=0.0) %}
         {% for e in entities %}
           {% set ns.total = ns.total + (states(e) | float(0)) %}
         {% endfor %}
         {{ ns.total | round(3) }}
 
-# 2. Solen på baksidan (Med tidsfördröjning och minnes-attribut)
+# 2. Belysning – effekt just nu (W), summerar group.energi_just_nu_kallor
+- trigger:
+    - trigger: homeassistant
+      event: start
+    - trigger: state
+      entity_id:
+        - sensor.dimmer_2_power_16
+        - sensor.dimmer_2_power_11
+        - sensor.dimmer_2_power_2
+        - sensor.dimmer_2_power_21
+        - sensor.wc_taklampa_power_24
+        - sensor.dimmer_2_power_13
+        - sensor.dimmer_2_power_19
+        - sensor.dimmer_2_power_20
+        - sensor.dimmer_2_power_12
+        - sensor.dimmer_2_power
+        - sensor.dimmer_2_power_6
+        - sensor.dimmer_2_power_22
+        - sensor.dimmer_2_power_4
+        - sensor.dimmer_2_power_18
+        - sensor.dimmer_2_power_3
+        - sensor.dimmer_2_power_14
+        - sensor.dimmer_2_power_15
+        - sensor.dimmer_2_power_23
+        - sensor.takspottar_badrummet_power
+        - sensor.takspott_duschen_power
+        - sensor.led_badrummet_energi
+        - sensor.takspottarna_i_forradet_power
+        - sensor.smart_energy_plug_in_switch_electric_consumption_w
+        - sensor.smart_energy_plug_in_switch_electric_consumption_w_4
+        - sensor.smart_energy_plug_in_switch_electric_consumption_w_3
+        - sensor.lampan_balkongdorren_energi
+        - sensor.smart_energy_plug_in_switch_electric_consumption_w_6
+        - sensor.led_ovanfor_lilla_arbetsbanken_electric_consumption_w
+        - sensor.rgbw_controller_2_electric_consumption_w_2
+        - sensor.elljusstaken_i_koksfonstret_power
+        - sensor.smart_energy_plug_in_switch_electric_consumption_w_2
+        - sensor.smart_energy_plug_in_switch_electric_consumption_w_5
+        - sensor.rgbw_controller_2_electric_consumption_w_3
+        - sensor.dimmer_2_power_5
+        - sensor.dimmer_2_power_8
+        - sensor.dimmer_2_power_9
+        - sensor.dimmer_2_power_10
+        - sensor.dimmer_2_power_17
+  sensor:
+    - name: "Belysning energiförbrukning just nu"
+      unique_id: belysning_energiforbrukning_just_nu
+      unit_of_measurement: "W"
+      device_class: power
+      state_class: measurement
+      state: >-
+        {% set entities = state_attr('group.energi_just_nu_kallor', 'entity_id') or [] %}
+        {% set ns = namespace(total=0.0) %}
+        {% for e in entities %}
+          {% set value = states(e) | float(0) %}
+          {% if value < 500 %}
+            {% set ns.total = ns.total + value %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.total | round(1) }}
+    - name: "Belysning energi – unavailable count"
+      unique_id: belysning_energi_unavailable_count
+      unit_of_measurement: "st"
+      state_class: measurement
+      icon: mdi:alert-circle-outline
+      state: >-
+        {% set entities = state_attr('group.energi_just_nu_kallor', 'entity_id') or [] %}
+        {% set ns = namespace(count=0) %}
+        {% for e in entities %}
+          {% if states(e) in ['unavailable', 'unknown', 'none'] %}
+            {% set ns.count = ns.count + 1 %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.count }}
+
+# 3. Solen på baksidan (Med tidsfördröjning och minnes-attribut)
 - triggers:
     # Räkna om när ljusstyrkan på baksidan ändras.
     - trigger: state

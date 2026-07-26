@@ -291,7 +291,8 @@ other_sensors_with_bad_battery_indicators:
   entities: []
 
 
-# Energiåtgång för alla lampor där vi kan mäta energiåtgången
+# Energiåtgång för alla lampor där vi kan mäta energiåtgången.
+# Uppdatera även trigger-listan för belysning_energiforbrukning_just_nu i includes/template.yaml.
 energi_just_nu_kallor:
   name: "Energi just nu – källor"
   icon: mdi:flash
