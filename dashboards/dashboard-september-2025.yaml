@@ -1737,107 +1737,109 @@ views:
       - entity: switch.vattenslang_framsidan
         name: Vattenslangen
     - &grasklippare_panel
-      type: custom:config-template-card
-      entities:
-      - lawn_mower.grasklipparen
-      - binary_sensor.grasklipparen_charging
-      - sensor.grasklipparen_error_3
-      card:
-        type: vertical-stack
-        cards:
-        - type: markdown
-          content: '### Gräsklipparen ({% set s = states(''lawn_mower.grasklipparen'') %}{% if s == ''mowing''
-            %}klipper{% elif s == ''returning'' %}på väg hem{% elif s == ''paused'' %}pausad{% elif s == ''rain_delayed''
-            %}regnfördröjning{% elif s == ''starting'' %}startar{% elif s == ''edgecut'' %}kantklippning{% elif s == ''zoning''
-            %}zonklippning{% elif s == ''searching_zone'' %}söker zon{% elif s == ''idle'' %}vilande{% elif s == ''escaped_digital_fence''
-            %}utanför staket{% elif s == ''docked'' and is_state(''binary_sensor.grasklipparen_charging'', ''on'') %}laddar{%
-            elif s == ''docked'' %}i ladstationen{% elif s == ''error'' %}fel{% elif s == ''unavailable'' %}otillgänglig{%
-            elif s == ''unknown'' %}okänt{% else %}{{ s | replace(''_'', '' '') }}{% endif %})
+      type: vertical-stack
+      cards:
+      - type: custom:config-template-card
+        entities:
+        - lawn_mower.grasklipparen
+        - binary_sensor.grasklipparen_charging
+        - sensor.grasklipparen_error_3
+        card:
+          type: vertical-stack
+          cards:
+          - type: markdown
+            content: '### Gräsklipparen ({% set s = states(''lawn_mower.grasklipparen'') %}{% if s == ''mowing''
+              %}klipper{% elif s == ''returning'' %}på väg hem{% elif s == ''paused'' %}pausad{% elif s == ''rain_delayed''
+              %}regnfördröjning{% elif s == ''starting'' %}startar{% elif s == ''edgecut'' %}kantklippning{% elif s == ''zoning''
+              %}zonklippning{% elif s == ''searching_zone'' %}söker zon{% elif s == ''idle'' %}vilande{% elif s == ''escaped_digital_fence''
+              %}utanför staket{% elif s == ''docked'' and is_state(''binary_sensor.grasklipparen_charging'', ''on'') %}laddar{%
+              elif s == ''docked'' %}i ladstationen{% elif s == ''error'' %}fel{% elif s == ''unavailable'' %}otillgänglig{%
+              elif s == ''unknown'' %}okänt{% else %}{{ s | replace(''_'', '' '') }}{% endif %})
 
-            {% if s == ''rain_delayed'' %}*Regnfördröjning aktiv — klipparen startar inte förrän den släpper eller stängs av i Worx-appen.*{% endif %}'
-        - type: entities
-          show_header_toggle: false
-          entities:
-          - entity: sensor.grasklipparen_battery_3
-            name: Batteri
-        - type: conditional
-          conditions:
-          - condition: state
-            entity: lawn_mower.grasklipparen
-            state_not:
-            - mowing
-            - paused
-            - returning
-            - starting
-            - edgecut
-            - zoning
-            - searching_zone
-            - escaped_digital_fence
-          card:
-            type: custom:mod-card
+              {% if s == ''rain_delayed'' %}*Regnfördröjning aktiv — klipparen startar inte förrän den släpper eller stängs av i Worx-appen.*{% endif %}'
+          - type: entities
+            show_header_toggle: false
+            entities:
+            - entity: sensor.grasklipparen_battery_3
+              name: Batteri
+      - type: conditional
+        conditions:
+        - condition: state
+          entity: lawn_mower.grasklipparen
+          state_not:
+          - mowing
+          - paused
+          - returning
+          - starting
+          - edgecut
+          - zoning
+          - searching_zone
+          - escaped_digital_fence
+        card:
+          type: picture-elements
+          image: data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E
+          aspect_ratio: 18%
+          elements:
+          - type: icon
+            icon: mdi:play
+            tap_action:
+              action: call-service
+              service: script.grasklipparen_starta
+              target:
+                entity_id: script.grasklipparen_starta
             style:
-              .: |
-                ha-icon {
-                  color: #4caf50 !important;
-                }
-            card:
-              type: button
-              name: Start
-              icon: mdi:play
-              icon_height: 28px
-              tap_action:
-                action: call-service
-                service: script.grasklipparen_starta
-                target:
-                  entity_id: script.grasklipparen_starta
-        - type: conditional
-          conditions:
-          - condition: state
-            entity: lawn_mower.grasklipparen
-            state:
-            - mowing
-            - paused
-            - returning
-            - starting
-            - edgecut
-            - zoning
-            - searching_zone
-            - escaped_digital_fence
-          card:
-            type: horizontal-stack
-            cards:
-            - type: custom:mod-card
-              style:
-                .: |
-                  ha-icon {
-                    color: #ffffff !important;
-                  }
-              card:
-                type: button
-                name: Paus
-                icon: mdi:pause
-                icon_height: 28px
-                tap_action:
-                  action: call-service
-                  service: lawn_mower.pause
-                  target:
-                    entity_id: lawn_mower.grasklipparen
-            - type: custom:mod-card
-              style:
-                .: |
-                  ha-icon {
-                    color: #f44336 !important;
-                  }
-              card:
-                type: button
-                name: Hem
-                icon: mdi:home
-                icon_height: 28px
-                tap_action:
-                  action: call-service
-                  service: lawn_mower.dock
-                  target:
-                    entity_id: lawn_mower.grasklipparen
+              top: 50%
+              left: 50%
+              transform: translate(-50%, -50%)
+              color: '#4caf50'
+              --mdc-icon-size: 28px
+      - type: conditional
+        conditions:
+        - condition: state
+          entity: lawn_mower.grasklipparen
+          state:
+          - mowing
+          - paused
+          - returning
+          - starting
+          - edgecut
+          - zoning
+          - searching_zone
+          - escaped_digital_fence
+        card:
+          type: picture-elements
+          image: data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E
+          aspect_ratio: 18%
+          elements:
+          - type: icon
+            icon: mdi:pause
+            tap_action:
+              action: call-service
+              service: lawn_mower.pause
+              target:
+                entity_id: lawn_mower.grasklipparen
+            style:
+              top: 50%
+              left: 38%
+              transform: translate(-50%, -50%)
+              color: '#ffffff'
+              background-color: rgba(0, 0, 0, 0.55)
+              border-radius: 8px
+              padding: 6px
+              --mdc-icon-size: 28px
+          - type: icon
+            icon: mdi:home
+            tap_action:
+              action: call-service
+              service: lawn_mower.dock
+              target:
+                entity_id: lawn_mower.grasklipparen
+            style:
+              top: 50%
+              left: 62%
+              transform: translate(-50%, -50%)
+              color: '#f44336'
+              --mdc-icon-size: 28px
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
