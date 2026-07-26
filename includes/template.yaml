@@ -908,7 +908,7 @@
       entity_id: sensor.departure_sensor_farsta_strand_station_departures
       attribute: departures
     - trigger: state
-      entity_id: sensor.farsta_strand_sl_pendeltag_departures
+      entity_id: sensor.farsta_strand_sl_pendeltag
       attribute: departures
   sensor:
     - name: Farsta strand pendeltåg departures
@@ -925,7 +925,7 @@
       attributes:
         departures: >
           {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
-          {% set sl_deps = state_attr('sensor.farsta_strand_sl_pendeltag_departures', 'departures') | default([]) %}
+          {% set sl_deps = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') | default([]) %}
           {% set dest_pat = '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$' %}
           {% set ns = namespace(items=[]) %}
           {% for d in deps %}
@@ -957,8 +957,9 @@
       event: start
   action:
     - action: rest.get
+      data:
+        url: https://transport.integration.sl.se/v1/sites/9180/departures?transport=TRAIN&forecast=60
       response_variable: sl_farsta
-      url: https://transport.integration.sl.se/v1/sites/9180/departures?transport=TRAIN&forecast=60
   sensor:
     - name: Farsta strand SL pendeltåg
       unique_id: farsta_strand_sl_pendeltag_departures
