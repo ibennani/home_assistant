@@ -906,21 +906,28 @@
       event: start
     - trigger: state
       entity_id: sensor.departure_sensor_farsta_strand_station_departures
+      attribute: departures
   sensor:
     - name: Farsta strand pendeltåg departures
       unique_id: farsta_strand_pendeltag_departures
       state: >
         {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
-        {{ deps
-           | selectattr('line.transport_mode', 'eq', 'TRAIN')
-           | selectattr('direction_code', 'eq', '2')
-           | selectattr('line.designation', 'match', '^4')
-           | list | length }}
+        {% set ns = namespace(n=0) %}
+        {% for d in deps %}
+          {% if d.line.transport_mode == 'TRAIN' and d.direction_code == '2' and d.line.designation is match('^4') %}
+            {% set ns.n = ns.n + 1 %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.n }}
       attributes:
         departures: >
           {% set deps = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') | default([]) %}
-          {{ deps
-             | selectattr('line.transport_mode', 'eq', 'TRAIN')
-             | selectattr('direction_code', 'eq', '2')
-             | selectattr('line.designation', 'match', '^4')
-             | list }}
+          {% set dest_pat = '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$' %}
+          {% set ns = namespace(items=[]) %}
+          {% for d in deps %}
+            {% if d.line.transport_mode == 'TRAIN' and d.direction_code == '2' and d.line.designation is match('^4') %}
+              {% set dest = d.destination | regex_replace(dest_pat, '') %}
+              {% set ns.items = ns.items + [d | combine({'destination': dest})] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
