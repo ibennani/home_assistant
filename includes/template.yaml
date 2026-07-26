@@ -950,12 +950,12 @@
           {{ ns.items }}
 
 # Kollektivtrafik — SL Transport API för pendeltåg (deviations, t.ex. kort tåg)
-- trigger:
+- triggers:
     - trigger: time_pattern
       minutes: "/1"
     - trigger: homeassistant
       event: start
-  action:
+  actions:
     - action: rest.get
       data:
         url: https://transport.integration.sl.se/v1/sites/9180/departures?transport=TRAIN&forecast=60
