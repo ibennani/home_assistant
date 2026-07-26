@@ -6,7 +6,7 @@ title: HA Management
 resources:
 - url: /hacsfiles/bar-card/bar-card.js
   type: module
-- url: /hacsfiles/lovelace-hasl-departure-card/hasl-departure-card.js
+- url: /hacsfiles/lovelace-hasl-departure-card/hasl4-departure-card.js
   type: module
 - url: /hacsfiles/bignumber-card/bignumber-card.js
   type: module
