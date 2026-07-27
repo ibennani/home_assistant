@@ -1,6 +1,9 @@
 # Lovelace-dashboards som versioneras i git.
 # Standard-dashboard (Översikt) laddas från YAML i stället för storage.
 mode: storage
+resources:
+  - url: /local/sl-nearby-card.js?v=20260727o
+    type: module
 dashboards:
   dashboard-september-2025:
     mode: yaml
