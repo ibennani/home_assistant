@@ -1766,8 +1766,12 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         padding: 8px 12px 0;
         font-size: smaller;
         line-height: 1.35;
-        color: #fad370;
+        color: #fad370 !important;
         border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    }
+
+    .stop-info-item {
+        color: #fad370 !important;
     }
 
     .stop-info-item + .stop-info-item {
@@ -1915,9 +1919,9 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
             const stopDeviations = data?.attributes?.stop_deviations || [];
             if (!stopDeviations.length) return (0, $l56HR.nothing);
             return (0, $l56HR.html)`
-                <div class="stop-info">
+                <div class="stop-info" style="color:#fad370">
                     ${stopDeviations.map((dev)=>(0, $l56HR.html)`
-                        <div class="stop-info-item">${dev.message || dev.text || dev.title || ""}</div>
+                        <div class="stop-info-item" style="color:#fad370">${dev.message || dev.text || dev.title || ""}</div>
                     `)}
                 </div>
             `;
