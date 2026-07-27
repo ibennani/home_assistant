@@ -2,10 +2,11 @@ class HaSlNearbyStopsCard extends HTMLElement {
   static getStubConfig() {
     return {
       location_entity: "person.ilias_bennani",
+      home_zone_entity: "zone.home",
       max_stops: 20,
+      max_gps_km: 80,
       forecast_minutes: 60,
       hide_departed: true,
-      show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 60,
     };
@@ -17,6 +18,7 @@ class HaSlNearbyStopsCard extends HTMLElement {
 
   setConfig(config) {
     this.config = Object.assign({}, HaSlNearbyStopsCard.getStubConfig(), config || {});
+    this._locationNote = "";
     this._updateView();
   }
 
@@ -39,7 +41,7 @@ class HaSlNearbyStopsCard extends HTMLElement {
   }
 
   getCardSize() {
-    return 8;
+    return 20;
   }
 
   _getCache() {
@@ -54,7 +56,7 @@ class HaSlNearbyStopsCard extends HTMLElement {
       return Promise.resolve(this._sites);
     }
     if (!this._sitesPromise) {
-      this._sitesPromise = fetch("/local/sl-sites.json")
+      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727j")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Kunde inte läsa sl-sites.json (" + response.status + ")");
@@ -62,6 +64,9 @@ class HaSlNearbyStopsCard extends HTMLElement {
           return response.json();
         })
         .then((sites) => {
+          if (!Array.isArray(sites)) {
+            throw new Error("sl-sites.json har oväntat format");
+          }
           this._sites = sites;
           return sites;
         })
@@ -74,11 +79,11 @@ class HaSlNearbyStopsCard extends HTMLElement {
     return this._sitesPromise;
   }
 
-  _getLocation() {
-    if (!this._hass || !this.config || !this.config.location_entity) {
+  _readCoords(entityId) {
+    if (!this._hass || !entityId) {
       return null;
     }
-    const state = this._hass.states[this.config.location_entity];
+    const state = this._hass.states[entityId];
     if (!state || !state.attributes) {
       return null;
     }
@@ -88,6 +93,34 @@ class HaSlNearbyStopsCard extends HTMLElement {
       return null;
     }
     return { lat: lat, lon: lon };
+  }
+
+  _getSearchLocation() {
+    const personLoc = this._readCoords(this.config.location_entity);
+    const homeLoc = this._readCoords(this.config.home_zone_entity);
+    const maxDistanceM = Number(this.config.max_gps_km || 80) * 1000;
+
+    if (!personLoc && homeLoc) {
+      this._locationNote = "Använder hemzon (ingen GPS)";
+      return homeLoc;
+    }
+    if (!personLoc) {
+      return null;
+    }
+    if (homeLoc) {
+      const distFromHome = this._haversineMeters(
+        personLoc.lat,
+        personLoc.lon,
+        homeLoc.lat,
+        homeLoc.lon,
+      );
+      if (distFromHome > maxDistanceM) {
+        this._locationNote = "GPS långt från hem — visar hållplatser nära hemzon";
+        return homeLoc;
+      }
+    }
+    this._locationNote = "Position från " + this.config.location_entity;
+    return personLoc;
   }
 
   _haversineMeters(lat1, lon1, lat2, lon2) {
@@ -104,7 +137,7 @@ class HaSlNearbyStopsCard extends HTMLElement {
   }
 
   _getNearestStops() {
-    const location = this._getLocation();
+    const location = this._getSearchLocation();
     if (!location || !this._sites || !this._sites.length) {
       return [];
     }
@@ -129,6 +162,47 @@ class HaSlNearbyStopsCard extends HTMLElement {
     return (meters / 1000).toFixed(1) + " km";
   }
 
+  _extractPayload(result) {
+    if (!result) {
+      return {};
+    }
+    if (result.service_response) {
+      const sr = result.service_response;
+      if (sr["script.sl_hamta_avgangar_for_hallplats"]) {
+        return sr["script.sl_hamta_avgangar_for_hallplats"];
+      }
+      const keys = Object.keys(sr);
+      if (keys.length === 1) {
+        return sr[keys[0]];
+      }
+    }
+    if (result.response) {
+      return result.response;
+    }
+    if (result.departures || result.stop_deviations) {
+      return result;
+    }
+    return {};
+  }
+
+  _callDepartures(siteId) {
+    const serviceData = {
+      entity_id: "script.sl_hamta_avgangar_for_hallplats",
+      variables: { site_id: String(siteId) },
+    };
+    if (this._hass.callApi) {
+      return this._hass
+        .callApi("POST", "services/script/turn_on?return_response", serviceData)
+        .then((result) => this._extractPayload(result));
+    }
+    if (this._hass.callService) {
+      return this._hass
+        .callService("script", "turn_on", serviceData, undefined, true)
+        .then((result) => this._extractPayload(result));
+    }
+    return Promise.reject(new Error("Kunde inte anropa Home Assistant"));
+  }
+
   _syncRefreshTimer() {
     const seconds = Number((this.config && this.config.refresh_seconds) || 0);
     if (this._refreshTimer) {
@@ -147,46 +221,47 @@ class HaSlNearbyStopsCard extends HTMLElement {
   }
 
   _loadDepartures(siteId, force) {
-    if (!this._hass || !this._hass.callService) {
+    if (!this._hass) {
       return;
     }
     const cache = this._getCache();
     const cacheKey = String(siteId);
-    if (!force && cache.has(cacheKey) && !cache.get(cacheKey).loading) {
+    if (this._departureInflight && this._departureInflight[cacheKey]) {
+      return;
+    }
+    const existing = cache.get(cacheKey);
+    if (!force && existing && (existing.departures || existing.error)) {
+      this._updateDeparturePanel(siteId);
       return;
     }
 
+    if (!this._departureInflight) {
+      this._departureInflight = {};
+    }
+    this._departureInflight[cacheKey] = true;
     cache.set(cacheKey, { loading: true });
-    this._updateView();
+    this._updateDeparturePanel(siteId);
 
     const self = this;
-    this._hass
-      .callService(
-        "script",
-        "turn_on",
-        {
-          entity_id: "script.sl_hamta_avgangar_for_hallplats",
-          variables: { site_id: String(siteId) },
-        },
-        undefined,
-        true,
-      )
-      .then(function (result) {
-        const payload = (result && result.response) || result || {};
+    this._callDepartures(siteId)
+      .then(function (payload) {
         cache.set(cacheKey, {
           loading: false,
           departures: self._prepareDepartures(payload.departures || []),
           stop_deviations: payload.stop_deviations || [],
           fetched_at: Date.now(),
         });
-        self._updateView();
+        self._updateDeparturePanel(siteId);
       })
       .catch(function (error) {
         cache.set(cacheKey, {
           loading: false,
           error: (error && error.message) || "Kunde inte hämta avgångar",
         });
-        self._updateView();
+        self._updateDeparturePanel(siteId);
+      })
+      .then(function () {
+        self._departureInflight[cacheKey] = false;
       });
   }
 
@@ -237,6 +312,9 @@ class HaSlNearbyStopsCard extends HTMLElement {
     if (transportMode === "BUS") {
       return groupOfLines === "blåbuss" ? "bus bus_" + designation + " blue" : "bus_red bus_" + designation;
     }
+    if (transportMode === "METRO") {
+      return "metro";
+    }
     if (transportMode === "TRAIN") {
       return "train";
     }
@@ -244,18 +322,6 @@ class HaSlNearbyStopsCard extends HTMLElement {
       return "tram tram_" + designation;
     }
     return "train";
-  }
-
-  _transportIcon(transportMode) {
-    const icons = {
-      METRO: "mdi:subway",
-      BUS: "mdi:bus",
-      TRAM: "mdi:tram",
-      TRAIN: "mdi:train",
-      SHIP: "mdi:ship",
-      FERRY: "mdi:ferry",
-    };
-    return icons[transportMode] || "mdi:train";
   }
 
   _renderDepartures(siteId) {
@@ -286,19 +352,23 @@ class HaSlNearbyStopsCard extends HTMLElement {
 
     const departures = cache.departures || [];
     if (!departures.length) {
-      return html + '<div class="departures-empty">Inga avgångar inom ' + (this.config.forecast_minutes || 60) + " min.</div>";
+      return (
+        html +
+        '<div class="departures-empty">Inga avgångar inom ' +
+        (this.config.forecast_minutes || 60) +
+        " min.</div>"
+      );
     }
 
-    html += '<div class="departures"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>';
+    html +=
+      '<div class="departures"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>';
     const now = new Date();
     const self = this;
 
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
       const line = dep.line || {};
-      const scheduledAt = dep.scheduled ? new Date(dep.scheduled) : null;
-      const expectedAt = dep.expected ? new Date(dep.expected) : scheduledAt;
-      const diff = expectedAt ? Math.ceil((expectedAt.getTime() - now.getTime()) / 60000) : 0;
+      const expectedAt = dep.expected ? new Date(dep.expected) : dep.scheduled ? new Date(dep.scheduled) : null;
       const isCancelled =
         String(dep.state || "").toUpperCase() === "CANCELLED" ||
         String(dep.state || "").toUpperCase() === "INHIBITED";
@@ -311,9 +381,6 @@ class HaSlNearbyStopsCard extends HTMLElement {
 
       html +=
         '<div class="departure-block"><div class="row departure">' +
-        '<div class="col icon"><ha-icon class="transport-icon" icon="' +
-        self._transportIcon(line.transport_mode) +
-        '"></ha-icon></div>' +
         '<div class="col icon"><span class="line-icon mr1 ' +
         self._lineIconClass(line.transport_mode, line.designation, line.group_of_lines) +
         '">' +
@@ -330,27 +397,48 @@ class HaSlNearbyStopsCard extends HTMLElement {
     return html;
   }
 
+  _updateDeparturePanel(siteId) {
+    const panel = this.querySelector('.stop-accordion[data-site-id="' + siteId + '"] .stop-body');
+    if (panel) {
+      panel.innerHTML = this._renderDepartures(siteId);
+    }
+  }
+
+  _onToggle(event) {
+    const details = event.target.closest(".stop-accordion");
+    if (!details || !this.contains(details)) {
+      return;
+    }
+    const siteId = Number(details.dataset.siteId);
+    if (!details.open) {
+      if (this._openSiteId === siteId) {
+        this._openSiteId = null;
+      }
+      this._syncRefreshTimer();
+      return;
+    }
+    this._openSiteId = siteId;
+    this._syncRefreshTimer();
+    this._loadDepartures(siteId, false);
+  }
+
   _updateView() {
     if (!this.config) {
       return;
     }
 
-    const root = this.querySelector(".sl-nearby-root");
+    let root = this.querySelector(".sl-nearby-root");
     if (!root) {
       this.innerHTML =
         '<style>' +
         this._styles() +
-        "</style><ha-card><div class=\"sl-nearby-root\"></div></ha-card>";
+        '</style><ha-card><div class="sl-nearby-root"></div></ha-card>';
+      root = this.querySelector(".sl-nearby-root");
+      root.addEventListener("toggle", (event) => this._onToggle(event), true);
     }
 
-    const container = this.querySelector(".sl-nearby-root");
-    if (!container) {
-      return;
-    }
-
-    const location = this._getLocation();
+    const location = this._getSearchLocation();
     const stops = this._getNearestStops();
-    const locationLabel = this.config.location_entity;
     let body = "";
 
     if (this._sitesError) {
@@ -360,13 +448,19 @@ class HaSlNearbyStopsCard extends HTMLElement {
     } else if (!location) {
       body =
         '<div class="status-message">Ingen GPS-position från ' +
-        this._escapeHtml(locationLabel) +
+        this._escapeHtml(this.config.location_entity) +
         ".</div>";
     } else if (!stops.length) {
-      body = '<div class="status-message">Inga hållplatser hittades.</div>';
+      body = '<div class="status-message">Inga hållplatser hittades.</div>";
     } else {
       const self = this;
-      body = stops
+      body =
+        '<div class="list-header"><strong>' +
+        stops.length +
+        " hållplatser</strong> — " +
+        this._escapeHtml(this._locationNote || "") +
+        "</div>";
+      body += stops
         .map(function (stop) {
           const openAttr = self._openSiteId === stop.id ? " open" : "";
           return (
@@ -388,30 +482,30 @@ class HaSlNearbyStopsCard extends HTMLElement {
         .join("");
     }
 
-    container.innerHTML = body;
-
-    const self = this;
-    container.querySelectorAll(".stop-accordion").forEach(function (element) {
-      element.addEventListener("toggle", function (event) {
-        const details = event.currentTarget;
-        const siteId = Number(details.dataset.siteId);
-        if (!details.open) {
-          if (self._openSiteId === siteId) {
-            self._openSiteId = null;
-          }
-          self._syncRefreshTimer();
-          return;
+    const listKey = stops.map((s) => s.id).join(",");
+    if (this._lastListKey === listKey && this.querySelector(".stop-accordion")) {
+      const header = root.querySelector(".list-header");
+      if (header) {
+        header.innerHTML =
+          "<strong>" + stops.length + " hållplatser</strong> — " + this._escapeHtml(this._locationNote || "");
+      }
+      for (let i = 0; i < stops.length; i++) {
+        const distEl = root.querySelector('.stop-accordion[data-site-id="' + stops[i].id + '"] .stop-distance');
+        if (distEl) {
+          distEl.textContent = this._formatDistance(stops[i].distance_m);
         }
-        self._openSiteId = siteId;
-        self._syncRefreshTimer();
-        self._loadDepartures(siteId, false);
-      });
-    });
+      }
+      return;
+    }
+    this._lastListKey = listKey;
+    root.innerHTML = body;
   }
 
   _styles() {
     return [
-      "ha-card{padding:8px 0 12px}",
+      "ha-card{padding:0 0 12px}",
+      ".list-header{padding:14px 16px 8px;font-size:.9rem;color:var(--secondary-text-color);border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12))}",
+      ".list-header strong{color:var(--primary-text-color)}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".stop-accordion{border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
@@ -427,9 +521,10 @@ class HaSlNearbyStopsCard extends HTMLElement {
       ".col.icon{flex-basis:40px}",
       ".main{flex:2}",
       ".line-icon{border-radius:3px;padding:3px;min-width:22px;height:22px;font-weight:500;display:inline-block;text-align:center;color:#fff}",
-      ".bus_red,.train{background-color:#9e0e13}",
-      ".train{background-color:#ec619f}",
-      ".tram{background-color:#985141}",
+      ".bus_red{background:#9e0e13}",
+      ".metro{background:#0061eb}",
+      ".train{background:#ec619f}",
+      ".tram{background:#985141}",
       ".stop-info{margin:0 8px 8px;padding:8px 12px 0;font-size:smaller;color:#fad370!important}",
       ".cancelled-time{color:#e53935;font-weight:600}",
       ".left{text-align:left}",
