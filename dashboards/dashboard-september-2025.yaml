@@ -52,8 +52,8 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/sl-nearby-stops-card.js?v=20260727d
-  type: js
+- url: /local/ha-sl-nearby-stops-card.js?v=20260727e
+  type: module
 kiosk_mode:
   non_admin_settings:
     hide_sidebar: true
@@ -6595,20 +6595,15 @@ views:
         language: sv-SE
 - title: SL
   path: sl-nara
-  icon: mdi:alpha-t-box
+  icon: mdi:alpha-t-circle
   type: sections
   max_columns: 1
   dense_section_placement: true
   sections:
   - type: grid
     cards:
-    - type: custom:sl-nearby-stops-card
+    - type: custom:ha-sl-nearby-stops-card
       location_entity: person.ilias_bennani
       max_stops: 20
-      forecast_minutes: 60
-      hide_departed: true
-      show_time_always: true
-      language: sv-SE
-      refresh_seconds: 60
       grid_options:
         columns: full

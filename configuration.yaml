@@ -32,6 +32,8 @@ cloud:
 config:
 energy:
 frontend:
+  extra_module_url:
+    - /local/ha-sl-nearby-stops-card.js?v=20260727e
 group: !include groups.yaml
 history:
 input_boolean: !include input_boolean.yaml
