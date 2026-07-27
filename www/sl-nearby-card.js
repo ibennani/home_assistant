@@ -1,4 +1,8 @@
 class SlNearbyCard extends HTMLElement {
+  static get CARD_VERSION() {
+    return "20260727t";
+  }
+
   static getStubConfig() {
     return {
       location_entity: "person.ilias_bennani",
@@ -46,6 +50,10 @@ class SlNearbyCard extends HTMLElement {
   }
 
   connectedCallback() {
+    if (this._cardVersion !== SlNearbyCard.CARD_VERSION) {
+      this._cardVersion = SlNearbyCard.CARD_VERSION;
+      this._lastListKey = null;
+    }
     this._ensureSitesLoaded().then(() => this._updateView());
     this._syncRefreshTimer();
   }
@@ -83,7 +91,7 @@ class SlNearbyCard extends HTMLElement {
       return Promise.resolve(this._sites);
     }
     if (!this._sitesPromise) {
-      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727s")
+      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727t")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Kunde inte läsa sl-sites.json (" + response.status + ")");
@@ -211,6 +219,13 @@ class SlNearbyCard extends HTMLElement {
       return {
         departures: result.content.departures || [],
         stop_deviations: result.content.stop_deviations || [],
+      };
+    }
+    if (result.service_response && result.service_response.content) {
+      const content = result.service_response.content;
+      return {
+        departures: content.departures || [],
+        stop_deviations: content.stop_deviations || [],
       };
     }
     if (result.service_response) {
@@ -506,6 +521,28 @@ class SlNearbyCard extends HTMLElement {
     return "train";
   }
 
+  _renderDepartureMeta(detailItems) {
+    if (!detailItems.length) {
+      return "";
+    }
+    const self = this;
+    return (
+      '<div class="departure-meta">' +
+      detailItems
+        .map(function (item) {
+          return (
+            '<span class="detail-item ' +
+            item.className +
+            '">' +
+            self._escapeHtml(item.text) +
+            "</span>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
   _renderDepartures(siteId) {
     const cache = this._getCache().get(String(siteId));
     if (!cache) {
@@ -584,24 +621,7 @@ class SlNearbyCard extends HTMLElement {
         line.group_of_lines,
       );
 
-      let detailRow = "";
-      if (detailItems.length) {
-        detailRow =
-          '<div class="row detail-row"><div class="col icon"></div><div class="col icon"></div>' +
-          '<div class="col main left detail-messages">' +
-          detailItems
-            .map(function (item) {
-              return (
-                '<span class="detail-item ' +
-                item.className +
-                '">' +
-                self._escapeHtml(item.text) +
-                "</span>"
-              );
-            })
-            .join("") +
-          '</div><div class="col right"></div></div>';
-      }
+      let detailMeta = self._renderDepartureMeta(detailItems);
 
       rows +=
         '<div class="departure-block' +
@@ -620,7 +640,7 @@ class SlNearbyCard extends HTMLElement {
         '</div><div class="col right"><span class="leaves-in">' +
         departureTime +
         "</span></div></div>" +
-        detailRow +
+        detailMeta +
         "</div>";
     }
 
@@ -690,13 +710,18 @@ class SlNearbyCard extends HTMLElement {
 
   _renderView() {
     let root = this.querySelector(".sl-card-root");
-    if (!root) {
+    const styleEl = this.querySelector("style.sl-nearby-card-style");
+    const version = SlNearbyCard.CARD_VERSION;
+    if (!root || !styleEl || styleEl.dataset.version !== version) {
       this.innerHTML =
-        '<style>' +
+        '<style class="sl-nearby-card-style" data-version="' +
+        version +
+        '">' +
         this._styles() +
         '</style><ha-card><div class="sl-card-root"></div></ha-card>';
       root = this.querySelector(".sl-card-root");
       root.addEventListener("toggle", (event) => this._onToggle(event), true);
+      this._lastListKey = null;
     }
 
     const location = this._getSearchLocation();
@@ -752,6 +777,9 @@ class SlNearbyCard extends HTMLElement {
           distEl.textContent = this._formatDistance(stops[i].distance_m);
         }
       }
+      if (this._openSiteId) {
+        this._updateDeparturePanel(this._openSiteId);
+      }
       return;
     }
     this._lastListKey = listKey;
@@ -792,9 +820,8 @@ class SlNearbyCard extends HTMLElement {
       ".warning-message{color:var(--warning-color);font-size:smaller}",
       ".departure-block{margin-top:8px}",
       ".departure-block .row.departure{margin-top:0}",
-      ".row.detail-row{margin-top:2px}",
-      ".row.detail-row .detail-messages{display:flex;flex-direction:column;gap:2px}",
-      ".detail-item{font-size:smaller;line-height:1.3}",
+      ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px}",
+      ".detail-item{font-size:smaller;line-height:1.35}",
       ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
       ".stop-info{margin:0 8px 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
       ".stop-info-item{color:#fad370!important}",
@@ -812,12 +839,37 @@ class SlNearbyCard extends HTMLElement {
   }
 }
 
-if (!customElements.get("sl-nearby-card")) {
-  customElements.define("sl-nearby-card", SlNearbyCard);
+function _defineSlNearbyCard(tag) {
+  if (customElements.get(tag)) {
+    const proto = customElements.get(tag).prototype;
+    const nextProto = SlNearbyCard.prototype;
+    const names = Object.getOwnPropertyNames(nextProto);
+    for (let i = 0; i < names.length; i++) {
+      const name = names[i];
+      if (name !== "constructor") {
+        proto[name] = nextProto[name];
+      }
+    }
+    Object.getOwnPropertyNames(SlNearbyCard).forEach(function (name) {
+      if (name !== "length" && name !== "name" && name !== "prototype") {
+        try {
+          Object.defineProperty(
+            customElements.get(tag),
+            name,
+            Object.getOwnPropertyDescriptor(SlNearbyCard, name),
+          );
+        } catch (error) {
+          /* ignore read-only props */
+        }
+      }
+    });
+    return;
+  }
+  customElements.define(tag, SlNearbyCard);
 }
-if (!customElements.get("ha-sl-nearby-stops-card")) {
-  customElements.define("ha-sl-nearby-stops-card", SlNearbyCard);
-}
+
+_defineSlNearbyCard("sl-nearby-card");
+_defineSlNearbyCard("ha-sl-nearby-stops-card");
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some(function (card) { return card.type === "sl-nearby-card"; })) {
