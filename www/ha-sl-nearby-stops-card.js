@@ -56,7 +56,7 @@ class HaSlNearbyStopsCard extends HTMLElement {
       return Promise.resolve(this._sites);
     }
     if (!this._sitesPromise) {
-      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727j")
+      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727k")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Kunde inte läsa sl-sites.json (" + response.status + ")");
@@ -166,6 +166,12 @@ class HaSlNearbyStopsCard extends HTMLElement {
     if (!result) {
       return {};
     }
+    if (result.content && (result.content.departures || result.content.stop_deviations)) {
+      return {
+        departures: result.content.departures || [],
+        stop_deviations: result.content.stop_deviations || [],
+      };
+    }
     if (result.service_response) {
       const sr = result.service_response;
       if (sr["script.sl_hamta_avgangar_for_hallplats"]) {
@@ -185,22 +191,36 @@ class HaSlNearbyStopsCard extends HTMLElement {
     return {};
   }
 
-  _callDepartures(siteId) {
-    const serviceData = {
-      entity_id: "script.sl_hamta_avgangar_for_hallplats",
-      variables: { site_id: String(siteId) },
-    };
-    if (this._hass.callApi) {
-      return this._hass
-        .callApi("POST", "services/script/turn_on?return_response", serviceData)
-        .then((result) => this._extractPayload(result));
+  _callWithResponse(domain, service, serviceData) {
+    if (this._hass && this._hass.connection && this._hass.connection.sendMessagePromise) {
+      return this._hass.connection
+        .sendMessagePromise({
+          type: "call_service",
+          domain: domain,
+          service: service,
+          service_data: serviceData,
+          return_response: true,
+        })
+        .then((msg) => (msg && msg.response) || msg || {});
     }
-    if (this._hass.callService) {
-      return this._hass
-        .callService("script", "turn_on", serviceData, undefined, true)
-        .then((result) => this._extractPayload(result));
+    if (this._hass && this._hass.callApi) {
+      return this._hass.callApi(
+        "POST",
+        "services/" + domain + "/" + service + "?return_response",
+        serviceData,
+      );
+    }
+    if (this._hass && this._hass.callService) {
+      return this._hass.callService(domain, service, serviceData, undefined, true);
     }
     return Promise.reject(new Error("Kunde inte anropa Home Assistant"));
+  }
+
+  _callDepartures(siteId) {
+    const serviceData = { site_id: Number(siteId) };
+    return this._callWithResponse("rest_command", "sl_site_departures", serviceData).then(
+      (result) => this._extractPayload(result),
+    );
   }
 
   _syncRefreshTimer() {
@@ -230,7 +250,7 @@ class HaSlNearbyStopsCard extends HTMLElement {
       return;
     }
     const existing = cache.get(cacheKey);
-    if (!force && existing && (existing.departures || existing.error)) {
+    if (!force && existing && !existing.loading && (existing.fetched_at || existing.error)) {
       this._updateDeparturePanel(siteId);
       return;
     }
