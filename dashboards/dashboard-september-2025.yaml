@@ -6602,6 +6602,10 @@ views:
   sections:
   - type: grid
     cards:
+    - type: custom:ha-center-clock-card
+      font_size: 3.5rem
+      grid_options:
+        columns: full
     - type: custom:sl-nearby-card
       location_entity: person.ilias_bennani
       home_zone_entity: zone.home
