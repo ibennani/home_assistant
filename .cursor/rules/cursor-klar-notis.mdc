@@ -6,9 +6,9 @@ alwaysApply: true
 
 # Cursor klar — mobilnotis
 
-## Obligatoriskt i Cloud Agent
+## Cloud Agent (obligatoriskt)
 
-Cursor-hooks (`.cursor/hooks.json`) körs **inte** i Cloud Agent. Därför ska du **alltid** skicka notis via MCP i slutet av varje svar där du väntar på användaren:
+Skicka **en** notis via MCP i slutet av varje svar där du väntar på användaren. `beskrivning` ska vara en **konkret mening** om vad som gjorts — inte generisk fallback-text.
 
 ```json
 {
@@ -24,13 +24,15 @@ Cursor-hooks (`.cursor/hooks.json`) körs **inte** i Cloud Agent. Därför ska d
 
 Anropa via `ha_call_write_tool` om direktanrop inte finns.
 
-## Automatiskt i lokal Cursor (IDE)
+Hooken körs **inte** i Cloud Agent (`CURSOR_AGENT` satt) — skicka aldrig dubbelt.
 
-Notis skickas via hooken `.cursor/hooks.json` → `stop` → event `cursor_agent_klar` → `script.cursor_klar_notis`.
+## Lokal Cursor (IDE)
 
-Hooken kräver `HA_URL` + `HA_TOKEN` (eller `HA_MCP_WEBHOOK_URL` som härleder bas-URL; utan token används webhook).
+Notis skickas **endast** via hooken `.cursor/hooks.json` → `stop` → event `cursor_agent_klar` → `script.cursor_klar_notis`.
 
-**Lokala agenter ska normalt inte skicka notis manuellt** — undvik dubbla notiser.
+Kräver `HA_URL` + `HA_TOKEN`. Hooken skickar **inte** om ingen agentsvartext finns att sammanfatta.
+
+**Skicka inte manuellt via MCP i lokal IDE** — undvik dubbla notiser.
 
 ## Format (hanteras av scriptet)
 
@@ -43,9 +45,11 @@ Hooken kräver `HA_URL` + `HA_TOKEN` (eller `HA_MCP_WEBHOOK_URL` som härleder b
 
 `beskrivning` ska vara **en kort mening** — inte upprepa prefixet "Nu är jag klar".
 
+Generiska texter (t.ex. "Öppna Cursor och läs senaste svaret.") skickas **inte** — automationen filtrerar bort dem.
+
 ## Felsökning
 
-- Cloud Agent utan notis: anropa `ha_call_event` manuellt (obligatoriskt i cloud)
-- Lokal agent utan notis: kontrollera `HA_URL` i Cursor Secrets eller `.env`
+- Cloud Agent utan notis: anropa `ha_call_event` med en riktig `beskrivning`
+- Lokal agent utan notis: kontrollera `HA_URL` och `HA_TOKEN` i Cursor Secrets eller `.env`
 - Testa hooken: `echo '{"status":"completed"}' | .cursor/hooks/cursor-klar-notis.sh stop`
 - Testa HA-kedjan: `ha_call_event` med `cursor_agent_klar`

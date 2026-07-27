@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Skickar mobilnotis till Elias S23 Ultra när en Cursor-agent är klar.
 # Anropas av .cursor/hooks.json (afterAgentResponse + stop).
+# Cloud Agent hoppar över — notis skickas där via MCP (ha_call_event).
 
 set -uo pipefail
 
 MODE="${1:-stop}"
 STATE_DIR=".cursor/hooks/state"
 STATE_FILE="${STATE_DIR}/last-response.txt"
+GENERIC_BESKRIVNING="Öppna Cursor och läs senaste svaret."
 
 mkdir -p "$STATE_DIR"
 
@@ -73,22 +75,20 @@ PY
 }
 
 extract_beskrivning() {
-  python3 - "$STATE_FILE" <<'PY'
+  python3 - "$STATE_FILE" "$GENERIC_BESKRIVNING" <<'PY'
 import re
 import sys
 from pathlib import Path
 
 state_file = Path(sys.argv[1])
-fallback = "Öppna Cursor och läs senaste svaret."
+fallback = sys.argv[2]
 
 if not state_file.exists():
-    print(fallback)
-    raise SystemExit(0)
+    sys.exit(1)
 
 text = state_file.read_text(encoding="utf-8", errors="replace").strip()
 if not text:
-    print(fallback)
-    raise SystemExit(0)
+    sys.exit(1)
 
 text = re.sub(r"```.*?```", " ", text, flags=re.S)
 text = re.sub(r"\s+", " ", text).strip()
@@ -105,13 +105,17 @@ send_notis() {
   local beskrivning="$1"
   local ha_url ha_token payload
 
-  ha_url="$(resolve_ha_url || true)"
-  if [[ -z "${ha_url:-}" ]]; then
-    echo "[cursor-klar-notis] HA_URL saknas — ingen notis skickad." >&2
+  if [[ -z "${beskrivning// /}" || "$beskrivning" == "$GENERIC_BESKRIVNING" ]]; then
     return 0
   fi
 
+  ha_url="$(resolve_ha_url || true)"
   ha_token="$(load_env_value HA_TOKEN || true)"
+  if [[ -z "${ha_url:-}" || -z "${ha_token:-}" ]]; then
+    echo "[cursor-klar-notis] HA_URL/HA_TOKEN saknas — ingen notis skickad." >&2
+    return 0
+  fi
+
   payload="$(BESKRIVNING="$beskrivning" python3 - <<'PY'
 import json
 import os
@@ -120,17 +124,11 @@ print(json.dumps({"beskrivning": os.environ["BESKRIVNING"]}, ensure_ascii=False)
 PY
 )"
 
-  if [[ -n "${ha_token:-}" ]]; then
-    curl -sfS -m 20 -X POST "${ha_url%/}/api/events/cursor_agent_klar" \
-      -H "Authorization: Bearer ${ha_token}" \
-      -H "Content-Type: application/json" \
-      -d "$payload" >/dev/null 2>&1 && return 0
-  fi
-
-  curl -sfS -m 20 -X POST "${ha_url%/}/api/webhook/cursor_task_notification_ilias" \
+  curl -sfS -m 20 -X POST "${ha_url%/}/api/events/cursor_agent_klar" \
+    -H "Authorization: Bearer ${ha_token}" \
     -H "Content-Type: application/json" \
     -d "$payload" >/dev/null 2>&1 || {
-      echo "[cursor-klar-notis] Kunde inte skicka notis till Home Assistant." >&2
+      echo "[cursor-klar-notis] Kunde inte skicka event till Home Assistant." >&2
     }
 }
 
@@ -139,6 +137,10 @@ case "$MODE" in
     save_last_response
     ;;
   stop)
+  # Cloud Agent skickar via MCP — undvik dubbelnotis.
+    if [[ -n "${CURSOR_AGENT:-}" ]]; then
+      exit 0
+    fi
     INPUT="$(cat)"
     STATUS="$(INPUT="$INPUT" python3 - <<'PY'
 import json
@@ -155,7 +157,9 @@ PY
     if [[ "$STATUS" != "completed" ]]; then
       exit 0
     fi
-    BESKRIVNING="$(extract_beskrivning)"
+    if ! BESKRIVNING="$(extract_beskrivning)"; then
+      exit 0
+    fi
     send_notis "$BESKRIVNING"
     ;;
   *)
