@@ -48,7 +48,7 @@ resources:
   url: /hacsfiles/flex-table-card.js
 - url: /hacsfiles/lovelace-expander-card/expander-card.js?hacstag=6771405327110
   type: module
-- url: /local/center-clock-card.js?v=20260727a
+- url: /local/center-clock-card.js?v=20260727b
   type: module
 kiosk_mode:
   non_admin_settings:

@@ -9,12 +9,19 @@ class HaCenterClockCard extends HTMLElement {
 
   setConfig(config) {
     this.config = config || {};
-    this._render();
+    this._updateClock();
+  }
+
+  set hass(hass) {
+    this._hass = hass;
+    this._updateClock();
   }
 
   connectedCallback() {
-    this._render();
-    this._interval = window.setInterval(() => this._render(), 1000);
+    this._updateClock();
+    if (!this._interval) {
+      this._interval = window.setInterval(() => this._updateClock(), 1000);
+    }
   }
 
   disconnectedCallback() {
@@ -33,7 +40,7 @@ class HaCenterClockCard extends HTMLElement {
     const use12h = this.config.time_format === "12";
 
     if (use12h) {
-      const hours12 = (date.getHours() + 11) % 12 + 1;
+      const hours12 = ((date.getHours() + 11) % 12) + 1;
       const suffix = date.getHours() >= 12 ? " PM" : " AM";
       return `${pad(hours12)}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${suffix}`;
     }
@@ -41,27 +48,27 @@ class HaCenterClockCard extends HTMLElement {
     return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   }
 
-  _render() {
-    const fontSize = this.config.font_size || "3.5rem";
-    const time = this._formatTime(new Date());
-
-    if (!this._root) {
-      this._root = this.attachShadow({ mode: "open" });
+  _updateClock() {
+    if (!this.config) {
+      return;
     }
 
-    this._root.innerHTML = `
+    const fontSize = this.config.font_size || "3.5rem";
+    const time = this._formatTime(new Date());
+    const clock = this.querySelector(".clock");
+
+    if (clock) {
+      clock.textContent = time;
+      return;
+    }
+
+    this.innerHTML = `
       <style>
-        :host {
-          display: block;
-        }
         ha-card {
           display: flex;
           justify-content: center;
           align-items: center;
           padding: 12px 16px;
-          background: var(--ha-card-background, var(--card-background-color, #fff));
-          border-radius: var(--ha-card-border-radius, 12px);
-          box-shadow: var(--ha-card-box-shadow, none);
         }
         .clock {
           font-family: var(--ha-font-family-body, Roboto, sans-serif);
