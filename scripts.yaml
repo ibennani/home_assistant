@@ -2021,3 +2021,22 @@ cursor_klar_notis:
           ttl: 0
           priority: high
           vibration: "1000, 300, 1000, 300, 1000"
+
+sl_hamta_site_avgangar:
+  alias: SL hämta avgångar för hållplats
+  description: Proxy mot SL Transport API — används av sl-nearby-stops-card.
+  mode: parallel
+  max_exceeded: silent
+  fields:
+    site_id:
+      description: SL site-id
+      example: "1923"
+      required: true
+      selector:
+        text:
+  sequence:
+    - action: rest
+      resource: "https://transport.integration.sl.se/v1/sites/{{ site_id | int }}/departures?forecast=60"
+      response_variable: sl_dep
+    - stop: return
+      response_variable: sl_dep
