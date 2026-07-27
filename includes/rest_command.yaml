@@ -1,0 +1,4 @@
+# SL Transport API — används av script.sl_hamta_site_avgangar (sl-nearby-stops-card)
+sl_site_departures:
+  url: "https://transport.integration.sl.se/v1/sites/{{ site_id }}/departures?forecast=60"
+  method: GET
