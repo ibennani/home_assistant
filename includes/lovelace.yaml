@@ -2,7 +2,7 @@
 # Standard-dashboard (Översikt) laddas från YAML i stället för storage.
 mode: storage
 resources:
-  - url: /local/sl-nearby-card.js?v=20260727o
+  - url: /local/sl-nearby-card.js?v=20260727p
     type: module
 dashboards:
   dashboard-september-2025:

@@ -52,7 +52,7 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/sl-nearby-card.js?v=20260727o
+- url: /local/sl-nearby-card.js?v=20260727p
   type: module
 kiosk_mode:
   non_admin_settings:
@@ -6609,9 +6609,13 @@ views:
     - type: custom:sl-nearby-card
       location_entity: person.ilias_bennani
       home_zone_entity: zone.home
+      reference_lat: 59.331136036994
+      reference_lon: 18.0576584245687
+      reference_name: Stockholms central
       max_stops: 20
-      max_gps_km: 80
+      max_gps_km: 200
       forecast_minutes: 60
       refresh_seconds: 60
+      show_time_always: true
       grid_options:
         columns: full
