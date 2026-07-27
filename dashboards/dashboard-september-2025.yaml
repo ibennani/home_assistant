@@ -48,6 +48,8 @@ resources:
   url: /hacsfiles/flex-table-card.js
 - url: /hacsfiles/lovelace-expander-card/expander-card.js?hacstag=6771405327110
   type: module
+- url: /local/center-clock-card.js?v=20260727a
+  type: module
 kiosk_mode:
   non_admin_settings:
     hide_sidebar: true
@@ -6555,24 +6557,10 @@ views:
   sections:
   - type: grid
     cards:
-    - clock_style: digital
-      clock_size: large
-      time_format: language
-      show_seconds: true
-      no_background: false
-      type: clock
+    - type: custom:ha-center-clock-card
+      font_size: 3.5rem
       grid_options:
         columns: full
-      card_mod:
-        style: |
-          ha-card {
-            display: flex;
-            justify-content: center;
-            text-align: center;
-          }
-          ha-clock {
-            margin: 0 auto;
-          }
     - type: vertical-stack
       cards:
       - type: custom:hasl4-departure-card-sl
