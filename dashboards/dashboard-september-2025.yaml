@@ -6594,14 +6594,7 @@ views:
 - title: SL
   path: sl-nara
   icon: mdi:alpha-t-circle
-  type: sections
-  max_columns: 1
-  dense_section_placement: true
-  sections:
-  - type: grid
-    cards:
-    - type: iframe
-      url: /local/sl-nearby.html?entity=person.ilias_bennani&home=zone.home&max=20&forecast=60&max_gps_km=80&v=20260727h
-      aspect_ratio: 55%
-      grid_options:
-        columns: full
+  panel: true
+  cards:
+  - type: iframe
+    url: /local/sl-nearby.html?entity=person.ilias_bennani&home=zone.home&max=20&forecast=60&max_gps_km=80&v=20260727i
