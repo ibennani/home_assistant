@@ -471,7 +471,7 @@ class HaSlNearbyStopsCard extends HTMLElement {
         this._escapeHtml(this.config.location_entity) +
         ".</div>";
     } else if (!stops.length) {
-      body = '<div class="status-message">Inga hållplatser hittades.</div>";
+      body = '<div class="status-message">Inga hållplatser hittades.</div>';
     } else {
       const self = this;
       body =
