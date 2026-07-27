@@ -83,7 +83,7 @@ class SlNearbyCard extends HTMLElement {
       return Promise.resolve(this._sites);
     }
     if (!this._sitesPromise) {
-      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727p")
+      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727q")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Kunde inte läsa sl-sites.json (" + response.status + ")");
@@ -594,6 +594,16 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
+  _formatListHeader(count) {
+    let html = '<div class="list-header"><strong>' + count + " hållplatser</strong>";
+    if (this._locationNote) {
+      html +=
+        '<div class="location-note">' + this._escapeHtml(this._locationNote) + "</div>";
+    }
+    html += "</div>";
+    return html;
+  }
+
   _updateDeparturePanel(siteId) {
     const panel = this.querySelector('.stop-accordion[data-site-id="' + siteId + '"] .stop-body');
     if (panel) {
@@ -668,12 +678,7 @@ class SlNearbyCard extends HTMLElement {
       body = '<div class="status-message">Inga hållplatser hittades.</div>';
     } else {
       const self = this;
-      body =
-        '<div class="list-header"><strong>' +
-        stops.length +
-        " hållplatser</strong> — " +
-        this._escapeHtml(this._locationNote || "") +
-        "</div>";
+      body = self._formatListHeader(stops.length);
       body += stops
         .map(function (stop) {
           const openAttr = self._openSiteId === stop.id ? " open" : "";
@@ -696,12 +701,12 @@ class SlNearbyCard extends HTMLElement {
         .join("");
     }
 
-    const listKey = stops.map((s) => s.id).join(",");
+    const listKey =
+      stops.map((s) => s.id).join(",") + "|" + (this._locationNote || "");
     if (this._lastListKey === listKey && this.querySelector(".stop-accordion")) {
       const header = root.querySelector(".list-header");
       if (header) {
-        header.innerHTML =
-          "<strong>" + stops.length + " hållplatser</strong> — " + this._escapeHtml(this._locationNote || "");
+        header.outerHTML = this._formatListHeader(stops.length);
       }
       for (let i = 0; i < stops.length; i++) {
         const distEl = root.querySelector('.stop-accordion[data-site-id="' + stops[i].id + '"] .stop-distance');
@@ -720,6 +725,7 @@ class SlNearbyCard extends HTMLElement {
       "ha-card{padding:0 0 12px}",
       ".list-header{padding:14px 16px 8px;font-size:.9rem;color:var(--secondary-text-color);border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12))}",
       ".list-header strong{color:var(--primary-text-color)}",
+      ".location-note{color:#fad370!important;font-size:smaller;line-height:1.35;margin-top:4px}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".stop-accordion{border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
