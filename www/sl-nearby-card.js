@@ -83,7 +83,7 @@ class SlNearbyCard extends HTMLElement {
       return Promise.resolve(this._sites);
     }
     if (!this._sitesPromise) {
-      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727r")
+      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727s")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Kunde inte läsa sl-sites.json (" + response.status + ")");
@@ -419,9 +419,49 @@ class SlNearbyCard extends HTMLElement {
     }
     const mode = String((dep.line && dep.line.transport_mode) || "").toUpperCase();
     if (mode === "TRAIN" || mode === "METRO") {
-      return "spår " + designation;
+      return "Spår " + designation;
     }
-    return "läge " + designation;
+    return "Läge " + designation;
+  }
+
+  _formatLineTypeLabel(dep) {
+    const lineType = dep && dep.line && dep.line.group_of_lines;
+    if (!lineType) {
+      return "";
+    }
+    const label = String(lineType).trim();
+    return label || "";
+  }
+
+  _buildDepartureDetailItems(dep) {
+    const self = this;
+    const items = [];
+    const stopPointLabel = self._formatStopPointLabel(dep);
+    if (stopPointLabel) {
+      items.push({ text: stopPointLabel, className: "stop-point-label" });
+    }
+    const lineTypeLabel = self._formatLineTypeLabel(dep);
+    if (lineTypeLabel) {
+      items.push({ text: lineTypeLabel, className: "line-type-label" });
+    }
+    const deviations = dep.deviations || [];
+    const isShortTrain = deviations.some(function (dev) {
+      return self._isShortTrainDeviation(dev);
+    });
+    const otherDeviations = deviations.filter(function (dev) {
+      return !self._isShortTrainDeviation(dev) && !self._isDelayDeviation(dev);
+    });
+    if (isShortTrain) {
+      items.push({ text: "kort tåg", className: "short-train" });
+    }
+    for (let i = 0; i < otherDeviations.length; i++) {
+      const dev = otherDeviations[i];
+      const text = dev.message || dev.text || dev.title;
+      if (text) {
+        items.push({ text: text, className: "warning-message" });
+      }
+    }
+    return items;
   }
 
   _transportIcon(transportMode) {
@@ -511,29 +551,7 @@ class SlNearbyCard extends HTMLElement {
       const isDeparted = diff < 0;
       const isCancelled = self._isCancelled(dep);
       const isDelayed = !isCancelled && self._isDelayed(scheduledAt, expectedAt);
-      const deviations = dep.deviations || [];
-      const isShortTrain = deviations.some(function (dev) {
-        return self._isShortTrainDeviation(dev);
-      });
-      const otherDeviations = deviations.filter(function (dev) {
-        return !self._isShortTrainDeviation(dev) && !self._isDelayDeviation(dev);
-      });
-
-      const deviationItems = [];
-      const stopPointLabel = self._formatStopPointLabel(dep);
-      if (stopPointLabel) {
-        deviationItems.push({ text: stopPointLabel, className: "stop-point-label" });
-      }
-      if (isShortTrain) {
-        deviationItems.push({ text: "kort tåg", className: "short-train" });
-      }
-      for (let j = 0; j < otherDeviations.length; j++) {
-        const dev = otherDeviations[j];
-        const text = dev.message || dev.text || dev.title;
-        if (text) {
-          deviationItems.push({ text: text, className: "warning-message" });
-        }
-      }
+      const detailItems = self._buildDepartureDetailItems(dep);
 
       let departureTime = "";
       if (isCancelled) {
@@ -566,15 +584,15 @@ class SlNearbyCard extends HTMLElement {
         line.group_of_lines,
       );
 
-      let deviationRow = "";
-      if (deviationItems.length) {
-        deviationRow =
-          '<div class="row deviation-row"><div class="col icon"></div><div class="col icon"></div>' +
-          '<div class="col main left deviation-messages">' +
-          deviationItems
+      let detailRow = "";
+      if (detailItems.length) {
+        detailRow =
+          '<div class="row detail-row"><div class="col icon"></div><div class="col icon"></div>' +
+          '<div class="col main left detail-messages">' +
+          detailItems
             .map(function (item) {
               return (
-                '<span class="deviation-item ' +
+                '<span class="detail-item ' +
                 item.className +
                 '">' +
                 self._escapeHtml(item.text) +
@@ -602,7 +620,7 @@ class SlNearbyCard extends HTMLElement {
         '</div><div class="col right"><span class="leaves-in">' +
         departureTime +
         "</span></div></div>" +
-        deviationRow +
+        detailRow +
         "</div>";
     }
 
@@ -774,10 +792,10 @@ class SlNearbyCard extends HTMLElement {
       ".warning-message{color:var(--warning-color);font-size:smaller}",
       ".departure-block{margin-top:8px}",
       ".departure-block .row.departure{margin-top:0}",
-      ".row.deviation-row{margin-top:2px}",
-      ".row.deviation-row .deviation-messages{display:flex;flex-direction:column;gap:2px}",
-      ".deviation-item{font-size:smaller;line-height:1.3}",
-      ".stop-point-label{color:#fad370!important;font-weight:500}",
+      ".row.detail-row{margin-top:2px}",
+      ".row.detail-row .detail-messages{display:flex;flex-direction:column;gap:2px}",
+      ".detail-item{font-size:smaller;line-height:1.3}",
+      ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
       ".stop-info{margin:0 8px 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
       ".stop-info-item{color:#fad370!important}",
       ".stop-info-item+.stop-info-item{margin-top:6px}",
