@@ -50,6 +50,8 @@ resources:
   type: module
 - url: /local/center-clock-card.js?v=20260727b
   type: module
+- url: /local/hasl4-departure-card.js?v=20260727g
+  type: module
 kiosk_mode:
   non_admin_settings:
     hide_sidebar: true
