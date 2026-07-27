@@ -1606,6 +1606,21 @@ const $57faf62096e30446$var$lineColorsStyles = (0, $j8KxL.css)`
         text-shadow: 1px 1px 2px var(--outline-color);
     }
 
+    .row.departure {
+        font-size: 2rem;
+    }
+
+    .row.departure .line-icon {
+        min-width: 44px;
+        height: 44px;
+        padding: 6px 6px 0 6px;
+        font-size: 1em;
+    }
+
+    .row.departure .col.icon {
+        flex-basis: 80px;
+    }
+
     .bus {
         border: 1px solid var(--outline-color);
         color: var(--primary-text-color);
