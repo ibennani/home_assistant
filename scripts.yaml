@@ -2025,8 +2025,8 @@ cursor_klar_notis:
 sl_hamta_site_avgangar:
   alias: SL hämta avgångar för hållplats
   description: Proxy mot SL Transport API — används av sl-nearby-stops-card.
-  mode: parallel
-  max_exceeded: silent
+  mode: queued
+  max: 25
   fields:
     site_id:
       description: SL site-id
