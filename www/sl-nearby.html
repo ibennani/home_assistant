@@ -9,13 +9,23 @@
       color-scheme: dark light;
       font-family: var(--ha-font-family-body, Roboto, sans-serif);
     }
-    body {
+    html, body {
       margin: 0;
       padding: 0;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       background: var(--card-background-color, #1c1c1c);
       color: var(--primary-text-color, #e0e0e0);
     }
-    .wrap { min-height: 100vh; }
+    .wrap { padding-bottom: 24px; }
+    .header {
+      padding: 14px 16px 8px;
+      font-size: 0.9rem;
+      color: var(--secondary-text-color, #9e9e9e);
+      border-bottom: 1px solid var(--divider-color, rgba(255,255,255,.12));
+    }
+    .header strong { color: var(--primary-text-color, #e0e0e0); }
     .status {
       padding: 16px;
       color: var(--secondary-text-color, #9e9e9e);
@@ -57,6 +67,7 @@
     .bus_red { background: #9e0e13; }
     .train { background: #ec619f; }
     .tram { background: #985141; }
+    .metro { background: #0061eb; }
     .stop-info {
       margin: 0 8px 8px;
       padding: 8px 12px 0;
@@ -65,7 +76,6 @@
       border-top: 1px solid var(--divider-color, rgba(255,255,255,.12));
     }
     .cancelled-time { color: #e53935; font-weight: 600; }
-    .warning-message { color: #ff9800; font-size: smaller; }
     .left { text-align: left; }
     .right { text-align: right; }
   </style>
@@ -78,22 +88,33 @@
     (function () {
       var params = new URLSearchParams(window.location.search);
       var locationEntity = params.get("entity") || "person.ilias_bennani";
+      var homeZoneEntity = params.get("home") || "zone.home";
       var maxStops = Number(params.get("max") || 20);
       var forecastMinutes = Number(params.get("forecast") || 60);
+      var maxGpsDistanceM = Number(params.get("max_gps_km") || 80) * 1000;
       var cache = {};
       var sites = null;
       var sitesError = null;
       var openSiteId = null;
+      var lastRenderKey = null;
+      var locationNote = "";
 
       function getHass() {
+        var roots = [];
         try {
-          var doc = window.parent && window.parent.document;
-          if (!doc) return null;
-          var ha = doc.querySelector("home-assistant");
-          if (ha && ha.hass) return ha.hass;
-          ha = doc.querySelector("home-assistant-main");
-          if (ha && ha.hass) return ha.hass;
+          if (window.parent) roots.push(window.parent);
+          if (window.top && window.top !== window.parent) roots.push(window.top);
         } catch (e) {}
+        for (var r = 0; r < roots.length; r++) {
+          try {
+            var doc = roots[r].document;
+            if (!doc) continue;
+            var ha = doc.querySelector("home-assistant");
+            if (ha && ha.hass) return ha.hass;
+            ha = doc.querySelector("home-assistant-main");
+            if (ha && ha.hass) return ha.hass;
+          } catch (e2) {}
+        }
         return null;
       }
 
@@ -105,13 +126,32 @@
           .replace(/"/g, "&quot;");
       }
 
-      function getLocation(hass) {
-        var state = hass.states[locationEntity];
+      function readCoords(hass, entityId) {
+        var state = hass.states[entityId];
         if (!state || !state.attributes) return null;
         var lat = Number(state.attributes.latitude);
         var lon = Number(state.attributes.longitude);
         if (!isFinite(lat) || !isFinite(lon)) return null;
         return { lat: lat, lon: lon };
+      }
+
+      function getSearchLocation(hass) {
+        var personLoc = readCoords(hass, locationEntity);
+        var homeLoc = readCoords(hass, homeZoneEntity);
+        if (!personLoc && homeLoc) {
+          locationNote = "Använder hemzon (ingen GPS från " + locationEntity + ")";
+          return homeLoc;
+        }
+        if (!personLoc) return null;
+        if (homeLoc) {
+          var distFromHome = haversineMeters(personLoc.lat, personLoc.lon, homeLoc.lat, homeLoc.lon);
+          if (distFromHome > maxGpsDistanceM) {
+            locationNote = "GPS långt från hem — visar hållplatser nära hemzon";
+            return homeLoc;
+          }
+        }
+        locationNote = "Position från " + locationEntity;
+        return personLoc;
       }
 
       function haversineMeters(lat1, lon1, lat2, lon2) {
@@ -138,6 +178,7 @@
 
       function lineClass(mode, designation, group) {
         if (mode === "BUS") return group === "blåbuss" ? "bus bus_" + designation + " blue" : "bus_red";
+        if (mode === "METRO") return "metro";
         if (mode === "TRAIN") return "train";
         if (mode === "TRAM") return "tram";
         return "train";
@@ -155,6 +196,34 @@
         }
         out.sort(function (a, b) { return a.expectedMs - b.expectedMs; });
         return out;
+      }
+
+      function extractPayload(result) {
+        if (!result) return {};
+        if (result.response && (result.response.departures || result.response.stop_deviations)) return result.response;
+        if (result.departures || result.stop_deviations) return result;
+        if (result.result && result.result.response) return result.result.response;
+        return result.response || {};
+      }
+
+      function callDepartures(hass, siteId) {
+        var serviceData = {
+          entity_id: "script.sl_hamta_avgangar_for_hallplats",
+          variables: { site_id: String(siteId) },
+        };
+        if (hass.connection && hass.connection.sendMessagePromise) {
+          return hass.connection.sendMessagePromise({
+            type: "call_service",
+            domain: "script",
+            service: "turn_on",
+            service_data: serviceData,
+            return_response: true,
+          }).then(extractPayload);
+        }
+        if (hass.callService) {
+          return hass.callService("script", "turn_on", serviceData, undefined, true).then(extractPayload);
+        }
+        return Promise.reject(new Error("Kunde inte anropa Home Assistant"));
       }
 
       function renderDepartures(siteId) {
@@ -198,7 +267,7 @@
       }
 
       function nearestStops(hass) {
-        var loc = getLocation(hass);
+        var loc = getSearchLocation(hass);
         if (!loc || !sites || !sites.length) return [];
         var list = [];
         for (var i = 0; i < sites.length; i++) {
@@ -213,7 +282,14 @@
         return list.slice(0, maxStops);
       }
 
-      function render(hass) {
+      function renderKey(hass, stops) {
+        var loc = getSearchLocation(hass);
+        var locKey = loc ? loc.lat.toFixed(3) + "," + loc.lon.toFixed(3) : "noloc";
+        var ids = stops.map(function (s) { return s.id; }).join(",");
+        return locKey + "|" + ids + "|" + openSiteId;
+      }
+
+      function render(hass, force) {
         var app = document.getElementById("app");
         if (!hass) {
           app.innerHTML = '<div class="status error">Kunde inte nå Home Assistant. Öppna via dashboarden.</div>';
@@ -227,7 +303,7 @@
           app.innerHTML = '<div class="status">Laddar hållplatser…</div>';
           return;
         }
-        var loc = getLocation(hass);
+        var loc = getSearchLocation(hass);
         if (!loc) {
           app.innerHTML = '<div class="status">Ingen GPS-position från ' + escapeHtml(locationEntity) + ".</div>";
           return;
@@ -238,7 +314,12 @@
           return;
         }
 
-        var html = "";
+        var key = renderKey(hass, stops);
+        if (!force && key === lastRenderKey) return;
+        lastRenderKey = key;
+
+        var scrollY = window.scrollY || 0;
+        var html = '<div class="header"><strong>' + stops.length + " hållplatser</strong> — " + escapeHtml(locationNote) + "</div>";
         for (var i = 0; i < stops.length; i++) {
           var stop = stops[i];
           html +=
@@ -249,6 +330,7 @@
             '<div class="stop-body">' + renderDepartures(stop.id) + "</div></details>";
         }
         app.innerHTML = html;
+        window.scrollTo(0, scrollY);
 
         var nodes = app.querySelectorAll(".stop-accordion");
         for (var n = 0; n < nodes.length; n++) {
@@ -257,9 +339,11 @@
             var siteId = Number(details.getAttribute("data-site-id"));
             if (!details.open) {
               if (openSiteId === siteId) openSiteId = null;
+              lastRenderKey = null;
               return;
             }
             openSiteId = siteId;
+            lastRenderKey = null;
             loadDepartures(hass, siteId);
           });
         }
@@ -267,29 +351,23 @@
 
       function loadDepartures(hass, siteId) {
         var key = String(siteId);
-        if (cache[key] && !cache[key].loading && cache[key].departures) return;
+        var existing = cache[key];
+        if (existing && !existing.loading && existing.departures && existing.departures.length) return;
         cache[key] = { loading: true };
-        render(hass);
-        hass.callService(
-          "script",
-          "turn_on",
-          {
-            entity_id: "script.sl_hamta_avgangar_for_hallplats",
-            variables: { site_id: String(siteId) },
-          },
-          undefined,
-          true
-        ).then(function (result) {
-          var payload = (result && result.response) || result || {};
+        render(hass, true);
+        callDepartures(hass, siteId).then(function (payload) {
           cache[key] = {
             loading: false,
             departures: payload.departures || [],
             stop_deviations: payload.stop_deviations || [],
           };
-          render(hass);
+          render(hass, true);
         }).catch(function (err) {
-          cache[key] = { loading: false, error: (err && err.message) || "Kunde inte hämta avgångar" };
-          render(hass);
+          cache[key] = {
+            loading: false,
+            error: (err && err.message) || String(err) || "Kunde inte hämta avgångar",
+          };
+          render(hass, true);
         });
       }
 
@@ -300,6 +378,7 @@
             return r.json();
           })
           .then(function (data) {
+            if (!Array.isArray(data)) throw new Error("sl-sites.json har oväntat format");
             sites = data;
           })
           .catch(function (err) {
@@ -310,12 +389,17 @@
 
       function tick() {
         var hass = getHass();
-        render(hass);
+        if (!hass) {
+          render(null, true);
+          return;
+        }
+        if (openSiteId !== null) return;
+        render(hass, false);
       }
 
       loadSites().then(function () {
         tick();
-        setInterval(tick, 15000);
+        setInterval(tick, 30000);
       });
     })();
   </script>
