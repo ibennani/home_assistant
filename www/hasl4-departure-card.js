@@ -1738,6 +1738,42 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         text-decoration: unset;
     }
 
+    .departure-block {
+        margin-top: 8px;
+    }
+
+    .departure-block .row.departure {
+        margin-top: 0;
+    }
+
+    .row.deviation-row {
+        margin-top: 2px;
+    }
+
+    .row.deviation-row .deviation-messages {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .deviation-item {
+        font-size: smaller;
+        line-height: 1.3;
+    }
+
+    .stop-info {
+        margin-top: 12px;
+        padding: 8px 12px 0;
+        font-size: smaller;
+        line-height: 1.35;
+        color: var(--secondary-text-color);
+        border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    }
+
+    .stop-info-item + .stop-info-item {
+        margin-top: 6px;
+    }
+
     .short-train {
         color: #0abcfc;
         font-size: smaller;
@@ -1874,11 +1910,24 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                                 ${new Date(data.last_updated).toLocaleTimeString(lang)}
                             </div>` : (0, $l56HR.nothing);
         };
+        const renderStopInfo = this.isManyEntitiesSet() ? ()=>(0, $l56HR.nothing) : ()=>{
+            const [data] = this.getFirstEntity();
+            const stopDeviations = data?.attributes?.stop_deviations || [];
+            if (!stopDeviations.length) return (0, $l56HR.nothing);
+            return (0, $l56HR.html)`
+                <div class="stop-info">
+                    ${stopDeviations.map((dev)=>(0, $l56HR.html)`
+                        <div class="stop-info-item">${dev.message || dev.text || dev.title || ""}</div>
+                    `)}
+                </div>
+            `;
+        };
         return (0, $l56HR.html)`
             <ha-card @click="${this.clickHandler()}">
                 ${this.config?.title ? (0, $l56HR.html)`<h1 class="card-header"><div class="name">${this.config.title}</div></h1>` : (0, $l56HR.nothing)}
                 <div class="card-content">
                     ${departures()}
+                    ${renderStopInfo()}
                     ${renderLastUpdated()}
                 </div>
             </ha-card>
@@ -2022,9 +2071,20 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                 const isDelayed = !isCancelled && $66d5822390d71e6e$var$isDelayedDeparture(scheduledAt, expectedAt);
                 const hasDeviations = (dep.deviations?.length || 0) > 0;
                 const isShortTrain = (dep.deviations || []).some($66d5822390d71e6e$var$isShortTrainDeviation);
-                const otherDeviations = (dep.deviations || []).filter((dev)=>!$66d5822390d71e6e$var$isShortTrainDeviation(dev));
-                const hasOtherDeviations = otherDeviations.length > 0;
-                const mostImportantDeviation = otherDeviations.sort((a, b)=>(b.importance_level || 0) - (a.importance_level || 0))?.[0];
+                const otherDeviations = (dep.deviations || []).filter((dev)=>!$66d5822390d71e6e$var$isShortTrainDeviation(dev) && !$66d5822390d71e6e$var$isDelayDeviation(dev));
+                const deviationItems = [];
+                if (isShortTrain) deviationItems.push({
+                    text: "kort tåg",
+                    className: "short-train"
+                });
+                for (const dev of otherDeviations){
+                    const text = dev.message || dev.text || dev.title;
+                    if (text) deviationItems.push({
+                        text: text,
+                        className: "warning-message"
+                    });
+                }
+                const showDeviationRow = deviationItems.length > 0;
                 const departureTime = (()=>{
                     if (isCancelled) return (0, $l56HR.html)`<span class="cancelled-time">${_("cancelled")}</span>`;
                     if (isDelayed && scheduledAt && expectedAt) {
@@ -2052,7 +2112,8 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                     return dep.destination.replace(search, replace);
                 })();
                 return (0, $l56HR.html)`
-                    <div class="row departure fade-in ${isDeparted ? "departed" : ""}">
+                    <div class="departure-block fade-in ${isDeparted ? "departed" : ""}">
+                        <div class="row departure">
                         ${this.config?.show_icon ? (0, $l56HR.html)`
                             <div class="col icon">
                                 <ha-icon class="transport-icon" icon="${icon}"/>
@@ -2061,17 +2122,25 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                         ${this.config?.hide_line_number ? (0, $l56HR.nothing) : (0, $l56HR.html)`
                             <div class="col icon">
                                 <span class="line-icon mr1 ${lineIconClass}">${dep.line.designation}</span>
-                                ${hasDeviations && !isShortTrain ? (0, $l56HR.html)`<ha-icon class="warning" icon="mdi:alert"/>` : (0, $l56HR.nothing)}
                             </div>
                         `}
                         <div class="col main left">
                             ${destination}
-                            ${isShortTrain ? (0, $l56HR.html)`<span class="short-train">kort tåg</span>` : (0, $l56HR.nothing)}
-                            ${hasOtherDeviations ? (0, $l56HR.html)`<span class="warning-message">${mostImportantDeviation.message}</span>` : (0, $l56HR.nothing)}
                         </div>
                         <div class="col right">
                             <span class="leaves-in">${departureTime}</span>
                         </div>
+                        </div>
+                        ${showDeviationRow ? (0, $l56HR.html)`
+                            <div class="row deviation-row">
+                                ${this.config?.show_icon ? (0, $l56HR.html)`<div class="col icon"></div>` : (0, $l56HR.nothing)}
+                                ${this.config?.hide_line_number ? (0, $l56HR.nothing) : (0, $l56HR.html)`<div class="col icon"></div>`}
+                                <div class="col main left deviation-messages">
+                                    ${deviationItems.map((item)=>(0, $l56HR.html)`<span class="deviation-item ${item.className}">${item.text}</span>`)}
+                                </div>
+                                <div class="col right"></div>
+                            </div>
+                        ` : (0, $l56HR.nothing)}
                     </div>`;
             })}
             </div>
@@ -2113,6 +2182,10 @@ const $66d5822390d71e6e$var$isServiceCallAction = (a)=>a.service !== undefined;
 const $66d5822390d71e6e$var$isShortTrainDeviation = (dev)=>{
     const msg = `${dev.message || dev.text || dev.title || ""}`.toLowerCase();
     return msg.includes("kort tåg") || msg.includes("kort tag") || msg.includes("short train");
+};
+const $66d5822390d71e6e$var$isDelayDeviation = (dev)=>{
+    const msg = `${dev.message || dev.text || dev.title || ""}`.toLowerCase();
+    return msg.includes("försen") || msg.includes("senare") || msg.includes("delay") || msg.includes("delayed");
 };
 function $66d5822390d71e6e$var$isDepartureAttrs(item) {
     return item.departures !== undefined;

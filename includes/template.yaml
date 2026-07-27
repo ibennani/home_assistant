@@ -870,35 +870,62 @@
           mdi:weather-cloudy
         {% endif %}
 
-# Kollektivtrafik — buss 742 mot Huddinge sjukhus (Ekshäradsgatan)
+# Kollektivtrafik — buss 742 mot Huddinge sjukhus (Ekshäradsgatan, SL Transport API)
 - trigger:
     - trigger: homeassistant
       event: start
     - trigger: state
-      entity_id: sensor.departure_sensor_eksharadsgatan_departures
+      entity_id: sensor.eksharadsgatan_sl_buss
       attribute: departures
+    - trigger: state
+      entity_id: sensor.eksharadsgatan_sl_buss
+      attribute: stop_deviations
   sensor:
     - name: Ekshäradsgatan buss 742 departures
       unique_id: eksharadsgatan_buss_742_departures
       state: >
-        {% set deps = state_attr('sensor.departure_sensor_eksharadsgatan_departures', 'departures') | default([]) %}
+        {% set deps = state_attr('sensor.eksharadsgatan_sl_buss', 'departures') | default([], true) %}
         {% set ns = namespace(n=0) %}
         {% for d in deps %}
-          {% if d.line.designation == '742' and d.direction_code == '2' and d.destination == 'Huddinge sjukhus' %}
+          {% if d.line.designation == '742' and (d.direction_code | string) == '2' and d.destination == 'Huddinge sjukhus' %}
             {% set ns.n = ns.n + 1 %}
           {% endif %}
         {% endfor %}
         {{ ns.n }}
       attributes:
         departures: >
-          {% set deps = state_attr('sensor.departure_sensor_eksharadsgatan_departures', 'departures') | default([]) %}
+          {% set deps = state_attr('sensor.eksharadsgatan_sl_buss', 'departures') | default([], true) %}
           {% set ns = namespace(items=[]) %}
           {% for d in deps %}
-            {% if d.line.designation == '742' and d.direction_code == '2' and d.destination == 'Huddinge sjukhus' %}
-              {% set ns.items = ns.items + [d] %}
+            {% if d.line.designation == '742' and (d.direction_code | string) == '2' and d.destination == 'Huddinge sjukhus' %}
+              {% set devs = namespace(list=[]) %}
+              {% for dev in d.deviations | default([]) %}
+                {% set devs.list = devs.list + [{
+                  'message': dev.message | default(''),
+                  'importance_level': dev.importance_level | default(dev.importance | default(5))
+                }] %}
+              {% endfor %}
+              {% set item = {
+                'destination': d.destination,
+                'direction': d.direction,
+                'direction_code': d.direction_code,
+                'state': d.state,
+                'display': d.display,
+                'stop_point': d.stop_point,
+                'line': d.line,
+                'scheduled': d.scheduled,
+                'expected': d.expected,
+                'journey': d.journey | default({})
+              } %}
+              {% if devs.list | length > 0 %}
+                {% set item = item | combine({'deviations': devs.list}) %}
+              {% endif %}
+              {% set ns.items = ns.items + [item] %}
             {% endif %}
           {% endfor %}
           {{ ns.items }}
+        stop_deviations: >
+          {{ state_attr('sensor.eksharadsgatan_sl_buss', 'stop_deviations') | default([], true) }}
 
 # Kollektivtrafik — pendeltåg från Farsta strand (SL Transport API, linje 4x riktning 2)
 - trigger:
@@ -907,6 +934,9 @@
     - trigger: state
       entity_id: sensor.farsta_strand_sl_pendeltag
       attribute: departures
+    - trigger: state
+      entity_id: sensor.farsta_strand_sl_pendeltag
+      attribute: stop_deviations
   sensor:
     - name: Farsta strand pendeltåg departures
       unique_id: farsta_strand_pendeltag_departures
@@ -943,7 +973,8 @@
                 'stop_point': d.stop_point,
                 'line': d.line,
                 'scheduled': d.scheduled,
-                'expected': d.expected
+                'expected': d.expected,
+                'journey': d.journey | default({})
               } %}
               {% if devs.list | length > 0 %}
                 {% set item = item | combine({'deviations': devs.list}) %}
@@ -952,3 +983,5 @@
             {% endif %}
           {% endfor %}
           {{ ns.items }}
+        stop_deviations: >
+          {{ state_attr('sensor.farsta_strand_sl_pendeltag', 'stop_deviations') | default([], true) }}
