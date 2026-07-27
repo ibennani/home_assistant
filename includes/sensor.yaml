@@ -133,6 +133,18 @@
     - sensor.utomhus_baksidan_ljusstyrka
     - sensor.ljusstyrka_framsidan_maximal
 
+# Kollektivtrafik — SL Transport API (site 1923 Ekshäradsgatan, buss m.m.)
+- platform: rest
+  name: Ekshäradsgatan SL buss
+  unique_id: eksharadsgatan_sl_buss_departures
+  resource: https://transport.integration.sl.se/v1/sites/1923/departures?forecast=60
+  scan_interval: 60
+  timeout: 20
+  value_template: "{{ value_json.departures | default([]) | length }}"
+  json_attributes:
+    - departures
+    - stop_deviations
+
 # Kollektivtrafik — SL Transport API för pendeltåg (deviations, t.ex. kort tåg)
 - platform: rest
   name: Farsta strand SL pendeltåg
@@ -143,3 +155,4 @@
   value_template: "{{ value_json.departures | default([]) | length }}"
   json_attributes:
     - departures
+    - stop_deviations
