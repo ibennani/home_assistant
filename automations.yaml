@@ -11128,23 +11128,6 @@
         ttl: 0
         priority: high
   mode: single
-- id: '1775110265818'
-  alias: 'Mobilnotis: Cursor Notifikation till Galaxy Watch'
-  triggers:
-  - webhook_id: cursor_task_notification_ilias
-    allowed_methods:
-    - POST
-    local_only: false
-    trigger: webhook
-  actions:
-    - action: notify.mobile_app_ilias_s23_ultra
-      data:
-        title: "Cursor: {{ now().strftime('%H:%M') }}"
-        message: "Nu är jag klar, Home Assistant. {{ trigger.json.beskrivning | default(trigger.json.message) | default('Öppna Cursor och läs senaste svaret.') }}"
-        data:
-          ttl: 0
-          priority: high
-          vibration: "1000, 300, 1000, 300, 1000"
 - id: '1780140607388'
   alias: 'Z-Wave: Övervaka nod-tapp och eskalera'
   description: Sätter en baslinje 3 min efter start. Om antalet aktiva noder minskar,  erbjuds
@@ -11331,10 +11314,15 @@
   triggers:
     - trigger: event
       event_type: cursor_agent_klar
+  conditions:
+    - condition: template
+      value_template: >
+        {% set b = trigger.event.data.beskrivning | default('', true) | trim %}
+        {{ b | length > 0 and b != 'Öppna Cursor och läs senaste svaret.' }}
   actions:
     - action: script.cursor_klar_notis
       data:
-        beskrivning: "{{ trigger.event.data.beskrivning | default('Öppna Cursor och läs senaste svaret.') }}"
+        beskrivning: "{{ trigger.event.data.beskrivning }}"
 
 # NFC: notis när Anna, Erik eller Ilias blippar Badrummet under spegeln
 - alias: "Mobilnotis: NFC Badrummet under spegeln"
