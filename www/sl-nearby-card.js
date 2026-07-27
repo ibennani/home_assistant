@@ -3,10 +3,14 @@ class SlNearbyCard extends HTMLElement {
     return {
       location_entity: "person.ilias_bennani",
       home_zone_entity: "zone.home",
+      reference_lat: 59.331136036994,
+      reference_lon: 18.0576584245687,
+      reference_name: "Stockholms central",
       max_stops: 20,
-      max_gps_km: 80,
+      max_gps_km: 200,
       forecast_minutes: 60,
       hide_departed: true,
+      show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 60,
     };
@@ -79,7 +83,7 @@ class SlNearbyCard extends HTMLElement {
       return Promise.resolve(this._sites);
     }
     if (!this._sitesPromise) {
-      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727o")
+      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727p")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Kunde inte läsa sl-sites.json (" + response.status + ")");
@@ -118,10 +122,21 @@ class SlNearbyCard extends HTMLElement {
     return { lat: lat, lon: lon };
   }
 
+  _getReferenceLocation() {
+    const lat = Number(this.config.reference_lat);
+    const lon = Number(this.config.reference_lon);
+    if (isFinite(lat) && isFinite(lon)) {
+      return { lat: lat, lon: lon };
+    }
+    return { lat: 59.331136036994, lon: 18.0576584245687 };
+  }
+
   _getSearchLocation() {
     const personLoc = this._readCoords(this.config.location_entity);
     const homeLoc = this._readCoords(this.config.home_zone_entity);
-    const maxDistanceM = Number(this.config.max_gps_km || 80) * 1000;
+    const refLoc = this._getReferenceLocation();
+    const refName = this.config.reference_name || "Stockholms central";
+    const maxDistanceM = Number(this.config.max_gps_km || 200) * 1000;
 
     if (!personLoc && homeLoc) {
       this._locationNote = "Använder hemzon (ingen GPS)";
@@ -130,17 +145,20 @@ class SlNearbyCard extends HTMLElement {
     if (!personLoc) {
       return null;
     }
-    if (homeLoc) {
-      const distFromHome = this._haversineMeters(
-        personLoc.lat,
-        personLoc.lon,
-        homeLoc.lat,
-        homeLoc.lon,
-      );
-      if (distFromHome > maxDistanceM) {
-        this._locationNote = "GPS långt från hem — visar hållplatser nära hemzon";
+    const distFromRef = this._haversineMeters(
+      personLoc.lat,
+      personLoc.lon,
+      refLoc.lat,
+      refLoc.lon,
+    );
+    if (distFromRef > maxDistanceM) {
+      if (homeLoc) {
+        this._locationNote =
+          "GPS långt från " + refName + " — visar hållplatser nära hemzon";
         return homeLoc;
       }
+      this._locationNote = "GPS långt från " + refName;
+      return personLoc;
     }
     this._locationNote = "Position från " + this.config.location_entity;
     return personLoc;
@@ -343,6 +361,18 @@ class SlNearbyCard extends HTMLElement {
       .replace(/'/g, "&#39;");
   }
 
+  _parseDate(value) {
+    if (!value) {
+      return null;
+    }
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  _diffMinutes(from, to) {
+    return Math.ceil((from.getTime() - to.getTime()) / 1000 / 60);
+  }
+
   _formatClock(date) {
     return date.toLocaleTimeString(this.config.language || "sv-SE", {
       hour: "numeric",
@@ -350,19 +380,72 @@ class SlNearbyCard extends HTMLElement {
     });
   }
 
+  _isCancelled(dep) {
+    const state = String(dep.state || "").toUpperCase();
+    const journeyState = String((dep.journey && dep.journey.state) || "").toUpperCase();
+    return state === "CANCELLED" || state === "INHIBITED" || journeyState === "CANCELLED";
+  }
+
+  _isDelayed(scheduledAt, expectedAt) {
+    if (!scheduledAt || !expectedAt) {
+      return false;
+    }
+    return Math.round((expectedAt.getTime() - scheduledAt.getTime()) / 1000 / 60) >= 1;
+  }
+
+  _isShortTrainDeviation(dev) {
+    const msg = String(dev.message || dev.text || dev.title || "").toLowerCase();
+    return msg.includes("kort tåg") || msg.includes("kort tag") || msg.includes("short train");
+  }
+
+  _isDelayDeviation(dev) {
+    const msg = String(dev.message || dev.text || dev.title || "").toLowerCase();
+    return (
+      msg.includes("försen") ||
+      msg.includes("senare") ||
+      msg.includes("delay") ||
+      msg.includes("delayed")
+    );
+  }
+
+  _transportIcon(transportMode) {
+    const icons = {
+      METRO: "mdi:subway",
+      BUS: "mdi:bus",
+      TRAM: "mdi:tram",
+      TRAIN: "mdi:train",
+      SHIP: "mdi:ship",
+      FERRY: "mdi:ferry",
+      TAXI: "mdi:taxi",
+    };
+    return icons[transportMode] || "mdi:train";
+  }
+
   _lineIconClass(transportMode, line, groupOfLines) {
     const designation = String(line || "");
     if (transportMode === "BUS") {
-      return groupOfLines === "blåbuss" ? "bus bus_" + designation + " blue" : "bus_red bus_" + designation;
+      return groupOfLines === "blåbuss"
+        ? "bus bus_" + designation + " blue"
+        : "bus_red bus_" + designation;
     }
     if (transportMode === "METRO") {
-      return "metro";
-    }
-    if (transportMode === "TRAIN") {
-      return "train";
+      let cls = "metro metro_" + designation;
+      if (designation === "10" || designation === "11") {
+        cls += " blue";
+      }
+      if (designation === "13" || designation === "14") {
+        cls += " red";
+      }
+      if (designation === "17" || designation === "18" || designation === "19") {
+        cls += " green";
+      }
+      return cls;
     }
     if (transportMode === "TRAM") {
       return "tram tram_" + designation;
+    }
+    if (transportMode === "TRAIN") {
+      return "train";
     }
     return "train";
   }
@@ -379,53 +462,118 @@ class SlNearbyCard extends HTMLElement {
       return '<div class="departures-error">' + this._escapeHtml(cache.error) + "</div>";
     }
 
-    let html = "";
-    const deviations = cache.stop_deviations || [];
-    if (deviations.length) {
-      html += '<div class="stop-info">';
-      for (let i = 0; i < deviations.length; i++) {
-        const dev = deviations[i];
-        html +=
+    const stopInfo = (cache.stop_deviations || [])
+      .map(function (dev) {
+        return (
           '<div class="stop-info-item">' +
           this._escapeHtml(dev.message || dev.text || dev.title || "") +
-          "</div>";
-      }
-      html += "</div>";
-    }
+          "</div>"
+        );
+      }, this)
+      .join("");
+    const stopInfoBlock = stopInfo ? '<div class="stop-info">' + stopInfo + "</div>" : "";
 
     const departures = cache.departures || [];
     if (!departures.length) {
       return (
-        html +
+        stopInfoBlock +
         '<div class="departures-empty">Inga avgångar inom ' +
         (this.config.forecast_minutes || 60) +
         " min.</div>"
       );
     }
 
-    html +=
-      '<div class="departures"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>';
     const now = new Date();
     const self = this;
-
+    let rows = "";
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
-      const line = dep.line || {};
-      const expectedAt = dep.expected ? new Date(dep.expected) : dep.scheduled ? new Date(dep.scheduled) : null;
-      const isCancelled =
-        String(dep.state || "").toUpperCase() === "CANCELLED" ||
-        String(dep.state || "").toUpperCase() === "INHIBITED";
+      const scheduledAt = self._parseDate(dep.scheduled);
+      const expectedAt = self._parseDate(dep.expected) || scheduledAt;
+      const diff = expectedAt ? self._diffMinutes(expectedAt, now) : 0;
+      const isAtPlatform = diff === 0;
+      const isDeparted = diff < 0;
+      const isCancelled = self._isCancelled(dep);
+      const isDelayed = !isCancelled && self._isDelayed(scheduledAt, expectedAt);
+      const deviations = dep.deviations || [];
+      const isShortTrain = deviations.some(function (dev) {
+        return self._isShortTrainDeviation(dev);
+      });
+      const otherDeviations = deviations.filter(function (dev) {
+        return !self._isShortTrainDeviation(dev) && !self._isDelayDeviation(dev);
+      });
+
+      const deviationItems = [];
+      if (isShortTrain) {
+        deviationItems.push({ text: "kort tåg", className: "short-train" });
+      }
+      for (let j = 0; j < otherDeviations.length; j++) {
+        const dev = otherDeviations[j];
+        const text = dev.message || dev.text || dev.title;
+        if (text) {
+          deviationItems.push({ text: text, className: "warning-message" });
+        }
+      }
+
       let departureTime = "";
       if (isCancelled) {
         departureTime = '<span class="cancelled-time">Inställd</span>';
+      } else if (isDelayed && scheduledAt && expectedAt) {
+        const newTime = self.config.show_time_always
+          ? self._formatClock(expectedAt)
+          : isAtPlatform
+            ? "Nu"
+            : self._formatClock(expectedAt);
+        departureTime =
+          '<span class="old-time">' +
+          self._formatClock(scheduledAt) +
+          '</span><span class="new-time">' +
+          newTime +
+          "</span>";
       } else if (expectedAt) {
-        departureTime = self._formatClock(expectedAt);
+        departureTime = self.config.show_time_always
+          ? self._formatClock(expectedAt)
+          : isAtPlatform
+            ? "Nu"
+            : self._formatClock(expectedAt);
       }
 
-      html +=
-        '<div class="departure-block"><div class="row departure">' +
+      const line = dep.line || {};
+      const icon = self._transportIcon(line.transport_mode);
+      const lineClass = self._lineIconClass(
+        line.transport_mode,
+        line.designation,
+        line.group_of_lines,
+      );
+
+      let deviationRow = "";
+      if (deviationItems.length) {
+        deviationRow =
+          '<div class="row deviation-row"><div class="col icon"></div><div class="col icon"></div>' +
+          '<div class="col main left deviation-messages">' +
+          deviationItems
+            .map(function (item) {
+              return (
+                '<span class="deviation-item ' +
+                item.className +
+                '">' +
+                self._escapeHtml(item.text) +
+                "</span>"
+              );
+            })
+            .join("") +
+          '</div><div class="col right"></div></div>';
+      }
+
+      rows +=
+        '<div class="departure-block' +
+        (isDeparted ? " departed" : "") +
+        '"><div class="row departure">' +
+        '<div class="col icon"><ha-icon class="transport-icon" icon="' +
+        icon +
+        '"></ha-icon></div>' +
         '<div class="col icon"><span class="line-icon mr1 ' +
-        self._lineIconClass(line.transport_mode, line.designation, line.group_of_lines) +
+        lineClass +
         '">' +
         self._escapeHtml(line.designation || "") +
         "</span></div>" +
@@ -433,11 +581,17 @@ class SlNearbyCard extends HTMLElement {
         self._escapeHtml(dep.destination || "") +
         '</div><div class="col right"><span class="leaves-in">' +
         departureTime +
-        "</span></div></div></div>";
+        "</span></div></div>" +
+        deviationRow +
+        "</div>";
     }
 
-    html += "</div>";
-    return html;
+    return (
+      stopInfoBlock +
+      '<div class="departures"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
+      rows +
+      "</div>"
+    );
   }
 
   _updateDeparturePanel(siteId) {
@@ -576,19 +730,39 @@ class SlNearbyCard extends HTMLElement {
       ".stop-body{padding:0 8px 12px}",
       ".departures-empty,.departures-error{padding:8px 16px 12px;color:var(--secondary-text-color)}",
       ".departures-error{color:var(--error-color)}",
+      ".departure.departed>.main,.departure-block.departed .main{text-decoration:line-through;color:var(--secondary-text-color)}",
       ".row{margin-top:8px;display:flex;justify-content:space-between}",
-      ".col{display:flex;flex-direction:column;justify-content:center}",
+      ".col{display:flex;flex-direction:column;justify-content:center;position:relative}",
       ".col.icon{flex-basis:40px}",
+      ".row.header{height:40px;font-size:medium;font-weight:400;opacity:var(--dark-primary-opacity)}",
       ".main{flex:2}",
-      ".line-icon{border-radius:3px;padding:3px;min-width:22px;height:22px;font-weight:500;display:inline-block;text-align:center;color:#fff}",
-      ".bus_red{background:#9e0e13}",
+      ".transport-icon{width:40px;height:40px;display:inline-flex;justify-content:center;align-items:center}",
+      ".line-icon{border-radius:3px;padding:3px 3px 0 3px;color:#fff;min-width:22px;height:22px;font-weight:500;display:inline-block;text-align:center;text-shadow:1px 1px 2px var(--outline-color)}",
+      ".bus{border:1px solid var(--outline-color);color:var(--primary-text-color)}",
+      ".bus_red,.bus.red,.red{background-color:#9e0e13;color:#fff;border:none}",
+      ".blue{background-color:#0089ca}",
+      ".green{background-color:#179d4d}",
       ".metro{background:#0061eb}",
       ".train{background:#ec619f}",
       ".tram{background:#985141}",
-      ".stop-info{margin:0 8px 8px;padding:8px 12px 0;font-size:smaller;color:#fad370!important}",
+      ".warning-message{color:var(--warning-color);font-size:smaller}",
+      ".departure-block{margin-top:8px}",
+      ".departure-block .row.departure{margin-top:0}",
+      ".row.deviation-row{margin-top:2px}",
+      ".row.deviation-row .deviation-messages{display:flex;flex-direction:column;gap:2px}",
+      ".deviation-item{font-size:smaller;line-height:1.3}",
+      ".stop-info{margin:0 8px 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
+      ".stop-info-item{color:#fad370!important}",
+      ".stop-info-item+.stop-info-item{margin-top:6px}",
+      ".short-train{color:#0abcfc;font-size:smaller;font-weight:600;margin-left:.35em;text-transform:lowercase}",
+      ".old-time{text-decoration:line-through;opacity:.65;margin-right:.35em}",
+      ".new-time{color:#0abcfc;font-weight:600}",
       ".cancelled-time{color:#e53935;font-weight:600}",
+      ".leaves-in{white-space:nowrap}",
+      ".mr1{margin-right:8px}",
       ".left{text-align:left}",
       ".right{text-align:right}",
+      "ha-icon{width:24px;height:24px;color:var(--paper-item-icon-color)}",
     ].join("");
   }
 }
