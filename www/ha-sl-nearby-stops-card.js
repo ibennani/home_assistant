@@ -17,9 +17,22 @@ class HaSlNearbyStopsCard extends HTMLElement {
   }
 
   setConfig(config) {
-    this.config = Object.assign({}, HaSlNearbyStopsCard.getStubConfig(), config || {});
-    this._locationNote = "";
-    this._updateView();
+    try {
+      const base = HaSlNearbyStopsCard.getStubConfig();
+      const input = config && typeof config === "object" ? config : {};
+      this.config = Object.assign({}, base, input);
+      this._locationNote = "";
+      if (!this._departureCache) {
+        this._departureCache = new Map();
+      }
+      this._updateView();
+    } catch (error) {
+      this.config = HaSlNearbyStopsCard.getStubConfig();
+      this.innerHTML =
+        '<ha-card><div class="status-message error">Kortfel: ' +
+        String((error && error.message) || error) +
+        "</div></ha-card>";
+    }
   }
 
   set hass(hass) {
@@ -42,6 +55,16 @@ class HaSlNearbyStopsCard extends HTMLElement {
 
   getCardSize() {
     return 20;
+  }
+
+  getGridOptions() {
+    const maxStops = Number((this.config && this.config.max_stops) || 20);
+    return {
+      columns: 12,
+      min_columns: 6,
+      rows: Math.max(8, maxStops),
+      min_rows: 4,
+    };
   }
 
   _getCache() {
@@ -447,6 +470,23 @@ class HaSlNearbyStopsCard extends HTMLElement {
       return;
     }
 
+    try {
+      this._renderView();
+    } catch (error) {
+      const root = this.querySelector(".sl-nearby-root");
+      const message =
+        '<div class="status-message error">Visningsfel: ' +
+        this._escapeHtml((error && error.message) || String(error)) +
+        "</div>";
+      if (root) {
+        root.innerHTML = message;
+      } else {
+        this.innerHTML = "<ha-card>" + message + "</ha-card>";
+      }
+    }
+  }
+
+  _renderView() {
     let root = this.querySelector(".sl-nearby-root");
     if (!root) {
       this.innerHTML =
@@ -558,9 +598,11 @@ if (!customElements.get("ha-sl-nearby-stops-card")) {
 }
 
 window.customCards = window.customCards || [];
-window.customCards.push({
-  type: "ha-sl-nearby-stops-card",
-  name: "SL närmaste hållplatser",
-  preview: true,
-  description: "Visar närmaste SL-hållplatser från GPS och avgångar i accordion.",
-});
+if (!window.customCards.some(function (card) { return card.type === "ha-sl-nearby-stops-card"; })) {
+  window.customCards.push({
+    type: "ha-sl-nearby-stops-card",
+    name: "SL närmaste hållplatser",
+    preview: true,
+    description: "Visar närmaste SL-hållplatser från GPS och avgångar i accordion.",
+  });
+}
