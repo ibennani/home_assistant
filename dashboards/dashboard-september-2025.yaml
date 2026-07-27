@@ -52,8 +52,8 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/ha-sl-nearby-stops-card.js?v=20260727m
-  type: js
+- url: /local/sl-nearby-card.js?v=20260727n
+  type: module
 kiosk_mode:
   non_admin_settings:
     hide_sidebar: true
@@ -6598,7 +6598,7 @@ views:
   icon: mdi:alpha-t-circle
   panel: true
   cards:
-  - type: custom:ha-sl-nearby-stops-card
+  - type: custom:sl-nearby-card
     location_entity: person.ilias_bennani
     home_zone_entity: zone.home
     max_stops: 20
