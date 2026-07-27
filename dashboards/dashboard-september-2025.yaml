@@ -52,7 +52,7 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/ha-sl-nearby-stops-card.js?v=20260727k
+- url: /local/ha-sl-nearby-stops-card.js?v=20260727l
   type: module
 kiosk_mode:
   non_admin_settings:
