@@ -2069,7 +2069,6 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                 const isDeparted = diff < 0;
                 const isCancelled = $66d5822390d71e6e$var$isCancelledDeparture(dep);
                 const isDelayed = !isCancelled && $66d5822390d71e6e$var$isDelayedDeparture(scheduledAt, expectedAt);
-                const hasDeviations = (dep.deviations?.length || 0) > 0;
                 const isShortTrain = (dep.deviations || []).some($66d5822390d71e6e$var$isShortTrainDeviation);
                 const otherDeviations = (dep.deviations || []).filter((dev)=>!$66d5822390d71e6e$var$isShortTrainDeviation(dev) && !$66d5822390d71e6e$var$isDelayDeviation(dev));
                 const deviationItems = [];
