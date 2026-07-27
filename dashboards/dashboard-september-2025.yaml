@@ -6601,7 +6601,7 @@ views:
   - type: grid
     cards:
     - type: iframe
-      url: /local/sl-nearby.html?entity=person.ilias_bennani&max=20&forecast=60&v=20260727g
-      aspect_ratio: 150%
+      url: /local/sl-nearby.html?entity=person.ilias_bennani&home=zone.home&max=20&forecast=60&max_gps_km=80&v=20260727h
+      aspect_ratio: 55%
       grid_options:
         columns: full
