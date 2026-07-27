@@ -33,7 +33,7 @@ config:
 energy:
 frontend:
   extra_module_url:
-    - /local/sl-nearby-card.js?v=20260727s
+    - /local/sl-nearby-card.js?v=20260727t
 group: !include groups.yaml
 history:
 input_boolean: !include input_boolean.yaml
