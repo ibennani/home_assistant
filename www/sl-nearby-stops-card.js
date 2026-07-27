@@ -27,9 +27,13 @@ class SlNearbyStopsCard extends HTMLElement {
   }
 
   set hass(hass) {
+    if (!hass) {
+      return;
+    }
     const prev = this._locationKey;
     this._hass = hass;
     const next = this._getLocationKey();
+    this._locationKey = next;
     if (prev !== next) {
       this._departureCache.clear();
       this._openSiteId = null;
@@ -38,20 +42,61 @@ class SlNearbyStopsCard extends HTMLElement {
     this._syncRefreshTimer();
   }
 
+  getCardSize() {
+    return Math.max(4, Number(this.config?.max_stops || 20));
+  }
+
+  getGridOptions() {
+    return {
+      columns: "full",
+      min_columns: 6,
+      rows: 12,
+      min_rows: 4,
+    };
+  }
+
   connectedCallback() {
+    this._subscribeStates();
     this._ensureSitesLoaded().then(() => this._render());
     this._syncRefreshTimer();
   }
 
   disconnectedCallback() {
+    if (this._unsubscribeStates) {
+      this._unsubscribeStates();
+      this._unsubscribeStates = undefined;
+    }
     if (this._refreshTimer) {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
     }
   }
 
-  getCardSize() {
-    return Math.max(4, Number(this.config?.max_stops || 20));
+  _subscribeStates() {
+    if (this._unsubscribeStates) {
+      return;
+    }
+
+    const event = new CustomEvent("context-request", {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    });
+    event.context = "states";
+    event.subscribe = true;
+    event.callback = (states, unsubscribe) => {
+      this._unsubscribeStates = unsubscribe;
+      this._hass = { states };
+      const next = this._getLocationKey();
+      if (this._locationKey !== next) {
+        this._departureCache.clear();
+        this._openSiteId = null;
+      }
+      this._locationKey = next;
+      this._render();
+      this._syncRefreshTimer();
+    };
+    this.dispatchEvent(event);
   }
 
   async _ensureSitesLoaded() {
@@ -304,11 +349,11 @@ class SlNearbyStopsCard extends HTMLElement {
 
   _escapeHtml(value) {
     return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#39;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   _renderDepartures(siteId) {
@@ -428,6 +473,7 @@ class SlNearbyStopsCard extends HTMLElement {
       return;
     }
 
+    try {
     const location = this._getLocation();
     const stops = this._getNearestStops();
     const locationLabel = this.config.location_entity;
@@ -674,6 +720,9 @@ class SlNearbyStopsCard extends HTMLElement {
         this._loadDepartures(siteId);
       });
     });
+    } catch (error) {
+      this.innerHTML = `<ha-card><div class="status-message error">${this._escapeHtml(error.message || String(error))}</div></ha-card>`;
+    }
   }
 }
 

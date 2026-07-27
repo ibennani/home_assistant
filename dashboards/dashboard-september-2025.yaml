@@ -52,7 +52,7 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/sl-nearby-stops-card.js?v=20260727a
+- url: /local/sl-nearby-stops-card.js?v=20260727c
   type: module
 kiosk_mode:
   non_admin_settings:
@@ -6595,7 +6595,7 @@ views:
         language: sv-SE
 - title: SL
   path: sl-nara
-  icon: /local/sl-tab-icon.svg
+  icon: mdi:alpha-t-box
   type: sections
   max_columns: 1
   dense_section_placement: true
