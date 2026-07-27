@@ -1607,18 +1607,18 @@ const $57faf62096e30446$var$lineColorsStyles = (0, $j8KxL.css)`
     }
 
     .row.departure {
-        font-size: 2rem;
+        font-size: 1.3rem;
     }
 
     .row.departure .line-icon {
-        min-width: 44px;
-        height: 44px;
-        padding: 6px 6px 0 6px;
+        min-width: 29px;
+        height: 29px;
+        padding: 4px 4px 0 4px;
         font-size: 1em;
     }
 
     .row.departure .col.icon {
-        flex-basis: 80px;
+        flex-basis: 52px;
     }
 
     .bus {
