@@ -52,8 +52,6 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/ha-sl-nearby-stops-card.js?v=20260727e
-  type: module
 kiosk_mode:
   non_admin_settings:
     hide_sidebar: true
@@ -6602,8 +6600,8 @@ views:
   sections:
   - type: grid
     cards:
-    - type: custom:ha-sl-nearby-stops-card
-      location_entity: person.ilias_bennani
-      max_stops: 20
+    - type: iframe
+      url: /local/sl-nearby.html?entity=person.ilias_bennani&max=20&forecast=60&v=20260727g
+      aspect_ratio: 150%
       grid_options:
         columns: full
