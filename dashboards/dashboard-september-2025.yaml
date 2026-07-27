@@ -52,8 +52,8 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/sl-nearby-stops-card.js?v=20260727c
-  type: module
+- url: /local/sl-nearby-stops-card.js?v=20260727d
+  type: js
 kiosk_mode:
   non_admin_settings:
     hide_sidebar: true

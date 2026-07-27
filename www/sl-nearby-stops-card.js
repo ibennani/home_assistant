@@ -16,22 +16,22 @@ class SlNearbyStopsCard extends HTMLElement {
   }
 
   setConfig(config) {
-    this.config = {
-      ...SlNearbyStopsCard.getStubConfig(),
-      ...config,
-    };
-    this._departureCache = new Map();
+    const base = SlNearbyStopsCard.getStubConfig();
+    const input = config && typeof config === "object" ? config : {};
+    this.config = Object.assign({}, base, input);
+    if (!this._departureCache) {
+      this._departureCache = new Map();
+    }
     this._openSiteId = null;
-    this._refreshTimer = undefined;
     this._render();
   }
 
   set hass(hass) {
-    if (!hass) {
+    this._hass = hass;
+    if (!this.config) {
       return;
     }
     const prev = this._locationKey;
-    this._hass = hass;
     const next = this._getLocationKey();
     this._locationKey = next;
     if (prev !== next) {
@@ -43,60 +43,29 @@ class SlNearbyStopsCard extends HTMLElement {
   }
 
   getCardSize() {
-    return Math.max(4, Number(this.config?.max_stops || 20));
+    const maxStops = this.config && this.config.max_stops ? this.config.max_stops : 20;
+    return Math.max(4, Number(maxStops));
   }
 
   getGridOptions() {
     return {
-      columns: "full",
+      columns: 12,
       min_columns: 6,
-      rows: 12,
+      rows: 8,
       min_rows: 4,
     };
   }
 
   connectedCallback() {
-    this._subscribeStates();
     this._ensureSitesLoaded().then(() => this._render());
     this._syncRefreshTimer();
   }
 
   disconnectedCallback() {
-    if (this._unsubscribeStates) {
-      this._unsubscribeStates();
-      this._unsubscribeStates = undefined;
-    }
     if (this._refreshTimer) {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
     }
-  }
-
-  _subscribeStates() {
-    if (this._unsubscribeStates) {
-      return;
-    }
-
-    const event = new CustomEvent("context-request", {
-      bubbles: true,
-      composed: true,
-      cancelable: true,
-    });
-    event.context = "states";
-    event.subscribe = true;
-    event.callback = (states, unsubscribe) => {
-      this._unsubscribeStates = unsubscribe;
-      this._hass = { states };
-      const next = this._getLocationKey();
-      if (this._locationKey !== next) {
-        this._departureCache.clear();
-        this._openSiteId = null;
-      }
-      this._locationKey = next;
-      this._render();
-      this._syncRefreshTimer();
-    };
-    this.dispatchEvent(event);
   }
 
   async _ensureSitesLoaded() {
@@ -132,7 +101,7 @@ class SlNearbyStopsCard extends HTMLElement {
   }
 
   _getLocation() {
-    if (!this._hass || !this.config?.location_entity) {
+    if (!this._hass || !this.config || !this.config.location_entity) {
       return null;
     }
     const state = this._hass.states[this.config.location_entity];
@@ -160,15 +129,16 @@ class SlNearbyStopsCard extends HTMLElement {
 
   _getNearestStops() {
     const location = this._getLocation();
-    if (!location || !this._sites?.length) {
+    if (!location || !this._sites || !this._sites.length) {
       return [];
     }
     const maxStops = Number(this.config.max_stops || 20);
     return this._sites
-      .map((site) => ({
-        ...site,
-        distance_m: this._haversineMeters(location.lat, location.lon, site.lat, site.lon),
-      }))
+      .map((site) =>
+        Object.assign({}, site, {
+          distance_m: this._haversineMeters(location.lat, location.lon, site.lat, site.lon),
+        }),
+      )
       .sort((a, b) => a.distance_m - b.distance_m)
       .slice(0, maxStops);
   }
@@ -181,7 +151,7 @@ class SlNearbyStopsCard extends HTMLElement {
   }
 
   _syncRefreshTimer() {
-    const seconds = Number(this.config?.refresh_seconds || 0);
+    const seconds = Number((this.config && this.config.refresh_seconds) || 0);
     if (this._refreshTimer) {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
@@ -198,7 +168,7 @@ class SlNearbyStopsCard extends HTMLElement {
   }
 
   async _loadDepartures(siteId, force = false) {
-    if (!this._hass) {
+    if (!this._hass || !this._hass.callService) {
       return;
     }
     const cacheKey = String(siteId);
@@ -212,12 +182,15 @@ class SlNearbyStopsCard extends HTMLElement {
     try {
       const result = await this._hass.callService(
         "script",
-        "sl_hamta_site_avgangar",
-        { site_id: String(siteId) },
+        "turn_on",
+        {
+          entity_id: "script.sl_hamta_avgangar_for_hallplats",
+          variables: { site_id: String(siteId) },
+        },
         undefined,
         true,
       );
-      const payload = result?.response || result || {};
+      const payload = (result && result.response) || result || {};
       const departures = this._prepareDepartures(payload.departures || []);
       this._departureCache.set(cacheKey, {
         loading: false,
@@ -228,7 +201,7 @@ class SlNearbyStopsCard extends HTMLElement {
     } catch (error) {
       this._departureCache.set(cacheKey, {
         loading: false,
-        error: error?.message || "Kunde inte hämta avgångar",
+        error: (error && error.message) || "Kunde inte hämta avgångar",
       });
     }
 
@@ -237,7 +210,7 @@ class SlNearbyStopsCard extends HTMLElement {
 
   _prepareDepartures(departures) {
     const now = Date.now();
-    const hideDeparted = this.config?.hide_departed !== false;
+    const hideDeparted = !this.config || this.config.hide_departed !== false;
     const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
 
     return departures
@@ -245,10 +218,13 @@ class SlNearbyStopsCard extends HTMLElement {
         const expected = dep.expected || dep.scheduled;
         const expectedMs = expected ? new Date(expected).getTime() : Number.POSITIVE_INFINITY;
         let destination = dep.destination || "";
-        if (dep.line?.transport_mode === "TRAIN") {
+        if (dep.line && dep.line.transport_mode === "TRAIN") {
           destination = destination.replace(destPattern, "").trim();
         }
-        return { ...dep, destination, _expectedMs: expectedMs };
+        return Object.assign({}, dep, {
+          destination: destination,
+          _expectedMs: expectedMs,
+        });
       })
       .filter((dep) => {
         if (!hideDeparted) {
@@ -283,7 +259,7 @@ class SlNearbyStopsCard extends HTMLElement {
 
   _isCancelled(dep) {
     const state = String(dep.state || "").toUpperCase();
-    const journeyState = String(dep.journey?.state || "").toUpperCase();
+    const journeyState = String((dep.journey && dep.journey.state) || "").toUpperCase();
     return state === "CANCELLED" || state === "INHIBITED" || journeyState === "CANCELLED";
   }
 
@@ -376,7 +352,7 @@ class SlNearbyStopsCard extends HTMLElement {
       ? `<div class="stop-info">${stopInfo}</div>`
       : "";
 
-    if (!cache.departures?.length) {
+    if (!cache.departures || !cache.departures.length) {
       return `${stopInfoBlock}<div class="departures-empty">Inga avgångar inom ${this.config.forecast_minutes || 60} min.</div>`;
     }
 
@@ -425,11 +401,12 @@ class SlNearbyStopsCard extends HTMLElement {
               : this._formatClock(expectedAt);
         }
 
-        const icon = this._transportIcon(dep.line?.transport_mode);
+        const line = dep.line || {};
+        const icon = this._transportIcon(line.transport_mode);
         const lineClass = this._lineIconClass(
-          dep.line?.transport_mode,
-          dep.line?.designation,
-          dep.line?.group_of_lines,
+          line.transport_mode,
+          line.designation,
+          line.group_of_lines,
         );
 
         const deviationRow = deviationItems.length
@@ -448,7 +425,7 @@ class SlNearbyStopsCard extends HTMLElement {
         return `<div class="departure-block ${isDeparted ? "departed" : ""}">
           <div class="row departure">
             <div class="col icon"><ha-icon class="transport-icon" icon="${icon}"></ha-icon></div>
-            <div class="col icon"><span class="line-icon mr1 ${lineClass}">${this._escapeHtml(dep.line?.designation || "")}</span></div>
+            <div class="col icon"><span class="line-icon mr1 ${lineClass}">${this._escapeHtml(line.designation || "")}</span></div>
             <div class="col main left">${this._escapeHtml(dep.destination || "")}</div>
             <div class="col right"><span class="leaves-in">${departureTime}</span></div>
           </div>
