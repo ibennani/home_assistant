@@ -884,48 +884,65 @@
     - name: Ekshäradsgatan buss 742 departures
       unique_id: eksharadsgatan_buss_742_departures
       state: >
-        {% set deps = state_attr('sensor.eksharadsgatan_sl_buss', 'departures') | default([], true) %}
-        {% set ns = namespace(n=0) %}
-        {% for d in deps %}
-          {% if d.line.designation == '742' and (d.direction_code | string) == '2' and d.destination == 'Huddinge sjukhus' %}
-            {% set ns.n = ns.n + 1 %}
-          {% endif %}
-        {% endfor %}
-        {{ ns.n }}
-      attributes:
-        departures: >
-          {% set deps = state_attr('sensor.eksharadsgatan_sl_buss', 'departures') | default([], true) %}
-          {% set ns = namespace(items=[]) %}
+        {% set raw = state_attr('sensor.eksharadsgatan_sl_buss', 'departures') %}
+        {% set prev = this.attributes.departures | default([], true) %}
+        {% if raw is none or (raw | length == 0 and prev | length > 0) %}
+          {{ this.state | default(0) }}
+        {% else %}
+          {% set deps = raw | default([], true) %}
+          {% set ns = namespace(n=0) %}
           {% for d in deps %}
             {% if d.line.designation == '742' and (d.direction_code | string) == '2' and d.destination == 'Huddinge sjukhus' %}
-              {% set devs = namespace(list=[]) %}
-              {% for dev in d.deviations | default([]) %}
-                {% set devs.list = devs.list + [{
-                  'message': dev.message | default(''),
-                  'importance_level': dev.importance_level | default(dev.importance | default(5))
-                }] %}
-              {% endfor %}
-              {% set item = {
-                'destination': d.destination,
-                'direction': d.direction,
-                'direction_code': d.direction_code,
-                'state': d.state,
-                'display': d.display,
-                'stop_point': d.stop_point,
-                'line': d.line,
-                'scheduled': d.scheduled,
-                'expected': d.expected,
-                'journey': d.journey | default({})
-              } %}
-              {% if devs.list | length > 0 %}
-                {% set item = item | combine({'deviations': devs.list}) %}
-              {% endif %}
-              {% set ns.items = ns.items + [item] %}
+              {% set ns.n = ns.n + 1 %}
             {% endif %}
           {% endfor %}
-          {{ ns.items }}
+          {{ ns.n }}
+        {% endif %}
+      attributes:
+        departures: >
+          {% set raw = state_attr('sensor.eksharadsgatan_sl_buss', 'departures') %}
+          {% set prev = this.attributes.departures | default([], true) %}
+          {% if raw is none or (raw | length == 0 and prev | length > 0) %}
+            {{ prev }}
+          {% else %}
+            {% set deps = raw | default([], true) %}
+            {% set ns = namespace(items=[]) %}
+            {% for d in deps %}
+              {% if d.line.designation == '742' and (d.direction_code | string) == '2' and d.destination == 'Huddinge sjukhus' %}
+                {% set devs = namespace(list=[]) %}
+                {% for dev in d.deviations | default([]) %}
+                  {% set devs.list = devs.list + [{
+                    'message': dev.message | default(''),
+                    'importance_level': dev.importance_level | default(dev.importance | default(5))
+                  }] %}
+                {% endfor %}
+                {% set item = {
+                  'destination': d.destination,
+                  'direction': d.direction,
+                  'direction_code': d.direction_code,
+                  'state': d.state,
+                  'display': d.display,
+                  'stop_point': d.stop_point,
+                  'line': d.line,
+                  'scheduled': d.scheduled,
+                  'expected': d.expected,
+                  'journey': d.journey | default({})
+                } %}
+                {% if devs.list | length > 0 %}
+                  {% set item = item | combine({'deviations': devs.list}) %}
+                {% endif %}
+                {% set ns.items = ns.items + [item] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.items }}
+          {% endif %}
         stop_deviations: >
-          {{ state_attr('sensor.eksharadsgatan_sl_buss', 'stop_deviations') | default([], true) }}
+          {% set raw = state_attr('sensor.eksharadsgatan_sl_buss', 'stop_deviations') %}
+          {% if raw is none %}
+            {{ this.attributes.stop_deviations | default([], true) }}
+          {% else %}
+            {{ raw }}
+          {% endif %}
 
 # Kollektivtrafik — pendeltåg från Farsta strand (SL Transport API, linje 4x riktning 2)
 - trigger:
@@ -941,47 +958,64 @@
     - name: Farsta strand pendeltåg departures
       unique_id: farsta_strand_pendeltag_departures
       state: >
-        {% set deps = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') | default([], true) %}
-        {% set ns = namespace(n=0) %}
-        {% for d in deps %}
-          {% if d.line.transport_mode == 'TRAIN' and (d.direction_code | string) == '2' and d.line.designation is match('^4') %}
-            {% set ns.n = ns.n + 1 %}
-          {% endif %}
-        {% endfor %}
-        {{ ns.n }}
-      attributes:
-        departures: >
-          {% set deps = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') | default([], true) %}
-          {% set dest_pat = '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$' %}
-          {% set ns = namespace(items=[]) %}
+        {% set raw = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') %}
+        {% set prev = this.attributes.departures | default([], true) %}
+        {% if raw is none or (raw | length == 0 and prev | length > 0) %}
+          {{ this.state | default(0) }}
+        {% else %}
+          {% set deps = raw | default([], true) %}
+          {% set ns = namespace(n=0) %}
           {% for d in deps %}
             {% if d.line.transport_mode == 'TRAIN' and (d.direction_code | string) == '2' and d.line.designation is match('^4') %}
-              {% set dest = d.destination | regex_replace(dest_pat, '') | trim %}
-              {% set devs = namespace(list=[]) %}
-              {% for dev in d.deviations | default([]) %}
-                {% set devs.list = devs.list + [{
-                  'message': dev.message | default(''),
-                  'importance_level': dev.importance_level | default(dev.importance | default(5))
-                }] %}
-              {% endfor %}
-              {% set item = {
-                'destination': dest,
-                'direction': d.direction,
-                'direction_code': d.direction_code,
-                'state': d.state,
-                'display': d.display,
-                'stop_point': d.stop_point,
-                'line': d.line,
-                'scheduled': d.scheduled,
-                'expected': d.expected,
-                'journey': d.journey | default({})
-              } %}
-              {% if devs.list | length > 0 %}
-                {% set item = item | combine({'deviations': devs.list}) %}
-              {% endif %}
-              {% set ns.items = ns.items + [item] %}
+              {% set ns.n = ns.n + 1 %}
             {% endif %}
           {% endfor %}
-          {{ ns.items }}
+          {{ ns.n }}
+        {% endif %}
+      attributes:
+        departures: >
+          {% set raw = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') %}
+          {% set prev = this.attributes.departures | default([], true) %}
+          {% if raw is none or (raw | length == 0 and prev | length > 0) %}
+            {{ prev }}
+          {% else %}
+            {% set deps = raw | default([], true) %}
+            {% set dest_pat = '(?: station(?: \\([^)]+\\))?| \\([^)]+\\))$' %}
+            {% set ns = namespace(items=[]) %}
+            {% for d in deps %}
+              {% if d.line.transport_mode == 'TRAIN' and (d.direction_code | string) == '2' and d.line.designation is match('^4') %}
+                {% set dest = d.destination | regex_replace(dest_pat, '') | trim %}
+                {% set devs = namespace(list=[]) %}
+                {% for dev in d.deviations | default([]) %}
+                  {% set devs.list = devs.list + [{
+                    'message': dev.message | default(''),
+                    'importance_level': dev.importance_level | default(dev.importance | default(5))
+                  }] %}
+                {% endfor %}
+                {% set item = {
+                  'destination': dest,
+                  'direction': d.direction,
+                  'direction_code': d.direction_code,
+                  'state': d.state,
+                  'display': d.display,
+                  'stop_point': d.stop_point,
+                  'line': d.line,
+                  'scheduled': d.scheduled,
+                  'expected': d.expected,
+                  'journey': d.journey | default({})
+                } %}
+                {% if devs.list | length > 0 %}
+                  {% set item = item | combine({'deviations': devs.list}) %}
+                {% endif %}
+                {% set ns.items = ns.items + [item] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.items }}
+          {% endif %}
         stop_deviations: >
-          {{ state_attr('sensor.farsta_strand_sl_pendeltag', 'stop_deviations') | default([], true) }}
+          {% set raw = state_attr('sensor.farsta_strand_sl_pendeltag', 'stop_deviations') %}
+          {% if raw is none %}
+            {{ this.attributes.stop_deviations | default([], true) }}
+          {% else %}
+            {{ raw }}
+          {% endif %}
