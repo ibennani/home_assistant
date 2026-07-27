@@ -2035,8 +2035,13 @@ sl_hamta_site_avgangar:
       selector:
         text:
   sequence:
-    - action: rest
-      resource: "https://transport.integration.sl.se/v1/sites/{{ site_id | int }}/departures?forecast=60"
+    - action: rest_command.sl_site_departures
+      data:
+        site_id: "{{ site_id | int }}"
       response_variable: sl_dep
+    - variables:
+        payload:
+          departures: "{{ sl_dep.content.departures | default([]) }}"
+          stop_deviations: "{{ sl_dep.content.stop_deviations | default([]) }}"
     - stop: return
-      response_variable: sl_dep
+      response_variable: payload
