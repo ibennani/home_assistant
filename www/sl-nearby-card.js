@@ -83,7 +83,7 @@ class SlNearbyCard extends HTMLElement {
       return Promise.resolve(this._sites);
     }
     if (!this._sitesPromise) {
-      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727q")
+      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727r")
         .then((response) => {
           if (!response.ok) {
             throw new Error("Kunde inte läsa sl-sites.json (" + response.status + ")");
@@ -408,6 +408,22 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
+  _formatStopPointLabel(dep) {
+    const stopPoint = dep && dep.stop_point;
+    if (!stopPoint || !stopPoint.designation) {
+      return "";
+    }
+    const designation = String(stopPoint.designation).trim();
+    if (!designation) {
+      return "";
+    }
+    const mode = String((dep.line && dep.line.transport_mode) || "").toUpperCase();
+    if (mode === "TRAIN" || mode === "METRO") {
+      return "spår " + designation;
+    }
+    return "läge " + designation;
+  }
+
   _transportIcon(transportMode) {
     const icons = {
       METRO: "mdi:subway",
@@ -504,6 +520,10 @@ class SlNearbyCard extends HTMLElement {
       });
 
       const deviationItems = [];
+      const stopPointLabel = self._formatStopPointLabel(dep);
+      if (stopPointLabel) {
+        deviationItems.push({ text: stopPointLabel, className: "stop-point-label" });
+      }
       if (isShortTrain) {
         deviationItems.push({ text: "kort tåg", className: "short-train" });
       }
@@ -757,6 +777,7 @@ class SlNearbyCard extends HTMLElement {
       ".row.deviation-row{margin-top:2px}",
       ".row.deviation-row .deviation-messages{display:flex;flex-direction:column;gap:2px}",
       ".deviation-item{font-size:smaller;line-height:1.3}",
+      ".stop-point-label{color:#fad370!important;font-weight:500}",
       ".stop-info{margin:0 8px 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
       ".stop-info-item{color:#fad370!important}",
       ".stop-info-item+.stop-info-item{margin-top:6px}",
