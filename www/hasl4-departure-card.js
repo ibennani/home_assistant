@@ -1766,7 +1766,7 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         padding: 8px 12px 0;
         font-size: smaller;
         line-height: 1.35;
-        color: var(--secondary-text-color);
+        color: #fad370;
         border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
     }
 
