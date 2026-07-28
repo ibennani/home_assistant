@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728f";
+    return "20260728g";
   }
 
   static getStubConfig() {
@@ -93,31 +93,27 @@ class SlStopDeparturesCard extends HTMLElement {
     if (result.content) {
       return result.content;
     }
+    if (result.departures || result.journeys || result.stop_deviations) {
+      return result;
+    }
     if (result.service_response) {
-      const sr = result.service_response;
-      if (sr.content) {
-        return sr.content;
-      }
-      const keys = Object.keys(sr);
-      if (keys.length === 1 && sr[keys[0]] && sr[keys[0]].content) {
-        return sr[keys[0]].content;
-      }
-      if (keys.length === 1) {
-        return sr[keys[0]];
+      const extracted = this._extractPayload(result.service_response);
+      if (extracted.departures || extracted.journeys || extracted.stop_deviations) {
+        return extracted;
       }
     }
     if (result.response) {
-      const response = result.response;
-      if (response.content) {
-        return response.content;
-      }
-      const keys = Object.keys(response);
-      if (keys.length === 1 && response[keys[0]] && response[keys[0]].content) {
-        return response[keys[0]].content;
+      const extracted = this._extractPayload(result.response);
+      if (extracted.departures || extracted.journeys || extracted.stop_deviations) {
+        return extracted;
       }
     }
-    if (result.journeys || result.departures || result.stop_deviations) {
-      return result;
+    const keys = Object.keys(result);
+    if (keys.length === 1 && result[keys[0]] && typeof result[keys[0]] === "object") {
+      const extracted = this._extractPayload(result[keys[0]]);
+      if (extracted.departures || extracted.journeys || extracted.stop_deviations) {
+        return extracted;
+      }
     }
     return {};
   }
@@ -179,7 +175,7 @@ class SlStopDeparturesCard extends HTMLElement {
       return "train";
     }
     if (
-      line.designation === "742" &&
+      String(line.designation || line.id) === "742" &&
       String(dep.direction_code) === "1" &&
       dep.destination === "Drevviksstrand"
     ) {
@@ -328,6 +324,7 @@ class SlStopDeparturesCard extends HTMLElement {
     }
 
     if (!pending.length) {
+      self._updateView();
       return Promise.resolve();
     }
 
@@ -378,7 +375,12 @@ class SlStopDeparturesCard extends HTMLElement {
     const self = this;
     const siteId = Number(this.config.site_id);
     const busSiteId = Number(this.config.alight_bus_site_id);
-    Promise.all([this._callSiteDepartures(siteId), this._callSiteDepartures(busSiteId)])
+    Promise.all([
+      self._callSiteDepartures(siteId),
+      self._callSiteDepartures(busSiteId).catch(function () {
+        return { departures: [], stop_deviations: [] };
+      }),
+    ])
       .then(function (results) {
         const main = results[0];
         const busSite = results[1];
