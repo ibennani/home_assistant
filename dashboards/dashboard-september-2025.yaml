@@ -6612,20 +6612,6 @@ views:
         walk_train_minutes: 14
         walk_bus_minutes: 9
         transfer_alvsjo_minutes: 3
-      - type: map
-        aspect_ratio: '16:9'
-        auto_fit: true
-        default_zoom: 14
-        entities:
-          - person.ilias_bennani
-          - entity: sensor.sl_hallplats_huddinge_centrum
-            name: Huddinge centrum
-          - entity: sensor.sl_hallplats_farsta_strand
-            name: Farsta strand
-          - entity: sensor.sl_hallplats_eksharadsgatan
-            name: Ekshäradsgatan
-          - zone.home
-          - zone.farsta_strand_pendeltagstation
 - title: SL
   path: sl-nara
   icon: mdi:alpha-t-circle
