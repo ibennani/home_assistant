@@ -54,6 +54,8 @@ resources:
   type: module
 - url: /local/sl-nearby-card.js?v=20260727t
   type: module
+- url: /local/sl-stop-departures-card.js?v=20260728a
+  type: module
 kiosk_mode:
   non_admin_settings:
     hide_sidebar: true
@@ -6593,6 +6595,17 @@ views:
         hide_departed: true
         show_updated: false
         language: sv-SE
+      - type: custom:sl-stop-departures-card
+        title: Huddinge centrum
+        site_id: 9527
+        forecast_minutes: 120
+        refresh_seconds: 60
+        show_time_always: true
+        hide_departed: true
+        alight_train_site_id: 9180
+        alight_bus_site_id: 1923
+        walk_train_entity: sensor.promenad_farsta_strand_till_eksharadsgatan_6
+        walk_bus_entity: sensor.promenad_eksharadsgatan_till_eksharadsgatan_6
 - title: SL
   path: sl-nara
   icon: mdi:alpha-t-circle

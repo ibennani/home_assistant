@@ -1,4 +1,10 @@
 # SL Transport API — används av script.sl_hamta_site_avgangar (sl-nearby-stops-card)
 sl_site_departures:
-  url: "https://transport.integration.sl.se/v1/sites/{{ site_id }}/departures?forecast=60"
+  url: "https://transport.integration.sl.se/v1/sites/{{ site_id }}/departures?forecast={{ forecast | default(60) }}"
+  method: GET
+
+# SL Journey Planner — restid mellan två hållplatser (t.ex. Huddinge → Farsta strand)
+sl_journey_to_site:
+  url: >
+    https://journeyplanner.integration.sl.se/v2/trips?type_origin=any&name_origin=909100100000{{ origin_site }}&type_destination=any&name_destination=909100100000{{ dest_site }}&calc_number_of_trips=1&incl_mot_5=false&itdDate={{ itd_date }}&itdTime={{ itd_time }}
   method: GET

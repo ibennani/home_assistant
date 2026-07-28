@@ -1019,3 +1019,20 @@
           {% else %}
             {{ raw }}
           {% endif %}
+
+# Kollektivtrafik — promenadtid via Waze (fallback om Waze-sensor saknas)
+- sensor:
+    - name: Promenad Farsta strand till Ekshäradsgatan 6
+      unique_id: promenad_farsta_strand_till_eksharadsgatan_6
+      unit_of_measurement: min
+      device_class: duration
+      state: >
+        {% set v = states('sensor.waze_farsta_strand_till_eksharadsgatan_6') %}
+        {{ v if v not in ['unknown', 'unavailable', 'none', ''] else 16 }}
+    - name: Promenad Ekshäradsgatan till Ekshäradsgatan 6
+      unique_id: promenad_eksharadsgatan_till_eksharadsgatan_6
+      unit_of_measurement: min
+      device_class: duration
+      state: >
+        {% set v = states('sensor.waze_eksharadsgatan_till_eksharadsgatan_6') %}
+        {{ v if v not in ['unknown', 'unavailable', 'none', ''] else 11 }}
