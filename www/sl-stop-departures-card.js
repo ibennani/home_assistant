@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728c";
+    return "20260728d";
   }
 
   static getStubConfig() {
@@ -12,14 +12,10 @@ class SlStopDeparturesCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 60,
-      alight_train_site_id: 9180,
-      alight_bus_site_id: 1923,
-      walk_train_entity: "sensor.promenad_farsta_strand_till_eksharadsgatan_6",
-      walk_bus_entity: "sensor.promenad_eksharadsgatan_till_eksharadsgatan_6",
-      walk_train_fallback_minutes: 16,
-      walk_bus_fallback_minutes: 11,
-      train_pt_fallback_minutes: 31,
-      bus_pt_fallback_minutes: 20,
+      dest_lat: 59.237731498047985,
+      dest_lon: 18.087033927440647,
+      bus_door_to_door_fallback_minutes: 27,
+      train_door_to_door_fallback_minutes: 47,
     };
   }
 
@@ -133,20 +129,28 @@ class SlStopDeparturesCard extends HTMLElement {
     }).then((result) => this._extractPayload(result));
   }
 
-  _callJourneyPlanner(originSite, destSite, when) {
+  _formatItdParams(when) {
     const date = when.toLocaleDateString("sv-SE", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
     });
     const parts = date.split("-");
-    const itdDate = parts[0] + parts[1] + parts[2];
-    const itdTime = String(when.getHours()).padStart(2, "0") + String(when.getMinutes()).padStart(2, "0");
-    return this._callWithResponse("rest_command", "sl_journey_to_site", {
+    return {
+      itd_date: parts[0] + parts[1] + parts[2],
+      itd_time:
+        String(when.getHours()).padStart(2, "0") + String(when.getMinutes()).padStart(2, "0"),
+    };
+  }
+
+  _callDoorToDoor(originSite, when) {
+    const itd = this._formatItdParams(when);
+    return this._callWithResponse("rest_command", "sl_journey_door_to_door", {
       origin_site: Number(originSite),
-      dest_site: Number(destSite),
-      itd_date: itdDate,
-      itd_time: itdTime,
+      dest_lat: Number(this.config.dest_lat),
+      dest_lon: Number(this.config.dest_lon),
+      itd_date: itd.itd_date,
+      itd_time: itd.itd_time,
     }).then((result) => this._extractPayload(result));
   }
 
@@ -200,34 +204,11 @@ class SlStopDeparturesCard extends HTMLElement {
     return items;
   }
 
-  _buildBusJourneyMap(departures) {
-    const map = new Map();
-    for (let i = 0; i < departures.length; i++) {
-      const dep = departures[i];
-      const jid = dep.journey && dep.journey.id;
-      if (jid) {
-        map.set(String(jid), dep);
-      }
+  _doorToDoorFallbackMinutes(kind) {
+    if (kind === "train") {
+      return Number(this.config.train_door_to_door_fallback_minutes || 47);
     }
-    return map;
-  }
-
-  _getWalkMinutes(kind) {
-    const entityId =
-      kind === "train" ? this.config.walk_train_entity : this.config.walk_bus_entity;
-    const fallback =
-      kind === "train"
-        ? Number(this.config.walk_train_fallback_minutes || 16)
-        : Number(this.config.walk_bus_fallback_minutes || 11);
-    if (!this._hass || !entityId) {
-      return fallback;
-    }
-    const state = this._hass.states[entityId];
-    if (!state || state.state === "unavailable" || state.state === "unknown") {
-      return fallback;
-    }
-    const value = Number(state.state);
-    return isFinite(value) && value > 0 ? value : fallback;
+    return Number(this.config.bus_door_to_door_fallback_minutes || 27);
   }
 
   _formatTravelDuration(totalMinutes) {
@@ -248,32 +229,15 @@ class SlStopDeparturesCard extends HTMLElement {
     return dep._kind + "|" + ((dep.line && dep.line.designation) || "") + "|" + when;
   }
 
-  _computeBusPtMinutes(dep, busJourneyMap) {
-    const jid = dep.journey && dep.journey.id;
-    if (!jid) {
-      return Number(this.config.bus_pt_fallback_minutes || 20);
-    }
-    const alight = busJourneyMap.get(String(jid));
-    if (!alight) {
-      return Number(this.config.bus_pt_fallback_minutes || 20);
-    }
-    const start = this._parseDate(dep.expected || dep.scheduled);
-    const end = this._parseDate(alight.expected || alight.scheduled);
-    if (!start || !end) {
-      return Number(this.config.bus_pt_fallback_minutes || 20);
-    }
-    return Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
-  }
-
-  _computeTrainPtMinutes(journeyPayload) {
+  _computeDoorToDoorMinutes(journeyPayload, kind) {
     const journeys = journeyPayload.journeys || [];
     const first = journeys[0];
     if (!first) {
-      return Number(this.config.train_pt_fallback_minutes || 31);
+      return this._doorToDoorFallbackMinutes(kind);
     }
     const seconds = first.tripRtDuration || first.tripDuration;
     if (!seconds) {
-      return Number(this.config.train_pt_fallback_minutes || 31);
+      return this._doorToDoorFallbackMinutes(kind);
     }
     return Math.max(1, Math.round(seconds / 60));
   }
@@ -288,14 +252,7 @@ class SlStopDeparturesCard extends HTMLElement {
         dep._travelMinutes = self._travelCache.get(key);
         continue;
       }
-      if (dep._kind === "bus") {
-        const pt = self._computeBusPtMinutes(dep, self._data.busJourneyMap || new Map());
-        const total = pt + self._getWalkMinutes("bus");
-        self._travelCache.set(key, total);
-        dep._travelMinutes = total;
-      } else {
-        pending.push(dep);
-      }
+      pending.push(dep);
     }
     if (!pending.length) {
       return Promise.resolve();
@@ -305,17 +262,15 @@ class SlStopDeparturesCard extends HTMLElement {
       chain = chain.then(function () {
         const when = self._parseDate(dep.expected || dep.scheduled) || new Date();
         return self
-          ._callJourneyPlanner(self.config.site_id, self.config.alight_train_site_id, when)
+          ._callDoorToDoor(self.config.site_id, when)
           .then(function (payload) {
-            const pt = self._computeTrainPtMinutes(payload);
-            const total = pt + self._getWalkMinutes("train");
+            const total = self._computeDoorToDoorMinutes(payload, dep._kind);
             const key = self._travelCacheKey(dep);
             self._travelCache.set(key, total);
             dep._travelMinutes = total;
           })
           .catch(function () {
-            const total =
-              Number(self.config.train_pt_fallback_minutes || 31) + self._getWalkMinutes("train");
+            const total = self._doorToDoorFallbackMinutes(dep._kind);
             const key = self._travelCacheKey(dep);
             self._travelCache.set(key, total);
             dep._travelMinutes = total;
@@ -341,17 +296,13 @@ class SlStopDeparturesCard extends HTMLElement {
     }
     const self = this;
     const siteId = Number(this.config.site_id);
-    const busSiteId = Number(this.config.alight_bus_site_id);
-    Promise.all([this._callSiteDepartures(siteId), this._callSiteDepartures(busSiteId)])
-      .then(function (results) {
-        const main = results[0];
-        const busSite = results[1];
+    this._callSiteDepartures(siteId)
+      .then(function (main) {
         const departures = self._prepareDepartures(main.departures || []);
         self._data = {
           loading: false,
           departures: departures,
           stop_deviations: main.stop_deviations || [],
-          busJourneyMap: self._buildBusJourneyMap(busSite.departures || []),
           error: null,
         };
         self._updateView();
@@ -362,7 +313,6 @@ class SlStopDeparturesCard extends HTMLElement {
           loading: false,
           departures: [],
           stop_deviations: [],
-          busJourneyMap: new Map(),
           error: (error && error.message) || "Kunde inte hämta avgångar",
         };
         self._updateView();
@@ -768,6 +718,6 @@ if (!window.customCards.some(function (card) { return card.type === "sl-stop-dep
     type: "sl-stop-departures-card",
     name: "SL hållplats med restid",
     preview: true,
-    description: "Visar filtrerade avgångar från en hållplats med läge, linjetyp och total restid.",
+    description: "Visar filtrerade avgångar med läge, linjetyp och SL dörr-till-dörr-restid.",
   });
 }

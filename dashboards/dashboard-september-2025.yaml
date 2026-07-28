@@ -54,7 +54,7 @@ resources:
   type: module
 - url: /local/sl-nearby-card.js?v=20260727t
   type: module
-- url: /local/sl-stop-departures-card.js?v=20260728c
+- url: /local/sl-stop-departures-card.js?v=20260728d
   type: module
 kiosk_mode:
   non_admin_settings:
@@ -6602,10 +6602,8 @@ views:
         refresh_seconds: 60
         show_time_always: true
         hide_departed: true
-        alight_train_site_id: 9180
-        alight_bus_site_id: 1923
-        walk_train_entity: sensor.promenad_farsta_strand_till_eksharadsgatan_6
-        walk_bus_entity: sensor.promenad_eksharadsgatan_till_eksharadsgatan_6
+        dest_lat: 59.237731498047985
+        dest_lon: 18.087033927440647
 - title: SL
   path: sl-nara
   icon: mdi:alpha-t-circle
