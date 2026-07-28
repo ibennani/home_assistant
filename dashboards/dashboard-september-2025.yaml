@@ -52,7 +52,7 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/sl-nearby-card.js?v=20260728r
+- url: /local/sl-nearby-card.js?v=20260728s
   type: module
 - url: /local/sl-stop-departures-card.js?v=20260728n
   type: module
