@@ -8,3 +8,9 @@ sl_journey_to_site:
   url: >
     https://journeyplanner.integration.sl.se/v2/trips?type_origin=any&name_origin=909100100000{{ origin_site }}&type_destination=any&name_destination=909100100000{{ dest_site }}&calc_number_of_trips=1&incl_mot_5=false&itdDate={{ itd_date }}&itdTime={{ itd_time }}
   method: GET
+
+# SL Journey Planner — dörr till dörr (hållplats → koordinat, t.ex. Huddinge centrum → hem)
+sl_journey_door_to_door:
+  url: >
+    https://journeyplanner.integration.sl.se/v2/trips?type_origin=any&name_origin=909100100000{{ origin_site }}&type_destination=coord&name_destination={{ dest_lon }}:{{ dest_lat }}:WGS84[dd.ddddd]&calc_number_of_trips=1&incl_mot_5=false&useRealtime=true&itdDate={{ itd_date }}&itdTime={{ itd_time }}
+  method: GET
