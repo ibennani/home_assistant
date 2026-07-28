@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728e";
+    return "20260728f";
   }
 
   static getStubConfig() {
@@ -12,15 +12,12 @@ class SlStopDeparturesCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 60,
-      dest_lat: 59.237731498047985,
-      dest_lon: 18.087033927440647,
+      alight_train_site_id: 9180,
       alight_bus_site_id: 1923,
-      walk_bus_entity: "sensor.promenad_eksharadsgatan_till_eksharadsgatan_6",
-      walk_train_entity: "sensor.promenad_farsta_strand_till_eksharadsgatan_6",
-      walk_bus_fallback_minutes: 11,
-      walk_train_fallback_minutes: 16,
-      bus_door_to_door_fallback_minutes: 27,
-      train_door_to_door_fallback_minutes: 47,
+      walk_train_minutes: 14,
+      walk_bus_minutes: 9,
+      train_pt_fallback_minutes: 31,
+      bus_pt_fallback_minutes: 20,
     };
   }
 
@@ -165,12 +162,11 @@ class SlStopDeparturesCard extends HTMLElement {
     };
   }
 
-  _callDoorToDoor(originSite, when) {
+  _callJourneyPlanner(originSite, destSite, when) {
     const itd = this._formatItdParams(when);
-    return this._callWithResponse("rest_command", "sl_journey_door_to_door", {
+    return this._callWithResponse("rest_command", "sl_journey_to_site", {
       origin_site: Number(originSite),
-      dest_lat: Number(this.config.dest_lat),
-      dest_lon: Number(this.config.dest_lon),
+      dest_site: Number(destSite),
       itd_date: itd.itd_date,
       itd_time: itd.itd_time,
     }).then((result) => this._extractPayload(result));
@@ -238,22 +234,11 @@ class SlStopDeparturesCard extends HTMLElement {
     return map;
   }
 
-  _getWalkMinutes(kind) {
-    const entityId =
-      kind === "train" ? this.config.walk_train_entity : this.config.walk_bus_entity;
-    const fallback =
-      kind === "train"
-        ? Number(this.config.walk_train_fallback_minutes || 16)
-        : Number(this.config.walk_bus_fallback_minutes || 11);
-    if (!this._hass || !entityId) {
-      return fallback;
+  _walkMinutes(kind) {
+    if (kind === "train") {
+      return Number(this.config.walk_train_minutes || 14);
     }
-    const state = this._hass.states[entityId];
-    if (!state || state.state === "unavailable" || state.state === "unknown") {
-      return fallback;
-    }
-    const value = Number(state.state);
-    return isFinite(value) && value > 0 ? value : fallback;
+    return Number(this.config.walk_bus_minutes || 9);
   }
 
   _computeBusPtMinutes(dep, busJourneyMap) {
@@ -275,48 +260,50 @@ class SlStopDeparturesCard extends HTMLElement {
 
   _computeBusTravelMinutes(dep, busJourneyMap) {
     const pt = this._computeBusPtMinutes(dep, busJourneyMap);
+    const walk = this._walkMinutes("bus");
     if (pt === null) {
-      return this._doorToDoorFallbackMinutes("bus");
+      return Number(this.config.bus_pt_fallback_minutes || 20) + walk;
     }
-    return pt + this._getWalkMinutes("bus");
+    return pt + walk;
   }
 
-  _doorToDoorFallbackMinutes(kind) {
-    if (kind === "train") {
-      return Number(this.config.train_door_to_door_fallback_minutes || 47);
+  _computeTrainPtMinutes(journeyPayload) {
+    const journeys = journeyPayload.journeys || [];
+    const first = journeys[0];
+    if (!first) {
+      return Number(this.config.train_pt_fallback_minutes || 31);
     }
-    return Number(this.config.bus_door_to_door_fallback_minutes || 27);
+    const seconds = first.tripRtDuration || first.tripDuration;
+    if (!seconds) {
+      return Number(this.config.train_pt_fallback_minutes || 31);
+    }
+    return Math.max(1, Math.round(seconds / 60));
   }
 
-  _formatTravelDuration(totalMinutes) {
+  _formatTravelDuration(totalMinutes, departureAt) {
     const minutes = Math.max(1, Math.round(totalMinutes));
+    let text;
     if (minutes < 60) {
-      return "Restid " + minutes + " min";
+      text = "Restid " + minutes + " min";
+    } else {
+      const hours = Math.floor(minutes / 60);
+      const rest = minutes % 60;
+      if (rest === 0) {
+        text = "Restid " + hours + " h";
+      } else {
+        text = "Restid " + hours + " h " + rest + " min";
+      }
     }
-    const hours = Math.floor(minutes / 60);
-    const rest = minutes % 60;
-    if (rest === 0) {
-      return "Restid " + hours + " h";
+    if (departureAt) {
+      const arrival = new Date(departureAt.getTime() + minutes * 60000);
+      text += ", hemma " + this._formatClock(arrival);
     }
-    return "Restid " + hours + " h " + rest + " min";
+    return text;
   }
 
   _travelCacheKey(dep) {
     const when = dep.expected || dep.scheduled || "";
     return dep._kind + "|" + ((dep.line && dep.line.designation) || "") + "|" + when;
-  }
-
-  _computeDoorToDoorMinutes(journeyPayload, kind) {
-    const journeys = journeyPayload.journeys || [];
-    const first = journeys[0];
-    if (!first) {
-      return this._doorToDoorFallbackMinutes(kind);
-    }
-    const seconds = first.tripRtDuration || first.tripDuration;
-    if (!seconds) {
-      return this._doorToDoorFallbackMinutes(kind);
-    }
-    return Math.max(1, Math.round(seconds / 60));
   }
 
   _ensureTravelTimes(departures) {
@@ -349,15 +336,22 @@ class SlStopDeparturesCard extends HTMLElement {
       chain = chain.then(function () {
         const when = self._parseDate(dep.expected || dep.scheduled) || new Date();
         return self
-          ._callDoorToDoor(self.config.site_id, when)
+          ._callJourneyPlanner(
+            self.config.site_id,
+            self.config.alight_train_site_id,
+            when,
+          )
           .then(function (payload) {
-            const total = self._computeDoorToDoorMinutes(payload, dep._kind);
+            const total =
+              self._computeTrainPtMinutes(payload) + self._walkMinutes("train");
             const key = self._travelCacheKey(dep);
             self._travelCache.set(key, total);
             dep._travelMinutes = total;
           })
           .catch(function () {
-            const total = self._doorToDoorFallbackMinutes(dep._kind);
+            const total =
+              Number(self.config.train_pt_fallback_minutes || 31) +
+              self._walkMinutes("train");
             const key = self._travelCacheKey(dep);
             self._travelCache.set(key, total);
             dep._travelMinutes = total;
@@ -446,14 +440,6 @@ class SlStopDeparturesCard extends HTMLElement {
     const state = String(dep.state || "").toUpperCase();
     const journeyState = String((dep.journey && dep.journey.state) || "").toUpperCase();
     return state === "CANCELLED" || state === "INHIBITED" || journeyState === "CANCELLED";
-  }
-
-  _delayMinutes(scheduledAt, expectedAt) {
-    if (!scheduledAt || !expectedAt) {
-      return 0;
-    }
-    const delta = Math.round((expectedAt.getTime() - scheduledAt.getTime()) / 1000 / 60);
-    return delta > 0 ? delta : 0;
   }
 
   _isDelayed(scheduledAt, expectedAt) {
@@ -546,7 +532,7 @@ class SlStopDeparturesCard extends HTMLElement {
     return String(lineType).trim();
   }
 
-  _buildDepartureDetailItems(dep, isDelayed, delayMinutes) {
+  _buildDepartureDetailItems(dep) {
     const items = [];
     const stopPointLabel = this._formatStopPointLabel(dep);
     if (stopPointLabel) {
@@ -556,20 +542,15 @@ class SlStopDeparturesCard extends HTMLElement {
     if (lineTypeLabel) {
       items.push({ text: lineTypeLabel, className: "line-type-label" });
     }
-    if (isDelayed && delayMinutes > 0) {
-      items.push({
-        text: "ca " + delayMinutes + " min sen",
-        className: "delay-label",
-      });
-    }
     const deviations = dep.deviations || [];
     const isShortTrain = deviations.some((dev) => this._isShortTrainDeviation(dev));
     if (isShortTrain) {
       items.push({ text: "kort tåg", className: "short-train" });
     }
     if (dep._travelMinutes) {
+      const when = this._parseDate(dep.expected || dep.scheduled);
       items.push({
-        text: this._formatTravelDuration(dep._travelMinutes),
+        text: this._formatTravelDuration(dep._travelMinutes, when),
         className: "travel-time",
       });
     }
@@ -669,26 +650,20 @@ class SlStopDeparturesCard extends HTMLElement {
       const isDeparted = diff < 0;
       const isCancelled = self._isCancelled(dep);
       const isDelayed = !isCancelled && self._isDelayed(scheduledAt, expectedAt);
-      const delayMinutes = isDelayed ? self._delayMinutes(scheduledAt, expectedAt) : 0;
-      const detailItems = self._buildDepartureDetailItems(dep, isDelayed, delayMinutes);
+      const detailItems = self._buildDepartureDetailItems(dep);
 
       let departureTime = "";
       if (isCancelled) {
         departureTime = '<span class="cancelled-time">Inställd</span>';
       } else if (isDelayed && scheduledAt && expectedAt) {
-        const oldClock = self._formatClock(scheduledAt);
-        const newClock = self._formatClock(expectedAt);
-        const newTime =
-          oldClock === newClock && delayMinutes > 0
-            ? newClock + " (+" + delayMinutes + " min)"
-            : self.config.show_time_always
-              ? newClock
-              : isAtPlatform
-                ? "Nu"
-                : newClock;
+        const newTime = self.config.show_time_always
+          ? self._formatClock(expectedAt)
+          : isAtPlatform
+            ? "Nu"
+            : self._formatClock(expectedAt);
         departureTime =
           '<span class="old-time">' +
-          oldClock +
+          self._formatClock(scheduledAt) +
           '</span><span class="new-time">' +
           newTime +
           "</span>";
@@ -791,7 +766,6 @@ class SlStopDeparturesCard extends HTMLElement {
       ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px}",
       ".detail-item{font-size:smaller;line-height:1.35}",
       ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
-      ".delay-label{color:#0abcfc!important;font-weight:600}",
       ".travel-time{color:#4caf50!important;font-weight:600}",
       ".stop-info{margin:0 8px 10px;padding:8px 12px 4px;font-size:smaller;line-height:1.4;color:#fad370!important}",
       ".stop-info-item{color:#fad370!important}",
@@ -831,6 +805,6 @@ if (!window.customCards.some(function (card) { return card.type === "sl-stop-dep
     type: "sl-stop-departures-card",
     name: "SL hållplats med restid",
     preview: true,
-    description: "Visar filtrerade avgångar med förseningar, avvikelser och restid till hem.",
+    description: "Visar filtrerade avgångar med avvikelser och restid till hem.",
   });
 }
