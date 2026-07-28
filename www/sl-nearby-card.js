@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260727t";
+    return "20260728m";
   }
 
   static getStubConfig() {
@@ -17,6 +17,8 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 60,
+      walking_buffer_minutes: 1,
+      sites_cache_version: "20260728m",
     };
   }
 
@@ -32,6 +34,12 @@ class SlNearbyCard extends HTMLElement {
       this._locationNote = "";
       if (!this._departureCache) {
         this._departureCache = new Map();
+      }
+      if (!this._walkCache) {
+        this._walkCache = new Map();
+      }
+      if (!this._modeFilters) {
+        this._modeFilters = new Map();
       }
       this._updateView();
     } catch (error) {
@@ -91,7 +99,7 @@ class SlNearbyCard extends HTMLElement {
       return Promise.resolve(this._sites);
     }
     if (!this._sitesPromise) {
-      this._sitesPromise = fetch("/local/sl-sites.json?v=20260727t")
+      this._sitesPromise = fetch("/local/sl-sites.json?v=" + (this.config.sites_cache_version || SlNearbyCard.CARD_VERSION))
         .then((response) => {
           if (!response.ok) {
             throw new Error("Kunde inte läsa sl-sites.json (" + response.status + ")");
@@ -241,7 +249,7 @@ class SlNearbyCard extends HTMLElement {
     if (result.response) {
       return result.response;
     }
-    if (result.departures || result.stop_deviations) {
+    if (result.departures || result.stop_deviations || result.routes) {
       return result;
     }
     return {};
@@ -279,6 +287,185 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
+  _callWalkingRoute(origin, destination) {
+    return this._callWithResponse("rest_command", "sl_walking_route", {
+      origin_lat: origin.lat,
+      origin_lon: origin.lon,
+      dest_lat: destination.lat,
+      dest_lon: destination.lon,
+    }).then(function (result) {
+      let payload = result;
+      if (result && result.content) {
+        payload = result.content;
+      }
+      if (typeof payload === "string") {
+        try {
+          payload = JSON.parse(payload);
+        } catch (error) {
+          payload = {};
+        }
+      }
+      if (payload && payload.routes) {
+        return payload;
+      }
+      if (result && result.routes) {
+        return result;
+      }
+      return payload;
+    });
+  }
+
+  _extractWalkingMinutes(payload) {
+    const routes = payload && payload.routes;
+    if (!routes || !routes.length || !routes[0].duration) {
+      return null;
+    }
+    return Math.max(1, Math.ceil(routes[0].duration / 60));
+  }
+
+  _getStopById(siteId) {
+    if (!this._sites) {
+      return null;
+    }
+    for (let i = 0; i < this._sites.length; i++) {
+      if (Number(this._sites[i].id) === Number(siteId)) {
+        return this._sites[i];
+      }
+    }
+    return null;
+  }
+
+  _loadWalkTime(siteId) {
+    const cacheKey = String(siteId);
+    const existing = this._walkCache.get(cacheKey);
+    if (existing && !existing.loading && (existing.minutes || existing.error)) {
+      return Promise.resolve(existing);
+    }
+    const location = this._getSearchLocation();
+    const stop = this._getStopById(siteId);
+    if (!location || !stop) {
+      return Promise.resolve(null);
+    }
+    this._walkCache.set(cacheKey, { loading: true });
+    const self = this;
+    return this._callWalkingRoute(location, { lat: stop.lat, lon: stop.lon })
+      .then(function (payload) {
+        const minutes = self._extractWalkingMinutes(payload);
+        const entry = {
+          loading: false,
+          minutes: minutes,
+          error: minutes === null ? "Kunde inte beräkna gångtid" : null,
+        };
+        self._walkCache.set(cacheKey, entry);
+        return entry;
+      })
+      .catch(function (error) {
+        const entry = {
+          loading: false,
+          minutes: null,
+          error: (error && error.message) || "Kunde inte beräkna gångtid",
+        };
+        self._walkCache.set(cacheKey, entry);
+        return entry;
+      });
+  }
+
+  _getWalkMinutes(siteId) {
+    const entry = this._walkCache.get(String(siteId));
+    if (!entry || entry.loading || !entry.minutes) {
+      return null;
+    }
+    return Number(entry.minutes) + Number(this.config.walking_buffer_minutes || 1);
+  }
+
+  _transportModeLabel(mode) {
+    const labels = {
+      BUS: "Buss",
+      TRAIN: "Pendeltåg",
+      METRO: "Tunnelbana",
+      TRAM: "Spårvagn",
+      SHIP: "Båt",
+      FERRY: "Båt",
+    };
+    return labels[String(mode || "").toUpperCase()] || mode || "Övrigt";
+  }
+
+  _getTransportModes(departures) {
+    const modes = [];
+    const seen = new Set();
+    for (let i = 0; i < (departures || []).length; i++) {
+      const mode = String((departures[i].line && departures[i].line.transport_mode) || "").toUpperCase();
+      if (!mode || seen.has(mode)) {
+        continue;
+      }
+      seen.add(mode);
+      modes.push(mode);
+    }
+    modes.sort();
+    return modes;
+  }
+
+  _getActiveModeFilter(siteId) {
+    return this._modeFilters.get(String(siteId)) || "ALL";
+  }
+
+  _setActiveModeFilter(siteId, mode) {
+    this._modeFilters.set(String(siteId), mode || "ALL");
+  }
+
+  _filterDeparturesByMode(departures, siteId) {
+    const active = this._getActiveModeFilter(siteId);
+    if (active === "ALL") {
+      return departures;
+    }
+    return departures.filter(function (dep) {
+      const mode = String((dep.line && dep.line.transport_mode) || "").toUpperCase();
+      return mode === active;
+    });
+  }
+
+  _renderModeFilters(siteId, modes) {
+    if (!modes || modes.length <= 1) {
+      return "";
+    }
+    const self = this;
+    const active = this._getActiveModeFilter(siteId);
+    let html = '<div class="mode-filters" data-site-id="' + siteId + '">';
+    html +=
+      '<button type="button" class="mode-filter' +
+      (active === "ALL" ? " active" : "") +
+      '" data-site-id="' +
+      siteId +
+      '" data-mode="ALL">Alla</button>';
+    modes.forEach(function (mode) {
+      html +=
+        '<button type="button" class="mode-filter' +
+        (active === mode ? " active" : "") +
+        '" data-site-id="' +
+        siteId +
+        '" data-mode="' +
+        self._escapeHtml(mode) +
+        '">' +
+        self._escapeHtml(self._transportModeLabel(mode)) +
+        "</button>";
+    });
+    html += "</div>";
+    return html;
+  }
+
+  _canCatchDeparture(dep, walkMinutes) {
+    if (!walkMinutes || this._isCancelled(dep)) {
+      return true;
+    }
+    const expectedAt = this._parseDate(dep.expected || dep.scheduled);
+    if (!expectedAt) {
+      return true;
+    }
+    const now = Date.now();
+    const neededMs = walkMinutes * 60000;
+    return expectedAt.getTime() >= now + neededMs;
+  }
+
   _syncRefreshTimer() {
     const seconds = Number((this.config && this.config.refresh_seconds) || 0);
     if (this._refreshTimer) {
@@ -308,6 +495,7 @@ class SlNearbyCard extends HTMLElement {
     const existing = cache.get(cacheKey);
     if (!force && existing && !existing.loading && (existing.fetched_at || existing.error)) {
       this._updateDeparturePanel(siteId);
+      this._updateStopSummary(siteId);
       return;
     }
 
@@ -317,10 +505,15 @@ class SlNearbyCard extends HTMLElement {
     this._departureInflight[cacheKey] = true;
     cache.set(cacheKey, { loading: true });
     this._updateDeparturePanel(siteId);
+    this._updateStopSummary(siteId);
 
     const self = this;
-    this._callDepartures(siteId)
-      .then(function (payload) {
+    Promise.all([
+      self._callDepartures(siteId),
+      self._loadWalkTime(siteId),
+    ])
+      .then(function (results) {
+        const payload = results[0];
         cache.set(cacheKey, {
           loading: false,
           departures: self._prepareDepartures(payload.departures || []),
@@ -328,6 +521,7 @@ class SlNearbyCard extends HTMLElement {
           fetched_at: Date.now(),
         });
         self._updateDeparturePanel(siteId);
+        self._updateStopSummary(siteId);
       })
       .catch(function (error) {
         cache.set(cacheKey, {
@@ -335,10 +529,35 @@ class SlNearbyCard extends HTMLElement {
           error: (error && error.message) || "Kunde inte hämta avgångar",
         });
         self._updateDeparturePanel(siteId);
+        self._updateStopSummary(siteId);
       })
       .then(function () {
         self._departureInflight[cacheKey] = false;
       });
+  }
+
+  _prefetchDepartures(stops) {
+    const self = this;
+    let chain = Promise.resolve();
+    stops.forEach(function (stop, index) {
+      if (index > 4) {
+        return;
+      }
+      chain = chain.then(function () {
+        const cacheKey = String(stop.id);
+        const existing = self._getCache().get(cacheKey);
+        if (existing && (existing.fetched_at || existing.error)) {
+          return null;
+        }
+        return new Promise(function (resolve) {
+          window.setTimeout(function () {
+            self._loadDepartures(stop.id, false);
+            resolve();
+          }, index * 250);
+        });
+      });
+    });
+    return chain;
   }
 
   _prepareDepartures(departures) {
@@ -555,6 +774,20 @@ class SlNearbyCard extends HTMLElement {
       return '<div class="departures-error">' + this._escapeHtml(cache.error) + "</div>";
     }
 
+    const walkEntry = this._walkCache.get(String(siteId));
+    let walkNote = "";
+    if (walkEntry && walkEntry.loading) {
+      walkNote = '<div class="walk-note">Beräknar gångtid…</div>';
+    } else if (walkEntry && walkEntry.minutes) {
+      const totalWalk = this._getWalkMinutes(siteId);
+      walkNote =
+        '<div class="walk-note">Gångtid ' +
+        this._escapeHtml(String(walkEntry.minutes)) +
+        " min" +
+        (totalWalk > walkEntry.minutes ? " (+ " + (totalWalk - walkEntry.minutes) + " min buffert)" : "") +
+        "</div>";
+    }
+
     const stopInfo = (cache.stop_deviations || [])
       .map(function (dev) {
         return (
@@ -566,11 +799,18 @@ class SlNearbyCard extends HTMLElement {
       .join("");
     const stopInfoBlock = stopInfo ? '<div class="stop-info">' + stopInfo + "</div>" : "";
 
-    const departures = cache.departures || [];
+    const allDepartures = cache.departures || [];
+    const modes = this._getTransportModes(allDepartures);
+    const departures = this._filterDeparturesByMode(allDepartures, siteId);
+    const walkMinutes = this._getWalkMinutes(siteId);
+
     if (!departures.length) {
       return (
+        walkNote +
         stopInfoBlock +
-        '<div class="departures-empty">Inga avgångar inom ' +
+        '<div class="departures-empty">Inga avgångar' +
+        (modes.length > 1 ? " för valt trafikslag" : "") +
+        " inom " +
         (this.config.forecast_minutes || 60) +
         " min.</div>"
       );
@@ -589,6 +829,8 @@ class SlNearbyCard extends HTMLElement {
       const isCancelled = self._isCancelled(dep);
       const isDelayed = !isCancelled && self._isDelayed(scheduledAt, expectedAt);
       const detailItems = self._buildDepartureDetailItems(dep);
+      const unreachable =
+        walkMinutes && !isDeparted && !isCancelled && !self._canCatchDeparture(dep, walkMinutes);
 
       let departureTime = "";
       if (isCancelled) {
@@ -626,6 +868,7 @@ class SlNearbyCard extends HTMLElement {
       rows +=
         '<div class="departure-block' +
         (isDeparted ? " departed" : "") +
+        (unreachable ? " unreachable" : "") +
         '"><div class="row departure">' +
         '<div class="col icon"><ha-icon class="transport-icon" icon="' +
         icon +
@@ -645,6 +888,7 @@ class SlNearbyCard extends HTMLElement {
     }
 
     return (
+      walkNote +
       stopInfoBlock +
       '<div class="departures"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
       rows +
@@ -669,6 +913,39 @@ class SlNearbyCard extends HTMLElement {
     }
   }
 
+  _updateStopSummary(siteId) {
+    const summary = this.querySelector(
+      '.stop-accordion[data-site-id="' + siteId + '"] .stop-summary-content',
+    );
+    if (!summary) {
+      return;
+    }
+    const filtersEl = summary.querySelector(".mode-filters-wrap");
+    if (!filtersEl) {
+      return;
+    }
+    const cache = this._getCache().get(String(siteId));
+    const modes = cache && cache.departures ? this._getTransportModes(cache.departures) : [];
+    filtersEl.innerHTML = this._renderModeFilters(siteId, modes);
+  }
+
+  _renderStopSummary(stop) {
+    const cache = this._getCache().get(String(stop.id));
+    const modes = cache && cache.departures ? this._getTransportModes(cache.departures) : [];
+    return (
+      '<div class="stop-summary-content">' +
+      '<div class="stop-title-row">' +
+      '<span class="stop-name">' +
+      this._escapeHtml(stop.name) +
+      '</span><span class="stop-distance">' +
+      this._formatDistance(stop.distance_m) +
+      "</span></div>" +
+      '<div class="mode-filters-wrap">' +
+      this._renderModeFilters(stop.id, modes) +
+      "</div></div>"
+    );
+  }
+
   _onToggle(event) {
     const details = event.target.closest(".stop-accordion");
     if (!details || !this.contains(details)) {
@@ -685,6 +962,20 @@ class SlNearbyCard extends HTMLElement {
     this._openSiteId = siteId;
     this._syncRefreshTimer();
     this._loadDepartures(siteId, false);
+  }
+
+  _onCardClick(event) {
+    const button = event.target.closest(".mode-filter");
+    if (!button || !this.contains(button)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const siteId = Number(button.dataset.siteId);
+    const mode = button.dataset.mode || "ALL";
+    this._setActiveModeFilter(siteId, mode);
+    this._updateStopSummary(siteId);
+    this._updateDeparturePanel(siteId);
   }
 
   _updateView() {
@@ -721,6 +1012,7 @@ class SlNearbyCard extends HTMLElement {
         '</style><ha-card><div class="sl-card-root"></div></ha-card>';
       root = this.querySelector(".sl-card-root");
       root.addEventListener("toggle", (event) => this._onToggle(event), true);
+      root.addEventListener("click", (event) => this._onCardClick(event), true);
       this._lastListKey = null;
     }
 
@@ -751,17 +1043,16 @@ class SlNearbyCard extends HTMLElement {
             '"' +
             openAttr +
             ">" +
-            '<summary class="stop-summary"><span class="stop-name">' +
-            self._escapeHtml(stop.name) +
-            '</span><span class="stop-distance">' +
-            self._formatDistance(stop.distance_m) +
-            "</span></summary>" +
+            '<summary class="stop-summary">' +
+            self._renderStopSummary(stop) +
+            "</summary>" +
             '<div class="stop-body">' +
             self._renderDepartures(stop.id) +
             "</div></details>"
           );
         })
         .join("");
+      self._prefetchDepartures(stops);
     }
 
     const listKey =
@@ -772,10 +1063,14 @@ class SlNearbyCard extends HTMLElement {
         header.outerHTML = this._formatListHeader(stops.length);
       }
       for (let i = 0; i < stops.length; i++) {
-        const distEl = root.querySelector('.stop-accordion[data-site-id="' + stops[i].id + '"] .stop-distance');
+        const stop = stops[i];
+        const distEl = root.querySelector(
+          '.stop-accordion[data-site-id="' + stops[i].id + '"] .stop-distance',
+        );
         if (distEl) {
           distEl.textContent = this._formatDistance(stops[i].distance_m);
         }
+        this._updateStopSummary(stop.id);
       }
       if (this._openSiteId) {
         this._updateDeparturePanel(this._openSiteId);
@@ -790,15 +1085,22 @@ class SlNearbyCard extends HTMLElement {
     return [
       "ha-card{padding:0 0 12px}",
       ".list-header{padding:14px 16px 8px;font-size:.9rem;color:var(--secondary-text-color);border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12))}",
-      ".list-header strong{color:var(--primary-text-color)}",
+      ".list-header strong{color:var(--primary-text-color);font-size:1rem}",
       ".location-note{color:#fad370!important;font-size:smaller;line-height:1.35;margin-top:4px}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".stop-accordion{border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
-      ".stop-summary{list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center;padding:14px 16px;cursor:pointer}",
+      ".stop-summary{list-style:none;padding:0;cursor:pointer}",
       ".stop-summary::-webkit-details-marker{display:none}",
-      ".stop-name{font-weight:500}",
-      ".stop-distance{color:var(--secondary-text-color);white-space:nowrap}",
+      ".stop-summary-content{padding:16px 16px 12px}",
+      ".stop-title-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}",
+      ".stop-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color);font-size:var(--ha-card-header-font-size,24px);line-height:var(--ha-card-header-line-height,32px);font-weight:var(--ha-card-header-font-weight,400)}",
+      ".stop-distance{color:var(--secondary-text-color);white-space:nowrap;padding-top:6px}",
+      ".mode-filters-wrap{margin-top:10px}",
+      ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
+      ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
+      ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
+      ".walk-note{padding:0 16px 8px;color:var(--secondary-text-color);font-size:smaller}",
       ".stop-body{padding:0 8px 12px}",
       ".departures-empty,.departures-error{padding:8px 16px 12px;color:var(--secondary-text-color)}",
       ".departures-error{color:var(--error-color)}",
@@ -818,7 +1120,9 @@ class SlNearbyCard extends HTMLElement {
       ".train{background:#ec619f}",
       ".tram{background:#985141}",
       ".warning-message{color:var(--warning-color);font-size:smaller}",
-      ".departure-block{margin-top:8px}",
+      ".departure-block{margin-top:8px;border-radius:6px}",
+      ".departure-block.unreachable{background:rgba(90,0,0,.7)}",
+      ".departure-block.unreachable .main,.departure-block.unreachable .leaves-in,.departure-block.unreachable .detail-item,.departure-block.unreachable .transport-icon{color:#fff!important}",
       ".departure-block .row.departure{margin-top:0}",
       ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px}",
       ".detail-item{font-size:smaller;line-height:1.35}",

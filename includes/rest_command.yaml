@@ -9,6 +9,11 @@ sl_journey_to_site:
     https://journeyplanner.integration.sl.se/v2/trips?type_origin=any&name_origin=909100100000{{ origin_site }}&type_destination=any&name_destination=909100100000{{ dest_site }}&calc_number_of_trips=3&incl_mot_5=false&itdDate={{ itd_date }}&itdTime={{ itd_time }}
   method: GET
 
+# Gångtid mellan två koordinater (OSRM, används av sl-nearby-card)
+sl_walking_route:
+  url: "https://router.project-osrm.org/route/v1/foot/{{ origin_lon }},{{ origin_lat }};{{ dest_lon }},{{ dest_lat }}?overview=false"
+  method: GET
+
 # SL Journey Planner — dörr till dörr (hållplats → koordinat, t.ex. Huddinge centrum → hem)
 sl_journey_door_to_door:
   url: >
