@@ -52,9 +52,11 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260727g
   type: module
-- url: /local/sl-nearby-card.js?v=20260727t
+- url: /local/sl-nearby-card.js?v=20260728m
   type: module
 - url: /local/sl-stop-departures-card.js?v=20260728k
+  type: module
+- url: /local/sl-stops-map-card.js?v=20260728m
   type: module
 kiosk_mode:
   non_admin_settings:
@@ -6612,6 +6614,15 @@ views:
         walk_train_minutes: 14
         walk_bus_minutes: 9
         transfer_alvsjo_minutes: 3
+      - type: custom:sl-stops-map-card
+        location_entity: person.ilias_bennani
+        home_zone_entity: zone.home
+        max_stops: 10
+        height: 280
+        focus_site_ids:
+          - 9527
+          - 9180
+          - 1923
 - title: SL
   path: sl-nara
   icon: mdi:alpha-t-circle
