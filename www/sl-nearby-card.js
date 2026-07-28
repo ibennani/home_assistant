@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728r";
+    return "20260728s";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260728r",
+      sites_cache_version: "20260728s",
     };
   }
 
@@ -31,7 +31,6 @@ class SlNearbyCard extends HTMLElement {
       const base = SlNearbyCard.getStubConfig();
       const input = config && typeof config === "object" ? config : {};
       this.config = Object.assign({}, base, input);
-      this._locationNote = "";
       if (!this._departureCache) {
         this._departureCache = new Map();
       }
@@ -151,11 +150,9 @@ class SlNearbyCard extends HTMLElement {
     const personLoc = this._readCoords(this.config.location_entity);
     const homeLoc = this._readCoords(this.config.home_zone_entity);
     const refLoc = this._getReferenceLocation();
-    const refName = this.config.reference_name || "Stockholms central";
     const maxDistanceM = Number(this.config.max_gps_km || 200) * 1000;
 
     if (!personLoc && homeLoc) {
-      this._locationNote = "Använder hemzon (ingen GPS)";
       return homeLoc;
     }
     if (!personLoc) {
@@ -169,14 +166,10 @@ class SlNearbyCard extends HTMLElement {
     );
     if (distFromRef > maxDistanceM) {
       if (homeLoc) {
-        this._locationNote =
-          "GPS långt från " + refName + " — visar hållplatser nära hemzon";
         return homeLoc;
       }
-      this._locationNote = "GPS långt från " + refName;
       return personLoc;
     }
-    this._locationNote = "Position från " + this.config.location_entity;
     return personLoc;
   }
 
@@ -901,17 +894,6 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
-  _formatListHeader() {
-    if (!this._locationNote) {
-      return "";
-    }
-    return (
-      '<div class="list-header"><div class="location-note">' +
-      this._escapeHtml(this._locationNote) +
-      "</div></div>"
-    );
-  }
-
   _updateDeparturePanel(siteId) {
     const panel = this.querySelector('.stop-accordion[data-site-id="' + siteId + '"] .stop-body');
     if (panel) {
@@ -1025,8 +1007,7 @@ class SlNearbyCard extends HTMLElement {
       body = '<div class="status-message">Inga hållplatser hittades.</div>';
     } else {
       const self = this;
-      body = self._formatListHeader();
-      body += stops
+      body = stops
         .map(function (stop) {
           const openAttr = self._openSiteId === stop.id ? " open" : "";
           return (
@@ -1047,22 +1028,17 @@ class SlNearbyCard extends HTMLElement {
       self._prefetchDepartures(stops);
     }
 
-    const listKey =
-      stops.map((s) => s.id).join(",") + "|" + (this._locationNote || "");
+    const listKey = stops
+      .map(function (stop) {
+        return stop.id + ":" + Math.round(stop.distance_m);
+      })
+      .join(",");
     if (this._lastListKey === listKey && this.querySelector(".stop-accordion")) {
       const header = root.querySelector(".list-header");
-      const headerHtml = this._formatListHeader();
       if (header) {
-        if (headerHtml) {
-          header.outerHTML = headerHtml;
-        } else {
-          header.remove();
-        }
-      } else if (headerHtml) {
-        root.insertAdjacentHTML("afterbegin", headerHtml);
+        header.remove();
       }
       for (let i = 0; i < stops.length; i++) {
-        const stop = stops[i];
         const distEl = root.querySelector(
           '.stop-accordion[data-site-id="' + stops[i].id + '"] .stop-distance',
         );
@@ -1082,8 +1058,6 @@ class SlNearbyCard extends HTMLElement {
   _styles() {
     return [
       "ha-card{padding:0 0 12px}",
-      ".list-header{padding:14px 16px 8px;font-size:.9rem;color:var(--secondary-text-color);border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12))}",
-      ".location-note{color:#fad370!important;font-size:smaller;line-height:1.35;margin-top:4px}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".stop-accordion{border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
