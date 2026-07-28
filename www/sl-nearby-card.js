@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728m";
+    return "20260728n";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260728m",
+      sites_cache_version: "20260728n",
     };
   }
 
@@ -540,20 +540,18 @@ class SlNearbyCard extends HTMLElement {
     const self = this;
     let chain = Promise.resolve();
     stops.forEach(function (stop, index) {
-      if (index > 4) {
-        return;
-      }
       chain = chain.then(function () {
         const cacheKey = String(stop.id);
         const existing = self._getCache().get(cacheKey);
         if (existing && (existing.fetched_at || existing.error)) {
+          self._updateStopSummary(stop.id);
           return null;
         }
         return new Promise(function (resolve) {
           window.setTimeout(function () {
             self._loadDepartures(stop.id, false);
             resolve();
-          }, index * 250);
+          }, Math.min(index, 8) * 200);
         });
       });
     });
@@ -964,18 +962,25 @@ class SlNearbyCard extends HTMLElement {
     this._loadDepartures(siteId, false);
   }
 
-  _onCardClick(event) {
+  _onFilterInteraction(event) {
     const button = event.target.closest(".mode-filter");
     if (!button || !this.contains(button)) {
       return;
     }
     event.preventDefault();
     event.stopPropagation();
+    if (event.type === "mousedown") {
+      return;
+    }
     const siteId = Number(button.dataset.siteId);
     const mode = button.dataset.mode || "ALL";
     this._setActiveModeFilter(siteId, mode);
     this._updateStopSummary(siteId);
     this._updateDeparturePanel(siteId);
+  }
+
+  _onCardClick(event) {
+    this._onFilterInteraction(event);
   }
 
   _updateView() {
@@ -1012,6 +1017,7 @@ class SlNearbyCard extends HTMLElement {
         '</style><ha-card><div class="sl-card-root"></div></ha-card>';
       root = this.querySelector(".sl-card-root");
       root.addEventListener("toggle", (event) => this._onToggle(event), true);
+      root.addEventListener("mousedown", (event) => this._onFilterInteraction(event), true);
       root.addEventListener("click", (event) => this._onCardClick(event), true);
       this._lastListKey = null;
     }

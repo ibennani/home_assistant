@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728k";
+    return "20260728n";
   }
 
   static getStubConfig() {
@@ -40,6 +40,9 @@ class SlStopDeparturesCard extends HTMLElement {
       if (!this._data) {
         this._data = { loading: true };
       }
+      if (!this._modeFilter) {
+        this._modeFilter = "ALL";
+      }
       this._updateView();
     } catch (error) {
       this.config = SlStopDeparturesCard.getStubConfig();
@@ -59,6 +62,7 @@ class SlStopDeparturesCard extends HTMLElement {
   connectedCallback() {
     if (this._cardVersion !== SlStopDeparturesCard.CARD_VERSION) {
       this._cardVersion = SlStopDeparturesCard.CARD_VERSION;
+      this._filterClickBound = false;
     }
     this._loadData(false);
     this._syncRefreshTimer();
@@ -664,6 +668,80 @@ class SlStopDeparturesCard extends HTMLElement {
     return "train";
   }
 
+  _transportModeLabel(mode) {
+    const labels = {
+      BUS: "Buss",
+      TRAIN: "Pendeltåg",
+      METRO: "Tunnelbana",
+      TRAM: "Spårvagn",
+      SHIP: "Båt",
+      FERRY: "Båt",
+    };
+    return labels[String(mode || "").toUpperCase()] || mode || "Övrigt";
+  }
+
+  _getTransportModes(departures) {
+    const modes = [];
+    const seen = new Set();
+    for (let i = 0; i < (departures || []).length; i++) {
+      const mode = String((departures[i].line && departures[i].line.transport_mode) || "").toUpperCase();
+      if (!mode || seen.has(mode)) {
+        continue;
+      }
+      seen.add(mode);
+      modes.push(mode);
+    }
+    modes.sort();
+    return modes;
+  }
+
+  _filterDeparturesByMode(departures) {
+    const active = this._modeFilter || "ALL";
+    if (active === "ALL") {
+      return departures;
+    }
+    return departures.filter(function (dep) {
+      const mode = String((dep.line && dep.line.transport_mode) || "").toUpperCase();
+      return mode === active;
+    });
+  }
+
+  _renderModeFilters(modes) {
+    if (!modes || modes.length <= 1) {
+      return "";
+    }
+    const self = this;
+    const active = this._modeFilter || "ALL";
+    let html = '<div class="mode-filters">';
+    html +=
+      '<button type="button" class="mode-filter' +
+      (active === "ALL" ? " active" : "") +
+      '" data-mode="ALL">Alla</button>';
+    modes.forEach(function (mode) {
+      html +=
+        '<button type="button" class="mode-filter' +
+        (active === mode ? " active" : "") +
+        '" data-mode="' +
+        self._escapeHtml(mode) +
+        '">' +
+        self._escapeHtml(self._transportModeLabel(mode)) +
+        "</button>";
+    });
+    html += "</div>";
+    return html;
+  }
+
+  _onFilterClick(event) {
+    const button = event.target.closest(".mode-filter");
+    if (!button || !this.contains(button)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    this._modeFilter = button.dataset.mode || "ALL";
+    this._updateView();
+  }
+
   _renderDepartureMeta(detailItems) {
     if (!detailItems.length) {
       return "";
@@ -695,12 +773,19 @@ class SlStopDeparturesCard extends HTMLElement {
       return '<div class="status-message error">' + this._escapeHtml(data.error) + "</div>";
     }
 
-    const departures = data.departures || [];
-    const bannerMessages = this._collectBannerMessages(data.stop_deviations, departures);
+    const allDepartures = data.departures || [];
+    const modes = this._getTransportModes(allDepartures);
+    const departures = this._filterDeparturesByMode(allDepartures);
+    const bannerMessages = this._collectBannerMessages(data.stop_deviations, allDepartures);
     const stopInfoBlock = this._renderStopInfoBlock(bannerMessages);
 
     if (!departures.length) {
-      return stopInfoBlock + '<div class="departures-empty">Inga matchande avgångar.</div>';
+      return (
+        stopInfoBlock +
+        '<div class="departures-empty">Inga matchande avgångar' +
+        (modes.length > 1 ? " för valt trafikslag" : "") +
+        ".</div>"
+      );
     }
 
     const now = new Date();
@@ -794,11 +879,21 @@ class SlStopDeparturesCard extends HTMLElement {
         '</style><ha-card><div class="sl-stop-card-root"></div></ha-card>';
       root = this.querySelector(".sl-stop-card-root");
     }
+    if (!this._filterClickBound) {
+      this.addEventListener("click", (event) => this._onFilterClick(event), true);
+      this._filterClickBound = true;
+    }
+
     const title = this.config.title || "Hållplats";
+    const allDepartures = (this._data && this._data.departures) || [];
+    const modes = this._getTransportModes(allDepartures);
+    const filters = this._renderModeFilters(modes);
     root.innerHTML =
       '<h1 class="card-header"><div class="name">' +
       this._escapeHtml(title) +
-      '</div></h1><div class="card-content">' +
+      "</div></h1>" +
+      (filters ? '<div class="mode-filters-wrap">' + filters + "</div>" : "") +
+      '<div class="card-content">' +
       this._renderBody() +
       "</div>";
   }
@@ -807,6 +902,10 @@ class SlStopDeparturesCard extends HTMLElement {
     return [
       "ha-card{padding:0}",
       ".card-header .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+      ".mode-filters-wrap{padding:0 16px 12px}",
+      ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
+      ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
+      ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".departures-empty,.departures-error{padding:8px 16px 12px;color:var(--secondary-text-color)}",
