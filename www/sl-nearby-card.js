@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728p";
+    return "20260728q";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260728p",
+      sites_cache_version: "20260728q",
     };
   }
 
@@ -453,6 +453,14 @@ class SlNearbyCard extends HTMLElement {
     return html;
   }
 
+  _renderFiltersBlock(siteId, modes) {
+    const filters = this._renderModeFilters(siteId, modes);
+    if (!filters) {
+      return "";
+    }
+    return '<div class="mode-filters-wrap">' + filters + "</div>";
+  }
+
   _canCatchDeparture(dep, walkMinutes) {
     if (!walkMinutes || this._isCancelled(dep)) {
       return true;
@@ -495,7 +503,6 @@ class SlNearbyCard extends HTMLElement {
     const existing = cache.get(cacheKey);
     if (!force && existing && !existing.loading && (existing.fetched_at || existing.error)) {
       this._updateDeparturePanel(siteId);
-      this._updateStopSummary(siteId);
       return;
     }
 
@@ -505,7 +512,6 @@ class SlNearbyCard extends HTMLElement {
     this._departureInflight[cacheKey] = true;
     cache.set(cacheKey, { loading: true });
     this._updateDeparturePanel(siteId);
-    this._updateStopSummary(siteId);
 
     const self = this;
     Promise.all([
@@ -521,7 +527,6 @@ class SlNearbyCard extends HTMLElement {
           fetched_at: Date.now(),
         });
         self._updateDeparturePanel(siteId);
-        self._updateStopSummary(siteId);
       })
       .catch(function (error) {
         cache.set(cacheKey, {
@@ -529,7 +534,6 @@ class SlNearbyCard extends HTMLElement {
           error: (error && error.message) || "Kunde inte hämta avgångar",
         });
         self._updateDeparturePanel(siteId);
-        self._updateStopSummary(siteId);
       })
       .then(function () {
         self._departureInflight[cacheKey] = false;
@@ -544,7 +548,7 @@ class SlNearbyCard extends HTMLElement {
         const cacheKey = String(stop.id);
         const existing = self._getCache().get(cacheKey);
         if (existing && (existing.fetched_at || existing.error)) {
-          self._updateStopSummary(stop.id);
+          self._updateDeparturePanel(stop.id);
           return null;
         }
         return new Promise(function (resolve) {
@@ -799,6 +803,7 @@ class SlNearbyCard extends HTMLElement {
 
     const allDepartures = cache.departures || [];
     const modes = this._getTransportModes(allDepartures);
+    const filtersBlock = this._renderFiltersBlock(siteId, modes);
     const departures = this._filterDeparturesByMode(allDepartures, siteId);
     const walkMinutes = this._getWalkMinutes(siteId);
 
@@ -806,6 +811,7 @@ class SlNearbyCard extends HTMLElement {
       return (
         walkNote +
         stopInfoBlock +
+        filtersBlock +
         '<div class="departures-empty">Inga avgångar' +
         (modes.length > 1 ? " för valt trafikslag" : "") +
         " inom " +
@@ -888,6 +894,7 @@ class SlNearbyCard extends HTMLElement {
     return (
       walkNote +
       stopInfoBlock +
+      filtersBlock +
       '<div class="departures"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
       rows +
       "</div>"
@@ -911,37 +918,7 @@ class SlNearbyCard extends HTMLElement {
     }
   }
 
-  _updateStopSummary(siteId) {
-    const content = this.querySelector(
-      '.stop-accordion[data-site-id="' + siteId + '"] .stop-summary-content',
-    );
-    if (!content) {
-      return;
-    }
-    const cache = this._getCache().get(String(siteId));
-    const modes = cache && cache.departures ? this._getTransportModes(cache.departures) : [];
-    const filters = this._renderModeFilters(siteId, modes);
-    let filtersEl = content.querySelector(".mode-filters-wrap");
-    if (!filtersEl) {
-      content.insertAdjacentHTML("beforeend", '<div class="mode-filters-wrap"></div>');
-      filtersEl = content.querySelector(".mode-filters-wrap");
-    }
-    if (!filtersEl) {
-      return;
-    }
-    if (filters) {
-      filtersEl.innerHTML = filters;
-      filtersEl.style.display = "";
-    } else {
-      filtersEl.innerHTML = "";
-      filtersEl.style.display = "none";
-    }
-  }
-
   _renderStopSummary(stop) {
-    const cache = this._getCache().get(String(stop.id));
-    const modes = cache && cache.departures ? this._getTransportModes(cache.departures) : [];
-    const filters = this._renderModeFilters(stop.id, modes);
     return (
       '<div class="stop-summary-content">' +
       '<div class="stop-header-row">' +
@@ -949,12 +926,7 @@ class SlNearbyCard extends HTMLElement {
       this._escapeHtml(stop.name) +
       '</div></h1><span class="stop-distance">' +
       this._formatDistance(stop.distance_m) +
-      "</span></div>" +
-      '<div class="mode-filters-wrap"' +
-      (filters ? "" : ' style="display:none"') +
-      ">" +
-      (filters || "") +
-      "</div></div>"
+      "</span></div></div>"
     );
   }
 
@@ -989,7 +961,6 @@ class SlNearbyCard extends HTMLElement {
     const siteId = Number(button.dataset.siteId);
     const mode = button.dataset.mode || "ALL";
     this._setActiveModeFilter(siteId, mode);
-    this._updateStopSummary(siteId);
     this._updateDeparturePanel(siteId);
   }
 
@@ -1090,7 +1061,6 @@ class SlNearbyCard extends HTMLElement {
         if (distEl) {
           distEl.textContent = this._formatDistance(stops[i].distance_m);
         }
-        this._updateStopSummary(stop.id);
       }
       if (this._openSiteId) {
         this._updateDeparturePanel(this._openSiteId);
@@ -1117,7 +1087,7 @@ class SlNearbyCard extends HTMLElement {
       ".stop-header-row .card-header{flex:1;min-width:0;margin:0}",
       ".card-header .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
       ".stop-distance{color:var(--secondary-text-color);white-space:nowrap;padding-top:16px}",
-      ".mode-filters-wrap{padding:0 16px 12px}",
+      ".mode-filters-wrap{padding:0 8px 12px}",
       ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
       ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
       ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
