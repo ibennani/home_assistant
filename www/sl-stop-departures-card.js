@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728j";
+    return "20260728k";
   }
 
   static getStubConfig() {
@@ -796,17 +796,17 @@ class SlStopDeparturesCard extends HTMLElement {
     }
     const title = this.config.title || "Hållplats";
     root.innerHTML =
-      '<div class="list-header"><strong>' +
+      '<h1 class="card-header"><div class="name">' +
       this._escapeHtml(title) +
-      "</strong></div>" +
-      this._renderBody();
+      '</div></h1><div class="card-content">' +
+      this._renderBody() +
+      "</div>";
   }
 
   _styles() {
     return [
-      "ha-card{padding:0 0 12px}",
-      ".list-header{padding:14px 16px 8px;font-size:.9rem;color:var(--secondary-text-color);border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12))}",
-      ".list-header strong{color:var(--primary-text-color);font-size:1rem}",
+      "ha-card{padding:0}",
+      ".card-header .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".departures-empty,.departures-error{padding:8px 16px 12px;color:var(--secondary-text-color)}",
