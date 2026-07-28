@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728n";
+    return "20260728o";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260728n",
+      sites_cache_version: "20260728o",
     };
   }
 
@@ -919,28 +919,39 @@ class SlNearbyCard extends HTMLElement {
       return;
     }
     const filtersEl = summary.querySelector(".mode-filters-wrap");
-    if (!filtersEl) {
-      return;
-    }
     const cache = this._getCache().get(String(siteId));
     const modes = cache && cache.departures ? this._getTransportModes(cache.departures) : [];
-    filtersEl.innerHTML = this._renderModeFilters(siteId, modes);
+    const filters = this._renderModeFilters(siteId, modes);
+    if (!filtersEl) {
+      const content = summary.querySelector(".stop-summary-content");
+      if (content && filters) {
+        content.insertAdjacentHTML("beforeend", '<div class="mode-filters-wrap">' + filters + "</div>");
+      }
+      return;
+    }
+    if (filters) {
+      filtersEl.innerHTML = filters;
+      filtersEl.style.display = "";
+    } else {
+      filtersEl.innerHTML = "";
+      filtersEl.style.display = "none";
+    }
   }
 
   _renderStopSummary(stop) {
     const cache = this._getCache().get(String(stop.id));
     const modes = cache && cache.departures ? this._getTransportModes(cache.departures) : [];
+    const filters = this._renderModeFilters(stop.id, modes);
     return (
       '<div class="stop-summary-content">' +
-      '<div class="stop-title-row">' +
-      '<span class="stop-name">' +
+      '<div class="stop-header-row">' +
+      '<h1 class="card-header"><div class="name">' +
       this._escapeHtml(stop.name) +
-      '</span><span class="stop-distance">' +
+      '</div></h1><span class="stop-distance">' +
       this._formatDistance(stop.distance_m) +
       "</span></div>" +
-      '<div class="mode-filters-wrap">' +
-      this._renderModeFilters(stop.id, modes) +
-      "</div></div>"
+      (filters ? '<div class="mode-filters-wrap">' + filters + "</div>" : "") +
+      "</div>"
     );
   }
 
@@ -1098,11 +1109,12 @@ class SlNearbyCard extends HTMLElement {
       ".stop-accordion{border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
       ".stop-summary{list-style:none;padding:0;cursor:pointer}",
       ".stop-summary::-webkit-details-marker{display:none}",
-      ".stop-summary-content{padding:16px 16px 12px}",
-      ".stop-title-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}",
-      ".stop-name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--primary-text-color);font-size:var(--ha-card-header-font-size,24px);line-height:var(--ha-card-header-line-height,32px);font-weight:var(--ha-card-header-font-weight,400)}",
-      ".stop-distance{color:var(--secondary-text-color);white-space:nowrap;padding-top:6px}",
-      ".mode-filters-wrap{margin-top:10px}",
+      ".stop-summary-content{padding:0}",
+      ".stop-header-row{display:flex;align-items:flex-start;gap:12px;padding-right:16px}",
+      ".stop-header-row .card-header{flex:1;min-width:0;margin:0}",
+      ".card-header .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+      ".stop-distance{color:var(--secondary-text-color);white-space:nowrap;padding-top:16px}",
+      ".mode-filters-wrap{padding:0 16px 12px}",
       ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
       ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
       ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
