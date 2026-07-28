@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728b";
+    return "20260728c";
   }
 
   static getStubConfig() {
@@ -413,18 +413,62 @@ class SlStopDeparturesCard extends HTMLElement {
     return Math.round((expectedAt.getTime() - scheduledAt.getTime()) / 1000 / 60) >= 1;
   }
 
+  _deviationText(dev) {
+    return String((dev && (dev.message || dev.text || dev.title)) || "").trim();
+  }
+
   _isShortTrainDeviation(dev) {
-    const msg = String(dev.message || dev.text || dev.title || "").toLowerCase();
+    const msg = this._deviationText(dev).toLowerCase();
     return msg.includes("kort tåg") || msg.includes("kort tag") || msg.includes("short train");
   }
 
-  _isDelayDeviation(dev) {
-    const msg = String(dev.message || dev.text || dev.title || "").toLowerCase();
+  _collectBannerMessages(stopDeviations, departures) {
+    const seen = new Set();
+    const messages = [];
+    const add = (text) => {
+      const value = String(text || "").trim();
+      if (!value || seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+      messages.push(value);
+    };
+
+    const stopList = stopDeviations || [];
+    for (let i = 0; i < stopList.length; i++) {
+      add(this._deviationText(stopList[i]));
+    }
+
+    const depList = departures || [];
+    for (let i = 0; i < depList.length; i++) {
+      const deviations = depList[i].deviations || [];
+      for (let j = 0; j < deviations.length; j++) {
+        const dev = deviations[j];
+        if (this._isShortTrainDeviation(dev)) {
+          continue;
+        }
+        add(this._deviationText(dev));
+      }
+    }
+
+    return messages;
+  }
+
+  _renderStopInfoBlock(messages) {
+    if (!messages || !messages.length) {
+      return "";
+    }
+    const self = this;
     return (
-      msg.includes("försen") ||
-      msg.includes("senare") ||
-      msg.includes("delay") ||
-      msg.includes("delayed")
+      '<div class="stop-info">' +
+      messages
+        .map(function (message) {
+          return (
+            '<div class="stop-info-item">' + self._escapeHtml(message) + "</div>"
+          );
+        })
+        .join("") +
+      "</div>"
     );
   }
 
@@ -464,18 +508,8 @@ class SlStopDeparturesCard extends HTMLElement {
     }
     const deviations = dep.deviations || [];
     const isShortTrain = deviations.some((dev) => this._isShortTrainDeviation(dev));
-    const otherDeviations = deviations.filter(
-      (dev) => !this._isShortTrainDeviation(dev) && !this._isDelayDeviation(dev),
-    );
     if (isShortTrain) {
       items.push({ text: "kort tåg", className: "short-train" });
-    }
-    for (let i = 0; i < otherDeviations.length; i++) {
-      const dev = otherDeviations[i];
-      const text = dev.message || dev.text || dev.title;
-      if (text) {
-        items.push({ text: text, className: "warning-message" });
-      }
     }
     if (dep._travelMinutes) {
       items.push({
@@ -559,17 +593,10 @@ class SlStopDeparturesCard extends HTMLElement {
       return '<div class="status-message error">' + this._escapeHtml(data.error) + "</div>";
     }
 
-    const stopInfo = (data.stop_deviations || [])
-      .map(
-        (dev) =>
-          '<div class="stop-info-item">' +
-          this._escapeHtml(dev.message || dev.text || dev.title || "") +
-          "</div>",
-      )
-      .join("");
-    const stopInfoBlock = stopInfo ? '<div class="stop-info">' + stopInfo + "</div>" : "";
-
     const departures = data.departures || [];
+    const bannerMessages = this._collectBannerMessages(data.stop_deviations, departures);
+    const stopInfoBlock = this._renderStopInfoBlock(bannerMessages);
+
     if (!departures.length) {
       return stopInfoBlock + '<div class="departures-empty">Inga matchande avgångar.</div>';
     }
@@ -703,8 +730,9 @@ class SlStopDeparturesCard extends HTMLElement {
       ".detail-item{font-size:smaller;line-height:1.35}",
       ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
       ".travel-time{color:#4caf50!important;font-weight:600}",
-      ".stop-info{margin:0 8px 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
+      ".stop-info{margin:0 8px 10px;padding:8px 12px 4px;font-size:smaller;line-height:1.4;color:#fad370!important}",
       ".stop-info-item{color:#fad370!important}",
+      ".stop-info-item+.stop-info-item{margin-top:4px}",
       ".short-train{color:#0abcfc;font-size:smaller;font-weight:600;text-transform:lowercase}",
       ".old-time{text-decoration:line-through;opacity:.65;margin-right:.35em}",
       ".new-time{color:#0abcfc;font-weight:600}",
