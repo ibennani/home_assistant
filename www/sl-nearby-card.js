@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728q";
+    return "20260728r";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260728q",
+      sites_cache_version: "20260728r",
     };
   }
 
@@ -901,14 +901,15 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
-  _formatListHeader(count) {
-    let html = '<div class="list-header"><strong>' + count + " hållplatser</strong>";
-    if (this._locationNote) {
-      html +=
-        '<div class="location-note">' + this._escapeHtml(this._locationNote) + "</div>";
+  _formatListHeader() {
+    if (!this._locationNote) {
+      return "";
     }
-    html += "</div>";
-    return html;
+    return (
+      '<div class="list-header"><div class="location-note">' +
+      this._escapeHtml(this._locationNote) +
+      "</div></div>"
+    );
   }
 
   _updateDeparturePanel(siteId) {
@@ -1024,7 +1025,7 @@ class SlNearbyCard extends HTMLElement {
       body = '<div class="status-message">Inga hållplatser hittades.</div>';
     } else {
       const self = this;
-      body = self._formatListHeader(stops.length);
+      body = self._formatListHeader();
       body += stops
         .map(function (stop) {
           const openAttr = self._openSiteId === stop.id ? " open" : "";
@@ -1050,8 +1051,15 @@ class SlNearbyCard extends HTMLElement {
       stops.map((s) => s.id).join(",") + "|" + (this._locationNote || "");
     if (this._lastListKey === listKey && this.querySelector(".stop-accordion")) {
       const header = root.querySelector(".list-header");
+      const headerHtml = this._formatListHeader();
       if (header) {
-        header.outerHTML = this._formatListHeader(stops.length);
+        if (headerHtml) {
+          header.outerHTML = headerHtml;
+        } else {
+          header.remove();
+        }
+      } else if (headerHtml) {
+        root.insertAdjacentHTML("afterbegin", headerHtml);
       }
       for (let i = 0; i < stops.length; i++) {
         const stop = stops[i];
@@ -1075,7 +1083,6 @@ class SlNearbyCard extends HTMLElement {
     return [
       "ha-card{padding:0 0 12px}",
       ".list-header{padding:14px 16px 8px;font-size:.9rem;color:var(--secondary-text-color);border-bottom:1px solid var(--divider-color,rgba(0,0,0,.12))}",
-      ".list-header strong{color:var(--primary-text-color);font-size:1rem}",
       ".location-note{color:#fad370!important;font-size:smaller;line-height:1.35;margin-top:4px}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",

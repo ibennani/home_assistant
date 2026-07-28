@@ -2,7 +2,7 @@
 # Standard-dashboard (Översikt) laddas från YAML i stället för storage.
 mode: storage
 resources:
-  - url: /local/sl-nearby-card.js?v=20260728q
+  - url: /local/sl-nearby-card.js?v=20260728r
     type: module
   - url: /local/sl-stop-departures-card.js?v=20260728n
     type: module
