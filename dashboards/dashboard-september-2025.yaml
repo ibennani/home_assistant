@@ -54,7 +54,7 @@ resources:
   type: module
 - url: /local/sl-nearby-card.js?v=20260727t
   type: module
-- url: /local/sl-stop-departures-card.js?v=20260728g
+- url: /local/sl-stop-departures-card.js?v=20260728h
   type: module
 kiosk_mode:
   non_admin_settings:
@@ -6606,6 +6606,7 @@ views:
         alight_bus_site_id: 1923
         walk_train_minutes: 14
         walk_bus_minutes: 9
+        transfer_alvsjo_minutes: 3
 - title: SL
   path: sl-nara
   icon: mdi:alpha-t-circle

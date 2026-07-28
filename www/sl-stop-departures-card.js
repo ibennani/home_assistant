@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728g";
+    return "20260728h";
   }
 
   static getStubConfig() {
@@ -16,6 +16,7 @@ class SlStopDeparturesCard extends HTMLElement {
       alight_bus_site_id: 1923,
       walk_train_minutes: 14,
       walk_bus_minutes: 9,
+      transfer_alvsjo_minutes: 3,
       train_pt_fallback_minutes: 31,
       bus_pt_fallback_minutes: 20,
     };
@@ -263,17 +264,73 @@ class SlStopDeparturesCard extends HTMLElement {
     return pt + walk;
   }
 
+  _legPlaceName(place) {
+    if (!place) {
+      return "";
+    }
+    return String(place.name || place.disassembledName || "").trim();
+  }
+
+  _isAlvsjo(name) {
+    return /älvsjö/i.test(name || "");
+  }
+
+  _legDurationMinutes(leg) {
+    const seconds = leg.rtDuration || leg.duration;
+    if (!seconds) {
+      return 0;
+    }
+    return Math.max(0, Math.round(seconds / 60));
+  }
+
+  _transferMinutesAtAlvsjo(prevLeg, nextLeg) {
+    const minTransfer = Number(this.config.transfer_alvsjo_minutes || 3);
+    const arr = this._parseDate(prevLeg && prevLeg.arrival);
+    const dep = this._parseDate(nextLeg && nextLeg.departure);
+    if (arr && dep) {
+      const gap = Math.round((dep.getTime() - arr.getTime()) / 60000);
+      if (gap >= minTransfer) {
+        return gap;
+      }
+    }
+    return minTransfer;
+  }
+
+  _computeJourneyPtMinutes(journey) {
+    const legs = journey.legs || [];
+    if (!legs.length) {
+      return null;
+    }
+    if (legs.length === 1) {
+      const one = this._legDurationMinutes(legs[0]);
+      return one > 0 ? one : null;
+    }
+    let minutes = 0;
+    for (let i = 0; i < legs.length; i++) {
+      minutes += this._legDurationMinutes(legs[i]);
+      if (i >= legs.length - 1) {
+        continue;
+      }
+      const dest = this._legPlaceName(legs[i].destination);
+      const nextOrigin = this._legPlaceName(legs[i + 1].origin);
+      if (this._isAlvsjo(dest) && this._isAlvsjo(nextOrigin)) {
+        minutes += this._transferMinutesAtAlvsjo(legs[i], legs[i + 1]);
+      }
+    }
+    return minutes > 0 ? minutes : null;
+  }
+
   _computeTrainPtMinutes(journeyPayload) {
     const journeys = journeyPayload.journeys || [];
-    const first = journeys[0];
-    if (!first) {
-      return Number(this.config.train_pt_fallback_minutes || 31);
+    const fallback = Number(this.config.train_pt_fallback_minutes || 31);
+    let best = null;
+    for (let i = 0; i < journeys.length; i++) {
+      const pt = this._computeJourneyPtMinutes(journeys[i]);
+      if (pt !== null && (best === null || pt < best)) {
+        best = pt;
+      }
     }
-    const seconds = first.tripRtDuration || first.tripDuration;
-    if (!seconds) {
-      return Number(this.config.train_pt_fallback_minutes || 31);
-    }
-    return Math.max(1, Math.round(seconds / 60));
+    return best || fallback;
   }
 
   _formatTravelDuration(totalMinutes, departureAt) {
