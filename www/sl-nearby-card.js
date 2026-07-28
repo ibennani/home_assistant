@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728o";
+    return "20260728p";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260728o",
+      sites_cache_version: "20260728p",
     };
   }
 
@@ -912,21 +912,21 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _updateStopSummary(siteId) {
-    const summary = this.querySelector(
+    const content = this.querySelector(
       '.stop-accordion[data-site-id="' + siteId + '"] .stop-summary-content',
     );
-    if (!summary) {
+    if (!content) {
       return;
     }
-    const filtersEl = summary.querySelector(".mode-filters-wrap");
     const cache = this._getCache().get(String(siteId));
     const modes = cache && cache.departures ? this._getTransportModes(cache.departures) : [];
     const filters = this._renderModeFilters(siteId, modes);
+    let filtersEl = content.querySelector(".mode-filters-wrap");
     if (!filtersEl) {
-      const content = summary.querySelector(".stop-summary-content");
-      if (content && filters) {
-        content.insertAdjacentHTML("beforeend", '<div class="mode-filters-wrap">' + filters + "</div>");
-      }
+      content.insertAdjacentHTML("beforeend", '<div class="mode-filters-wrap"></div>');
+      filtersEl = content.querySelector(".mode-filters-wrap");
+    }
+    if (!filtersEl) {
       return;
     }
     if (filters) {
@@ -950,8 +950,11 @@ class SlNearbyCard extends HTMLElement {
       '</div></h1><span class="stop-distance">' +
       this._formatDistance(stop.distance_m) +
       "</span></div>" +
-      (filters ? '<div class="mode-filters-wrap">' + filters + "</div>" : "") +
-      "</div>"
+      '<div class="mode-filters-wrap"' +
+      (filters ? "" : ' style="display:none"') +
+      ">" +
+      (filters || "") +
+      "</div></div>"
     );
   }
 
