@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728a";
+    return "20260728b";
   }
 
   static getStubConfig() {
@@ -23,17 +23,29 @@ class SlStopDeparturesCard extends HTMLElement {
     };
   }
 
+  static getConfigElement() {
+    return document.createElement("div");
+  }
+
   setConfig(config) {
-    const base = SlStopDeparturesCard.getStubConfig();
-    const input = config && typeof config === "object" ? config : {};
-    this.config = Object.assign({}, base, input);
-    if (!this._travelCache) {
-      this._travelCache = new Map();
+    try {
+      const base = SlStopDeparturesCard.getStubConfig();
+      const input = config && typeof config === "object" ? config : {};
+      this.config = Object.assign({}, base, input);
+      if (!this._travelCache) {
+        this._travelCache = new Map();
+      }
+      if (!this._data) {
+        this._data = { loading: true };
+      }
+      this._updateView();
+    } catch (error) {
+      this.config = SlStopDeparturesCard.getStubConfig();
+      this.innerHTML =
+        '<ha-card><div class="status-message error">Kortfel: ' +
+        String((error && error.message) || error) +
+        "</div></ha-card>";
     }
-    if (!this._data) {
-      this._data = { loading: true };
-    }
-    this._updateView();
   }
 
   set hass(hass) {
