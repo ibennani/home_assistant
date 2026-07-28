@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728i";
+    return "20260728j";
   }
 
   static getStubConfig() {
@@ -291,6 +291,10 @@ class SlStopDeparturesCard extends HTMLElement {
     return null;
   }
 
+  _isSouthboundTrain(dep) {
+    return String(dep.direction_code) === "1";
+  }
+
   _computeTrainPtMinutes(dep, alvsjoDepartures, farstaJourneyMap) {
     const start = this._parseDate(dep.expected || dep.scheduled);
     if (!start) {
@@ -304,11 +308,14 @@ class SlStopDeparturesCard extends HTMLElement {
     }
     const earliestConnectMs = alvsjoAt.getTime() + transferMin * 60000;
     const connectingLines = this._connectingLines();
-    let bestConnect = null;
+    let bestPt = null;
     for (let i = 0; i < alvsjoDepartures.length; i++) {
       const connectDep = alvsjoDepartures[i];
       const line = connectDep.line || {};
       if (String(line.transport_mode || "").toUpperCase() !== "TRAIN") {
+        continue;
+      }
+      if (!this._isSouthboundTrain(connectDep)) {
         continue;
       }
       const designation = String(line.designation || line.id || "");
@@ -323,22 +330,17 @@ class SlStopDeparturesCard extends HTMLElement {
       if (!connectAt || connectAt.getTime() < earliestConnectMs) {
         continue;
       }
-      if (!bestConnect || connectAt.getTime() < bestConnect.timeMs) {
-        bestConnect = {
-          timeMs: connectAt.getTime(),
-          jid: String(connectJid),
-        };
+      const farstaDep = farstaJourneyMap.get(String(connectJid));
+      const end = this._parseDate(farstaDep.expected || farstaDep.scheduled);
+      if (!end || end.getTime() < connectAt.getTime()) {
+        continue;
+      }
+      const pt = Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+      if (bestPt === null || pt < bestPt) {
+        bestPt = pt;
       }
     }
-    if (!bestConnect) {
-      return null;
-    }
-    const farstaDep = farstaJourneyMap.get(bestConnect.jid);
-    const end = this._parseDate(farstaDep.expected || farstaDep.scheduled);
-    if (!end) {
-      return null;
-    }
-    return Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+    return bestPt;
   }
 
   _computeTrainTravelMinutes(dep, alvsjoDepartures, farstaJourneyMap) {

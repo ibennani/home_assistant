@@ -54,7 +54,7 @@ resources:
   type: module
 - url: /local/sl-nearby-card.js?v=20260727t
   type: module
-- url: /local/sl-stop-departures-card.js?v=20260728i
+- url: /local/sl-stop-departures-card.js?v=20260728j
   type: module
 kiosk_mode:
   non_admin_settings:
