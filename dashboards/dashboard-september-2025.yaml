@@ -54,7 +54,7 @@ resources:
   type: module
 - url: /local/sl-nearby-card.js?v=20260727t
   type: module
-- url: /local/sl-stop-departures-card.js?v=20260728h
+- url: /local/sl-stop-departures-card.js?v=20260728i
   type: module
 kiosk_mode:
   non_admin_settings:
@@ -6604,6 +6604,11 @@ views:
         hide_departed: true
         alight_train_site_id: 9180
         alight_bus_site_id: 1923
+        transfer_site_id: 9529
+        connecting_lines:
+          - "43"
+          - "41"
+        train_leg_huddinge_alvsjo_minutes: 7
         walk_train_minutes: 14
         walk_bus_minutes: 9
         transfer_alvsjo_minutes: 3

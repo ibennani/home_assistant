@@ -4,7 +4,7 @@ mode: storage
 resources:
   - url: /local/sl-nearby-card.js?v=20260727t
     type: module
-  - url: /local/sl-stop-departures-card.js?v=20260728h
+  - url: /local/sl-stop-departures-card.js?v=20260728i
     type: module
 dashboards:
   dashboard-september-2025:

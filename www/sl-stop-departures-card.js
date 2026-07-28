@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728h";
+    return "20260728i";
   }
 
   static getStubConfig() {
@@ -14,6 +14,9 @@ class SlStopDeparturesCard extends HTMLElement {
       refresh_seconds: 60,
       alight_train_site_id: 9180,
       alight_bus_site_id: 1923,
+      transfer_site_id: 9529,
+      connecting_lines: ["43", "41"],
+      train_leg_huddinge_alvsjo_minutes: 7,
       walk_train_minutes: 14,
       walk_bus_minutes: 9,
       transfer_alvsjo_minutes: 3,
@@ -145,30 +148,6 @@ class SlStopDeparturesCard extends HTMLElement {
     }).then((result) => this._extractPayload(result));
   }
 
-  _formatItdParams(when) {
-    const date = when.toLocaleDateString("sv-SE", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-    const parts = date.split("-");
-    return {
-      itd_date: parts[0] + parts[1] + parts[2],
-      itd_time:
-        String(when.getHours()).padStart(2, "0") + String(when.getMinutes()).padStart(2, "0"),
-    };
-  }
-
-  _callJourneyPlanner(originSite, destSite, when) {
-    const itd = this._formatItdParams(when);
-    return this._callWithResponse("rest_command", "sl_journey_to_site", {
-      origin_site: Number(originSite),
-      dest_site: Number(destSite),
-      itd_date: itd.itd_date,
-      itd_time: itd.itd_time,
-    }).then((result) => this._extractPayload(result));
-  }
-
   _matchesDeparture(dep) {
     const line = dep.line || {};
     const mode = String(line.transport_mode || "").toUpperCase();
@@ -219,7 +198,7 @@ class SlStopDeparturesCard extends HTMLElement {
     return items;
   }
 
-  _buildBusJourneyMap(departures) {
+  _buildJourneyMap(departures) {
     const map = new Map();
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
@@ -229,6 +208,40 @@ class SlStopDeparturesCard extends HTMLElement {
       }
     }
     return map;
+  }
+
+  _buildBusJourneyMap(departures) {
+    return this._buildJourneyMap(departures);
+  }
+
+  _filterTrainDepartures(departures) {
+    const items = [];
+    for (let i = 0; i < (departures || []).length; i++) {
+      const dep = departures[i];
+      const mode = String((dep.line && dep.line.transport_mode) || "").toUpperCase();
+      if (mode === "TRAIN") {
+        items.push(dep);
+      }
+    }
+    return items;
+  }
+
+  _sortDeparturesByTime(departures) {
+    return departures.slice().sort(function (a, b) {
+      const aMs = new Date(a.expected || a.scheduled || 0).getTime();
+      const bMs = new Date(b.expected || b.scheduled || 0).getTime();
+      return aMs - bMs;
+    });
+  }
+
+  _connectingLines() {
+    const lines = this.config && this.config.connecting_lines;
+    if (Array.isArray(lines) && lines.length) {
+      return lines.map(function (line) {
+        return String(line);
+      });
+    }
+    return ["43", "41"];
   }
 
   _walkMinutes(kind) {
@@ -264,73 +277,77 @@ class SlStopDeparturesCard extends HTMLElement {
     return pt + walk;
   }
 
-  _legPlaceName(place) {
-    if (!place) {
-      return "";
-    }
-    return String(place.name || place.disassembledName || "").trim();
-  }
-
-  _isAlvsjo(name) {
-    return /älvsjö/i.test(name || "");
-  }
-
-  _legDurationMinutes(leg) {
-    const seconds = leg.rtDuration || leg.duration;
-    if (!seconds) {
-      return 0;
-    }
-    return Math.max(0, Math.round(seconds / 60));
-  }
-
-  _transferMinutesAtAlvsjo(prevLeg, nextLeg) {
-    const minTransfer = Number(this.config.transfer_alvsjo_minutes || 3);
-    const arr = this._parseDate(prevLeg && prevLeg.arrival);
-    const dep = this._parseDate(nextLeg && nextLeg.departure);
-    if (arr && dep) {
-      const gap = Math.round((dep.getTime() - arr.getTime()) / 60000);
-      if (gap >= minTransfer) {
-        return gap;
-      }
-    }
-    return minTransfer;
-  }
-
-  _computeJourneyPtMinutes(journey) {
-    const legs = journey.legs || [];
-    if (!legs.length) {
+  _findAlvsjoArrival(dep, alvsjoDepartures) {
+    const jid = dep.journey && dep.journey.id;
+    if (!jid) {
       return null;
     }
-    if (legs.length === 1) {
-      const one = this._legDurationMinutes(legs[0]);
-      return one > 0 ? one : null;
-    }
-    let minutes = 0;
-    for (let i = 0; i < legs.length; i++) {
-      minutes += this._legDurationMinutes(legs[i]);
-      if (i >= legs.length - 1) {
-        continue;
-      }
-      const dest = this._legPlaceName(legs[i].destination);
-      const nextOrigin = this._legPlaceName(legs[i + 1].origin);
-      if (this._isAlvsjo(dest) && this._isAlvsjo(nextOrigin)) {
-        minutes += this._transferMinutesAtAlvsjo(legs[i], legs[i + 1]);
+    for (let i = 0; i < alvsjoDepartures.length; i++) {
+      const alvsjoDep = alvsjoDepartures[i];
+      if (alvsjoDep.journey && String(alvsjoDep.journey.id) === String(jid)) {
+        return this._parseDate(alvsjoDep.expected || alvsjoDep.scheduled);
       }
     }
-    return minutes > 0 ? minutes : null;
+    return null;
   }
 
-  _computeTrainPtMinutes(journeyPayload) {
-    const journeys = journeyPayload.journeys || [];
-    const fallback = Number(this.config.train_pt_fallback_minutes || 31);
-    let best = null;
-    for (let i = 0; i < journeys.length; i++) {
-      const pt = this._computeJourneyPtMinutes(journeys[i]);
-      if (pt !== null && (best === null || pt < best)) {
-        best = pt;
+  _computeTrainPtMinutes(dep, alvsjoDepartures, farstaJourneyMap) {
+    const start = this._parseDate(dep.expected || dep.scheduled);
+    if (!start) {
+      return null;
+    }
+    const transferMin = Number(this.config.transfer_alvsjo_minutes || 3);
+    const huddingeAlvsjoFallback = Number(this.config.train_leg_huddinge_alvsjo_minutes || 7);
+    let alvsjoAt = this._findAlvsjoArrival(dep, alvsjoDepartures);
+    if (!alvsjoAt) {
+      alvsjoAt = new Date(start.getTime() + huddingeAlvsjoFallback * 60000);
+    }
+    const earliestConnectMs = alvsjoAt.getTime() + transferMin * 60000;
+    const connectingLines = this._connectingLines();
+    let bestConnect = null;
+    for (let i = 0; i < alvsjoDepartures.length; i++) {
+      const connectDep = alvsjoDepartures[i];
+      const line = connectDep.line || {};
+      if (String(line.transport_mode || "").toUpperCase() !== "TRAIN") {
+        continue;
+      }
+      const designation = String(line.designation || line.id || "");
+      if (connectingLines.indexOf(designation) === -1) {
+        continue;
+      }
+      const connectJid = connectDep.journey && connectDep.journey.id;
+      if (!connectJid || !farstaJourneyMap.has(String(connectJid))) {
+        continue;
+      }
+      const connectAt = this._parseDate(connectDep.expected || connectDep.scheduled);
+      if (!connectAt || connectAt.getTime() < earliestConnectMs) {
+        continue;
+      }
+      if (!bestConnect || connectAt.getTime() < bestConnect.timeMs) {
+        bestConnect = {
+          timeMs: connectAt.getTime(),
+          jid: String(connectJid),
+        };
       }
     }
-    return best || fallback;
+    if (!bestConnect) {
+      return null;
+    }
+    const farstaDep = farstaJourneyMap.get(bestConnect.jid);
+    const end = this._parseDate(farstaDep.expected || farstaDep.scheduled);
+    if (!end) {
+      return null;
+    }
+    return Math.max(1, Math.round((end.getTime() - start.getTime()) / 60000));
+  }
+
+  _computeTrainTravelMinutes(dep, alvsjoDepartures, farstaJourneyMap) {
+    const pt = this._computeTrainPtMinutes(dep, alvsjoDepartures, farstaJourneyMap);
+    const walk = this._walkMinutes("train");
+    if (pt === null) {
+      return Number(this.config.train_pt_fallback_minutes || 31) + walk;
+    }
+    return pt + walk;
   }
 
   _formatTravelDuration(totalMinutes, departureAt) {
@@ -362,7 +379,8 @@ class SlStopDeparturesCard extends HTMLElement {
   _ensureTravelTimes(departures) {
     const self = this;
     const busJourneyMap = (this._data && this._data.busJourneyMap) || new Map();
-    const pending = [];
+    const alvsjoTrainDepartures = (this._data && this._data.alvsjoTrainDepartures) || [];
+    const farstaJourneyMap = (this._data && this._data.farstaJourneyMap) || new Map();
 
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
@@ -371,50 +389,19 @@ class SlStopDeparturesCard extends HTMLElement {
         dep._travelMinutes = self._travelCache.get(key);
         continue;
       }
+      let total;
       if (dep._kind === "bus") {
-        const total = self._computeBusTravelMinutes(dep, busJourneyMap);
-        self._travelCache.set(key, total);
-        dep._travelMinutes = total;
+        total = self._computeBusTravelMinutes(dep, busJourneyMap);
+      } else if (dep._kind === "train") {
+        total = self._computeTrainTravelMinutes(dep, alvsjoTrainDepartures, farstaJourneyMap);
+      } else {
         continue;
       }
-      pending.push(dep);
+      self._travelCache.set(key, total);
+      dep._travelMinutes = total;
     }
-
-    if (!pending.length) {
-      self._updateView();
-      return Promise.resolve();
-    }
-
-    let chain = Promise.resolve();
-    pending.forEach(function (dep) {
-      chain = chain.then(function () {
-        const when = self._parseDate(dep.expected || dep.scheduled) || new Date();
-        return self
-          ._callJourneyPlanner(
-            self.config.site_id,
-            self.config.alight_train_site_id,
-            when,
-          )
-          .then(function (payload) {
-            const total =
-              self._computeTrainPtMinutes(payload) + self._walkMinutes("train");
-            const key = self._travelCacheKey(dep);
-            self._travelCache.set(key, total);
-            dep._travelMinutes = total;
-          })
-          .catch(function () {
-            const total =
-              Number(self.config.train_pt_fallback_minutes || 31) +
-              self._walkMinutes("train");
-            const key = self._travelCacheKey(dep);
-            self._travelCache.set(key, total);
-            dep._travelMinutes = total;
-          });
-      });
-    });
-    return chain.then(function () {
-      self._updateView();
-    });
+    self._updateView();
+    return Promise.resolve();
   }
 
   _loadData(force) {
@@ -432,21 +419,36 @@ class SlStopDeparturesCard extends HTMLElement {
     const self = this;
     const siteId = Number(this.config.site_id);
     const busSiteId = Number(this.config.alight_bus_site_id);
+    const transferSiteId = Number(this.config.transfer_site_id || 9529);
+    const trainSiteId = Number(this.config.alight_train_site_id);
+    const emptySite = function () {
+      return { departures: [], stop_deviations: [] };
+    };
     Promise.all([
       self._callSiteDepartures(siteId),
-      self._callSiteDepartures(busSiteId).catch(function () {
-        return { departures: [], stop_deviations: [] };
-      }),
+      self._callSiteDepartures(busSiteId).catch(emptySite),
+      self._callSiteDepartures(transferSiteId).catch(emptySite),
+      self._callSiteDepartures(trainSiteId).catch(emptySite),
     ])
       .then(function (results) {
         const main = results[0];
         const busSite = results[1];
+        const transferSite = results[2];
+        const trainSite = results[3];
         const departures = self._prepareDepartures(main.departures || []);
+        const alvsjoTrainDepartures = self._sortDeparturesByTime(
+          self._filterTrainDepartures(transferSite.departures || []),
+        );
+        const farstaJourneyMap = self._buildJourneyMap(
+          self._filterTrainDepartures(trainSite.departures || []),
+        );
         self._data = {
           loading: false,
           departures: departures,
           stop_deviations: main.stop_deviations || [],
           busJourneyMap: self._buildBusJourneyMap(busSite.departures || []),
+          alvsjoTrainDepartures: alvsjoTrainDepartures,
+          farstaJourneyMap: farstaJourneyMap,
           error: null,
         };
         self._updateView();
@@ -458,6 +460,8 @@ class SlStopDeparturesCard extends HTMLElement {
           departures: [],
           stop_deviations: [],
           busJourneyMap: new Map(),
+          alvsjoTrainDepartures: [],
+          farstaJourneyMap: new Map(),
           error: (error && error.message) || "Kunde inte hämta avgångar",
         };
         self._updateView();
