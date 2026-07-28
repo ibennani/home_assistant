@@ -6,8 +6,6 @@ resources:
     type: module
   - url: /local/sl-stop-departures-card.js?v=20260728k
     type: module
-  - url: /local/sl-stops-map-card.js?v=20260728m
-    type: module
 dashboards:
   dashboard-september-2025:
     mode: yaml

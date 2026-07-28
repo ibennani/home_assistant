@@ -1036,3 +1036,30 @@
       state: >
         {% set v = states('sensor.waze_eksharadsgatan_till_eksharadsgatan_6') %}
         {{ v if v not in ['unknown', 'unavailable', 'none', ''] else 11 }}
+
+# Kollektivtrafik — SL-hållplatser som kartmarkörer (latitude/longitude för map-kort)
+- sensor:
+    - name: SL hållplats Huddinge centrum
+      unique_id: sl_hallplats_huddinge_centrum
+      icon: mdi:train
+      state: Huddinge centrum
+      attributes:
+        latitude: 59.2364370936957
+        longitude: 17.9787877294555
+        site_id: 9527
+    - name: SL hållplats Farsta strand
+      unique_id: sl_hallplats_farsta_strand
+      icon: mdi:train
+      state: Farsta strand
+      attributes:
+        latitude: 59.236060845357
+        longitude: 18.101236963156
+        site_id: 9180
+    - name: SL hållplats Ekshäradsgatan
+      unique_id: sl_hallplats_eksharadsgatan
+      icon: mdi:bus-stop
+      state: Ekshäradsgatan
+      attributes:
+        latitude: 59.2344023974842
+        longitude: 18.0937923859842
+        site_id: 1923
