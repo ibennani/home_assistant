@@ -227,9 +227,16 @@ class SlStopDeparturesCard extends HTMLElement {
     return hideDeparted && expectedAt ? this._isDeparted(expectedAt, now) : false;
   }
 
+  _formatDepartureLabel(dep) {
+    const api = window.SlDepartureTime;
+    if (api && api.formatDepartureLabel) {
+      return api.formatDepartureLabel(dep);
+    }
+    return String((dep && dep.destination) || (dep && dep.direction) || "").trim();
+  }
+
   _prepareDepartures(departures) {
     const now = new Date();
-    const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
     const items = [];
     const self = this;
     for (let i = 0; i < departures.length; i++) {
@@ -241,10 +248,7 @@ class SlStopDeparturesCard extends HTMLElement {
       const expected = dep.expected || dep.scheduled;
       const expectedAt = expected ? new Date(expected) : null;
       const expectedMs = expectedAt ? expectedAt.getTime() : Number.POSITIVE_INFINITY;
-      let destination = dep.destination || "";
-      if (dep.line && dep.line.transport_mode === "TRAIN") {
-        destination = destination.replace(destPattern, "").trim();
-      }
+      const destination = self._formatDepartureLabel(dep);
       if (self._shouldHideDeparted(expectedAt, now)) {
         continue;
       }

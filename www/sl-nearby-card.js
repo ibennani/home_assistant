@@ -624,9 +624,16 @@ class SlNearbyCard extends HTMLElement {
     });
   }
 
+  _formatDepartureLabel(dep) {
+    const api = window.SlDepartureTime;
+    if (api && api.formatDepartureLabel) {
+      return api.formatDepartureLabel(dep);
+    }
+    return String((dep && dep.destination) || (dep && dep.direction) || "").trim();
+  }
+
   _prepareDepartures(departures) {
     const now = new Date();
-    const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
     const items = [];
     const self = this;
 
@@ -635,10 +642,7 @@ class SlNearbyCard extends HTMLElement {
       const expected = dep.expected || dep.scheduled;
       const expectedAt = expected ? new Date(expected) : null;
       const expectedMs = expectedAt ? expectedAt.getTime() : Number.POSITIVE_INFINITY;
-      let destination = dep.destination || "";
-      if (dep.line && dep.line.transport_mode === "TRAIN") {
-        destination = destination.replace(destPattern, "").trim();
-      }
+      const destination = self._formatDepartureLabel(dep);
       if (self._shouldHideDeparted(expectedAt, now)) {
         continue;
       }
@@ -1417,7 +1421,7 @@ class SlNearbyCard extends HTMLElement {
     const self = this;
     const line = (dep && dep.line) || {};
     const designation = line.designation || "";
-    const destination = dep.destination || dep.direction || "";
+    const destination = self._formatDepartureLabel(dep);
     const stopItems = (stops || [])
       .map(function (stop, index) {
         let className = "line-route-stop";
