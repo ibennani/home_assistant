@@ -208,15 +208,26 @@ class SlNearbyStopsCard extends HTMLElement {
     this._render();
   }
 
-  _prepareDepartures(departures) {
-    const now = Date.now();
+  _shouldHideDeparted(expectedAt, now) {
     const hideDeparted = !this.config || this.config.hide_departed !== false;
+    if (window.SlDepartureTime && window.SlDepartureTime.shouldHideDeparted) {
+      return window.SlDepartureTime.shouldHideDeparted(expectedAt, now, hideDeparted);
+    }
+    if (!hideDeparted || !expectedAt) {
+      return false;
+    }
+    return this._diffMinutes(expectedAt, now) < 0;
+  }
+
+  _prepareDepartures(departures) {
+    const now = new Date();
     const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
 
     return departures
       .map((dep) => {
         const expected = dep.expected || dep.scheduled;
-        const expectedMs = expected ? new Date(expected).getTime() : Number.POSITIVE_INFINITY;
+        const expectedAt = expected ? new Date(expected) : null;
+        const expectedMs = expectedAt ? expectedAt.getTime() : Number.POSITIVE_INFINITY;
         let destination = dep.destination || "";
         if (dep.line && dep.line.transport_mode === "TRAIN") {
           destination = destination.replace(destPattern, "").trim();
@@ -224,17 +235,10 @@ class SlNearbyStopsCard extends HTMLElement {
         return Object.assign({}, dep, {
           destination: destination,
           _expectedMs: expectedMs,
+          _expectedAt: expectedAt,
         });
       })
-      .filter((dep) => {
-        if (!hideDeparted) {
-          return true;
-        }
-        if (!Number.isFinite(dep._expectedMs)) {
-          return true;
-        }
-        return dep._expectedMs + 5 * 60 * 1000 >= now;
-      })
+      .filter((dep) => !this._shouldHideDeparted(dep._expectedAt, now))
       .sort((a, b) => a._expectedMs - b._expectedMs);
   }
 
@@ -358,12 +362,15 @@ class SlNearbyStopsCard extends HTMLElement {
 
     const now = new Date();
     const rows = cache.departures
+      .filter((dep) => {
+        const expectedAt = this._parseDate(dep.expected) || this._parseDate(dep.scheduled);
+        return !this._shouldHideDeparted(expectedAt, now);
+      })
       .map((dep) => {
         const scheduledAt = this._parseDate(dep.scheduled);
         const expectedAt = this._parseDate(dep.expected) || scheduledAt;
         const diff = expectedAt ? this._diffMinutes(expectedAt, now) : 0;
         const isAtPlatform = diff === 0;
-        const isDeparted = diff < 0;
         const isCancelled = this._isCancelled(dep);
         const isDelayed = !isCancelled && this._isDelayed(scheduledAt, expectedAt);
         const deviations = dep.deviations || [];
@@ -422,7 +429,7 @@ class SlNearbyStopsCard extends HTMLElement {
             </div>`
           : "";
 
-        return `<div class="departure-block ${isDeparted ? "departed" : ""}">
+        return `<div class="departure-block">
           <div class="row departure">
             <div class="col icon"><ha-icon class="transport-icon" icon="${icon}"></ha-icon></div>
             <div class="col icon"><span class="line-icon mr1 ${lineClass}">${this._escapeHtml(line.designation || "")}</span></div>
@@ -538,11 +545,6 @@ class SlNearbyStopsCard extends HTMLElement {
         }
         .departures > :first-child {
           margin-top: 0;
-        }
-        .departure.departed > .main,
-        .departure-block.departed .main {
-          text-decoration: line-through;
-          color: var(--secondary-text-color);
         }
         .row {
           margin-top: 8px;

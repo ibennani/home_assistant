@@ -60,10 +60,18 @@
     return ceilMinutesUntil(now, expectedAt) < 0;
   }
 
+  function shouldHideDeparted(expectedAt, now, hideDeparted) {
+    if (hideDeparted === false) {
+      return false;
+    }
+    return isDeparted(expectedAt, now);
+  }
+
   root.SlDepartureTime = {
     ceilMinutesUntil: ceilMinutesUntil,
     floorMinutesUntil: floorMinutesUntil,
     formatHtml: formatDepartureTimeHtml,
     isDeparted: isDeparted,
+    shouldHideDeparted: shouldHideDeparted,
   };
 })(typeof window !== "undefined" ? window : globalThis);

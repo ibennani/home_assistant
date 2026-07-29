@@ -2,11 +2,11 @@
 # Standard-dashboard (Översikt) laddas från YAML i stället för storage.
 mode: storage
 resources:
-  - url: /local/sl-departure-time.js?v=20260729a
+  - url: /local/sl-departure-time.js?v=20260729b
     type: module
-  - url: /local/sl-nearby-card.js?v=20260729a
+  - url: /local/sl-nearby-card.js?v=20260729b
     type: module
-  - url: /local/sl-stop-departures-card.js?v=20260729a
+  - url: /local/sl-stop-departures-card.js?v=20260729b
     type: module
 dashboards:
   dashboard-september-2025:
