@@ -3,6 +3,17 @@ sl_site_departures:
   url: "https://transport.integration.sl.se/v1/sites/{{ site_id }}/departures?forecast={{ forecast | default(60) }}"
   method: GET
 
+# SL Journey Planner — hållplatser kvar på en avgång (sl-nearby-card)
+sl_journey_stops:
+  url: >
+    https://journeyplanner.integration.sl.se/v2/trips?type_origin=any&name_origin=909100100000{{ origin_site }}&type_destination=any&name_destination={{ dest_gid }}&calc_number_of_trips=3&incl_mot_0=true&incl_mot_2=true&incl_mot_3=true&incl_mot_4=true&incl_mot_5=true
+  method: GET
+
+# SL Journey Planner — slå upp hållplats-id från namn
+sl_stop_finder:
+  url: "https://journeyplanner.integration.sl.se/v2/stop-finder?name_sf={{ name }}&type_sf=any&any_obj_filter_sf=2"
+  method: GET
+
 # SL Journey Planner — restid mellan två hållplatser (t.ex. Huddinge → Farsta strand)
 sl_journey_to_site:
   url: >
