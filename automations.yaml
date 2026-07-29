@@ -8667,7 +8667,7 @@
       current_setpoint: '{{ state_attr(''climate.elementet_i_sovrummet'', ''temperature'')
         | float(25) }}'
       desired_temp: "{% if home_count > 0 %}\n  {% if is_night_mode and outdoor_ok
-        %}\n    5\n  {% else %}\n    25\n  {% endif %}\n{% else %}\n  {% if away_long_enough
+        %}\n    7\n  {% else %}\n    25\n  {% endif %}\n{% else %}\n  {% if away_long_enough
         %}\n    25\n  {% else %}\n    {{ current_setpoint }}\n  {% endif %}\n{% endif
         %}"
   - action: climate.set_hvac_mode
