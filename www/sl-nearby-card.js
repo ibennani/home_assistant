@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729p";
+    return "20260729q";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729p",
+      sites_cache_version: "20260729q",
     };
   }
 
@@ -63,21 +63,11 @@ class SlNearbyCard extends HTMLElement {
       this._cardVersion = SlNearbyCard.CARD_VERSION;
       this._lastListKey = null;
     }
-    if (!this._clickListenerAttached) {
-      this._clickListenerAttached = true;
-      this._boundCardClick = (event) => this._onCardClick(event);
-      this.addEventListener("click", this._boundCardClick, true);
-    }
     this._ensureSitesLoaded().then(() => this._updateView());
     this._syncRefreshTimer();
   }
 
   disconnectedCallback() {
-    if (this._boundCardClick) {
-      this.removeEventListener("click", this._boundCardClick, true);
-      this._boundCardClick = undefined;
-      this._clickListenerAttached = false;
-    }
     if (this._refreshTimer) {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
@@ -329,6 +319,13 @@ class SlNearbyCard extends HTMLElement {
   _unwrapServiceResponse(result) {
     if (!result) {
       return {};
+    }
+    if (typeof result === "string") {
+      try {
+        return this._unwrapServiceResponse(JSON.parse(result));
+      } catch (error) {
+        return {};
+      }
     }
     if (result.journeys || result.locations) {
       return result;
@@ -802,7 +799,7 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
-  _renderDepartureRow(dep, extraClass, key, now) {
+  _renderDepartureRow(dep, extraClass, key, now, siteId) {
     const self = this;
     const scheduledAt = self._parseDate(dep.scheduled);
     const expectedAt = self._parseDate(dep.expected) || scheduledAt;
@@ -828,9 +825,11 @@ class SlNearbyCard extends HTMLElement {
     return (
       '<div class="departure-block' +
       (extraClass || "") +
+      '" data-site-id="' +
+      String(siteId) +
       '" data-departure-key="' +
       self._escapeHtml(key) +
-      '" title="Visa kvarvarande hållplatser"><div class="row departure">' +
+      '" role="button" tabindex="0" title="Visa kvarvarande hållplatser"><div class="row departure">' +
       '<div class="col icon"><ha-icon class="transport-icon" icon="' +
       icon +
       '"></ha-icon></div>' +
@@ -873,7 +872,7 @@ class SlNearbyCard extends HTMLElement {
           return self._shouldHideDeparted(expectedAt, currentNow);
         },
         renderRow: function (dep, extraClass, key) {
-          return self._renderDepartureRow(dep, extraClass, key, now);
+          return self._renderDepartureRow(dep, extraClass, key, now, siteId);
         },
       });
     }
@@ -884,7 +883,7 @@ class SlNearbyCard extends HTMLElement {
         anim && anim.departureKey
           ? anim.departureKey(activeDeps[j])
           : String(j);
-      rows += self._renderDepartureRow(activeDeps[j], "", key, now);
+      rows += self._renderDepartureRow(activeDeps[j], "", key, now, siteId);
     }
     return rows;
   }
@@ -1397,17 +1396,24 @@ class SlNearbyCard extends HTMLElement {
     }
 
     const block = event.target.closest(".departure-block");
-    if (!block || !this.contains(block)) {
+    if (!block) {
       return;
     }
-    const accordion = block.closest(".stop-accordion");
-    if (!accordion) {
+    const card = block.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+    if (!card || card !== this) {
       return;
     }
+
     event.preventDefault();
     event.stopPropagation();
-    const siteId = Number(accordion.dataset.siteId);
-    const departureKey = block.dataset.departureKey;
+
+    const siteId = Number(block.getAttribute("data-site-id"));
+    const departureKey = block.getAttribute("data-departure-key");
+    if (!siteId || !departureKey) {
+      this._showModalMessage("Avgång", "Kunde inte läsa avgången.", true);
+      return;
+    }
+
     const dep = this._findDepartureByKey(siteId, departureKey);
     if (!dep) {
       this._showModalMessage("Avgång", "Kunde inte läsa avgången. Försök igen om en stund.", true);
@@ -1610,8 +1616,10 @@ class SlNearbyCard extends HTMLElement {
       ".train{background:#ec619f}",
       ".tram{background:#985141}",
       ".warning-message{color:var(--warning-color);font-size:smaller}",
-      ".departure-block{margin-top:8px;border-radius:6px;width:100%;box-sizing:border-box;cursor:pointer}",
+      ".departure-block{margin-top:8px;border-radius:6px;width:100%;box-sizing:border-box;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}",
       ".departure-block:hover{background:rgba(255,255,255,.04)}",
+      ".departure-block *{pointer-events:none}",
+      ".departure-block ha-icon,.departure-block .line-icon,.departure-block .leaves-in{pointer-events:none}",
       ".departure-block .row.departure{margin-top:0}",
       ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px;width:100%;box-sizing:border-box}",
       ".detail-item{font-size:smaller;line-height:1.35}",
@@ -1683,6 +1691,51 @@ function _defineSlNearbyCard(tag) {
 
 _defineSlNearbyCard("sl-nearby-card");
 _defineSlNearbyCard("ha-sl-nearby-stops-card");
+
+if (!window.__slNearbyCardGlobalClick) {
+  window.__slNearbyCardGlobalClick = true;
+  document.addEventListener(
+    "click",
+    function (event) {
+      const filter = event.target.closest(".mode-filter");
+      if (filter) {
+        const card = filter.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+        if (card && typeof card._onFilterInteraction === "function") {
+          card._onFilterInteraction(event);
+        }
+        return;
+      }
+      const block = event.target.closest(".departure-block[data-site-id]");
+      if (!block) {
+        return;
+      }
+      const card = block.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+      if (!card || typeof card._onDepartureClick !== "function") {
+        return;
+      }
+      card._onDepartureClick(event);
+    },
+    true,
+  );
+  document.addEventListener(
+    "keydown",
+    function (event) {
+      if (event.key !== "Enter" && event.key !== " ") {
+        return;
+      }
+      const block = event.target.closest(".departure-block[data-site-id]");
+      if (!block) {
+        return;
+      }
+      const card = block.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+      if (!card || typeof card._onDepartureClick !== "function") {
+        return;
+      }
+      card._onDepartureClick(event);
+    },
+    true,
+  );
+}
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some(function (card) { return card.type === "sl-nearby-card"; })) {
