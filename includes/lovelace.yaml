@@ -4,13 +4,13 @@ mode: storage
 resources:
   - url: /local/sl-departure-time.js?v=20260729g
     type: module
-  - url: /local/sl-departure-list-animation.js?v=20260729i
+  - url: /local/sl-departure-list-animation.js?v=20260729l
     type: module
-  - url: /local/sl-nearby-card.js?v=20260729k
+  - url: /local/sl-nearby-card.js?v=20260729l
     type: module
-  - url: /local/sl-stop-departures-card.js?v=20260729i
+  - url: /local/sl-stop-departures-card.js?v=20260729l
     type: module
-  - url: /local/hasl4-departure-card.js?v=20260729e
+  - url: /local/hasl4-departure-card.js?v=20260729l
     type: module
 dashboards:
   dashboard-september-2025:

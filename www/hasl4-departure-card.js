@@ -1672,11 +1672,6 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         max-height: 500px;
     }
 
-    .departure-block.departure-exit-fade {
-        opacity: 0;
-        transition: opacity 0.5s ease;
-    }
-
     .departure-block.departure-exit-slide {
         overflow: hidden;
         box-sizing: border-box;

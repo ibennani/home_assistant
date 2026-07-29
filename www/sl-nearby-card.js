@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729k";
+    return "20260729l";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729k",
+      sites_cache_version: "20260729l",
     };
   }
 
@@ -1154,7 +1154,6 @@ class SlNearbyCard extends HTMLElement {
       ".left{text-align:left}",
       ".right{text-align:right}",
       ".departure-block[data-departure-key]{max-height:500px}",
-      ".departure-block.departure-exit-fade{opacity:0;transition:opacity .5s ease}",
       ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height .5s ease,margin-top .5s ease,opacity .5s ease}",
       ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
       "ha-icon{width:24px;height:24px;color:var(--paper-item-icon-color)}",

@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729i";
+    return "20260729l";
   }
 
   static getStubConfig() {
@@ -1079,7 +1079,6 @@ class SlStopDeparturesCard extends HTMLElement {
       ".cancelled-time{color:#e53935;font-weight:600}",
       ".leaves-in{white-space:nowrap}",
       ".departure-block[data-departure-key]{max-height:500px}",
-      ".departure-block.departure-exit-fade{opacity:0;transition:opacity .5s ease}",
       ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height .5s ease,margin-top .5s ease,opacity .5s ease}",
       ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
       ".mr1{margin-right:8px}",

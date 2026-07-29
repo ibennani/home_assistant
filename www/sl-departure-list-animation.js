@@ -1,10 +1,9 @@
 /**
  * Utanimationslogik när avgångar försvinner (avgångna).
- * 0,5 s uttoning, sedan 0,5 s hopfällning så raderna under glider upp.
+ * Tona bort och rulla upp samtidigt (0,5 s).
  */
 (function (root) {
-  var FADE_MS = 500;
-  var SLIDE_MS = 500;
+  var EXIT_MS = 500;
 
   function departureKey(dep) {
     if (!dep) {
@@ -27,15 +26,12 @@
   function animationCss() {
     return [
       ".departure-block[data-departure-key]{max-height:500px}",
-      ".departure-block.departure-exit-fade{opacity:0;transition:opacity " +
-        FADE_MS +
-        "ms ease}",
       ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height " +
-        SLIDE_MS +
+        EXIT_MS +
         "ms ease,margin-top " +
-        SLIDE_MS +
+        EXIT_MS +
         "ms ease,opacity " +
-        SLIDE_MS +
+        EXIT_MS +
         "ms ease}",
       ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
     ].join("");
@@ -108,7 +104,7 @@
         if (!dep || !shouldHideDeparted(dep, now)) {
           return;
         }
-        scope.exiting.set(key, { dep: dep, phase: "pending-fade" });
+        scope.exiting.set(key, { dep: dep, phase: "pending-exit" });
       });
     }
 
@@ -173,7 +169,7 @@
     var remaining = 0;
 
     scope.exiting.forEach(function (entry, key) {
-      if (entry.phase !== "pending-fade") {
+      if (entry.phase !== "pending-exit") {
         return;
       }
       var el = listEl.querySelector('[data-departure-key="' + cssEscape(key) + '"]');
@@ -182,25 +178,19 @@
         return;
       }
       remaining++;
-      entry.phase = "fade";
+      entry.phase = "exit";
       el.style.maxHeight = el.offsetHeight + "px";
+      el.classList.add("departure-exit-slide");
       requestAnimationFrame(function () {
-        el.classList.add("departure-exit-fade");
+        el.classList.add("departure-exit-slide-active");
       });
       self._schedule(scope, function () {
-        el.classList.remove("departure-exit-fade");
-        el.classList.add("departure-exit-slide");
-        requestAnimationFrame(function () {
-          el.classList.add("departure-exit-slide-active");
-        });
-        self._schedule(scope, function () {
-          scope.exiting.delete(key);
-          remaining--;
-          if (remaining === 0 && typeof onComplete === "function") {
-            onComplete();
-          }
-        }, SLIDE_MS);
-      }, FADE_MS);
+        scope.exiting.delete(key);
+        remaining--;
+        if (remaining === 0 && typeof onComplete === "function") {
+          onComplete();
+        }
+      }, EXIT_MS);
     });
   };
 
@@ -217,8 +207,9 @@
   }
 
   root.SlDepartureListAnim = {
-    FADE_MS: FADE_MS,
-    SLIDE_MS: SLIDE_MS,
+    EXIT_MS: EXIT_MS,
+    FADE_MS: EXIT_MS,
+    SLIDE_MS: EXIT_MS,
     departureKey: departureKey,
     animationCss: animationCss,
     manager: new Manager(),
