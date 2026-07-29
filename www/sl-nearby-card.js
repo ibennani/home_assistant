@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729i";
+    return "20260729k";
   }
 
   static getStubConfig() {
@@ -16,8 +16,8 @@ class SlNearbyCard extends HTMLElement {
       hide_departed: true,
       show_time_always: true,
       language: "sv-SE",
-      refresh_seconds: 30,
-      sites_cache_version: "20260729i",
+      refresh_seconds: 15,
+      sites_cache_version: "20260729k",
     };
   }
 
@@ -436,7 +436,7 @@ class SlNearbyCard extends HTMLElement {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
     }
-    if (!seconds || seconds < 15 || !this._openSiteId) {
+    if (!seconds || seconds < 10 || !this._openSiteId) {
       return;
     }
     const self = this;
@@ -445,6 +445,10 @@ class SlNearbyCard extends HTMLElement {
         self._loadDepartures(self._openSiteId, true);
       }
     }, seconds * 1000);
+  }
+
+  _hasDepartureCache(entry) {
+    return !!(entry && !entry.loading && (entry.fetched_at || entry.error));
   }
 
   _loadDepartures(siteId, force) {
@@ -457,17 +461,25 @@ class SlNearbyCard extends HTMLElement {
       return;
     }
     const existing = cache.get(cacheKey);
-    if (!force && existing && !existing.loading && (existing.fetched_at || existing.error)) {
+    if (!force && this._hasDepartureCache(existing)) {
       this._updateDeparturePanel(siteId);
       return;
     }
 
-    if (!this._departureInflight) {
-      this._departureInflight = {};
+    const showCachedWhileRefreshing = force && this._hasDepartureCache(existing);
+    if (!showCachedWhileRefreshing) {
+      if (!this._departureInflight) {
+        this._departureInflight = {};
+      }
+      this._departureInflight[cacheKey] = true;
+      cache.set(cacheKey, { loading: true });
+      this._updateDeparturePanel(siteId);
+    } else {
+      if (!this._departureInflight) {
+        this._departureInflight = {};
+      }
+      this._departureInflight[cacheKey] = true;
     }
-    this._departureInflight[cacheKey] = true;
-    cache.set(cacheKey, { loading: true });
-    this._updateDeparturePanel(siteId);
 
     const self = this;
     self
@@ -482,10 +494,14 @@ class SlNearbyCard extends HTMLElement {
         self._updateDeparturePanel(siteId);
       })
       .catch(function (error) {
-        cache.set(cacheKey, {
-          loading: false,
-          error: (error && error.message) || "Kunde inte hämta avgångar",
-        });
+        if (showCachedWhileRefreshing && existing) {
+          cache.set(cacheKey, Object.assign({}, existing, { loading: false }));
+        } else {
+          cache.set(cacheKey, {
+            loading: false,
+            error: (error && error.message) || "Kunde inte hämta avgångar",
+          });
+        }
         self._updateDeparturePanel(siteId);
       })
       .then(function () {
@@ -952,7 +968,7 @@ class SlNearbyCard extends HTMLElement {
     this._openSiteId = siteId;
     this._syncRefreshTimer();
     this._syncDepartureClock();
-    this._loadDepartures(siteId, false);
+    this._loadDepartures(siteId, true);
   }
 
   _onFilterInteraction(event) {

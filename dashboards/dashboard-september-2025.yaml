@@ -6638,7 +6638,7 @@ views:
       max_stops: 20
       max_gps_km: 200
       forecast_minutes: 60
-      refresh_seconds: 30
+      refresh_seconds: 15
       show_time_always: true
       grid_options:
         columns: full
