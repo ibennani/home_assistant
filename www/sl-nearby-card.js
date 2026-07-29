@@ -1648,6 +1648,13 @@ class SlNearbyCard extends HTMLElement {
         if (!self._lineRouteModalOpen) {
           return;
         }
+        const routeBack = self._modalRouteContext;
+        self._modalRouteContext = {
+          view: "departures",
+          stopName: name,
+          siteId: null,
+          routeBack: routeBack,
+        };
         self._setModalPanelInner(
           self._renderModalHeader("Avgångar · " + name, { showBack: true }) +
             '<div class="sl-line-route-meta error">' +
