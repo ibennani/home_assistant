@@ -5655,7 +5655,8 @@ views:
       - sensor.ilias_rum_temp_battery
       - sensor.framsidan_temperatur_batteri
       - sensor.temperature_539_battery
-      - sensor.youssef_test_1_battery
+      - entity: sensor.youssef_test_1_battery
+        name: Utomhus baksidan batteri
       - sensor.wc_temperatur_battery
       - sensor.annas_rum_temperatur_battery
       - sensor.koket_temperatur_battery
