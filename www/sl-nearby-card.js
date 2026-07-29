@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729g";
+    return "20260729h";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 30,
       walking_extra_minutes: 2,
-      sites_cache_version: "20260729g",
+      sites_cache_version: "20260729h",
     };
   }
 
@@ -1027,7 +1027,7 @@ class SlNearbyCard extends HTMLElement {
       walkNote +
       stopInfoBlock +
       filtersBlock +
-      '<div class="departures departures-list"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
+      '<div class="departures departures-list"><div class="row header"><div class="col icon"></div><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
       rows +
       "</div>"
     );
@@ -1214,32 +1214,34 @@ class SlNearbyCard extends HTMLElement {
 
   _styles() {
     return [
-      "ha-card{padding:0 0 12px}",
+      ":host{display:block;width:100%}",
+      "ha-card{padding:0 0 12px;width:100%;box-sizing:border-box;display:block}",
+      ".sl-card-root{width:100%;box-sizing:border-box}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
-      ".stop-accordion{border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
-      ".stop-summary{list-style:none;padding:0;cursor:pointer}",
+      ".stop-accordion{width:100%;box-sizing:border-box;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
+      ".stop-summary{list-style:none;padding:0;cursor:pointer;width:100%;box-sizing:border-box}",
       ".stop-summary::-webkit-details-marker{display:none}",
-      ".stop-summary-content{padding:0}",
-      ".stop-header-row{display:flex;align-items:flex-start;gap:12px;padding-right:16px}",
+      ".stop-summary-content{padding:0;width:100%;box-sizing:border-box}",
+      ".stop-header-row{display:flex;align-items:flex-start;gap:12px;padding:0 16px;width:100%;box-sizing:border-box}",
       ".stop-header-row .card-header{flex:1;min-width:0;margin:0}",
       ".card-header .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
-      ".stop-distance{color:var(--secondary-text-color);white-space:nowrap;padding-top:16px}",
-      ".mode-filters-wrap{padding:0 8px 12px}",
+      ".stop-distance{color:var(--secondary-text-color);white-space:nowrap;padding-top:16px;flex-shrink:0}",
+      ".mode-filters-wrap{padding:0 16px 12px;width:100%;box-sizing:border-box}",
       ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
       ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
       ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
       ".walk-note{padding:0 16px 8px;color:var(--secondary-text-color);font-size:smaller}",
-      ".stop-body{padding:0 8px 12px}",
-      ".departures-empty,.departures-error{padding:8px 16px 12px;color:var(--secondary-text-color)}",
+      ".stop-body{padding:0 16px 12px;width:100%;box-sizing:border-box}",
+      ".departures-empty,.departures-error{padding:8px 0 12px;color:var(--secondary-text-color)}",
       ".departures-error{color:var(--error-color)}",
-      ".row{margin-top:8px;display:flex;justify-content:space-between}",
-      ".col{display:flex;flex-direction:column;justify-content:center;position:relative}",
-      ".col.icon{flex-basis:40px}",
+      ".departures.departures-list{width:100%;box-sizing:border-box}",
+      ".row{margin-top:8px;display:grid;grid-template-columns:40px 40px minmax(0,1fr) auto;align-items:center;width:100%;box-sizing:border-box}",
+      ".col{display:flex;flex-direction:column;justify-content:center;position:relative;min-width:0}",
       ".row.header{height:40px;font-size:medium;font-weight:400;opacity:var(--dark-primary-opacity)}",
-      ".main{flex:2}",
-      ".transport-icon{width:40px;height:40px;display:inline-flex;justify-content:center;align-items:center}",
-      ".line-icon{border-radius:3px;padding:3px 3px 0 3px;color:#fff;min-width:22px;height:22px;font-weight:500;display:inline-block;text-align:center;text-shadow:1px 1px 2px var(--outline-color)}",
+      ".main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+      ".transport-icon{width:40px;height:40px;display:inline-flex;justify-content:center;align-items:center;flex-shrink:0}",
+      ".line-icon{border-radius:3px;padding:3px 3px 0 3px;color:#fff;width:36px;min-width:36px;height:22px;font-weight:500;display:inline-block;text-align:center;box-sizing:border-box;text-shadow:1px 1px 2px var(--outline-color)}",
       ".bus{border:1px solid var(--outline-color);color:var(--primary-text-color)}",
       ".bus_red,.bus.red,.red{background-color:#9e0e13;color:#fff;border:none}",
       ".blue{background-color:#0089ca}",
@@ -1248,12 +1250,12 @@ class SlNearbyCard extends HTMLElement {
       ".train{background:#ec619f}",
       ".tram{background:#985141}",
       ".warning-message{color:var(--warning-color);font-size:smaller}",
-      ".departure-block{margin-top:8px;border-radius:6px}",
+      ".departure-block{margin-top:8px;border-radius:6px;width:100%;box-sizing:border-box}",
       ".departure-block .row.departure{margin-top:0}",
-      ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px}",
+      ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px;width:100%;box-sizing:border-box}",
       ".detail-item{font-size:smaller;line-height:1.35}",
       ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
-      ".stop-info{margin:0 8px 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
+      ".stop-info{margin:0 0 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
       ".stop-info-item{color:#fad370!important}",
       ".stop-info-item+.stop-info-item{margin-top:6px}",
       ".short-train{color:#0abcfc;font-size:smaller;font-weight:600;margin-left:.35em;text-transform:lowercase}",
@@ -1262,7 +1264,7 @@ class SlNearbyCard extends HTMLElement {
       ".delay-min{color:#0abcfc;font-weight:600}",
       ".departure-now{color:#fad370!important;font-weight:600}",
       ".cancelled-time{color:#e53935;font-weight:600}",
-      ".leaves-in{white-space:nowrap}",
+      ".leaves-in{white-space:nowrap;min-width:5.5rem;text-align:right;display:inline-block}",
       ".mr1{margin-right:8px}",
       ".left{text-align:left}",
       ".right{text-align:right}",
