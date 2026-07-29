@@ -6,7 +6,7 @@ resources:
     type: module
   - url: /local/sl-departure-list-animation.js?v=20260729e
     type: module
-  - url: /local/sl-nearby-card.js?v=20260729g
+  - url: /local/sl-nearby-card.js?v=20260729h
     type: module
   - url: /local/sl-stop-departures-card.js?v=20260729g
     type: module
