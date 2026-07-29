@@ -54,7 +54,7 @@ resources:
   type: module
 - url: /local/sl-departure-time.js?v=20260729d
   type: module
-- url: /local/sl-departure-list-animation.js?v=20260729d
+- url: /local/sl-departure-list-animation.js?v=20260729e
   type: module
 - url: /local/sl-nearby-card.js?v=20260729d
   type: module
