@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729o";
+    return "20260729p";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729o",
+      sites_cache_version: "20260729p",
     };
   }
 
@@ -63,11 +63,21 @@ class SlNearbyCard extends HTMLElement {
       this._cardVersion = SlNearbyCard.CARD_VERSION;
       this._lastListKey = null;
     }
+    if (!this._clickListenerAttached) {
+      this._clickListenerAttached = true;
+      this._boundCardClick = (event) => this._onCardClick(event);
+      this.addEventListener("click", this._boundCardClick, true);
+    }
     this._ensureSitesLoaded().then(() => this._updateView());
     this._syncRefreshTimer();
   }
 
   disconnectedCallback() {
+    if (this._boundCardClick) {
+      this.removeEventListener("click", this._boundCardClick, true);
+      this._boundCardClick = undefined;
+      this._clickListenerAttached = false;
+    }
     if (this._refreshTimer) {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
@@ -1167,12 +1177,103 @@ class SlNearbyCard extends HTMLElement {
     return -1;
   }
 
+  _getModalRoot() {
+    return document.body || this;
+  }
+
   _closeLineRouteModal() {
-    const modal = this.querySelector(".sl-line-route-modal");
+    const modal = document.querySelector(".sl-line-route-modal[data-sl-card-id='" + this._modalOwnerId + "']");
     if (modal) {
       modal.remove();
     }
     this._lineRouteModalOpen = false;
+  }
+
+  _ensureModalOwnerId() {
+    if (!this._modalOwnerId) {
+      this._modalOwnerId = "sl-nearby-" + String(Date.now()) + "-" + String(Math.random()).slice(2, 8);
+    }
+    return this._modalOwnerId;
+  }
+
+  _wrapModalHtml(html) {
+    return html.replace(
+      'class="sl-line-route-modal"',
+      'class="sl-line-route-modal" data-sl-card-id="' + this._escapeHtml(this._ensureModalOwnerId()) + '"',
+    );
+  }
+
+  _showModalMessage(title, message, isError) {
+    const self = this;
+    self._closeLineRouteModal();
+    self._lineRouteModalOpen = true;
+    const html =
+      '<div class="sl-line-route-modal" role="dialog" aria-modal="true" data-sl-card-id="' +
+      self._escapeHtml(self._ensureModalOwnerId()) +
+      '">' +
+      '<div class="sl-line-route-backdrop" data-action="close-line-route"></div>' +
+      '<div class="sl-line-route-panel">' +
+      '<div class="sl-line-route-header">' +
+      '<div class="sl-line-route-title">' +
+      self._escapeHtml(title) +
+      "</div>" +
+      '<button type="button" class="sl-line-route-close" data-action="close-line-route" aria-label="Stäng">×</button>' +
+      "</div>" +
+      '<div class="sl-line-route-meta' +
+      (isError ? " error" : "") +
+      '">' +
+      self._escapeHtml(message) +
+      "</div></div></div>";
+    self._getModalRoot().insertAdjacentHTML("beforeend", html);
+    const modal = self._getModalRoot().querySelector(
+      '.sl-line-route-modal[data-sl-card-id="' + self._modalOwnerId + '"]',
+    );
+    if (modal && !modal.dataset.clickBound) {
+      modal.dataset.clickBound = "1";
+      modal.addEventListener("click", function (event) {
+        self._onDepartureClick(event);
+      }, true);
+    }
+  }
+
+  _findDepartureByKey(siteId, departureKey) {
+    const anim = window.SlDepartureListAnim;
+    if (anim && anim.manager && anim.manager._scopes) {
+      const scope = anim.manager._scopes.get(String(siteId));
+      if (scope && scope.lastDepsByKey && scope.lastDepsByKey.has(departureKey)) {
+        return scope.lastDepsByKey.get(departureKey);
+      }
+    }
+    const cache = this._getCache().get(String(siteId));
+    if (!cache || !cache.departures) {
+      return null;
+    }
+    const departures = cache.departures;
+    for (let i = 0; i < departures.length; i++) {
+      const dep = departures[i];
+      const key =
+        anim && anim.departureKey ? anim.departureKey(dep) : String(i);
+      if (String(key) === String(departureKey)) {
+        return dep;
+      }
+    }
+    return null;
+  }
+
+  _insertModal(html) {
+    const self = this;
+    const root = self._getModalRoot();
+    root.insertAdjacentHTML("beforeend", self._wrapModalHtml(html));
+    const modal = root.querySelector(
+      '.sl-line-route-modal[data-sl-card-id="' + self._modalOwnerId + '"]',
+    );
+    if (modal && !modal.dataset.clickBound) {
+      modal.dataset.clickBound = "1";
+      modal.addEventListener("click", function (event) {
+        self._onDepartureClick(event);
+      }, true);
+    }
+    return modal;
   }
 
   _renderDepartureStopsModal(stops, dep, siteId, siteName) {
@@ -1232,18 +1333,17 @@ class SlNearbyCard extends HTMLElement {
     }
     self._closeLineRouteModal();
     self._lineRouteModalOpen = true;
-    const loadingHtml =
+    self._insertModal(
       '<div class="sl-line-route-modal" role="dialog" aria-modal="true">' +
-      '<div class="sl-line-route-backdrop" data-action="close-line-route"></div>' +
-      '<div class="sl-line-route-panel">' +
-      '<div class="sl-line-route-header">' +
-      '<div class="sl-line-route-title">Hämtar hållplatser…</div>' +
-      '<button type="button" class="sl-line-route-close" data-action="close-line-route" aria-label="Stäng">×</button>' +
-      "</div>" +
-      '<div class="sl-line-route-meta">Slår upp kvarvarande hållplatser</div>' +
-      "</div></div>";
-    const card = this.querySelector("ha-card") || this;
-    card.insertAdjacentHTML("beforeend", loadingHtml);
+        '<div class="sl-line-route-backdrop" data-action="close-line-route"></div>' +
+        '<div class="sl-line-route-panel">' +
+        '<div class="sl-line-route-header">' +
+        '<div class="sl-line-route-title">Hämtar hållplatser…</div>' +
+        '<button type="button" class="sl-line-route-close" data-action="close-line-route" aria-label="Stäng">×</button>' +
+        "</div>" +
+        '<div class="sl-line-route-meta">Slår upp kvarvarande hållplatser</div>' +
+        "</div></div>",
+    );
 
     self
       ._fetchDepartureStops(dep, siteId, siteName)
@@ -1253,61 +1353,26 @@ class SlNearbyCard extends HTMLElement {
         }
         self._closeLineRouteModal();
         if (!stops || !stops.length) {
-          const message =
-            '<div class="sl-line-route-modal" role="dialog" aria-modal="true">' +
-            '<div class="sl-line-route-backdrop" data-action="close-line-route"></div>' +
-            '<div class="sl-line-route-panel">' +
-            '<div class="sl-line-route-header">' +
-            '<div class="sl-line-route-title">Linje ' +
-            self._escapeHtml((dep.line && dep.line.designation) || "") +
-            "</div>" +
-            '<button type="button" class="sl-line-route-close" data-action="close-line-route" aria-label="Stäng">×</button>' +
-            "</div>" +
-            '<div class="sl-line-route-meta">Inga kvarvarande hållplatser hittades för den här avgången.</div>' +
-            "</div></div>";
-          card.insertAdjacentHTML("beforeend", message);
+          self._showModalMessage(
+            "Linje " + ((dep.line && dep.line.designation) || ""),
+            "Inga kvarvarande hållplatser hittades för den här avgången.",
+            false,
+          );
           return;
         }
-        card.insertAdjacentHTML("beforeend", self._renderDepartureStopsModal(stops, dep, siteId, siteName));
+        self._lineRouteModalOpen = true;
+        self._insertModal(self._renderDepartureStopsModal(stops, dep, siteId, siteName));
       })
       .catch(function (error) {
         if (!self._lineRouteModalOpen) {
           return;
         }
-        self._closeLineRouteModal();
-        const message =
-          '<div class="sl-line-route-modal" role="dialog" aria-modal="true">' +
-          '<div class="sl-line-route-backdrop" data-action="close-line-route"></div>' +
-          '<div class="sl-line-route-panel">' +
-          '<div class="sl-line-route-header">' +
-          '<div class="sl-line-route-title">Linje ' +
-          self._escapeHtml((dep.line && dep.line.designation) || "") +
-          "</div>" +
-          '<button type="button" class="sl-line-route-close" data-action="close-line-route" aria-label="Stäng">×</button>' +
-          "</div>" +
-          '<div class="sl-line-route-meta error">' +
-          self._escapeHtml((error && error.message) || "Kunde inte hämta hållplatser") +
-          "</div></div></div>";
-        card.insertAdjacentHTML("beforeend", message);
+        self._showModalMessage(
+          "Linje " + ((dep.line && dep.line.designation) || ""),
+          (error && error.message) || "Kunde inte hämta hållplatser",
+          true,
+        );
       });
-  }
-
-  _findDepartureByKey(siteId, departureKey) {
-    const cache = this._getCache().get(String(siteId));
-    if (!cache || !cache.departures) {
-      return null;
-    }
-    const anim = window.SlDepartureListAnim;
-    const departures = cache.departures;
-    for (let i = 0; i < departures.length; i++) {
-      const dep = departures[i];
-      const key =
-        anim && anim.departureKey ? anim.departureKey(dep) : String(i);
-      if (String(key) === String(departureKey)) {
-        return dep;
-      }
-    }
-    return null;
   }
 
   _getSiteName(siteId) {
@@ -1324,7 +1389,7 @@ class SlNearbyCard extends HTMLElement {
 
   _onDepartureClick(event) {
     const closeTarget = event.target.closest("[data-action='close-line-route']");
-    if (closeTarget && this.contains(closeTarget)) {
+    if (closeTarget) {
       event.preventDefault();
       event.stopPropagation();
       this._closeLineRouteModal();
@@ -1345,6 +1410,7 @@ class SlNearbyCard extends HTMLElement {
     const departureKey = block.dataset.departureKey;
     const dep = this._findDepartureByKey(siteId, departureKey);
     if (!dep) {
+      this._showModalMessage("Avgång", "Kunde inte läsa avgången. Försök igen om en stund.", true);
       return;
     }
     this._openLineRouteModal(dep, siteId, this._getSiteName(siteId));
@@ -1439,7 +1505,6 @@ class SlNearbyCard extends HTMLElement {
       root = this.querySelector(".sl-card-root");
       root.addEventListener("toggle", (event) => this._onToggle(event), true);
       root.addEventListener("mousedown", (event) => this._onFilterInteraction(event), true);
-      root.addEventListener("click", (event) => this._onCardClick(event), true);
       this._lastListKey = null;
     }
 
@@ -1568,7 +1633,7 @@ class SlNearbyCard extends HTMLElement {
       ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height .5s ease,margin-top .5s ease,opacity .5s ease}",
       ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
       "ha-icon{width:24px;height:24px;color:var(--paper-item-icon-color)}",
-      ".sl-line-route-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-end;justify-content:center}",
+      ".sl-line-route-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-end;justify-content:center}",
       ".sl-line-route-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55)}",
       ".sl-line-route-panel{position:relative;width:min(100%,520px);max-height:min(80vh,720px);overflow:hidden;display:flex;flex-direction:column;background:var(--card-background-color,#1c1c1c);border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.35);margin:0 0 env(safe-area-inset-bottom,0)}",
       ".sl-line-route-header{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 8px;border-bottom:1px solid var(--divider-color,rgba(255,255,255,.12))}",
