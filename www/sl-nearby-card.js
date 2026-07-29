@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729w";
+    return "20260729x";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729w",
+      sites_cache_version: "20260729x",
     };
   }
 
@@ -65,7 +65,7 @@ class SlNearbyCard extends HTMLElement {
     }
     this._busLineTerminusBound = true;
     const self = this;
-    api.ensureBusLineTerminus("20260729w").then(function () {
+    api.ensureBusLineTerminus("20260729x").then(function () {
       self._updateView();
     });
   }
@@ -1311,11 +1311,18 @@ class SlNearbyCard extends HTMLElement {
       ".sl-line-route-meta.error{color:var(--error-color,#e53935)}",
       ".line-route-stops{list-style:none;margin:0;padding:8px 0 16px;overflow-y:auto}",
       ".line-route-stop{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--divider-color,rgba(255,255,255,.08))}",
+      ".line-route-stop.is-clickable{cursor:pointer;touch-action:manipulation}",
+      ".line-route-stop.is-clickable:hover{background:rgba(255,255,255,.04)}",
       ".line-route-stop.is-current{background:rgba(250,211,112,.12)}",
       ".line-route-stop.is-current .line-route-stop-name{color:#fad370;font-weight:600}",
       ".line-route-stop.is-destination .line-route-stop-name{font-weight:600}",
       ".line-route-stop-index{width:1.5rem;color:var(--secondary-text-color,#bbb);font-size:.85rem;text-align:right;flex-shrink:0}",
       ".line-route-stop-name{flex:1;min-width:0}",
+      ".sl-line-route-back-btn{border:0;background:transparent;color:var(--primary-text-color,#fff);font-size:1.25rem;line-height:1;cursor:pointer;padding:0 4px 0 0;flex-shrink:0}",
+      ".modal-departures-wrap{overflow-y:auto;max-height:calc(min(80vh,720px) - 88px)}",
+      ".modal-departures-wrap .departures-list{padding:0 16px 16px}",
+      ".modal-departures-wrap .departure-block{margin-top:4px}",
+      ".modal-departures-empty{padding:16px;color:var(--secondary-text-color)}",
     ].join("");
   }
 
@@ -1341,6 +1348,7 @@ class SlNearbyCard extends HTMLElement {
       modal.remove();
     }
     this._lineRouteModalOpen = false;
+    this._modalRouteContext = null;
   }
 
   _ensureModalOwnerId() {
@@ -1379,15 +1387,11 @@ class SlNearbyCard extends HTMLElement {
       self._escapeHtml(message) +
       "</div></div></div>";
     self._getModalRoot().insertAdjacentHTML("beforeend", html);
-    const modal = self._getModalRoot().querySelector(
-      '.sl-line-route-modal[data-sl-card-id="' + self._modalOwnerId + '"]',
+    self._bindModalClicks(
+      self._getModalRoot().querySelector(
+        '.sl-line-route-modal[data-sl-card-id="' + self._modalOwnerId + '"]',
+      ),
     );
-    if (modal && !modal.dataset.clickBound) {
-      modal.dataset.clickBound = "1";
-      modal.addEventListener("click", function (event) {
-        self._onDepartureClick(event);
-      }, true);
-    }
   }
 
   _findDepartureByKey(siteId, departureKey) {
@@ -1421,23 +1425,64 @@ class SlNearbyCard extends HTMLElement {
     const modal = root.querySelector(
       '.sl-line-route-modal[data-sl-card-id="' + self._modalOwnerId + '"]',
     );
-    if (modal && !modal.dataset.clickBound) {
-      modal.dataset.clickBound = "1";
-      modal.addEventListener("click", function (event) {
-        self._onDepartureClick(event);
-      }, true);
-    }
+    self._bindModalClicks(modal);
     return modal;
   }
 
-  _renderDepartureStopsModal(stops, dep, siteId, siteName) {
+  _getActiveModal() {
+    return document.querySelector('.sl-line-route-modal[data-sl-card-id="' + this._modalOwnerId + '"]');
+  }
+
+  _bindModalClicks(modal) {
+    const self = this;
+    if (!modal || modal.dataset.clickBound) {
+      return;
+    }
+    modal.dataset.clickBound = "1";
+    modal.addEventListener(
+      "click",
+      function (event) {
+        self._onModalClick(event);
+      },
+      true,
+    );
+  }
+
+  _setModalPanelInner(html) {
+    const modal = this._getActiveModal();
+    const panel = modal && modal.querySelector(".sl-line-route-panel");
+    if (panel) {
+      panel.innerHTML = html;
+    }
+  }
+
+  _renderModalHeader(title, options) {
+    const opts = options || {};
+    const self = this;
+    let backBtn = "";
+    if (opts.showBack) {
+      backBtn =
+        '<button type="button" class="sl-line-route-back-btn" data-action="modal-route-back" aria-label="Tillbaka">←</button>';
+    }
+    return (
+      '<div class="sl-line-route-header">' +
+      backBtn +
+      '<div class="sl-line-route-title">' +
+      self._escapeHtml(title) +
+      "</div>" +
+      '<button type="button" class="sl-line-route-close" data-action="close-line-route" aria-label="Stäng">×</button>' +
+      "</div>"
+    );
+  }
+
+  _renderDepartureStopsPanelInner(stops, dep, siteId, siteName) {
     const self = this;
     const line = (dep && dep.line) || {};
     const designation = line.designation || "";
     const destination = self._formatDepartureLabel(dep);
     const stopItems = (stops || [])
       .map(function (stop, index) {
-        let className = "line-route-stop";
+        let className = "line-route-stop is-clickable";
         if (index === 0) {
           className += " is-current";
         }
@@ -1447,7 +1492,10 @@ class SlNearbyCard extends HTMLElement {
         return (
           '<li class="' +
           className +
-          '"><span class="line-route-stop-index">' +
+          '" data-action="open-stop-departures" data-stop-name="' +
+          self._escapeHtml(stop.name || "") +
+          '" role="button" tabindex="0" title="Visa avgångar">' +
+          '<span class="line-route-stop-index">' +
           String(index + 1) +
           '</span><span class="line-route-stop-name">' +
           self._escapeHtml(stop.name || "") +
@@ -1457,27 +1505,206 @@ class SlNearbyCard extends HTMLElement {
       .join("");
 
     return (
-      '<div class="sl-line-route-modal" role="dialog" aria-modal="true">' +
-      '<div class="sl-line-route-backdrop" data-action="close-line-route"></div>' +
-      '<div class="sl-line-route-panel">' +
-      '<div class="sl-line-route-header">' +
-      '<div class="sl-line-route-title">Linje ' +
-      self._escapeHtml(designation) +
-      " mot " +
-      self._escapeHtml(destination) +
-      "</div>" +
-      '<button type="button" class="sl-line-route-close" data-action="close-line-route" aria-label="Stäng">×</button>' +
-      "</div>" +
+      self._renderModalHeader("Linje " + designation + " mot " + destination) +
       '<div class="sl-line-route-meta">' +
       stops.length +
       " hållplatser kvar" +
       (stops[0] ? " · från " + self._escapeHtml(stops[0].name || siteName || "") : "") +
-      "</div>" +
+      " · klicka för avgångar</div>" +
       '<ol class="line-route-stops">' +
       stopItems +
-      "</ol>" +
+      "</ol>"
+    );
+  }
+
+  _renderDepartureStopsModal(stops, dep, siteId, siteName) {
+    const self = this;
+    return (
+      '<div class="sl-line-route-modal" role="dialog" aria-modal="true">' +
+      '<div class="sl-line-route-backdrop" data-action="close-line-route"></div>' +
+      '<div class="sl-line-route-panel">' +
+      self._renderDepartureStopsPanelInner(stops, dep, siteId, siteName) +
       "</div></div>"
     );
+  }
+
+  _renderModalDeparturesLoading(stopName) {
+    return (
+      this._renderModalHeader("Avgångar · " + stopName) +
+      '<div class="sl-line-route-meta">Hämtar avgångar…</div>'
+    );
+  }
+
+  _renderModalDeparturesPanel(stopName, siteId, departures, stopDeviations) {
+    const self = this;
+    const now = new Date();
+    const anim = window.SlDepartureListAnim;
+    let body = "";
+    const stopInfo = (stopDeviations || [])
+      .map(function (dev) {
+        return (
+          '<div class="stop-info-item">' +
+          self._escapeHtml(dev.message || dev.text || dev.title || "") +
+          "</div>"
+        );
+      })
+      .join("");
+    if (stopInfo) {
+      body += '<div class="stop-info">' + stopInfo + "</div>";
+    }
+    if (!departures || !departures.length) {
+      body +=
+        '<div class="modal-departures-empty">Inga avgångar inom ' +
+        String((self.config && self.config.forecast_minutes) || 60) +
+        " min.</div>";
+    } else {
+      let rows = "";
+      for (let i = 0; i < departures.length; i++) {
+        const dep = departures[i];
+        const key =
+          anim && anim.departureKey ? anim.departureKey(dep) : String(i);
+        rows += self._renderDepartureRow(dep, "", key, now, siteId);
+      }
+      body +=
+        '<div class="departures departures-list modal-departures-list">' +
+        '<div class="row header"><div class="col icon"></div><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
+        rows +
+        "</div>";
+    }
+    return (
+      self._renderModalHeader("Avgångar · " + stopName, { showBack: true }) +
+      '<div class="sl-line-route-meta">' +
+      (departures ? departures.length : 0) +
+      " avgångar inom " +
+      String((self.config && self.config.forecast_minutes) || 60) +
+      " min</div>" +
+      '<div class="modal-departures-wrap">' +
+      body +
+      "</div>"
+    );
+  }
+
+  _restoreModalRouteStops() {
+    const ctx = this._modalRouteContext;
+    if (!ctx || ctx.view !== "departures" || !ctx.routeBack) {
+      return;
+    }
+    const back = ctx.routeBack;
+    this._modalRouteContext = back;
+    this._setModalPanelInner(
+      this._renderDepartureStopsPanelInner(back.stops, back.dep, back.siteId, back.siteName),
+    );
+  }
+
+  _openStopDeparturesInModal(stopName) {
+    const self = this;
+    const name = String(stopName || "").trim();
+    if (!name) {
+      return;
+    }
+    self._setModalPanelInner(self._renderModalDeparturesLoading(name));
+    self
+      ._ensureSitesLoaded()
+      .then(function () {
+        const siteId = self._resolveSiteIdByName(name);
+        if (!siteId) {
+          throw new Error("Kunde inte hitta hållplatsen " + name);
+        }
+        return self._callDepartures(siteId).then(function (payload) {
+          return {
+            siteId: siteId,
+            payload: payload,
+          };
+        });
+      })
+      .then(function (result) {
+        if (!self._lineRouteModalOpen) {
+          return;
+        }
+        const departures = self._prepareDepartures(result.payload.departures || []);
+        self._getCache().set(String(result.siteId), {
+          loading: false,
+          departures: departures,
+          stop_deviations: result.payload.stop_deviations || [],
+          fetched_at: Date.now(),
+        });
+        const routeBack = self._modalRouteContext;
+        self._modalRouteContext = {
+          view: "departures",
+          stopName: name,
+          siteId: result.siteId,
+          routeBack: routeBack,
+        };
+        self._setModalPanelInner(
+          self._renderModalDeparturesPanel(
+            name,
+            result.siteId,
+            departures,
+            result.payload.stop_deviations || [],
+          ),
+        );
+      })
+      .catch(function (error) {
+        if (!self._lineRouteModalOpen) {
+          return;
+        }
+        self._setModalPanelInner(
+          self._renderModalHeader("Avgångar · " + name, { showBack: true }) +
+            '<div class="sl-line-route-meta error">' +
+            self._escapeHtml((error && error.message) || "Kunde inte hämta avgångar") +
+            "</div>",
+        );
+      });
+  }
+
+  _onModalClick(event) {
+    const closeTarget = event.target.closest("[data-action='close-line-route']");
+    if (closeTarget) {
+      event.preventDefault();
+      event.stopPropagation();
+      this._closeLineRouteModal();
+      return;
+    }
+
+    const backTarget = event.target.closest("[data-action='modal-route-back']");
+    if (backTarget) {
+      event.preventDefault();
+      event.stopPropagation();
+      this._restoreModalRouteStops();
+      return;
+    }
+
+    const stopTarget = event.target.closest("[data-action='open-stop-departures']");
+    if (stopTarget) {
+      event.preventDefault();
+      event.stopPropagation();
+      this._openStopDeparturesInModal(stopTarget.getAttribute("data-stop-name"));
+      return;
+    }
+
+    const block = event.target.closest(".departure-block");
+    if (!block || !block.closest(".sl-line-route-modal")) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const siteId = Number(block.getAttribute("data-site-id"));
+    const departureKey = block.getAttribute("data-departure-key");
+    if (!siteId || !departureKey) {
+      this._showModalMessage("Avgång", "Kunde inte läsa avgången.", true);
+      return;
+    }
+
+    this._showModalMessage("Avgång", "Hämtar hållplatser…", false);
+
+    const dep = this._findDepartureByKey(siteId, departureKey);
+    if (!dep) {
+      this._showModalMessage("Avgång", "Kunde inte läsa avgången. Försök igen om en stund.", true);
+      return;
+    }
+    this._openLineRouteModal(dep, siteId, this._getSiteName(siteId));
   }
 
   _openLineRouteModal(dep, siteId, siteName) {
@@ -1515,6 +1742,13 @@ class SlNearbyCard extends HTMLElement {
           return;
         }
         self._lineRouteModalOpen = true;
+        self._modalRouteContext = {
+          view: "stops",
+          stops: stops,
+          dep: dep,
+          siteId: siteId,
+          siteName: siteName,
+        };
         self._insertModal(self._renderDepartureStopsModal(stops, dep, siteId, siteName));
       })
       .catch(function (error) {
@@ -1542,11 +1776,8 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _onDepartureClick(event) {
-    const closeTarget = event.target.closest("[data-action='close-line-route']");
-    if (closeTarget) {
-      event.preventDefault();
-      event.stopPropagation();
-      this._closeLineRouteModal();
+    if (event.target.closest(".sl-line-route-modal")) {
+      this._onModalClick(event);
       return;
     }
 
