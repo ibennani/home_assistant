@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260728s";
+    return "20260729a";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260728s",
+      sites_cache_version: "20260729a",
     };
   }
 
@@ -615,6 +615,30 @@ class SlNearbyCard extends HTMLElement {
     return state === "CANCELLED" || state === "INHIBITED" || journeyState === "CANCELLED";
   }
 
+  _isDeparted(expectedAt, now) {
+    if (window.SlDepartureTime && window.SlDepartureTime.isDeparted) {
+      return window.SlDepartureTime.isDeparted(expectedAt, now);
+    }
+    return expectedAt ? this._diffMinutes(expectedAt, now) < 0 : false;
+  }
+
+  _formatDepartureDisplay(scheduledAt, expectedAt, now) {
+    const self = this;
+    if (window.SlDepartureTime && window.SlDepartureTime.formatHtml) {
+      return window.SlDepartureTime.formatHtml(scheduledAt, expectedAt, now, function (date) {
+        return self._formatClock(date);
+      });
+    }
+    if (!expectedAt) {
+      return "";
+    }
+    const diff = self._diffMinutes(expectedAt, now);
+    if (diff <= 0) {
+      return '<span class="departure-now">Nu</span>';
+    }
+    return self._formatClock(expectedAt);
+  }
+
   _isDelayed(scheduledAt, expectedAt) {
     if (!scheduledAt || !expectedAt) {
       return false;
@@ -820,11 +844,8 @@ class SlNearbyCard extends HTMLElement {
       const dep = departures[i];
       const scheduledAt = self._parseDate(dep.scheduled);
       const expectedAt = self._parseDate(dep.expected) || scheduledAt;
-      const diff = expectedAt ? self._diffMinutes(expectedAt, now) : 0;
-      const isAtPlatform = diff === 0;
-      const isDeparted = diff < 0;
+      const isDeparted = self._isDeparted(expectedAt, now);
       const isCancelled = self._isCancelled(dep);
-      const isDelayed = !isCancelled && self._isDelayed(scheduledAt, expectedAt);
       const detailItems = self._buildDepartureDetailItems(dep);
       const unreachable =
         walkMinutes && !isDeparted && !isCancelled && !self._canCatchDeparture(dep, walkMinutes);
@@ -832,24 +853,8 @@ class SlNearbyCard extends HTMLElement {
       let departureTime = "";
       if (isCancelled) {
         departureTime = '<span class="cancelled-time">Inställd</span>';
-      } else if (isDelayed && scheduledAt && expectedAt) {
-        const newTime = self.config.show_time_always
-          ? self._formatClock(expectedAt)
-          : isAtPlatform
-            ? "Nu"
-            : self._formatClock(expectedAt);
-        departureTime =
-          '<span class="old-time">' +
-          self._formatClock(scheduledAt) +
-          '</span><span class="new-time">' +
-          newTime +
-          "</span>";
       } else if (expectedAt) {
-        departureTime = self.config.show_time_always
-          ? self._formatClock(expectedAt)
-          : isAtPlatform
-            ? "Nu"
-            : self._formatClock(expectedAt);
+        departureTime = self._formatDepartureDisplay(scheduledAt, expectedAt, now);
       }
 
       const line = dep.line || {};
@@ -1105,6 +1110,8 @@ class SlNearbyCard extends HTMLElement {
       ".short-train{color:#0abcfc;font-size:smaller;font-weight:600;margin-left:.35em;text-transform:lowercase}",
       ".old-time{text-decoration:line-through;opacity:.65;margin-right:.35em}",
       ".new-time{color:#0abcfc;font-weight:600}",
+      ".delay-min{color:#0abcfc;font-weight:600}",
+      ".departure-now{color:#fad370!important;font-weight:600}",
       ".cancelled-time{color:#e53935;font-weight:600}",
       ".leaves-in{white-space:nowrap}",
       ".mr1{margin-right:8px}",
