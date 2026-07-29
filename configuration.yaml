@@ -32,11 +32,7 @@ cloud:
 config:
 energy:
 frontend:
-  extra_module_url:
-    - /local/sl-departure-time.js?v=20260729c
-    - /local/sl-departure-list-animation.js?v=20260729c
-    - /local/sl-nearby-card.js?v=20260729c
-    - /local/sl-stop-departures-card.js?v=20260729c
+  # SL-kort laddas via dashboard-resurser (includes/lovelace.yaml), inte globalt.
 group: !include groups.yaml
 history:
 input_boolean: !include input_boolean.yaml
