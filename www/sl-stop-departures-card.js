@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729b";
+    return "20260729c";
   }
 
   static getStubConfig() {
@@ -66,6 +66,7 @@ class SlStopDeparturesCard extends HTMLElement {
     }
     this._loadData(false);
     this._syncRefreshTimer();
+    this._syncDepartureClock();
   }
 
   disconnectedCallback() {
@@ -73,6 +74,21 @@ class SlStopDeparturesCard extends HTMLElement {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
     }
+    if (this._departureClockTimer) {
+      clearInterval(this._departureClockTimer);
+      this._departureClockTimer = undefined;
+    }
+  }
+
+  _syncDepartureClock() {
+    if (this._departureClockTimer) {
+      clearInterval(this._departureClockTimer);
+      this._departureClockTimer = undefined;
+    }
+    const self = this;
+    this._departureClockTimer = window.setInterval(function () {
+      self._updateView();
+    }, 5000);
   }
 
   getCardSize() {
@@ -772,6 +788,9 @@ class SlStopDeparturesCard extends HTMLElement {
     event.preventDefault();
     event.stopPropagation();
     this._modeFilter = button.dataset.mode || "ALL";
+    if (window.SlDepartureListAnim) {
+      window.SlDepartureListAnim.manager.resetScope(this._animScopeId());
+    }
     this._updateView();
   }
 
@@ -795,6 +814,109 @@ class SlStopDeparturesCard extends HTMLElement {
         .join("") +
       "</div>"
     );
+  }
+
+  _animScopeId() {
+    return "stop-" + String((this.config && this.config.site_id) || "main");
+  }
+
+  _renderDepartureRow(dep, extraClass, key, now) {
+    const self = this;
+    const scheduledAt = self._parseDate(dep.scheduled);
+    const expectedAt = self._parseDate(dep.expected) || scheduledAt;
+    const isCancelled = self._isCancelled(dep);
+    const detailItems = self._buildDepartureDetailItems(dep);
+
+    let departureTime = "";
+    if (isCancelled) {
+      departureTime = '<span class="cancelled-time">Inställd</span>';
+    } else if (expectedAt) {
+      departureTime = self._formatDepartureDisplay(scheduledAt, expectedAt, now);
+    }
+
+    const line = dep.line || {};
+    const icon = self._transportIcon(line.transport_mode);
+    const lineClass = self._lineIconClass(
+      line.transport_mode,
+      line.designation,
+      line.group_of_lines,
+    );
+    const detailMeta = self._renderDepartureMeta(detailItems);
+
+    return (
+      '<div class="departure-block' +
+      (extraClass || "") +
+      '" data-departure-key="' +
+      self._escapeHtml(key) +
+      '"><div class="row departure">' +
+      '<div class="col icon"><ha-icon class="transport-icon" icon="' +
+      icon +
+      '"></ha-icon></div>' +
+      '<div class="col icon"><span class="line-icon mr1 ' +
+      lineClass +
+      '">' +
+      self._escapeHtml(line.designation || "") +
+      "</span></div>" +
+      '<div class="col main left">' +
+      self._escapeHtml(dep.destination || "") +
+      '</div><div class="col right"><span class="leaves-in">' +
+      departureTime +
+      "</span></div></div>" +
+      detailMeta +
+      "</div>"
+    );
+  }
+
+  _buildDepartureRows(departures, now) {
+    const self = this;
+    const activeDeps = [];
+    for (let i = 0; i < departures.length; i++) {
+      const dep = departures[i];
+      const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
+      if (self._shouldHideDeparted(expectedAt, now)) {
+        continue;
+      }
+      activeDeps.push(dep);
+    }
+
+    const anim = window.SlDepartureListAnim;
+    if (anim && anim.manager) {
+      return anim.manager.buildRows(self._animScopeId(), {
+        activeDeps: activeDeps,
+        allDeps: departures,
+        now: now,
+        shouldHideDeparted: function (dep, currentNow) {
+          const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
+          return self._shouldHideDeparted(expectedAt, currentNow);
+        },
+        renderRow: function (dep, extraClass, key) {
+          return self._renderDepartureRow(dep, extraClass, key, now);
+        },
+      });
+    }
+
+    let rows = "";
+    for (let j = 0; j < activeDeps.length; j++) {
+      const key =
+        anim && anim.departureKey ? anim.departureKey(activeDeps[j]) : String(j);
+      rows += self._renderDepartureRow(activeDeps[j], "", key, now);
+    }
+    return rows;
+  }
+
+  _runDepartureListAnimation(root) {
+    const anim = window.SlDepartureListAnim;
+    if (!anim || !root) {
+      return;
+    }
+    const listEl = root.querySelector(".departures-list");
+    if (!listEl) {
+      return;
+    }
+    const self = this;
+    anim.manager.afterRender(self._animScopeId(), listEl, function () {
+      self._updateView();
+    });
   }
 
   _renderBody() {
@@ -822,56 +944,11 @@ class SlStopDeparturesCard extends HTMLElement {
     }
 
     const now = new Date();
-    const self = this;
-    let rows = "";
-    for (let i = 0; i < departures.length; i++) {
-      const dep = departures[i];
-      const scheduledAt = self._parseDate(dep.scheduled);
-      const expectedAt = self._parseDate(dep.expected) || scheduledAt;
-      if (self._shouldHideDeparted(expectedAt, now)) {
-        continue;
-      }
-      const isCancelled = self._isCancelled(dep);
-      const detailItems = self._buildDepartureDetailItems(dep);
-
-      let departureTime = "";
-      if (isCancelled) {
-        departureTime = '<span class="cancelled-time">Inställd</span>';
-      } else if (expectedAt) {
-        departureTime = self._formatDepartureDisplay(scheduledAt, expectedAt, now);
-      }
-
-      const line = dep.line || {};
-      const icon = self._transportIcon(line.transport_mode);
-      const lineClass = self._lineIconClass(
-        line.transport_mode,
-        line.designation,
-        line.group_of_lines,
-      );
-      const detailMeta = self._renderDepartureMeta(detailItems);
-
-      rows +=
-        '<div class="departure-block"><div class="row departure">' +
-        '<div class="col icon"><ha-icon class="transport-icon" icon="' +
-        icon +
-        '"></ha-icon></div>' +
-        '<div class="col icon"><span class="line-icon mr1 ' +
-        lineClass +
-        '">' +
-        self._escapeHtml(line.designation || "") +
-        "</span></div>" +
-        '<div class="col main left">' +
-        self._escapeHtml(dep.destination || "") +
-        '</div><div class="col right"><span class="leaves-in">' +
-        departureTime +
-        "</span></div></div>" +
-        detailMeta +
-        "</div>";
-    }
+    const rows = this._buildDepartureRows(departures, now);
 
     return (
       stopInfoBlock +
-      '<div class="departures"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
+      '<div class="departures departures-list"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
       rows +
       "</div>"
     );
@@ -879,6 +956,10 @@ class SlStopDeparturesCard extends HTMLElement {
 
   _updateView() {
     if (!this.config) {
+      return;
+    }
+    const anim = window.SlDepartureListAnim;
+    if (anim && anim.manager.isAnimating(this._animScopeId())) {
       return;
     }
     let root = this.querySelector(".sl-stop-card-root");
@@ -910,6 +991,7 @@ class SlStopDeparturesCard extends HTMLElement {
       '<div class="card-content">' +
       this._renderBody() +
       "</div>";
+    this._runDepartureListAnimation(root);
   }
 
   _styles() {
@@ -954,6 +1036,10 @@ class SlStopDeparturesCard extends HTMLElement {
       ".departure-now{color:#fad370!important;font-weight:600}",
       ".cancelled-time{color:#e53935;font-weight:600}",
       ".leaves-in{white-space:nowrap}",
+      ".departure-block[data-departure-key]{max-height:500px}",
+      ".departure-block.departure-exit-fade{opacity:0;transition:opacity .5s ease}",
+      ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height .5s ease,margin-top .5s ease,opacity .5s ease}",
+      ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
       ".mr1{margin-right:8px}",
       ".left{text-align:left}",
       ".right{text-align:right}",

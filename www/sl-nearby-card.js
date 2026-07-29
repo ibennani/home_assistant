@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729b";
+    return "20260729c";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260729b",
+      sites_cache_version: "20260729c",
     };
   }
 
@@ -70,6 +70,26 @@ class SlNearbyCard extends HTMLElement {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
     }
+    if (this._departureClockTimer) {
+      clearInterval(this._departureClockTimer);
+      this._departureClockTimer = undefined;
+    }
+  }
+
+  _syncDepartureClock() {
+    if (this._departureClockTimer) {
+      clearInterval(this._departureClockTimer);
+      this._departureClockTimer = undefined;
+    }
+    if (!this._openSiteId) {
+      return;
+    }
+    const self = this;
+    this._departureClockTimer = window.setInterval(function () {
+      if (self._openSiteId) {
+        self._updateDeparturePanel(self._openSiteId);
+      }
+    }, 5000);
   }
 
   getCardSize() {
@@ -790,6 +810,111 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
+  _renderDepartureRow(dep, extraClass, key, now, walkMinutes) {
+    const self = this;
+    const scheduledAt = self._parseDate(dep.scheduled);
+    const expectedAt = self._parseDate(dep.expected) || scheduledAt;
+    const isDeparted = self._isDeparted(expectedAt, now);
+    const isCancelled = self._isCancelled(dep);
+    const detailItems = self._buildDepartureDetailItems(dep);
+    const unreachable =
+      walkMinutes && !isDeparted && !isCancelled && !self._canCatchDeparture(dep, walkMinutes);
+
+    let departureTime = "";
+    if (isCancelled) {
+      departureTime = '<span class="cancelled-time">Inställd</span>';
+    } else if (expectedAt) {
+      departureTime = self._formatDepartureDisplay(scheduledAt, expectedAt, now);
+    }
+
+    const line = dep.line || {};
+    const icon = self._transportIcon(line.transport_mode);
+    const lineClass = self._lineIconClass(
+      line.transport_mode,
+      line.designation,
+      line.group_of_lines,
+    );
+    const detailMeta = self._renderDepartureMeta(detailItems);
+
+    return (
+      '<div class="departure-block' +
+      (extraClass || "") +
+      (unreachable ? " unreachable" : "") +
+      '" data-departure-key="' +
+      self._escapeHtml(key) +
+      '"><div class="row departure">' +
+      '<div class="col icon"><ha-icon class="transport-icon" icon="' +
+      icon +
+      '"></ha-icon></div>' +
+      '<div class="col icon"><span class="line-icon mr1 ' +
+      lineClass +
+      '">' +
+      self._escapeHtml(line.designation || "") +
+      "</span></div>" +
+      '<div class="col main left">' +
+      self._escapeHtml(dep.destination || "") +
+      '</div><div class="col right"><span class="leaves-in">' +
+      departureTime +
+      "</span></div></div>" +
+      detailMeta +
+      "</div>"
+    );
+  }
+
+  _buildDepartureRows(departures, siteId, now, walkMinutes) {
+    const self = this;
+    const activeDeps = [];
+    for (let i = 0; i < departures.length; i++) {
+      const dep = departures[i];
+      const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
+      if (self._shouldHideDeparted(expectedAt, now)) {
+        continue;
+      }
+      activeDeps.push(dep);
+    }
+
+    const anim = window.SlDepartureListAnim;
+    if (anim && anim.manager) {
+      return anim.manager.buildRows(String(siteId), {
+        activeDeps: activeDeps,
+        allDeps: departures,
+        now: now,
+        shouldHideDeparted: function (dep, currentNow) {
+          const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
+          return self._shouldHideDeparted(expectedAt, currentNow);
+        },
+        renderRow: function (dep, extraClass, key) {
+          return self._renderDepartureRow(dep, extraClass, key, now, walkMinutes);
+        },
+      });
+    }
+
+    let rows = "";
+    for (let j = 0; j < activeDeps.length; j++) {
+      const key =
+        anim && anim.departureKey
+          ? anim.departureKey(activeDeps[j])
+          : String(j);
+      rows += self._renderDepartureRow(activeDeps[j], "", key, now, walkMinutes);
+    }
+    return rows;
+  }
+
+  _runDepartureListAnimation(siteId, panel) {
+    const anim = window.SlDepartureListAnim;
+    if (!anim || !panel) {
+      return;
+    }
+    const listEl = panel.querySelector(".departures-list");
+    if (!listEl) {
+      return;
+    }
+    const self = this;
+    anim.manager.afterRender(String(siteId), listEl, function () {
+      self._updateDeparturePanel(siteId);
+    });
+  }
+
   _renderDepartures(siteId) {
     const cache = this._getCache().get(String(siteId));
     if (!cache) {
@@ -847,64 +972,13 @@ class SlNearbyCard extends HTMLElement {
     }
 
     const now = new Date();
-    const self = this;
-    let rows = "";
-    for (let i = 0; i < departures.length; i++) {
-      const dep = departures[i];
-      const scheduledAt = self._parseDate(dep.scheduled);
-      const expectedAt = self._parseDate(dep.expected) || scheduledAt;
-      const isDeparted = self._isDeparted(expectedAt, now);
-      if (self._shouldHideDeparted(expectedAt, now)) {
-        continue;
-      }
-      const isCancelled = self._isCancelled(dep);
-      const detailItems = self._buildDepartureDetailItems(dep);
-      const unreachable =
-        walkMinutes && !isDeparted && !isCancelled && !self._canCatchDeparture(dep, walkMinutes);
-
-      let departureTime = "";
-      if (isCancelled) {
-        departureTime = '<span class="cancelled-time">Inställd</span>';
-      } else if (expectedAt) {
-        departureTime = self._formatDepartureDisplay(scheduledAt, expectedAt, now);
-      }
-
-      const line = dep.line || {};
-      const icon = self._transportIcon(line.transport_mode);
-      const lineClass = self._lineIconClass(
-        line.transport_mode,
-        line.designation,
-        line.group_of_lines,
-      );
-
-      let detailMeta = self._renderDepartureMeta(detailItems);
-
-      rows +=
-        '<div class="departure-block' +
-        (unreachable ? " unreachable" : "") +
-        '"><div class="row departure">' +
-        '<div class="col icon"><ha-icon class="transport-icon" icon="' +
-        icon +
-        '"></ha-icon></div>' +
-        '<div class="col icon"><span class="line-icon mr1 ' +
-        lineClass +
-        '">' +
-        self._escapeHtml(line.designation || "") +
-        "</span></div>" +
-        '<div class="col main left">' +
-        self._escapeHtml(dep.destination || "") +
-        '</div><div class="col right"><span class="leaves-in">' +
-        departureTime +
-        "</span></div></div>" +
-        detailMeta +
-        "</div>";
-    }
+    const rows = this._buildDepartureRows(departures, siteId, now, walkMinutes);
 
     return (
       walkNote +
       stopInfoBlock +
       filtersBlock +
-      '<div class="departures"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
+      '<div class="departures departures-list"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
       rows +
       "</div>"
     );
@@ -912,9 +986,16 @@ class SlNearbyCard extends HTMLElement {
 
   _updateDeparturePanel(siteId) {
     const panel = this.querySelector('.stop-accordion[data-site-id="' + siteId + '"] .stop-body');
-    if (panel) {
-      panel.innerHTML = this._renderDepartures(siteId);
+    if (!panel) {
+      return;
     }
+    const scopeId = String(siteId);
+    const anim = window.SlDepartureListAnim;
+    if (anim && anim.manager.isAnimating(scopeId)) {
+      return;
+    }
+    panel.innerHTML = this._renderDepartures(siteId);
+    this._runDepartureListAnimation(siteId, panel);
   }
 
   _renderStopSummary(stop) {
@@ -939,11 +1020,16 @@ class SlNearbyCard extends HTMLElement {
       if (this._openSiteId === siteId) {
         this._openSiteId = null;
       }
+      if (window.SlDepartureListAnim) {
+        window.SlDepartureListAnim.manager.resetScope(String(siteId));
+      }
       this._syncRefreshTimer();
+      this._syncDepartureClock();
       return;
     }
     this._openSiteId = siteId;
     this._syncRefreshTimer();
+    this._syncDepartureClock();
     this._loadDepartures(siteId, false);
   }
 
@@ -960,6 +1046,9 @@ class SlNearbyCard extends HTMLElement {
     const siteId = Number(button.dataset.siteId);
     const mode = button.dataset.mode || "ALL";
     this._setActiveModeFilter(siteId, mode);
+    if (window.SlDepartureListAnim) {
+      window.SlDepartureListAnim.manager.resetScope(String(siteId));
+    }
     this._updateDeparturePanel(siteId);
   }
 
@@ -1127,6 +1216,10 @@ class SlNearbyCard extends HTMLElement {
       ".mr1{margin-right:8px}",
       ".left{text-align:left}",
       ".right{text-align:right}",
+      ".departure-block[data-departure-key]{max-height:500px}",
+      ".departure-block.departure-exit-fade{opacity:0;transition:opacity .5s ease}",
+      ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height .5s ease,margin-top .5s ease,opacity .5s ease}",
+      ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
       "ha-icon{width:24px;height:24px;color:var(--paper-item-icon-color)}",
     ].join("");
   }

@@ -1668,12 +1668,25 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         margin-top: 0;
     }
 
-    .departure.departed {
-        color: var(--secondary-text-color);
+    .departure-block[data-departure-key] {
+        max-height: 500px;
     }
 
-    .departure.departed > .main {
-        text-decoration: line-through;
+    .departure-block.departure-exit-fade {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .departure-block.departure-exit-slide {
+        overflow: hidden;
+        box-sizing: border-box;
+        transition: max-height 0.5s ease, margin-top 0.5s ease, opacity 0.5s ease;
+    }
+
+    .departure-block.departure-exit-slide.departure-exit-slide-active {
+        max-height: 0 !important;
+        margin-top: 0 !important;
+        opacity: 0;
     }
 
     .row {
@@ -2037,6 +2050,64 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
         if (!attrs) return undefined;
         return this.getDeparturesFor(attrs);
     }
+    _getAnimScopeId() {
+        return "hasl4-" + (this.config?.entities?.[0] || "default");
+    }
+    _getRawDeparturesList() {
+        if (this.isManyEntitiesSet()) {
+            return (this.config?.entities || []).filter((entity)=>{
+                if (!entity) return false;
+                const data = this.hass?.states[entity];
+                if (!data) return false;
+                return $66d5822390d71e6e$var$isDepartureAttrs(data.attributes);
+            }).map((entity)=>this.hass?.states[entity]?.attributes).flatMap((attrs)=>attrs?.departures || []).filter((d)=>{
+                if (this.config?.direction === 0) return true;
+                return d.direction_code === this.config?.direction;
+            }).sort((a, b)=>new Date(a.expected).getTime() - new Date(b.expected).getTime()).slice(0, this.config?.max_departures);
+        }
+        const [_, attrs] = this.getFirstEntity();
+        if (!attrs?.departures) return [];
+        return attrs.departures.filter((d)=>{
+            if (this.config?.direction === 0) return true;
+            return d.direction_code === this.config?.direction;
+        }).slice(0, this.config?.max_departures);
+    }
+    _syncDepartureClock() {
+        if (this._departureClockTimer) {
+            clearInterval(this._departureClockTimer);
+            this._departureClockTimer = undefined;
+        }
+        const self = this;
+        this._departureClockTimer = setInterval(function () {
+            const anim = window.SlDepartureListAnim;
+            if (anim && anim.manager.isAnimating(self._getAnimScopeId())) {
+                return;
+            }
+            self.requestUpdate();
+        }, 5000);
+    }
+    connectedCallback() {
+        super.connectedCallback();
+        this._syncDepartureClock();
+    }
+    disconnectedCallback() {
+        if (this._departureClockTimer) {
+            clearInterval(this._departureClockTimer);
+            this._departureClockTimer = undefined;
+        }
+        super.disconnectedCallback();
+    }
+    updated(changedProperties) {
+        super.updated(changedProperties);
+        const list = this.renderRoot?.querySelector(".departures-list");
+        const anim = window.SlDepartureListAnim;
+        if (list && anim) {
+            const self = this;
+            anim.manager.afterRender(this._getAnimScopeId(), list, function () {
+                self.requestUpdate();
+            });
+        }
+    }
     lineIconClass(type, line, group) {
         let cls = "";
         switch(type){
@@ -2099,8 +2170,31 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                 search: new RegExp(this.config.regex.search, "g"),
                 replace: this.config.regex.replace
             } : undefined;
+            const rawDepartures = this._getRawDeparturesList();
+            const hideDeparted = this.config?.hide_departed !== false;
+            const activeDepartures = rawDepartures.filter((dep)=>{
+                const expectedAt = $66d5822390d71e6e$var$parseDepartureDate(dep.expected) || $66d5822390d71e6e$var$parseDepartureDate(dep.scheduled);
+                return !hideDeparted || !$66d5822390d71e6e$var$isDepartedDeparture(expectedAt, now);
+            });
+            let renderList = activeDepartures.map((dep, index)=>({
+                    dep: dep,
+                    key: String(index),
+                    isExiting: false
+                }));
+            const anim = window.SlDepartureListAnim;
+            if (anim && anim.manager) {
+                renderList = anim.manager.buildRenderList(this._getAnimScopeId(), {
+                    activeDeps: activeDepartures,
+                    allDeps: rawDepartures,
+                    now: now,
+                    shouldHideDeparted: (dep, currentNow)=>{
+                        const expectedAt = $66d5822390d71e6e$var$parseDepartureDate(dep.expected) || $66d5822390d71e6e$var$parseDepartureDate(dep.scheduled);
+                        return hideDeparted && $66d5822390d71e6e$var$isDepartedDeparture(expectedAt, currentNow);
+                    }
+                });
+            }
             return (0, $l56HR.html)`
-            <div class="departures">
+            <div class="departures departures-list">
                 ${isMany ? "" : renderEntityName()}
                 ${this.config.show_header ? (0, $l56HR.html)`
                     <div class="row header">
@@ -2109,7 +2203,8 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                         <div class="col right">${_("departure")}</div>
                     </div>` : (0, $l56HR.nothing)}
 
-                ${departures.map((dep)=>{
+                ${renderList.map((item)=>{
+                const dep = item.dep;
                 const scheduledAt = $66d5822390d71e6e$var$parseDepartureDate(dep.scheduled);
                 const expectedAt = $66d5822390d71e6e$var$parseDepartureDate(dep.expected) || scheduledAt;
                 const isCancelled = $66d5822390d71e6e$var$isCancelledDeparture(dep);
@@ -2150,7 +2245,7 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                     return dep.destination.replace(search, replace);
                 })();
                 return (0, $l56HR.html)`
-                    <div class="departure-block fade-in">
+                    <div class="departure-block fade-in${item.isExiting ? " departure-exiting" : ""}" data-departure-key="${item.key}">
                         <div class="row departure">
                         ${this.config?.show_icon ? (0, $l56HR.html)`
                             <div class="col icon">
