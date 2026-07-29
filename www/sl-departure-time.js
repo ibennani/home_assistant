@@ -87,6 +87,29 @@
     return at ? at.getTime() : Number.POSITIVE_INFINITY;
   }
 
+  function formatDepartureLabel(dep) {
+    if (!dep) {
+      return "";
+    }
+    const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
+    const line = dep.line || {};
+    const mode = String(line.transport_mode || "").toUpperCase();
+    const destination = String(dep.destination || "").trim();
+    const direction = String(dep.direction || "").trim();
+    let label = destination || direction;
+
+    // Pendeltåg: destination = reseled (t.ex. Stockholm C), direction = slutstation (t.ex. Bålsta).
+    if (mode === "TRAIN" && direction && direction !== destination) {
+      label = direction;
+    }
+
+    if (mode === "TRAIN") {
+      label = label.replace(destPattern, "").trim();
+    }
+
+    return label;
+  }
+
   function compareDeparturesByTime(a, b) {
     const diff = getDepartureSortMs(a) - getDepartureSortMs(b);
     if (diff !== 0) {
@@ -97,7 +120,7 @@
     if (aLine !== bLine) {
       return aLine.localeCompare(bLine);
     }
-    return String((a && a.destination) || "").localeCompare(String((b && b.destination) || ""));
+    return formatDepartureLabel(a).localeCompare(formatDepartureLabel(b));
   }
 
   function sortDeparturesByTime(departures) {
@@ -191,6 +214,7 @@
     shouldHideDeparted: shouldHideDeparted,
     parseDepartureDate: parseDepartureDate,
     getDepartureSortMs: getDepartureSortMs,
+    formatDepartureLabel: formatDepartureLabel,
     compareDeparturesByTime: compareDeparturesByTime,
     sortDeparturesByTime: sortDeparturesByTime,
     needsFastClock: needsFastClock,

@@ -219,19 +219,24 @@ class SlNearbyStopsCard extends HTMLElement {
     return this._diffMinutes(expectedAt, now) < 0;
   }
 
+  _formatDepartureLabel(dep) {
+    const api = window.SlDepartureTime;
+    if (api && api.formatDepartureLabel) {
+      return api.formatDepartureLabel(dep);
+    }
+    return String((dep && dep.destination) || (dep && dep.direction) || "").trim();
+  }
+
   _prepareDepartures(departures) {
     const now = new Date();
-    const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
+    const self = this;
 
     return departures
       .map((dep) => {
         const expected = dep.expected || dep.scheduled;
         const expectedAt = expected ? new Date(expected) : null;
         const expectedMs = expectedAt ? expectedAt.getTime() : Number.POSITIVE_INFINITY;
-        let destination = dep.destination || "";
-        if (dep.line && dep.line.transport_mode === "TRAIN") {
-          destination = destination.replace(destPattern, "").trim();
-        }
+        const destination = self._formatDepartureLabel(dep);
         return Object.assign({}, dep, {
           destination: destination,
           _expectedMs: expectedMs,
