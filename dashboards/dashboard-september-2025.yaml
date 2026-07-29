@@ -6615,9 +6615,6 @@ views:
           - "43"
           - "41"
         train_leg_huddinge_alvsjo_minutes: 7
-        walk_train_minutes: 14
-        walk_bus_minutes: 9
-        walking_extra_minutes: 2
         transfer_alvsjo_minutes: 3
 - title: SL
   path: sl-nara

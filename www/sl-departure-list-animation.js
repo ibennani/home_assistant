@@ -136,7 +136,7 @@
       renderItems.push(key);
     }
 
-    scope.lastVisibleKeys = new Set(renderItems);
+    scope.lastVisibleKeys = new Set(activeMap.keys());
     scope.lastDepsByKey = allMap;
 
     return renderItems.map(function (key) {
@@ -170,7 +170,7 @@
     }
     var scope = this._getScope(scopeId);
     var self = this;
-    var pending = false;
+    var remaining = 0;
 
     scope.exiting.forEach(function (entry, key) {
       if (entry.phase !== "pending-fade") {
@@ -181,7 +181,7 @@
         scope.exiting.delete(key);
         return;
       }
-      pending = true;
+      remaining++;
       entry.phase = "fade";
       el.style.maxHeight = el.offsetHeight + "px";
       requestAnimationFrame(function () {
@@ -195,15 +195,13 @@
         });
         self._schedule(scope, function () {
           scope.exiting.delete(key);
-          if (typeof onComplete === "function") {
+          remaining--;
+          if (remaining === 0 && typeof onComplete === "function") {
             onComplete();
           }
         }, SLIDE_MS);
       }, FADE_MS);
     });
-
-    // onComplete anropas endast när en utanimation faktiskt avslutats (ovan).
-    // Synkront anrop här gav oändlig render-loop (Maximum call stack size exceeded).
   };
 
   Manager.prototype.isAnimating = function (scopeId) {
