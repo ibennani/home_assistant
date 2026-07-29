@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729c";
+    return "20260729d";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260729c",
+      sites_cache_version: "20260729d",
     };
   }
 
@@ -26,20 +26,29 @@ class SlNearbyCard extends HTMLElement {
     return document.createElement("div");
   }
 
+  constructor() {
+    super();
+    this._ensureCaches();
+  }
+
+  _ensureCaches() {
+    if (!this._departureCache) {
+      this._departureCache = new Map();
+    }
+    if (!this._walkCache) {
+      this._walkCache = new Map();
+    }
+    if (!this._modeFilters) {
+      this._modeFilters = new Map();
+    }
+  }
+
   setConfig(config) {
     try {
       const base = SlNearbyCard.getStubConfig();
       const input = config && typeof config === "object" ? config : {};
       this.config = Object.assign({}, base, input);
-      if (!this._departureCache) {
-        this._departureCache = new Map();
-      }
-      if (!this._walkCache) {
-        this._walkCache = new Map();
-      }
-      if (!this._modeFilters) {
-        this._modeFilters = new Map();
-      }
+      this._ensureCaches();
       this._updateView();
     } catch (error) {
       this.config = SlNearbyCard.getStubConfig();
@@ -51,6 +60,7 @@ class SlNearbyCard extends HTMLElement {
   }
 
   set hass(hass) {
+    this._ensureCaches();
     this._hass = hass;
     this._updateView();
     this._syncRefreshTimer();
@@ -70,13 +80,53 @@ class SlNearbyCard extends HTMLElement {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
     }
+    if (this._departureClock) {
+      this._departureClock.stop();
+      this._departureClock = undefined;
+    }
     if (this._departureClockTimer) {
       clearInterval(this._departureClockTimer);
       this._departureClockTimer = undefined;
     }
   }
 
+  _getOpenDepartures() {
+    if (!this._openSiteId) {
+      return [];
+    }
+    const cache = this._getCache().get(String(this._openSiteId));
+    if (!cache || !cache.departures) {
+      return [];
+    }
+    return this._filterDeparturesByMode(cache.departures, this._openSiteId);
+  }
+
+  _ensureDepartureClock() {
+    if (this._departureClock) {
+      return this._departureClock;
+    }
+    const clockApi = window.SlDepartureTime && window.SlDepartureTime.createAdaptiveClock;
+    if (!clockApi) {
+      return null;
+    }
+    const self = this;
+    this._departureClock = clockApi({
+      getDepartures: function () {
+        return self._getOpenDepartures();
+      },
+      onTick: function () {
+        if (self._openSiteId) {
+          self._updateDeparturePanel(self._openSiteId);
+        }
+      },
+    });
+    return this._departureClock;
+  }
+
   _syncDepartureClock() {
+    if (this._departureClock) {
+      this._departureClock.stop();
+    }
     if (this._departureClockTimer) {
       clearInterval(this._departureClockTimer);
       this._departureClockTimer = undefined;
@@ -84,12 +134,17 @@ class SlNearbyCard extends HTMLElement {
     if (!this._openSiteId) {
       return;
     }
+    const clock = this._ensureDepartureClock();
+    if (clock) {
+      clock.start();
+      return;
+    }
     const self = this;
     this._departureClockTimer = window.setInterval(function () {
       if (self._openSiteId) {
         self._updateDeparturePanel(self._openSiteId);
       }
-    }, 5000);
+    }, 30000);
   }
 
   getCardSize() {
@@ -996,6 +1051,9 @@ class SlNearbyCard extends HTMLElement {
     }
     panel.innerHTML = this._renderDepartures(siteId);
     this._runDepartureListAnimation(siteId, panel);
+    if (this._departureClock) {
+      this._departureClock.reschedule();
+    }
   }
 
   _renderStopSummary(stop) {

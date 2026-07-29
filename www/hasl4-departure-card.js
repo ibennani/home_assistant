@@ -2073,24 +2073,50 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
         }).slice(0, this.config?.max_departures);
     }
     _syncDepartureClock() {
+        if (this._departureClock) {
+            this._departureClock.stop();
+            this._departureClock = undefined;
+        }
         if (this._departureClockTimer) {
             clearInterval(this._departureClockTimer);
             this._departureClockTimer = undefined;
         }
+        const clockApi = window.SlDepartureTime && window.SlDepartureTime.createAdaptiveClock;
+        if (!clockApi) {
+            const self = this;
+            this._departureClockTimer = setInterval(function () {
+                const anim = window.SlDepartureListAnim;
+                if (anim && anim.manager.isAnimating(self._getAnimScopeId())) {
+                    return;
+                }
+                self.requestUpdate();
+            }, 30000);
+            return;
+        }
         const self = this;
-        this._departureClockTimer = setInterval(function () {
-            const anim = window.SlDepartureListAnim;
-            if (anim && anim.manager.isAnimating(self._getAnimScopeId())) {
-                return;
-            }
-            self.requestUpdate();
-        }, 5000);
+        this._departureClock = clockApi({
+            getDepartures: function () {
+                return self.getDepartures();
+            },
+            onTick: function () {
+                const anim = window.SlDepartureListAnim;
+                if (anim && anim.manager.isAnimating(self._getAnimScopeId())) {
+                    return;
+                }
+                self.requestUpdate();
+            },
+        });
+        this._departureClock.start();
     }
     connectedCallback() {
         super.connectedCallback();
         this._syncDepartureClock();
     }
     disconnectedCallback() {
+        if (this._departureClock) {
+            this._departureClock.stop();
+            this._departureClock = undefined;
+        }
         if (this._departureClockTimer) {
             clearInterval(this._departureClockTimer);
             this._departureClockTimer = undefined;
@@ -2106,6 +2132,9 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
             anim.manager.afterRender(this._getAnimScopeId(), list, function () {
                 self.requestUpdate();
             });
+        }
+        if (this._departureClock) {
+            this._departureClock.reschedule();
         }
     }
     lineIconClass(type, line, group) {

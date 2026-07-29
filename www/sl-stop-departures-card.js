@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729c";
+    return "20260729d";
   }
 
   static getStubConfig() {
@@ -74,21 +74,58 @@ class SlStopDeparturesCard extends HTMLElement {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
     }
+    if (this._departureClock) {
+      this._departureClock.stop();
+      this._departureClock = undefined;
+    }
     if (this._departureClockTimer) {
       clearInterval(this._departureClockTimer);
       this._departureClockTimer = undefined;
     }
   }
 
+  _getVisibleDepartures() {
+    const allDepartures = (this._data && this._data.departures) || [];
+    return this._filterDeparturesByMode(allDepartures);
+  }
+
+  _ensureDepartureClock() {
+    if (this._departureClock) {
+      return this._departureClock;
+    }
+    const clockApi = window.SlDepartureTime && window.SlDepartureTime.createAdaptiveClock;
+    if (!clockApi) {
+      return null;
+    }
+    const self = this;
+    this._departureClock = clockApi({
+      getDepartures: function () {
+        return self._getVisibleDepartures();
+      },
+      onTick: function () {
+        self._updateView({ clockOnly: true });
+      },
+    });
+    return this._departureClock;
+  }
+
   _syncDepartureClock() {
+    if (this._departureClock) {
+      this._departureClock.stop();
+    }
     if (this._departureClockTimer) {
       clearInterval(this._departureClockTimer);
       this._departureClockTimer = undefined;
     }
+    const clock = this._ensureDepartureClock();
+    if (clock) {
+      clock.start();
+      return;
+    }
     const self = this;
     this._departureClockTimer = window.setInterval(function () {
-      self._updateView();
-    }, 5000);
+      self._updateView({ clockOnly: true });
+    }, 30000);
   }
 
   getCardSize() {
@@ -954,10 +991,11 @@ class SlStopDeparturesCard extends HTMLElement {
     );
   }
 
-  _updateView() {
+  _updateView(options) {
     if (!this.config) {
       return;
     }
+    const clockOnly = options && options.clockOnly;
     const anim = window.SlDepartureListAnim;
     if (anim && anim.manager.isAnimating(this._animScopeId())) {
       return;
@@ -979,6 +1017,18 @@ class SlStopDeparturesCard extends HTMLElement {
       this._filterClickBound = true;
     }
 
+    if (clockOnly) {
+      const content = root.querySelector(".card-content");
+      if (content) {
+        content.innerHTML = this._renderBody();
+        this._runDepartureListAnimation(root);
+      }
+      if (this._departureClock) {
+        this._departureClock.reschedule();
+      }
+      return;
+    }
+
     const title = this.config.title || "Hållplats";
     const allDepartures = (this._data && this._data.departures) || [];
     const modes = this._getTransportModes(allDepartures);
@@ -992,6 +1042,9 @@ class SlStopDeparturesCard extends HTMLElement {
       this._renderBody() +
       "</div>";
     this._runDepartureListAnimation(root);
+    if (this._departureClock) {
+      this._departureClock.reschedule();
+    }
   }
 
   _styles() {
