@@ -6605,7 +6605,7 @@ views:
         title: Huddinge centrum
         site_id: 9527
         forecast_minutes: 120
-        refresh_seconds: 60
+        refresh_seconds: 30
         show_time_always: true
         hide_departed: true
         alight_train_site_id: 9180
@@ -6615,8 +6615,9 @@ views:
           - "43"
           - "41"
         train_leg_huddinge_alvsjo_minutes: 7
-        walk_train_minutes: 16
-        walk_bus_minutes: 11
+        walk_train_minutes: 14
+        walk_bus_minutes: 9
+        walking_extra_minutes: 2
         transfer_alvsjo_minutes: 3
 - title: SL
   path: sl-nara
@@ -6640,7 +6641,7 @@ views:
       max_stops: 20
       max_gps_km: 200
       forecast_minutes: 60
-      refresh_seconds: 60
+      refresh_seconds: 30
       show_time_always: true
       grid_options:
         columns: full

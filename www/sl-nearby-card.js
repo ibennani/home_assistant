@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729f";
+    return "20260729g";
   }
 
   static getStubConfig() {
@@ -16,9 +16,9 @@ class SlNearbyCard extends HTMLElement {
       hide_departed: true,
       show_time_always: true,
       language: "sv-SE",
-      refresh_seconds: 60,
+      refresh_seconds: 30,
       walking_extra_minutes: 2,
-      sites_cache_version: "20260729f",
+      sites_cache_version: "20260729g",
     };
   }
 
@@ -140,7 +140,7 @@ class SlNearbyCard extends HTMLElement {
       if (self._openSiteId) {
         self._updateDeparturePanel(self._openSiteId);
       }
-    }, 30000);
+    }, 15000);
   }
 
   getCardSize() {
@@ -1249,8 +1249,6 @@ class SlNearbyCard extends HTMLElement {
       ".tram{background:#985141}",
       ".warning-message{color:var(--warning-color);font-size:smaller}",
       ".departure-block{margin-top:8px;border-radius:6px}",
-      ".departure-block.unreachable{background:rgba(90,0,0,.7)}",
-      ".departure-block.unreachable .main,.departure-block.unreachable .leaves-in,.departure-block.unreachable .detail-item,.departure-block.unreachable .transport-icon{color:#fff!important}",
       ".departure-block .row.departure{margin-top:0}",
       ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px}",
       ".detail-item{font-size:smaller;line-height:1.35}",
