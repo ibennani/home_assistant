@@ -4,9 +4,10 @@ sl_site_departures:
   method: GET
 
 # SL Journey Planner — hållplatser kvar på en avgång (sl-nearby-card)
+# incl_mot_* styrs från kortet utifrån avgångens trafikslag (buss kräver t.ex. bara mot_5)
 sl_journey_stops:
   url: >
-    https://journeyplanner.integration.sl.se/v2/trips?type_origin=any&name_origin=909100100000{{ origin_site }}&type_destination=any&name_destination={{ dest_gid }}&calc_number_of_trips=3&incl_mot_0=true&incl_mot_2=true&incl_mot_3=true&incl_mot_4=true&incl_mot_5=true
+    https://journeyplanner.integration.sl.se/v2/trips?type_origin=any&name_origin=909100100000{{ origin_site }}&type_destination=any&name_destination={{ dest_gid }}&calc_number_of_trips=3&incl_mot_0={{ incl_mot_0 | default('true') }}&incl_mot_2={{ incl_mot_2 | default('true') }}&incl_mot_3={{ incl_mot_3 | default('true') }}&incl_mot_4={{ incl_mot_4 | default('true') }}&incl_mot_5={{ incl_mot_5 | default('true') }}&incl_mot_9={{ incl_mot_9 | default('true') }}
   method: GET
 
 # SL Journey Planner — slå upp hållplats-id från namn

@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729t";
+    return "20260729u";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729t",
+      sites_cache_version: "20260729u",
     };
   }
 
@@ -1122,7 +1122,12 @@ class SlNearbyCard extends HTMLElement {
         const leg = legs[j];
         const transport = leg.transportation || {};
         const number = String(transport.number || "");
-        if (designation && number.indexOf(designation) < 0) {
+        const disassembled = String(transport.disassembledName || "");
+        if (
+          designation &&
+          number.indexOf(designation) < 0 &&
+          disassembled.indexOf(designation) < 0
+        ) {
           continue;
         }
         const stops = [];
@@ -1186,6 +1191,46 @@ class SlNearbyCard extends HTMLElement {
       });
   }
 
+  _journeyMotParams(dep) {
+    const mode = String((dep && dep.line && dep.line.transport_mode) || "").toUpperCase();
+    const params = {
+      incl_mot_0: "false",
+      incl_mot_2: "false",
+      incl_mot_3: "false",
+      incl_mot_4: "false",
+      incl_mot_5: "false",
+      incl_mot_9: "false",
+    };
+    if (mode === "BUS") {
+      params.incl_mot_5 = "true";
+      return params;
+    }
+    if (mode === "METRO") {
+      params.incl_mot_2 = "true";
+      return params;
+    }
+    if (mode === "TRAIN") {
+      params.incl_mot_0 = "true";
+      return params;
+    }
+    if (mode === "TRAM") {
+      params.incl_mot_4 = "true";
+      return params;
+    }
+    if (mode === "SHIP" || mode === "FERRY") {
+      params.incl_mot_9 = "true";
+      return params;
+    }
+    return {
+      incl_mot_0: "true",
+      incl_mot_2: "true",
+      incl_mot_3: "true",
+      incl_mot_4: "true",
+      incl_mot_5: "true",
+      incl_mot_9: "true",
+    };
+  }
+
   _fetchDepartureStops(dep, siteId, siteName) {
     const self = this;
     return this._ensureSitesLoaded()
@@ -1196,10 +1241,17 @@ class SlNearbyCard extends HTMLElement {
         if (!destGid) {
           throw new Error("Kunde inte hitta destinationen " + (dep.destination || ""));
         }
-        return self._callWithResponse("rest_command", "sl_journey_stops", {
-          origin_site: Number(siteId),
-          dest_gid: destGid,
-        });
+        return self._callWithResponse(
+          "rest_command",
+          "sl_journey_stops",
+          Object.assign(
+            {
+              origin_site: Number(siteId),
+              dest_gid: destGid,
+            },
+            self._journeyMotParams(dep),
+          ),
+        );
       })
       .then(function (payload) {
         return self._extractDepartureStops(
