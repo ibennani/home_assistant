@@ -5822,7 +5822,8 @@ views:
         from: 99
         to: 100
       entities:
-      - sensor.regnmatare_battery_percent
+      - entity: sensor.regnmatare_battery_percent
+        name: Regnmätaren batteri
     - type: custom:bar-card
       title: Översvämningslarm (flood sensors)
       severity:

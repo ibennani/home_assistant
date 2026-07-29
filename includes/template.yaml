@@ -354,20 +354,31 @@
         {{ ns.n }}
       attributes:
         message: >
+          {% macro batterivarning_namn(entity_id) -%}
+            {%- set generic = ['batteri', 'temperatur', 'battery', 'humidity', 'pressure'] -%}
+            {%- set fn = state_attr(entity_id, 'friendly_name') | default(entity_id) -%}
+            {%- set dev = device_attr(entity_id, 'name') -%}
+            {%- if fn | lower in generic and dev -%}
+              {{ dev }}
+            {%- elif fn | lower in generic -%}
+              {{ entity_id.split('.')[1] | replace('_', ' ') | title }}
+            {%- else -%}
+              {{ fn }}
+            {%- endif -%}
+          {%- endmacro %}
           {% set ignored = expand('group.ignored_offline_sensors') | map(attribute='entity_id') | list %}
           {% set ns = namespace(items=[]) %}
           {% for entity_id in states.group.battery_levels.attributes.entity_id
               if states(entity_id) not in ['unknown', 'unavailable']
               and states(entity_id) | int(0) < 30 %}
-          {% set parts = entity_id.split('.') %}
-          {% set ns.items = ns.items + ['* ' ~ states[parts[0]][parts[1]].name ~ ': ' ~ states(entity_id) ~ ' %'] %}
+          {% set ns.items = ns.items + ['* ' ~ batterivarning_namn(entity_id) ~ ': ' ~ states(entity_id) ~ ' %'] %}
           {% endfor %}
           {% set temp_ns = namespace(device_ids=[]) %}
           {% for x in expand('group.temp_sensors_with_bad_battery_indicators')
               if x.state == 'unavailable'
               or (((as_timestamp(now()) - (as_timestamp(x.last_updated)) | int(0)) / (12 * 3600)) | int(0) > 0 ) %}
           {% set status = 'offline' if x.state == 'unavailable' else 'offline (ingen data på 12h+)' %}
-          {% set ns.items = ns.items + ['* ' ~ x.attributes.friendly_name ~ ': ' ~ status] %}
+          {% set ns.items = ns.items + ['* ' ~ batterivarning_namn(x.entity_id) ~ ': ' ~ status] %}
           {% set dev_id = device_id(x.entity_id) %}
           {% if dev_id %}
           {% set temp_ns.device_ids = temp_ns.device_ids + [dev_id] %}
@@ -377,7 +388,7 @@
               if x.state == 'unavailable'
               and x.entity_id not in ignored
               and device_id(x.entity_id) not in temp_ns.device_ids %}
-          {% set ns.items = ns.items + ['* ' ~ x.attributes.friendly_name ~ ': offline'] %}
+          {% set ns.items = ns.items + ['* ' ~ batterivarning_namn(x.entity_id) ~ ': offline'] %}
           {% endfor %}
           {{ ns.items | join('\n') }}
 
