@@ -1,0 +1,2140 @@
+{
+  "50": {
+    "1": "Lektorsstigen",
+    "2": "Odenplan"
+  },
+  "53": {
+    "1": "Henriksdalsberget",
+    "2": "Ersta sjukhus"
+  },
+  "54": {
+    "1": "Fridhemsplan",
+    "2": "Reimersholme"
+  },
+  "55": {
+    "1": "Ersta sjukhus",
+    "2": "Gullmarsplan"
+  },
+  "56": {
+    "1": "Luxgatan",
+    "2": "Strandbergsgatan"
+  },
+  "57": {
+    "1": "Östra station",
+    "2": "Motalavägen"
+  },
+  "58": {
+    "1": "Kvarter 13",
+    "2": "S:t Eriksplan"
+  },
+  "61": {
+    "1": "Fredhäll",
+    "2": "Ruddammen"
+  },
+  "65": {
+    "1": "Scheelegatan",
+    "2": "Moa Martinsons torg"
+  },
+  "66": {
+    "1": "Tengdahlsgatan",
+    "2": "Reimersholme"
+  },
+  "67": {
+    "1": "Blockhusudden",
+    "2": "Radiohuset"
+  },
+  "69": {
+    "1": "Blockhusudden",
+    "2": "Centralen"
+  },
+  "71": {
+    "1": "Östervägen",
+    "2": "Henriksdalsviadukten"
+  },
+  "72": {
+    "1": "Östhammarsgatan",
+    "2": "Karolinska sjukhuset norra"
+  },
+  "74": {
+    "1": "Sickla udde",
+    "2": "Moa Martinsons torg"
+  },
+  "75": {
+    "1": "Cityterminalen",
+    "2": "Ropsten"
+  },
+  "76": {
+    "1": "Karlaplan",
+    "2": "Ropsten"
+  },
+  "91": {
+    "1": "Essingetorget",
+    "2": "Frihamnen"
+  },
+  "93": {
+    "1": "Jarlaberg",
+    "2": "Slussen"
+  },
+  "94": {
+    "1": "Gullmarsplan",
+    "2": "Radiohuset"
+  },
+  "96": {
+    "1": "Sickla udde",
+    "2": "Odenplan"
+  },
+  "112": {
+    "1": "Alvik",
+    "2": "Spånga station"
+  },
+  "113": {
+    "1": "Solna centrum",
+    "2": "Blackebergs gård"
+  },
+  "114": {
+    "1": "Alvik"
+  },
+  "115": {
+    "1": "Vällingby"
+  },
+  "116": {
+    "1": "Vällingby",
+    "2": "Spånga station"
+  },
+  "117": {
+    "1": "Brommaplan",
+    "2": "Spånga station"
+  },
+  "118": {
+    "1": "Vällingby",
+    "2": "Hallonbergen"
+  },
+  "119": {
+    "1": "Spånga station",
+    "2": "Backlura"
+  },
+  "122": {
+    "1": "Karolinska institutet västra",
+    "2": "Spånga station"
+  },
+  "124": {
+    "1": "Alvik",
+    "2": "Abrahamsberg"
+  },
+  "127": {
+    "1": "Nockebyhov",
+    "2": "Brommaplan"
+  },
+  "129": {
+    "1": "Solna centrum",
+    "2": "Brommaplan"
+  },
+  "133": {
+    "1": "Ekensberg",
+    "2": "Liljeholmen"
+  },
+  "134": {
+    "1": "Liljeholmen",
+    "2": "Julitavägen"
+  },
+  "135": {
+    "1": "Vårbergs sjukhem",
+    "2": "Klubbacken"
+  },
+  "141": {
+    "1": "Årstaberg",
+    "2": "Långsjö torg"
+  },
+  "142": {
+    "1": "Älvsjö station",
+    "2": "Telefonplan"
+  },
+  "143": {
+    "1": "Sköndalsbro",
+    "2": "Älvsjö station"
+  },
+  "144": {
+    "1": "Gullmarsplan",
+    "2": "Fruängen"
+  },
+  "147": {
+    "1": "Liljeholmen",
+    "2": "Hökmossen"
+  },
+  "152": {
+    "1": "Liljeholmen",
+    "2": "Solna centrum"
+  },
+  "155": {
+    "1": "Akalla",
+    "2": "Brommaplan"
+  },
+  "155X": {
+    "1": "Akalla",
+    "2": "Brommaplan"
+  },
+  "156": {
+    "1": "Solna strand",
+    "2": "Danderyds sjukhus"
+  },
+  "157": {
+    "1": "Danderyds sjukhus",
+    "2": "Lunda industri"
+  },
+  "158": {
+    "1": "Vällingby",
+    "2": "Spånga station"
+  },
+  "159": {
+    "1": "Spånga station",
+    "2": "Godsterminalen"
+  },
+  "160": {
+    "1": "Gullmarsplan",
+    "2": "Årstaberg"
+  },
+  "161": {
+    "1": "Trekanten",
+    "2": "Bagarmossen"
+  },
+  "163": {
+    "1": "Bredäng",
+    "2": "Kärrtorp"
+  },
+  "164": {
+    "1": "Valla torg",
+    "2": "Södersjukhuset"
+  },
+  "165": {
+    "1": "Liljeholmen",
+    "2": "Farsta centrum"
+  },
+  "167": {
+    "1": "Älvsjö station",
+    "2": "Farsta centrum"
+  },
+  "168": {
+    "1": "Julitavägen",
+    "2": "Södersjukhuset"
+  },
+  "175": {
+    "1": "Akalla",
+    "2": "Barkarby station"
+  },
+  "180": {
+    "1": "Kärrtorp",
+    "2": "Orhem"
+  },
+  "181": {
+    "1": "Skarpnäcks gård",
+    "2": "Farsta strand"
+  },
+  "183": {
+    "1": "Skogskyrkogården"
+  },
+  "184": {
+    "1": "Farsta centrum"
+  },
+  "443C": {
+    "2": "Cityterminalen",
+    "1": "Nacka strand"
+  },
+  "446C": {
+    "2": "Cityterminalen",
+    "1": "Nämdöstigen"
+  },
+  "185H": {
+    "1": "Farsta centrum"
+  },
+  "185V": {
+    "2": "Farsta centrum"
+  },
+  "188": {
+    "1": "Gullmarsplan",
+    "2": "Sköndalsbro"
+  },
+  "190": {
+    "1": "Farsta strand",
+    "2": "Lignagatan"
+  },
+  "191": {
+    "1": "Norsborg",
+    "2": "Centralen"
+  },
+  "192": {
+    "1": "Liljeholmen",
+    "2": "Centralen"
+  },
+  "193": {
+    "1": "Farsta strand",
+    "2": "Centralen"
+  },
+  "194": {
+    "1": "Bagarmossen",
+    "2": "Centralen"
+  },
+  "195": {
+    "1": "Hagsätra",
+    "2": "Centralen"
+  },
+  "196": {
+    "1": "Hjulsta",
+    "2": "Centralen"
+  },
+  "197": {
+    "1": "Sollentuna station",
+    "2": "Centralen"
+  },
+  "198": {
+    "1": "Backlura",
+    "2": "Centralen"
+  },
+  "199": {
+    "1": "Hallonbergen",
+    "2": "Vällingby"
+  },
+  "201": {
+    "1": "Båtsmansvägen",
+    "2": "Ropsten"
+  },
+  "203": {
+    "1": "Näset",
+    "2": "Ropsten"
+  },
+  "204": {
+    "1": "Wijk",
+    "2": "Ropsten"
+  },
+  "205": {
+    "1": "Sticklinge",
+    "2": "Universitetet norra"
+  },
+  "206": {
+    "1": "Larsberg",
+    "2": "Ropsten"
+  },
+  "211": {
+    "1": "Fågelöuddebadet",
+    "2": "Ropsten"
+  },
+  "212": {
+    "1": "Björnbo",
+    "2": "Ropsten"
+  },
+  "222": {
+    "1": "Södergarnsvägen",
+    "2": "Ropsten"
+  },
+  "225": {
+    "1": "Sticklinge",
+    "2": "Ropsten"
+  },
+  "238": {
+    "1": "Högsätra",
+    "2": "Näset"
+  },
+  "282": {
+    "2": "Högnäsvägen"
+  },
+  "291": {
+    "1": "Gåshaga",
+    "2": "Cityterminalen"
+  },
+  "293": {
+    "1": "Södergarnsvägen",
+    "2": "Ropsten"
+  },
+  "301": {
+    "1": "Brommaplan",
+    "2": "Ekerö centrum"
+  },
+  "302": {
+    "1": "Ekerö centrum",
+    "2": "Knalleborg"
+  },
+  "303": {
+    "1": "Brommaplan",
+    "2": "Jungfrusund"
+  },
+  "304": {
+    "1": "Brommaplan",
+    "2": "Parksidan"
+  },
+  "305": {
+    "1": "Ekerö centrum",
+    "2": "Älvnäs"
+  },
+  "309": {
+    "1": "Ekerö centrum",
+    "2": "Kaggeholms slott"
+  },
+  "311": {
+    "1": "Ekerö centrum",
+    "2": "Sluts hage"
+  },
+  "445C": {
+    "1": "Sandholmsvägen",
+    "2": "Cityterminalen"
+  },
+  "311E": {
+    "2": "Sjöängen"
+  },
+  "312": {
+    "1": "Ekerö centrum",
+    "2": "Sjöängen"
+  },
+  "313": {
+    "1": "Svanhagen",
+    "2": "Vändplanen"
+  },
+  "315": {
+    "1": "Svanhagen",
+    "2": "Jäsängen"
+  },
+  "316": {
+    "1": "Brommaplan",
+    "2": "Färjestadsvägen"
+  },
+  "317": {
+    "1": "Brommaplan",
+    "2": "Björkvik"
+  },
+  "318": {
+    "1": "Brommaplan",
+    "2": "Ilända Konsum"
+  },
+  "323": {
+    "1": "Brommaplan",
+    "2": "Rörby gård"
+  },
+  "325": {
+    "1": "Strömdal",
+    "2": "Tappström"
+  },
+  "333": {
+    "1": "Rörby FRA",
+    "2": "Rörby gård"
+  },
+  "340": {
+    "1": "Solbacka",
+    "2": "Ekerö centrum"
+  },
+  "350": {
+    "1": "Ekerö centrum",
+    "2": "Fittja"
+  },
+  "396": {
+    "1": "Brommaplan",
+    "2": "Solbacka"
+  },
+  "401": {
+    "1": "Flatenbadet",
+    "2": "Slussen"
+  },
+  "402": {
+    "1": "Nacka Forum (stadshuset)",
+    "2": "Slussen"
+  },
+  "702": {
+    "1": "Kvarnhagen",
+    "2": "Hallunda centrum"
+  },
+  "704": {
+    "1": "Fruängen",
+    "2": "Huddinge station"
+  },
+  "706": {
+    "1": "Källbrinks idrottsplats",
+    "2": "Huddinge station"
+  },
+  "708": {
+    "1": "Rönninge station",
+    "2": "Tumba station"
+  },
+  "709": {
+    "1": "Truckvägen",
+    "2": "Huddinge station"
+  },
+  "711": {
+    "1": "Tullinge station",
+    "2": "Visättra sportcenter"
+  },
+  "714": {
+    "1": "Flottsbro",
+    "2": "Huddinge station"
+  },
+  "716": {
+    "2": "Tumba station",
+    "1": "Bremora"
+  },
+  "718": {
+    "2": "Tumba station",
+    "1": "Viltstigen"
+  },
+  "721": {
+    "2": "Tullinge station",
+    "1": "Lida"
+  },
+  "723": {
+    "2": "Tullinge kyrka",
+    "1": "Tullinge station"
+  },
+  "726": {
+    "2": "Tullinge station södra",
+    "1": "Fridhemsplan"
+  },
+  "729": {
+    "2": "Tumba station",
+    "1": "Spångbro"
+  },
+  "738": {
+    "1": "Norsborg",
+    "2": "Tumba station"
+  },
+  "742": {
+    "1": "Rondovägen",
+    "2": "Huddinge sjukhus"
+  },
+  "744": {
+    "1": "Högdalen",
+    "2": "Gladö kvarn"
+  },
+  "747": {
+    "1": "Fittja",
+    "2": "Scaniarinken"
+  },
+  "749": {
+    "1": "Liljeholmen",
+    "2": "Södertälje centrum"
+  },
+  "751": {
+    "1": "Hantverksvägen",
+    "2": "Björkmossen"
+  },
+  "776": {
+    "1": "Vackstanäs",
+    "2": "Bärvägen"
+  },
+  "783": {
+    "2": "Chassiporten",
+    "1": "Gröndalsvikens station"
+  },
+  "791": {
+    "2": "Centralen",
+    "1": "Södertälje centrum"
+  },
+  "804": {
+    "1": "Strandängarna",
+    "2": "Gullmarsplan"
+  },
+  "813C": {
+    "1": "Nyfors",
+    "2": "Vattugatan"
+  },
+  "822": {
+    "1": "Trollbäckens centrum",
+    "2": "Gullmarsplan"
+  },
+  "831": {
+    "1": "Slipstensvägen",
+    "2": "Farsta centrum"
+  },
+  "839": {
+    "1": "Smådalarö",
+    "2": "Rudsjöterrassen"
+  },
+  "848": {
+    "1": "Gröndalsvikens station",
+    "2": "Ösmo centrum"
+  },
+  "862": {
+    "2": "Slakthuset (Globen)"
+  },
+  "890": {
+    "1": "Tyresö kyrka",
+    "2": "Centralen"
+  },
+  "893": {
+    "1": "Lillgården",
+    "2": "Centralen"
+  },
+  "UL805": {
+    "1": "Hallstaviks station",
+    "2": "Lågbol"
+  },
+  "UL808": {
+    "1": "Smara",
+    "2": "Skogsvägen"
+  },
+  "45B": {
+    "1": "Gröndalsvikens station",
+    "2": "Farsta strand"
+  },
+  "40C": {
+    "1": "Södertälje centrum",
+    "2": "Östertälje station"
+  },
+  "552H": {
+    "1": "Jakobsbergs station"
+  },
+  "41S": {
+    "2": "Märsta station",
+    "1": "Sollentuna station"
+  },
+  "552V": {
+    "2": "Jakobsbergs station"
+  },
+  "442X": {
+    "1": "Boovägen",
+    "2": "Glasbruksgatan"
+  },
+  "443": {
+    "1": "Jarlaberg",
+    "2": "Slussen"
+  },
+  "444": {
+    "1": "Korset",
+    "2": "Slussen"
+  },
+  "445": {
+    "1": "Insjön",
+    "2": "Slussen"
+  },
+  "402X": {
+    "1": "Nacka gymnasium"
+  },
+  "405": {
+    "1": "Nacka sjukhus",
+    "2": "Fridhemsplan"
+  },
+  "409": {
+    "1": "Ektorps centrum",
+    "2": "Slussen"
+  },
+  "410": {
+    "1": "Saltängen",
+    "2": "Slussen"
+  },
+  "411C": {
+    "2": "Cityterminalen"
+  },
+  "413": {
+    "1": "Strömvägen",
+    "2": "Slussen"
+  },
+  "414": {
+    "1": "Orminge centrum",
+    "2": "Slussen"
+  },
+  "416": {
+    "1": "Telegrafberget",
+    "2": "Orminge centrum"
+  },
+  "417": {
+    "1": "Hasseludden",
+    "2": "Orminge centrum"
+  },
+  "418": {
+    "1": "Gustavsvik",
+    "2": "Orminge centrum"
+  },
+  "420": {
+    "1": "Gustavsbergs centrum",
+    "2": "Slussen"
+  },
+  "421": {
+    "1": "Tegelövägen",
+    "2": "Orminge centrum"
+  },
+  "422": {
+    "1": "Styrmannen",
+    "2": "Slussen"
+  },
+  "423": {
+    "1": "Styrmannen",
+    "2": "Glasbruksgatan"
+  },
+  "435C": {
+    "2": "Cityterminalen",
+    "1": "Hemmesta vägskäl"
+  },
+  "424H": {
+    "2": "Gustavsbergs centrum"
+  },
+  "424V": {
+    "1": "Gustavsbergs centrum"
+  },
+  "425": {
+    "1": "Styrmannen",
+    "2": "Slussen"
+  },
+  "426": {
+    "1": "Aspviks brygga",
+    "2": "Gustavsbergs centrum"
+  },
+  "40B": {
+    "2": "Högdalen",
+    "1": "Huddinge station"
+  },
+  "442C": {
+    "2": "Cityterminalen",
+    "1": "Boovägen"
+  },
+  "428X": {
+    "1": "Björkviks brygga",
+    "2": "Slussen"
+  },
+  "428": {
+    "1": "Björkviks brygga",
+    "2": "Gustavsbergs centrum"
+  },
+  "429X": {
+    "1": "Idalens vändplan",
+    "2": "Slussen"
+  },
+  "429": {
+    "1": "Idalens vändplan",
+    "2": "Gustavsbergs centrum"
+  },
+  "430X": {
+    "1": "Eknäs brygga",
+    "2": "Slussen"
+  },
+  "430": {
+    "1": "Eknäs brygga",
+    "2": "Gustavsbergs centrum"
+  },
+  "432": {
+    "1": "Malma kvarn",
+    "2": "Slussen"
+  },
+  "433": {
+    "1": "Byns gård",
+    "2": "Slussen"
+  },
+  "434": {
+    "1": "Överby brygga",
+    "2": "Slussen"
+  },
+  "435": {
+    "1": "Hemmesta vägskäl",
+    "2": "Slussen"
+  },
+  "436": {
+    "1": "Saltarö strand",
+    "2": "Slussen"
+  },
+  "437": {
+    "1": "Lillsved",
+    "2": "Slussen"
+  },
+  "438": {
+    "1": "Boda brygga",
+    "2": "Slussen"
+  },
+  "439": {
+    "1": "Stenslätten",
+    "2": "Slussen"
+  },
+  "440": {
+    "1": "Bullandö",
+    "2": "Slussen"
+  },
+  "441": {
+    "1": "Tegelövägen",
+    "2": "Slussen"
+  },
+  "442": {
+    "1": "Orminge centrum",
+    "2": "Slussen"
+  },
+  "446": {
+    "1": "Nämdöstigen",
+    "2": "Glasbruksgatan"
+  },
+  "447": {
+    "2": "Slussen"
+  },
+  "448C": {
+    "2": "Cityterminalen"
+  },
+  "449": {
+    "1": "Ektorps centrum",
+    "2": "Glasbruksgatan"
+  },
+  "458": {
+    "1": "Älgö",
+    "2": "Saltsjöbadens station"
+  },
+  "461": {
+    "1": "Evlinge",
+    "2": "Kolvik"
+  },
+  "462": {
+    "1": "Ramsdalen",
+    "2": "Kolvik"
+  },
+  "463": {
+    "1": "Sandö brygga",
+    "2": "Siggesta"
+  },
+  "465": {
+    "1": "Jarlaberg"
+  },
+  "467": {
+    "1": "Brunn",
+    "2": "Gustavsbergs centrum"
+  },
+  "468": {
+    "1": "Hålludden",
+    "2": "Gustavsbergs centrum"
+  },
+  "469": {
+    "1": "Nacka sjukhus",
+    "2": "Finnberget"
+  },
+  "657": {
+    "1": "Lommarskolan",
+    "2": "Campus Roslagen"
+  },
+  "658": {
+    "1": "Solbackavägen",
+    "2": "Norrtälje busstation"
+  },
+  "660": {
+    "2": "Gustavslund"
+  },
+  "661": {
+    "2": "Vallentuna station",
+    "1": "Kårsta torg"
+  },
+  "662": {
+    "2": "Vallentuna station",
+    "1": "Markims Husby"
+  },
+  "662Y": {
+    "2": "Vallentuna station",
+    "1": "Vallentuna station"
+  },
+  "663": {
+    "1": "Vallentuna station"
+  },
+  "664": {
+    "2": "Vallentunabadet",
+    "1": "Uthamra"
+  },
+  "666": {
+    "2": "Ekskogens station",
+    "1": "Sundby"
+  },
+  "667": {
+    "2": "Gillinge",
+    "1": "Stora Karby"
+  },
+  "680": {
+    "2": "Tekniska högskolan",
+    "1": "Överby"
+  },
+  "681": {
+    "2": "Rydbo station",
+    "1": "Västerhamnsplan"
+  },
+  "682": {
+    "2": "Västerhamnsplan",
+    "1": "Överby"
+  },
+  "684": {
+    "2": "Täby centrum",
+    "1": "Upplands Väsby station"
+  },
+  "685": {
+    "2": "Kista centrum",
+    "1": "Åkersberga station"
+  },
+  "687": {
+    "2": "Vallentuna station",
+    "1": "Kista centrum"
+  },
+  "688": {
+    "2": "Västerhamnsplan",
+    "1": "Oskar Fredriksborg"
+  },
+  "689": {
+    "2": "Höganäs brygga",
+    "1": "Gustavsbergs centrum"
+  },
+  "690": {
+    "2": "Odenplan",
+    "1": "Lindholmens station"
+  },
+  "691": {
+    "2": "Odenplan",
+    "1": "Pilotvägen"
+  },
+  "695": {
+    "2": "Danderyds sjukhus",
+    "1": "Arninge station"
+  },
+  "696": {
+    "2": "Tekniska högskolan",
+    "1": "Norrtälje busstation"
+  },
+  "697": {
+    "2": "Cityterminalen",
+    "1": "Cityterminalen"
+  },
+  "703": {
+    "1": "Sörskogen",
+    "2": "Fruängen"
+  },
+  "707": {
+    "1": "Fruängen",
+    "2": "Tumba station"
+  },
+  "715V": {
+    "1": "Tumba station"
+  },
+  "708Y": {
+    "1": "Lilla Dalens begravningsplats",
+    "2": "Kvarnhagsvägen"
+  },
+  "710": {
+    "1": "Sörskogen",
+    "2": "Skärholmen"
+  },
+  "719": {
+    "2": "Tumba station",
+    "1": "Skäcklinge"
+  },
+  "725": {
+    "2": "Tumba station",
+    "1": "Nytorp"
+  },
+  "727": {
+    "2": "Tumba station",
+    "1": "Skanssundet"
+  },
+  "737": {
+    "1": "Skärholmen",
+    "2": "Tumba station"
+  },
+  "743": {
+    "1": "Skäcklinge",
+    "2": "Liljeholmen"
+  },
+  "748": {
+    "1": "Liljeholmen",
+    "2": "Chassiporten"
+  },
+  "756": {
+    "1": "Torekällberget",
+    "2": "Scaniarinken"
+  },
+  "780X": {
+    "1": "Bärvägen",
+    "2": "Södertälje centrum"
+  },
+  "787": {
+    "2": "Torekällberget",
+    "1": "Överenhörna kyrka"
+  },
+  "809": {
+    "1": "Svartbäcken",
+    "2": "Gullmarsplan"
+  },
+  "827": {
+    "1": "Lillsjövägen",
+    "2": "Dåntorpsvägen västra"
+  },
+  "844": {
+    "1": "Åbylund",
+    "2": "Murarvägen"
+  },
+  "854": {
+    "1": "Nickstastigen",
+    "2": "Sjögången"
+  },
+  "889": {
+    "1": "Lättinge brygga",
+    "2": "Hässelmara"
+  },
+  "898": {
+    "1": "Sjögången",
+    "2": "Centralen"
+  },
+  "UL857": {
+    "1": "Sanda",
+    "2": "Hallstaviks station"
+  },
+  "41C": {
+    "1": "Flemingsbergs station",
+    "2": "Årstaberg"
+  },
+  "480C": {
+    "1": "Mölnvik",
+    "2": "Cityterminalen"
+  },
+  "491": {
+    "1": "Nyfors",
+    "2": "Centralen"
+  },
+  "492": {
+    "1": "Hemmesta vägskäl",
+    "2": "Centralen"
+  },
+  "496": {
+    "1": "Orminge centrum",
+    "2": "Slussen"
+  },
+  "497": {
+    "1": "Tippen",
+    "2": "Centralen"
+  },
+  "501": {
+    "1": "Frösundavik",
+    "2": "Hallonbergen"
+  },
+  "503": {
+    "1": "Himlabacken",
+    "2": "Ulriksdals begravningsplats"
+  },
+  "504": {
+    "1": "Rissne",
+    "2": "Sundbybergs station"
+  },
+  "176E": {
+    "2": "Brommaplan"
+  },
+  "653V": {
+    "1": "Sätuna",
+    "2": "Norrtälje busstation"
+  },
+  "654": {
+    "1": "Lohärads kyrka",
+    "2": "Norrtälje busstation"
+  },
+  "654Y": {
+    "1": "Norrtälje busstation",
+    "2": "Norrtälje busstation"
+  },
+  "655": {
+    "1": "Norrtälje busstation",
+    "2": "Söderhalls trafikplats"
+  },
+  "656": {
+    "1": "Solbackavägen",
+    "2": "Campus Roslagen"
+  },
+  "659": {
+    "1": "Gästrikevägen",
+    "2": "Gammelängstorget"
+  },
+  "665": {
+    "2": "Vallentuna station",
+    "1": "Kårsta station"
+  },
+  "668": {
+    "2": "Frösunda kyrka",
+    "1": "Lövsta säteri"
+  },
+  "699": {
+    "1": "Västerhamnsplan",
+    "2": "Tekniska högskolan"
+  },
+  "717": {
+    "2": "Tumba station",
+    "1": "Bremora"
+  },
+  "745": {
+    "1": "Uttran",
+    "2": "Liljeholmen"
+  },
+  "817": {
+    "1": "Bergholmsvägen",
+    "2": "Tyresö kyrka"
+  },
+  "UL806": {
+    "1": "Cargo City",
+    "2": "Åby vägskäl (Långhundra)"
+  },
+  "12B": {
+    "1": "Alvik",
+    "2": "Nockeby"
+  },
+  "18H": {
+    "2": "Hökarängen",
+    "1": "Farsta strand"
+  },
+  "21B": {
+    "1": "Gåshaga",
+    "2": "Käppala station"
+  },
+  "40": {
+    "2": "Sollentuna station",
+    "1": "Upplands Väsby station"
+  },
+  "43E": {
+    "2": "Bålsta station",
+    "1": "Kungsängens station"
+  },
+  "176X": {
+    "1": "Mörby station",
+    "2": "Solbacka"
+  },
+  "504Y": {
+    "1": "Hallonbergen"
+  },
+  "505": {
+    "1": "Bagartorp södra",
+    "2": "Solna centrum"
+  },
+  "506": {
+    "1": "Hallonbergen",
+    "2": "Karolinska sjukhuset norra"
+  },
+  "508": {
+    "1": "Danderyds sjukhus",
+    "2": "Lise Meitners gata"
+  },
+  "509": {
+    "1": "Danderyds sjukhus",
+    "2": "Tomteboda postterminal"
+  },
+  "511": {
+    "1": "Rinkeby centrum",
+    "2": "Järva närsjukhus"
+  },
+  "512": {
+    "1": "Solna centrum",
+    "2": "Spånga station"
+  },
+  "513": {
+    "1": "Solna centrum"
+  },
+  "514": {
+    "1": "Sollentuna station",
+    "2": "Spånga station"
+  },
+  "25M": {
+    "1": "Saltsjöbadens station",
+    "2": "Slussen"
+  },
+  "26M": {
+    "1": "Solsidans station",
+    "2": "Slussen"
+  },
+  "514X": {
+    "1": "Sollentuna station",
+    "2": "Spånga station"
+  },
+  "515": {
+    "1": "Sundbybergs station",
+    "2": "Odenplan"
+  },
+  "516": {
+    "1": "Mossvägen",
+    "2": "Sergels torg"
+  },
+  "517": {
+    "1": "Kista centrum",
+    "2": "Spånga station"
+  },
+  "518": {
+    "1": "Kista gård",
+    "2": "Vällingby"
+  },
+  "519": {
+    "1": "Tekniska högskolan",
+    "2": "Ursviks holme"
+  },
+  "520": {
+    "1": "Holmboda",
+    "2": "Sollentuna station"
+  },
+  "523": {
+    "1": "Kista centrum",
+    "2": "Djupdalsvägen"
+  },
+  "524": {
+    "1": "Arninge station",
+    "2": "Upplands Väsby station"
+  },
+  "525": {
+    "1": "Pukvägen",
+    "2": "Sollentuna station"
+  },
+  "648Y": {
+    "1": "Långsjöskolan"
+  },
+  "649": {
+    "1": "Beateberg",
+    "2": "Långsjöskolan"
+  },
+  "650": {
+    "1": "Norrbyggeby",
+    "2": "Rånäs skola"
+  },
+  "651": {
+    "1": "Balders hage",
+    "2": "Norrtälje busstation"
+  },
+  "652": {
+    "1": "Norrtälje busstation",
+    "2": "Norrtälje busstation"
+  },
+  "683": {
+    "2": "Arninge station",
+    "1": "Åkersberga station"
+  },
+  "694": {
+    "2": "Danderyds sjukhus",
+    "1": "Åkerstorp"
+  },
+  "705": {
+    "1": "Stuvsta station",
+    "2": "Solgård"
+  },
+  "713": {
+    "1": "Tumba station",
+    "2": "Björnkulla"
+  },
+  "40J": {
+    "1": "Märsta station",
+    "2": "Upplands Väsby station"
+  },
+  "48H": {
+    "2": "Södertälje centrum",
+    "1": "Gnesta busstation"
+  },
+  "721X": {
+    "2": "Tullinge station",
+    "1": "Lida"
+  },
+  "740": {
+    "1": "Björnkulla",
+    "2": "Lindvreten"
+  },
+  "750": {
+    "1": "Högantorp",
+    "2": "Brunnsängs centrum"
+  },
+  "796": {
+    "2": "Tumba station",
+    "1": "Bremora"
+  },
+  "835": {
+    "1": "Lillgården",
+    "2": "Truckvägen"
+  },
+  "892": {
+    "1": "Jordbro station",
+    "2": "Centralen"
+  },
+  "43C": {
+    "2": "Centralen"
+  },
+  "26C": {
+    "2": "Cityterminalen"
+  },
+  "41B": {
+    "2": "Tumba station",
+    "1": "Södertälje centrum"
+  },
+  "43B": {
+    "1": "Gröndalsvikens station",
+    "2": "Centralen"
+  },
+  "40X": {
+    "2": "Hallunda centrum",
+    "1": "Södertälje centrum"
+  },
+  "525X": {
+    "2": "Sollentuna station"
+  },
+  "526": {
+    "1": "Karolinska sjukhuset norra",
+    "2": "Djupdalsvägen"
+  },
+  "527": {
+    "1": "Södersätra",
+    "2": "Sollentuna station"
+  },
+  "528": {
+    "1": "Helenelunds station",
+    "2": "Djupdalsvägen"
+  },
+  "529": {
+    "1": "Bollstanäs skola",
+    "2": "Rotebro station östra"
+  },
+  "530": {
+    "1": "Arninge station",
+    "2": "Upplands Väsby station"
+  },
+  "531": {
+    "1": "Bergby",
+    "2": "Upplands Väsby station"
+  },
+  "532": {
+    "1": "Runsa",
+    "2": "Upplands Väsby station"
+  },
+  "533": {
+    "1": "Rotebro station östra",
+    "2": "Upplands Väsby station"
+  },
+  "534": {
+    "1": "Rotebro station östra",
+    "2": "Upplands Väsby station"
+  },
+  "535": {
+    "1": "Upplands Väsby station västra",
+    "2": "Upplands Väsby station västra"
+  },
+  "536": {
+    "1": "Bollstanäs skola",
+    "2": "Edsparken"
+  },
+  "537": {
+    "1": "Kista centrum",
+    "2": "Upplands Väsby station"
+  },
+  "538H": {
+    "2": "Räddningsverket"
+  },
+  "538V": {
+    "1": "Räddningsverket"
+  },
+  "538": {
+    "1": "Rotebro station östra",
+    "2": "Räddningsverket"
+  },
+  "539": {
+    "1": "Länsmansvägen",
+    "2": "Upplands Väsby station"
+  },
+  "540": {
+    "1": "Tensta centrum",
+    "2": "Universitetet"
+  },
+  "541": {
+    "1": "Vällingby",
+    "2": "Jakobsbergs station"
+  },
+  "542": {
+    "1": "Kallhälls station",
+    "2": "Jakobsbergs station"
+  },
+  "543": {
+    "1": "Jakobsbergs station",
+    "2": "Vällingby"
+  },
+  "544": {
+    "1": "Jakobsbergs station"
+  },
+  "545": {
+    "1": "Bollstanäs skola",
+    "2": "Upplands Väsby station"
+  },
+  "546H": {
+    "2": "Barkarby station"
+  },
+  "546V": {
+    "1": "Barkarby station"
+  },
+  "547": {
+    "1": "Kallhälls station",
+    "2": "Jakobsbergs station"
+  },
+  "548": {
+    "1": "Ängsjö friluftsgård",
+    "2": "Kallhälls station"
+  },
+  "550": {
+    "1": "Kallhälls station",
+    "2": "Barkarby station"
+  },
+  "553H": {
+    "1": "Jakobsbergs station"
+  },
+  "553V": {
+    "2": "Jakobsbergs station"
+  },
+  "555": {
+    "1": "Låssa kyrka",
+    "2": "Kungsängens station"
+  },
+  "556": {
+    "1": "Ådö",
+    "2": "Bro centrum"
+  },
+  "557": {
+    "1": "Håtuna kyrka",
+    "2": "Kungsängens station"
+  },
+  "558": {
+    "1": "Håtuna kyrka",
+    "2": "Kungsängens station"
+  },
+  "177E": {
+    "1": "Solna station"
+  },
+  "564V": {
+    "2": "Jakobsbergs station"
+  },
+  "558X": {
+    "1": "Örnäsvägen",
+    "2": "Kungsängens station"
+  },
+  "559": {
+    "1": "Textilvägen",
+    "2": "Kungsängens station"
+  },
+  "560": {
+    "1": "Jakobsbergs station",
+    "2": "Upplands Väsby station"
+  },
+  "560X": {
+    "1": "Kallhälls station",
+    "2": "Upplands Väsby station"
+  },
+  "562": {
+    "1": "Runby backar",
+    "2": "Upplands Väsby station"
+  },
+  "564H": {
+    "1": "Jakobsbergs station"
+  },
+  "564Y": {
+    "1": "Görvälnsbadet",
+    "2": "Jakobsbergs station"
+  },
+  "567": {
+    "1": "Jakobsbergs station",
+    "2": "Sollentuna station"
+  },
+  "568": {
+    "1": "Löwenströmska sjukh.",
+    "2": "Upplands Väsby station"
+  },
+  "570": {
+    "1": "Hällsboskolan",
+    "2": "Märsta station"
+  },
+  "571": {
+    "1": "Cederströms slinga",
+    "2": "Märsta station"
+  },
+  "623H": {
+    "1": "Åkersberga station"
+  },
+  "623V": {
+    "2": "Åkersberga station"
+  },
+  "571X": {
+    "1": "Cederströms slinga",
+    "2": "Märsta station"
+  },
+  "573": {
+    "1": "Pinbackshallen"
+  },
+  "574": {
+    "1": "Åby vägskäl (Långhundra)",
+    "2": "Ekillaskolan"
+  },
+  "575": {
+    "1": "Hällsboskolan",
+    "2": "Märsta station"
+  },
+  "575X": {
+    "1": "Hällsboskolan",
+    "2": "Märsta station"
+  },
+  "576": {
+    "1": "Rosersbergs station västra",
+    "2": "Märsta station"
+  },
+  "577": {
+    "1": "Upplands Väsby station",
+    "2": "Märsta station"
+  },
+  "579": {
+    "1": "Halmsjön",
+    "2": "Bålsta station"
+  },
+  "580": {
+    "1": "Jupitergatan",
+    "2": "Märsta station"
+  },
+  "581": {
+    "1": "Fasanvägen",
+    "2": "Märsta station"
+  },
+  "582": {
+    "1": "Solurstorget",
+    "2": "Märsta station"
+  },
+  "583": {
+    "1": "Märsta station"
+  },
+  "584": {
+    "1": "Gloskärr",
+    "2": "Märsta station"
+  },
+  "587": {
+    "1": "Märsta station"
+  },
+  "589": {
+    "1": "SAS-hangaren",
+    "2": "Jupitergatan"
+  },
+  "590": {
+    "1": "Jakobsbergs station"
+  },
+  "591": {
+    "1": "Livgardet",
+    "2": "Cityterminalen"
+  },
+  "592": {
+    "1": "Halmsjön",
+    "2": "Cityterminalen"
+  },
+  "593": {
+    "1": "Cityterminalen",
+    "2": "Uppsala centralstation"
+  },
+  "594": {
+    "1": "Runby backar",
+    "2": "Rotebro station östra"
+  },
+  "595": {
+    "1": "Sundbybergs station",
+    "2": "Centralen"
+  },
+  "596": {
+    "1": "Märsta station"
+  },
+  "597": {
+    "1": "Hällsboskolan",
+    "2": "Märsta station"
+  },
+  "598": {
+    "1": "Runby backar",
+    "2": "Cityterminalen"
+  },
+  "599": {
+    "1": "Brunnby Vik"
+  },
+  "601": {
+    "1": "Svalnäs Gästhem",
+    "2": "Sätra äng"
+  },
+  "602": {
+    "1": "Djursholms torg",
+    "2": "Danderyds sjukhus"
+  },
+  "604": {
+    "1": "Hägernäs station",
+    "2": "Danderyds sjukhus"
+  },
+  "604X": {
+    "1": "Hägernäs station",
+    "2": "Danderyds sjukhus"
+  },
+  "605": {
+    "1": "Lansen",
+    "2": "Danderyds sjukhus"
+  },
+  "606": {
+    "1": "Djursholms torg",
+    "2": "Danderyds sjukhus"
+  },
+  "607": {
+    "1": "Sollentuna station",
+    "2": "Danderyds sjukhus"
+  },
+  "608": {
+    "1": "Rosengården",
+    "2": "Humlegården"
+  },
+  "609": {
+    "1": "Lansen",
+    "2": "Danderyds sjukhus"
+  },
+  "610": {
+    "1": "Rosengården",
+    "2": "Danderyds sjukhus"
+  },
+  "611": {
+    "1": "Östra Byle",
+    "2": "Danderyds sjukhus"
+  },
+  "612": {
+    "1": "Kista centrum",
+    "2": "Arninge station"
+  },
+  "613": {
+    "1": "Torvmossegränd",
+    "2": "Sollentuna station"
+  },
+  "614": {
+    "1": "Täby centrum"
+  },
+  "615": {
+    "1": "Arninge station",
+    "2": "Täbybadet"
+  },
+  "616": {
+    "1": "Östra Byle",
+    "2": "Pilotvägen"
+  },
+  "617": {
+    "1": "Pilotvägen",
+    "2": "Täby centrum"
+  },
+  "617H": {
+    "2": "Täby centrum"
+  },
+  "617V": {
+    "1": "Täby centrum"
+  },
+  "619": {
+    "1": "Täby centrum"
+  },
+  "620": {
+    "1": "Norrtälje busstation",
+    "2": "Åkersberga station"
+  },
+  "620X": {
+    "1": "Norrtälje busstation",
+    "2": "Gregersboda"
+  },
+  "621": {
+    "1": "Norrtälje busstation",
+    "2": "Åkersberga station"
+  },
+  "622": {
+    "1": "Fritz Janssons väg",
+    "2": "Åkersberga station"
+  },
+  "622X": {
+    "1": "Fritz Janssons väg",
+    "2": "Åkersberga station"
+  },
+  "623": {
+    "1": "Åkersberga station"
+  },
+  "624": {
+    "1": "Åkersberga station",
+    "2": "Danderyds sjukhus"
+  },
+  "625": {
+    "1": "Söderhalls trafikplats",
+    "2": "Arninge station"
+  },
+  "626": {
+    "1": "Joffsviken",
+    "2": "Danderyds sjukhus"
+  },
+  "627": {
+    "1": "Sollentuna station",
+    "2": "Åkerby industriområde"
+  },
+  "628": {
+    "1": "Margretelunds centrum",
+    "2": "Danderyds sjukhus"
+  },
+  "629": {
+    "1": "Lövsättra vägskäl",
+    "2": "Danderyds sjukhus"
+  },
+  "630": {
+    "1": "Spillersboda brygga",
+    "2": "Norrtälje busstation"
+  },
+  "631": {
+    "1": "Norrtälje busstation"
+  },
+  "631X": {
+    "1": "Norrtälje busstation"
+  },
+  "632": {
+    "1": "Vagnsunda",
+    "2": "Norrtälje busstation"
+  },
+  "633": {
+    "1": "Margretelunds centrum",
+    "2": "Åkersberga station"
+  },
+  "634": {
+    "1": "Glyxnäs",
+    "2": "Norrtälje busstation"
+  },
+  "635": {
+    "1": "Österåkersanstalten",
+    "2": "Åkersberga station"
+  },
+  "636": {
+    "1": "Östersjö brygga",
+    "2": "Norrtälje busstation"
+  },
+  "637": {
+    "1": "Ellans vändplan",
+    "2": "Norrtälje busstation"
+  },
+  "638": {
+    "1": "Norrtälje busstation"
+  },
+  "639": {
+    "1": "Västertorp",
+    "2": "Söderhalls trafikplats"
+  },
+  "641": {
+    "1": "Hallstaviks station",
+    "2": "Norrtälje busstation"
+  },
+  "641X": {
+    "1": "Hallstaviks station"
+  },
+  "642": {
+    "1": "Herrängs bruk",
+    "2": "Hallstaviks station"
+  },
+  "643": {
+    "1": "Älmsta skola",
+    "2": "Hallstaviks station"
+  },
+  "644": {
+    "1": "Mora vägskäl",
+    "2": "Söderhalls trafikplats"
+  },
+  "645": {
+    "1": "Norrtälje busstation",
+    "2": "Norrtälje busstation"
+  },
+  "646": {
+    "1": "Rimbo station",
+    "2": "Rimbo station"
+  },
+  "647": {
+    "1": "Rimbo station",
+    "2": "Norrtälje busstation"
+  },
+  "648": {
+    "1": "Rånäs Långsjö torg",
+    "2": "Långsjöskolan"
+  },
+  "653": {
+    "2": "Norrtälje busstation"
+  },
+  "698": {
+    "1": "Österskärs station"
+  },
+  "731": {
+    "1": "Rönninge station"
+  },
+  "753": {
+    "1": "Östertälje station",
+    "2": "Hovsjöskolan"
+  },
+  "759": {
+    "1": "Fina Svenséns gata",
+    "2": "Astrabacken"
+  },
+  "778": {
+    "1": "Sundsvik",
+    "2": "Turingeskolan"
+  },
+  "781": {
+    "1": "Bärvägen",
+    "2": "Köpmangatan"
+  },
+  "784X": {
+    "2": "Södertälje centrum",
+    "1": "Norrvrå"
+  },
+  "788": {
+    "2": "Södertälje centrum",
+    "1": "Järna station"
+  },
+  "794": {
+    "2": "Huddinge station",
+    "1": "Flemingsbergs station"
+  },
+  "802": {
+    "1": "Tyresö centrum",
+    "2": "Gullmarsplan"
+  },
+  "806": {
+    "1": "Myrmalmsringen",
+    "2": "Gullmarsplan"
+  },
+  "810": {
+    "1": "Västerbommen",
+    "2": "Gullmarsplan"
+  },
+  "816": {
+    "2": "Gullmarsplan",
+    "1": "Tyresö centrum"
+  },
+  "819": {
+    "1": "Ällmora"
+  },
+  "821": {
+    "1": "Tyresö centrum",
+    "2": "Nacka sjukhus"
+  },
+  "823": {
+    "1": "Tyresö centrum",
+    "2": "Gullmarsplan"
+  },
+  "824": {
+    "2": "Rudsjöterrassen",
+    "1": "Strandängarna"
+  },
+  "826": {
+    "1": "Dammliden östra",
+    "2": "Rudsjöterrassen"
+  },
+  "828": {
+    "1": "Rondovägen",
+    "2": "Farsta centrum"
+  },
+  "829": {
+    "2": "Vega station",
+    "1": "Truckvägen"
+  },
+  "830": {
+    "1": "Rudsjöterrassen",
+    "2": "Farsta centrum"
+  },
+  "832": {
+    "2": "Vega station",
+    "1": "Vikingaskolan"
+  },
+  "833": {
+    "2": "Farsta centrum",
+    "1": "Pelikanvägen"
+  },
+  "834": {
+    "1": "Tyresta by",
+    "2": "Rudsjöterrassen"
+  },
+  "836": {
+    "1": "Flodvägen",
+    "2": "Vega station"
+  },
+  "837": {
+    "1": "Rörvägen",
+    "2": "Vega station"
+  },
+  "838": {
+    "1": "Jordbro station",
+    "2": "Sjukhusentrén"
+  },
+  "840": {
+    "1": "Nacka strand",
+    "2": "Rudsjöterrassen"
+  },
+  "842": {
+    "2": "Sågen",
+    "1": "Dåntorpsvägen västra"
+  },
+  "843": {
+    "1": "Söderby brygga",
+    "2": "Västerhaninge station"
+  },
+  "845": {
+    "1": "Västra Bondäng",
+    "2": "Västerhaninge station"
+  },
+  "846": {
+    "2": "Västerhaninge station",
+    "1": "Årsta slott"
+  },
+  "847": {
+    "1": "Nynäshamns station",
+    "2": "Västerhaninge station"
+  },
+  "849": {
+    "2": "Ösmo centrum",
+    "1": "Hyttan"
+  },
+  "850": {
+    "2": "Segersängs station",
+    "1": "Trollsta vägskäl"
+  },
+  "852": {
+    "1": "Ankarudden",
+    "2": "Gröndalsvikens station"
+  },
+  "856": {
+    "1": "Lindholmen",
+    "2": "Spångbro"
+  },
+  "861": {
+    "1": "Estögaraget",
+    "2": "Slakthuset (Globen)"
+  },
+  "865": {
+    "1": "Skärholmen",
+    "2": "Rudsjöterrassen"
+  },
+  "869": {
+    "1": "Hotellbryggan",
+    "2": "Slakthuset (Globen)"
+  },
+  "7": {
+    "1": "Skansen",
+    "2": "T-Centralen"
+  },
+  "30B": {
+    "2": "Johannesfred",
+    "1": "Solna station"
+  },
+  "40K": {
+    "1": "Uppsala centralstation",
+    "2": "Centralen"
+  },
+  "41D": {
+    "1": "Södertälje centrum",
+    "2": "Älvsjö station"
+  },
+  "43D": {
+    "1": "Farsta strand",
+    "2": "Västerhaninge station"
+  },
+  "45D": {
+    "1": "Gröndalsvikens station",
+    "2": "Farsta strand"
+  },
+  "715H": {
+    "2": "Tumba station"
+  },
+  "752": {
+    "1": "Kakelvägen",
+    "2": "Södertälje hamn"
+  },
+  "754": {
+    "1": "Mörtstigen",
+    "2": "Södertälje centrum"
+  },
+  "758": {
+    "1": "Östertälje station",
+    "2": "Scaniarinken"
+  },
+  "761": {
+    "1": "Vårbovägen",
+    "2": "Östertälje station"
+  },
+  "777": {
+    "1": "Södertälje syd",
+    "2": "Klockarvägen"
+  },
+  "779": {
+    "1": "Nygård",
+    "2": "Nykvarns station"
+  },
+  "780": {
+    "1": "Bärvägen",
+    "2": "Södertälje centrum"
+  },
+  "782": {
+    "1": "Turingeskolan"
+  },
+  "784": {
+    "1": "Norrvrå",
+    "2": "Södertälje centrum västra"
+  },
+  "786": {
+    "1": "Gnesta busstation",
+    "2": "Järna station"
+  },
+  "787X": {
+    "1": "Överenhörna kyrka",
+    "2": "Södertälje centrum"
+  },
+  "789": {
+    "1": "Vackstanäs",
+    "2": "Södertälje centrum"
+  },
+  "792": {
+    "1": "Balingsnäs",
+    "2": "Skärholmen"
+  },
+  "795": {
+    "1": "Tumba station",
+    "2": "Fittja"
+  },
+  "797": {
+    "1": "Södertälje centrum"
+  },
+  "798": {
+    "1": "Södertälje centrum"
+  },
+  "801": {
+    "1": "Gullmarsplan"
+  },
+  "803": {
+    "1": "Tyresö centrum",
+    "2": "Telefonplan"
+  },
+  "805": {
+    "1": "Ällmora",
+    "2": "Gullmarsplan"
+  },
+  "807": {
+    "1": "Svartbäcken",
+    "2": "Gullmarsplan"
+  },
+  "809C": {
+    "1": "Svartbäcken",
+    "2": "Vattugatan"
+  },
+  "814": {
+    "1": "Hedvigslunds torg",
+    "2": "Gullmarsplan"
+  },
+  "820": {
+    "1": "Trollbäckens centrum"
+  },
+  "858": {
+    "2": "FOI",
+    "1": "Lövhagen"
+  },
+  "21": {
+    "1": "Ropsten",
+    "2": "Gåshaga"
+  },
+  "41A": {
+    "1": "Tumba station",
+    "2": "Telefonplan"
+  },
+  "812C": {
+    "2": "Vattugatan",
+    "1": "Nyboda skola"
+  },
+  "815C": {
+    "1": "Tyresö kyrka",
+    "2": "Vattugatan"
+  },
+  "43M": {
+    "2": "Tungelsta station",
+    "1": "Hemfosa"
+  },
+  "40D": {
+    "1": "Tumba station",
+    "2": "Hallunda centrum"
+  },
+  "40S": {
+    "1": "Södertälje centrum",
+    "2": "Flemingsbergs station"
+  },
+  "48T": {
+    "2": "Hallunda centrum",
+    "1": "Gnesta busstation"
+  },
+  "43T": {
+    "1": "Tungelsta station",
+    "2": "Västerhaninge station"
+  },
+  "43X": {
+    "1": "Centralen",
+    "2": "Bålsta station"
+  },
+  "43": {
+    "1": "Gröndalsvikens station"
+  },
+  "818C": {
+    "1": "Brandbergens centrum",
+    "2": "Vattugatan"
+  },
+  "43F": {
+    "2": "Farsta strand",
+    "1": "Centralen"
+  },
+  "1": {
+    "1": "Essingetorget",
+    "2": "Frihamnen"
+  },
+  "2": {
+    "1": "Humlegården",
+    "2": "Sveaplan"
+  },
+  "3": {
+    "1": "Södersjukhuset",
+    "2": "Gullmarsplan"
+  },
+  "4": {
+    "1": "Gullmarsplan",
+    "2": "Radiohuset"
+  },
+  "5": {
+    "1": "Liljeholmen",
+    "2": "Karolinska sjukhuset norra"
+  },
+  "6": {
+    "1": "Ropsten",
+    "2": "Karolinska sjukhuset norra"
+  },
+  "172": {
+    "1": "Skarpnäck",
+    "2": "Hallunda centrum"
+  },
+  "173": {
+    "1": "Skärholmen",
+    "2": "Skarpnäck"
+  },
+  "176": {
+    "1": "Mörby station",
+    "2": "Solbacka"
+  },
+  "177": {
+    "1": "Mörby station",
+    "2": "Skärvik"
+  },
+  "178": {
+    "1": "Jakobsbergs station",
+    "2": "Mörby station"
+  },
+  "179": {
+    "1": "Sollentuna station",
+    "2": "Vällingby"
+  },
+  "471": {
+    "1": "Nämdöstigen",
+    "2": "Slussen"
+  },
+  "474": {
+    "1": "Hemmesta vägskäl",
+    "2": "Slussen"
+  },
+  "670X": {
+    "2": "Danderyds sjukhus",
+    "1": "Västerhamnsplan"
+  },
+  "670": {
+    "1": "Västerhamnsplan",
+    "2": "Tekniska högskolan"
+  },
+  "676": {
+    "1": "Norrtälje busstation",
+    "2": "Tekniska högskolan"
+  },
+  "676X": {
+    "1": "Norrtälje busstation",
+    "2": "Danderyds sjukhus"
+  },
+  "677": {
+    "1": "Uppsala centralstation",
+    "2": "Norrtälje busstation"
+  },
+  "873": {
+    "1": "Alby friluftsgård",
+    "2": "Gullmarsplan"
+  },
+  "875": {
+    "1": "Tyresö kyrka",
+    "2": "Gullmarsplan"
+  }
+}

@@ -53,8 +53,21 @@ class SlStopDeparturesCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    this._ensureBusLineTerminusLabels();
     this._updateView();
     this._syncRefreshTimer();
+  }
+
+  _ensureBusLineTerminusLabels() {
+    const api = window.SlDepartureTime;
+    if (!api || !api.ensureBusLineTerminus || this._busLineTerminusBound) {
+      return;
+    }
+    this._busLineTerminusBound = true;
+    const self = this;
+    api.ensureBusLineTerminus("20260729w").then(function () {
+      self._updateView();
+    });
   }
 
   connectedCallback() {

@@ -38,8 +38,21 @@ class SlNearbyStopsCard extends HTMLElement {
       this._departureCache.clear();
       this._openSiteId = null;
     }
+    this._ensureBusLineTerminusLabels();
     this._render();
     this._syncRefreshTimer();
+  }
+
+  _ensureBusLineTerminusLabels() {
+    const api = window.SlDepartureTime;
+    if (!api || !api.ensureBusLineTerminus || this._busLineTerminusBound) {
+      return;
+    }
+    this._busLineTerminusBound = true;
+    const self = this;
+    api.ensureBusLineTerminus("20260729w").then(function () {
+      self._render();
+    });
   }
 
   getCardSize() {
