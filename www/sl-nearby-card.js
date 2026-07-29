@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729l";
+    return "20260729m";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729l",
+      sites_cache_version: "20260729m",
     };
   }
 
@@ -539,6 +539,17 @@ class SlNearbyCard extends HTMLElement {
     return hideDeparted && expectedAt ? this._isDeparted(expectedAt, now) : false;
   }
 
+  _sortDeparturesByTime(departures) {
+    if (window.SlDepartureTime && window.SlDepartureTime.sortDeparturesByTime) {
+      return window.SlDepartureTime.sortDeparturesByTime(departures);
+    }
+    return (departures || []).slice().sort(function (a, b) {
+      const aMs = new Date(a.expected || a.scheduled || 0).getTime();
+      const bMs = new Date(b.expected || b.scheduled || 0).getTime();
+      return aMs - bMs;
+    });
+  }
+
   _prepareDepartures(departures) {
     const now = new Date();
     const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
@@ -560,10 +571,7 @@ class SlNearbyCard extends HTMLElement {
       items.push(Object.assign({}, dep, { destination: destination, _expectedMs: expectedMs }));
     }
 
-    items.sort(function (a, b) {
-      return a._expectedMs - b._expectedMs;
-    });
-    return items;
+    return self._sortDeparturesByTime(items);
   }
 
   _escapeHtml(value) {
@@ -815,7 +823,7 @@ class SlNearbyCard extends HTMLElement {
 
   _buildDepartureRows(departures, siteId, now) {
     const self = this;
-    const activeDeps = [];
+    let activeDeps = [];
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
       const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
@@ -824,6 +832,7 @@ class SlNearbyCard extends HTMLElement {
       }
       activeDeps.push(dep);
     }
+    activeDeps = self._sortDeparturesByTime(activeDeps);
 
     const anim = window.SlDepartureListAnim;
     if (anim && anim.manager) {

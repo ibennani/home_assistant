@@ -82,6 +82,28 @@
     return isNaN(parsed.getTime()) ? null : parsed;
   }
 
+  function getDepartureSortMs(dep) {
+    const at = parseDepartureDate(dep);
+    return at ? at.getTime() : Number.POSITIVE_INFINITY;
+  }
+
+  function compareDeparturesByTime(a, b) {
+    const diff = getDepartureSortMs(a) - getDepartureSortMs(b);
+    if (diff !== 0) {
+      return diff;
+    }
+    const aLine = String((a && a.line && a.line.designation) || "");
+    const bLine = String((b && b.line && b.line.designation) || "");
+    if (aLine !== bLine) {
+      return aLine.localeCompare(bLine);
+    }
+    return String((a && a.destination) || "").localeCompare(String((b && b.destination) || ""));
+  }
+
+  function sortDeparturesByTime(departures) {
+    return (departures || []).slice().sort(compareDeparturesByTime);
+  }
+
   function needsFastClock(departures, now, thresholdMin) {
     const nearThreshold = thresholdMin == null ? 30 : thresholdMin;
     const current = now || new Date();
@@ -168,6 +190,9 @@
     isDeparted: isDeparted,
     shouldHideDeparted: shouldHideDeparted,
     parseDepartureDate: parseDepartureDate,
+    getDepartureSortMs: getDepartureSortMs,
+    compareDeparturesByTime: compareDeparturesByTime,
+    sortDeparturesByTime: sortDeparturesByTime,
     needsFastClock: needsFastClock,
     getClockIntervalMs: getClockIntervalMs,
     createAdaptiveClock: createAdaptiveClock,
