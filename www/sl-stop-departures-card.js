@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729e";
+    return "20260729f";
   }
 
   static getStubConfig() {
@@ -17,8 +17,8 @@ class SlStopDeparturesCard extends HTMLElement {
       transfer_site_id: 9529,
       connecting_lines: ["43", "41"],
       train_leg_huddinge_alvsjo_minutes: 7,
-      walk_train_minutes: 14,
-      walk_bus_minutes: 9,
+      walk_train_minutes: 16,
+      walk_bus_minutes: 11,
       transfer_alvsjo_minutes: 3,
       train_pt_fallback_minutes: 31,
       bus_pt_fallback_minutes: 20,
@@ -312,9 +312,9 @@ class SlStopDeparturesCard extends HTMLElement {
 
   _walkMinutes(kind) {
     if (kind === "train") {
-      return Number(this.config.walk_train_minutes || 14);
+      return Number(this.config.walk_train_minutes || 16);
     }
-    return Number(this.config.walk_bus_minutes || 9);
+    return Number(this.config.walk_bus_minutes || 11);
   }
 
   _computeBusPtMinutes(dep, busJourneyMap) {

@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729e";
+    return "20260729f";
   }
 
   static getStubConfig() {
@@ -17,8 +17,8 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 60,
-      walking_buffer_minutes: 1,
-      sites_cache_version: "20260729e",
+      walking_extra_minutes: 2,
+      sites_cache_version: "20260729f",
     };
   }
 
@@ -439,7 +439,7 @@ class SlNearbyCard extends HTMLElement {
     if (!entry || entry.loading || !entry.minutes) {
       return null;
     }
-    return Number(entry.minutes) + Number(this.config.walking_buffer_minutes || 1);
+    return Number(entry.minutes) + Number(this.config.walking_extra_minutes || 2);
   }
 
   _transportModeLabel(mode) {
@@ -986,10 +986,8 @@ class SlNearbyCard extends HTMLElement {
       const totalWalk = this._getWalkMinutes(siteId);
       walkNote =
         '<div class="walk-note">Gångtid ' +
-        this._escapeHtml(String(walkEntry.minutes)) +
-        " min" +
-        (totalWalk > walkEntry.minutes ? " (+ " + (totalWalk - walkEntry.minutes) + " min buffert)" : "") +
-        "</div>";
+        this._escapeHtml(String(totalWalk)) +
+        " min</div>";
     }
 
     const stopInfo = (cache.stop_deviations || [])
