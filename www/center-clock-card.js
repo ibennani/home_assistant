@@ -1,4 +1,8 @@
 class HaCenterClockCard extends HTMLElement {
+  static get CARD_VERSION() {
+    return "20260729j";
+  }
+
   static getStubConfig() {
     return {};
   }
@@ -35,6 +39,15 @@ class HaCenterClockCard extends HTMLElement {
     return 2;
   }
 
+  getGridOptions() {
+    return {
+      columns: 12,
+      min_columns: 6,
+      rows: 2,
+      min_rows: 1,
+    };
+  }
+
   _formatTime(date) {
     const pad = (value) => String(value).padStart(2, "0");
     const use12h = this.config.time_format === "12";
@@ -54,23 +67,33 @@ class HaCenterClockCard extends HTMLElement {
     }
 
     const fontSize = this.config.font_size || "3.5rem";
+    const version = HaCenterClockCard.CARD_VERSION;
     const time = this._formatTime(new Date());
     const clock = this.querySelector(".clock");
+    const styleEl = this.querySelector("style.center-clock-style");
 
-    if (clock) {
+    if (clock && styleEl && styleEl.dataset.version === version) {
       clock.textContent = time;
       return;
     }
 
     this.innerHTML = `
-      <style>
+      <style class="center-clock-style" data-version="${version}">
+        :host {
+          display: block;
+          width: 100%;
+        }
         ha-card {
           display: flex;
           justify-content: center;
           align-items: center;
+          width: 100%;
+          box-sizing: border-box;
           padding: 12px 16px;
         }
         .clock {
+          width: 100%;
+          text-align: center;
           font-family: var(--ha-font-family-body, Roboto, sans-serif);
           font-size: ${fontSize};
           font-weight: var(--ha-font-weight-normal, 300);
