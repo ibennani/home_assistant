@@ -202,9 +202,8 @@
       }, FADE_MS);
     });
 
-    if (!pending && scope.exiting.size === 0 && typeof onComplete === "function") {
-      onComplete(false);
-    }
+    // onComplete anropas endast när en utanimation faktiskt avslutats (ovan).
+    // Synkront anrop här gav oändlig render-loop (Maximum call stack size exceeded).
   };
 
   Manager.prototype.isAnimating = function (scopeId) {
