@@ -52,13 +52,13 @@ resources:
   type: module
 - url: /local/hasl4-departure-card.js?v=20260729l
   type: module
-- url: /local/sl-departure-time.js?v=20260729w
+- url: /local/sl-departure-time.js?v=20260729x
   type: module
-- url: /local/sl-departure-list-animation.js?v=20260729w
+- url: /local/sl-departure-list-animation.js?v=20260729x
   type: module
-- url: /local/sl-nearby-card.js?v=20260729w
+- url: /local/sl-nearby-card.js?v=20260729x
   type: module
-- url: /local/sl-stop-departures-card.js?v=20260729w
+- url: /local/sl-stop-departures-card.js?v=20260729x
   type: module
 kiosk_mode:
   non_admin_settings:
