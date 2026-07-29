@@ -308,21 +308,34 @@ class HaSlNearbyStopsCard extends HTMLElement {
       });
   }
 
-  _prepareDepartures(departures) {
-    const now = Date.now();
+  _shouldHideDeparted(expectedAt, now) {
     const hideDeparted = !this.config || this.config.hide_departed !== false;
+    if (window.SlDepartureTime && window.SlDepartureTime.shouldHideDeparted) {
+      return window.SlDepartureTime.shouldHideDeparted(expectedAt, now, hideDeparted);
+    }
+    if (!hideDeparted || !expectedAt) {
+      return false;
+    }
+    const expectedMs = expectedAt.getTime();
+    return expectedMs + 60 * 1000 < now.getTime();
+  }
+
+  _prepareDepartures(departures) {
+    const now = new Date();
     const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
     const items = [];
+    const self = this;
 
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
       const expected = dep.expected || dep.scheduled;
-      const expectedMs = expected ? new Date(expected).getTime() : Number.POSITIVE_INFINITY;
+      const expectedAt = expected ? new Date(expected) : null;
+      const expectedMs = expectedAt ? expectedAt.getTime() : Number.POSITIVE_INFINITY;
       let destination = dep.destination || "";
       if (dep.line && dep.line.transport_mode === "TRAIN") {
         destination = destination.replace(destPattern, "").trim();
       }
-      if (hideDeparted && isFinite(expectedMs) && expectedMs + 5 * 60 * 1000 < now) {
+      if (self._shouldHideDeparted(expectedAt, now)) {
         continue;
       }
       items.push(Object.assign({}, dep, { destination: destination, _expectedMs: expectedMs }));

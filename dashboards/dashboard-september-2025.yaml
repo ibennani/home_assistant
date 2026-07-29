@@ -50,13 +50,13 @@ resources:
   type: module
 - url: /local/center-clock-card.js?v=20260727b
   type: module
-- url: /local/hasl4-departure-card.js?v=20260729a
+- url: /local/hasl4-departure-card.js?v=20260729b
   type: module
-- url: /local/sl-departure-time.js?v=20260729a
+- url: /local/sl-departure-time.js?v=20260729b
   type: module
-- url: /local/sl-nearby-card.js?v=20260729a
+- url: /local/sl-nearby-card.js?v=20260729b
   type: module
-- url: /local/sl-stop-departures-card.js?v=20260729a
+- url: /local/sl-stop-departures-card.js?v=20260729b
   type: module
 kiosk_mode:
   non_admin_settings:

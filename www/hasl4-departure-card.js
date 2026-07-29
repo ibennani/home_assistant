@@ -2001,8 +2001,8 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
             return d.direction_code === this.config?.direction;
         }).filter((d)=>{
             if (!this.config?.hide_departed) return true;
-            const diff = $66d5822390d71e6e$var$diffMinutes(new Date(d.expected), now);
-            return diff + this.config?.show_departed_offeset >= 0;
+            const expectedAt = $66d5822390d71e6e$var$parseDepartureDate(d.expected) || $66d5822390d71e6e$var$parseDepartureDate(d.scheduled);
+            return !$66d5822390d71e6e$var$isDepartedDeparture(expectedAt, now);
         }) || []).slice(0, this.config?.max_departures);
     }
     getDeparturesCombined(entities) {
@@ -2021,8 +2021,8 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
         }).flatMap((attrs)=>attrs.departures)// filter by departure time
         .filter((d)=>{
             if (!this.config?.hide_departed) return true;
-            const diff = $66d5822390d71e6e$var$diffMinutes(new Date(d.expected), now);
-            return diff + this.config?.show_departed_offeset >= 0;
+            const expectedAt = $66d5822390d71e6e$var$parseDepartureDate(d.expected) || $66d5822390d71e6e$var$parseDepartureDate(d.scheduled);
+            return !$66d5822390d71e6e$var$isDepartedDeparture(expectedAt, now);
         })// filter direction
         .filter((d)=>{
             if (this.config?.direction === 0) return true;
@@ -2112,7 +2112,6 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                 ${departures.map((dep)=>{
                 const scheduledAt = $66d5822390d71e6e$var$parseDepartureDate(dep.scheduled);
                 const expectedAt = $66d5822390d71e6e$var$parseDepartureDate(dep.expected) || scheduledAt;
-                const isDeparted = $66d5822390d71e6e$var$isDepartedDeparture(expectedAt, now);
                 const isCancelled = $66d5822390d71e6e$var$isCancelledDeparture(dep);
                 const isShortTrain = (dep.deviations || []).some($66d5822390d71e6e$var$isShortTrainDeviation);
                 const otherDeviations = (dep.deviations || []).filter((dev)=>!$66d5822390d71e6e$var$isShortTrainDeviation(dev) && !$66d5822390d71e6e$var$isDelayDeviation(dev));
@@ -2151,7 +2150,7 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                     return dep.destination.replace(search, replace);
                 })();
                 return (0, $l56HR.html)`
-                    <div class="departure-block fade-in ${isDeparted ? "departed" : ""}">
+                    <div class="departure-block fade-in">
                         <div class="row departure">
                         ${this.config?.show_icon ? (0, $l56HR.html)`
                             <div class="col icon">

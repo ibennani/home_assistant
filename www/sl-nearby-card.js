@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729a";
+    return "20260729b";
   }
 
   static getStubConfig() {
@@ -18,7 +18,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 60,
       walking_buffer_minutes: 1,
-      sites_cache_version: "20260729a",
+      sites_cache_version: "20260729b",
     };
   }
 
@@ -555,21 +555,30 @@ class SlNearbyCard extends HTMLElement {
     return chain;
   }
 
-  _prepareDepartures(departures) {
-    const now = Date.now();
+  _shouldHideDeparted(expectedAt, now) {
     const hideDeparted = !this.config || this.config.hide_departed !== false;
+    if (window.SlDepartureTime && window.SlDepartureTime.shouldHideDeparted) {
+      return window.SlDepartureTime.shouldHideDeparted(expectedAt, now, hideDeparted);
+    }
+    return hideDeparted && expectedAt ? this._isDeparted(expectedAt, now) : false;
+  }
+
+  _prepareDepartures(departures) {
+    const now = new Date();
     const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
     const items = [];
+    const self = this;
 
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
       const expected = dep.expected || dep.scheduled;
-      const expectedMs = expected ? new Date(expected).getTime() : Number.POSITIVE_INFINITY;
+      const expectedAt = expected ? new Date(expected) : null;
+      const expectedMs = expectedAt ? expectedAt.getTime() : Number.POSITIVE_INFINITY;
       let destination = dep.destination || "";
       if (dep.line && dep.line.transport_mode === "TRAIN") {
         destination = destination.replace(destPattern, "").trim();
       }
-      if (hideDeparted && isFinite(expectedMs) && expectedMs + 5 * 60 * 1000 < now) {
+      if (self._shouldHideDeparted(expectedAt, now)) {
         continue;
       }
       items.push(Object.assign({}, dep, { destination: destination, _expectedMs: expectedMs }));
@@ -845,6 +854,9 @@ class SlNearbyCard extends HTMLElement {
       const scheduledAt = self._parseDate(dep.scheduled);
       const expectedAt = self._parseDate(dep.expected) || scheduledAt;
       const isDeparted = self._isDeparted(expectedAt, now);
+      if (self._shouldHideDeparted(expectedAt, now)) {
+        continue;
+      }
       const isCancelled = self._isCancelled(dep);
       const detailItems = self._buildDepartureDetailItems(dep);
       const unreachable =
@@ -869,7 +881,6 @@ class SlNearbyCard extends HTMLElement {
 
       rows +=
         '<div class="departure-block' +
-        (isDeparted ? " departed" : "") +
         (unreachable ? " unreachable" : "") +
         '"><div class="row departure">' +
         '<div class="col icon"><ha-icon class="transport-icon" icon="' +
@@ -1081,7 +1092,6 @@ class SlNearbyCard extends HTMLElement {
       ".stop-body{padding:0 8px 12px}",
       ".departures-empty,.departures-error{padding:8px 16px 12px;color:var(--secondary-text-color)}",
       ".departures-error{color:var(--error-color)}",
-      ".departure.departed>.main,.departure-block.departed .main{text-decoration:line-through;color:var(--secondary-text-color)}",
       ".row{margin-top:8px;display:flex;justify-content:space-between}",
       ".col{display:flex;flex-direction:column;justify-content:center;position:relative}",
       ".col.icon{flex-basis:40px}",
