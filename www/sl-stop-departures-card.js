@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729f";
+    return "20260729g";
   }
 
   static getStubConfig() {
@@ -11,14 +11,15 @@ class SlStopDeparturesCard extends HTMLElement {
       hide_departed: true,
       show_time_always: true,
       language: "sv-SE",
-      refresh_seconds: 60,
+      refresh_seconds: 30,
       alight_train_site_id: 9180,
       alight_bus_site_id: 1923,
       transfer_site_id: 9529,
       connecting_lines: ["43", "41"],
       train_leg_huddinge_alvsjo_minutes: 7,
-      walk_train_minutes: 16,
-      walk_bus_minutes: 11,
+      walk_train_minutes: 14,
+      walk_bus_minutes: 9,
+      walking_extra_minutes: 2,
       transfer_alvsjo_minutes: 3,
       train_pt_fallback_minutes: 31,
       bus_pt_fallback_minutes: 20,
@@ -125,7 +126,7 @@ class SlStopDeparturesCard extends HTMLElement {
     const self = this;
     this._departureClockTimer = window.setInterval(function () {
       self._updateView({ clockOnly: true });
-    }, 30000);
+    }, 15000);
   }
 
   getCardSize() {
@@ -311,10 +312,11 @@ class SlStopDeparturesCard extends HTMLElement {
   }
 
   _walkMinutes(kind) {
+    const extra = Number(this.config.walking_extra_minutes || 2);
     if (kind === "train") {
-      return Number(this.config.walk_train_minutes || 16);
+      return Number(this.config.walk_train_minutes || 14) + extra;
     }
-    return Number(this.config.walk_bus_minutes || 11);
+    return Number(this.config.walk_bus_minutes || 9) + extra;
   }
 
   _computeBusPtMinutes(dep, busJourneyMap) {

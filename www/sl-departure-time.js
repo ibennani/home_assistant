@@ -83,7 +83,7 @@
   }
 
   function needsFastClock(departures, now, thresholdMin) {
-    const nearThreshold = thresholdMin == null ? 10 : thresholdMin;
+    const nearThreshold = thresholdMin == null ? 30 : thresholdMin;
     const current = now || new Date();
     if (!departures || !departures.length) {
       return false;
@@ -103,7 +103,7 @@
 
   function getClockIntervalMs(departures, now, fastMs, slowMs, thresholdMin) {
     const fast = fastMs == null ? 5000 : fastMs;
-    const slow = slowMs == null ? 30000 : slowMs;
+    const slow = slowMs == null ? 15000 : slowMs;
     return needsFastClock(departures, now, thresholdMin) ? fast : slow;
   }
 
