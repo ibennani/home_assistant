@@ -33,8 +33,9 @@ config:
 energy:
 frontend:
   extra_module_url:
-    - /local/sl-nearby-card.js?v=20260728s
-    - /local/sl-stop-departures-card.js?v=20260728n
+    - /local/sl-departure-time.js?v=20260729a
+    - /local/sl-nearby-card.js?v=20260729a
+    - /local/sl-stop-departures-card.js?v=20260729a
 group: !include groups.yaml
 history:
 input_boolean: !include input_boolean.yaml

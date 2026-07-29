@@ -1797,6 +1797,16 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         font-weight: 600;
     }
 
+    .delay-min {
+        color: #0abcfc;
+        font-weight: 600;
+    }
+
+    .departure-now {
+        color: #fad370 !important;
+        font-weight: 600;
+    }
+
     .cancelled-time {
         color: #e53935;
         font-weight: 600;
@@ -1839,6 +1849,14 @@ const $66d5822390d71e6e$var$diffMinutes = (from, to)=>{
     const diffMinutes = Math.ceil((from.getTime() - to.getTime()) / 1000 / 60);
     return diffMinutes;
 };
+const $66d5822390d71e6e$var$ceilMinutesUntil = (from, to)=>{
+    if (!from || !to) return 0;
+    return Math.ceil((to.getTime() - from.getTime()) / 60000);
+};
+const $66d5822390d71e6e$var$floorMinutesUntil = (from, to)=>{
+    if (!from || !to) return 0;
+    return Math.max(0, Math.floor((to.getTime() - from.getTime()) / 60000));
+};
 const $66d5822390d71e6e$var$parseDepartureDate = (value)=>{
     if (!value) return null;
     const date = new Date(value);
@@ -1856,6 +1874,32 @@ const $66d5822390d71e6e$var$isCancelledDeparture = (dep)=>{
 const $66d5822390d71e6e$var$isDelayedDeparture = (scheduledAt, expectedAt)=>{
     if (!scheduledAt || !expectedAt) return false;
     return Math.round((expectedAt.getTime() - scheduledAt.getTime()) / 1000 / 60) >= 1;
+};
+const $66d5822390d71e6e$var$isDepartedDeparture = (expectedAt, now)=>{
+    if (window.SlDepartureTime && window.SlDepartureTime.isDeparted) {
+        return window.SlDepartureTime.isDeparted(expectedAt, now);
+    }
+    return expectedAt ? $66d5822390d71e6e$var$ceilMinutesUntil(now, expectedAt) < 0 : false;
+};
+const $66d5822390d71e6e$var$formatDepartureDisplay = (scheduledAt, expectedAt, now, lang)=>{
+    if (!expectedAt || !now) return (0, $l56HR.nothing);
+    const fmt = (date)=>$66d5822390d71e6e$var$formatDepartureClock(date, lang);
+    const ceilToExpected = $66d5822390d71e6e$var$ceilMinutesUntil(now, expectedAt);
+    if (ceilToExpected <= 0) {
+        return (0, $l56HR.html)`<span class="departure-now">Nu</span>`;
+    }
+    const minToExpected = $66d5822390d71e6e$var$floorMinutesUntil(now, expectedAt);
+    const minToScheduled = scheduledAt ? $66d5822390d71e6e$var$floorMinutesUntil(now, scheduledAt) : minToExpected;
+    const delayMin = scheduledAt && expectedAt ? Math.max(0, Math.floor((expectedAt.getTime() - scheduledAt.getTime()) / 60000)) : 0;
+    const isDelayed = delayMin >= 1;
+    const delaySuffix = isDelayed ? (0, $l56HR.html)` <span class="delay-min">(+${delayMin} min)</span>` : (0, $l56HR.nothing);
+    if (isDelayed && minToScheduled >= 30) {
+        return (0, $l56HR.html)`<span class="old-time">${fmt(scheduledAt)}</span><span class="new-time">${fmt(expectedAt)}</span>`;
+    }
+    if (minToExpected >= 30) {
+        return (0, $l56HR.html)`${fmt(expectedAt)}${delaySuffix}`;
+    }
+    return (0, $l56HR.html)`${minToExpected} min${delaySuffix}`;
 };
 class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
     static{
@@ -2068,11 +2112,8 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                 ${departures.map((dep)=>{
                 const scheduledAt = $66d5822390d71e6e$var$parseDepartureDate(dep.scheduled);
                 const expectedAt = $66d5822390d71e6e$var$parseDepartureDate(dep.expected) || scheduledAt;
-                const diff = expectedAt ? $66d5822390d71e6e$var$diffMinutes(expectedAt, now) : 0;
-                const isAtThePlatform = diff === 0;
-                const isDeparted = diff < 0;
+                const isDeparted = $66d5822390d71e6e$var$isDepartedDeparture(expectedAt, now);
                 const isCancelled = $66d5822390d71e6e$var$isCancelledDeparture(dep);
-                const isDelayed = !isCancelled && $66d5822390d71e6e$var$isDelayedDeparture(scheduledAt, expectedAt);
                 const isShortTrain = (dep.deviations || []).some($66d5822390d71e6e$var$isShortTrainDeviation);
                 const otherDeviations = (dep.deviations || []).filter((dev)=>!$66d5822390d71e6e$var$isShortTrainDeviation(dev) && !$66d5822390d71e6e$var$isDelayDeviation(dev));
                 const deviationItems = [];
@@ -2090,13 +2131,8 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                 const showDeviationRow = deviationItems.length > 0;
                 const departureTime = (()=>{
                     if (isCancelled) return (0, $l56HR.html)`<span class="cancelled-time">${_("cancelled")}</span>`;
-                    if (isDelayed && scheduledAt && expectedAt) {
-                        const newTime = this.config?.show_time_always ? $66d5822390d71e6e$var$formatDepartureClock(expectedAt, lang) : isAtThePlatform ? _("now") : (0, $l56HR.html)`<ha-relative-time .hass=${this.hass} .datetime=${expectedAt}></ha-relative-time>`;
-                        return (0, $l56HR.html)`<span class="old-time">${$66d5822390d71e6e$var$formatDepartureClock(scheduledAt, lang)}</span><span class="new-time">${newTime}</span>`;
-                    }
                     if (!expectedAt) return "";
-                    if (this.config?.show_time_always) return $66d5822390d71e6e$var$formatDepartureClock(expectedAt, lang);
-                    return isAtThePlatform ? _("now") : (0, $l56HR.html)`<ha-relative-time .hass=${this.hass} .datetime=${expectedAt}></ha-relative-time>`;
+                    return $66d5822390d71e6e$var$formatDepartureDisplay(scheduledAt, expectedAt, now, lang);
                 })();
                 const icon = {
                     [(0, $829f1babd4ccc0b8$export$6d07abd9f0bba447).METRO]: "mdi:subway",
