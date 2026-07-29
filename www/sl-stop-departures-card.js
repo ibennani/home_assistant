@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729g";
+    return "20260729i";
   }
 
   static getStubConfig() {
@@ -17,9 +17,6 @@ class SlStopDeparturesCard extends HTMLElement {
       transfer_site_id: 9529,
       connecting_lines: ["43", "41"],
       train_leg_huddinge_alvsjo_minutes: 7,
-      walk_train_minutes: 14,
-      walk_bus_minutes: 9,
-      walking_extra_minutes: 2,
       transfer_alvsjo_minutes: 3,
       train_pt_fallback_minutes: 31,
       bus_pt_fallback_minutes: 20,
@@ -311,14 +308,6 @@ class SlStopDeparturesCard extends HTMLElement {
     return ["43", "41"];
   }
 
-  _walkMinutes(kind) {
-    const extra = Number(this.config.walking_extra_minutes || 2);
-    if (kind === "train") {
-      return Number(this.config.walk_train_minutes || 14) + extra;
-    }
-    return Number(this.config.walk_bus_minutes || 9) + extra;
-  }
-
   _computeBusPtMinutes(dep, busJourneyMap) {
     const jid = dep.journey && dep.journey.id;
     if (!jid) {
@@ -338,11 +327,10 @@ class SlStopDeparturesCard extends HTMLElement {
 
   _computeBusTravelMinutes(dep, busJourneyMap) {
     const pt = this._computeBusPtMinutes(dep, busJourneyMap);
-    const walk = this._walkMinutes("bus");
     if (pt === null) {
-      return Number(this.config.bus_pt_fallback_minutes || 20) + walk;
+      return Number(this.config.bus_pt_fallback_minutes || 20);
     }
-    return pt + walk;
+    return pt;
   }
 
   _findAlvsjoArrival(dep, alvsjoDepartures) {
@@ -413,11 +401,10 @@ class SlStopDeparturesCard extends HTMLElement {
 
   _computeTrainTravelMinutes(dep, alvsjoDepartures, farstaJourneyMap) {
     const pt = this._computeTrainPtMinutes(dep, alvsjoDepartures, farstaJourneyMap);
-    const walk = this._walkMinutes("train");
     if (pt === null) {
-      return Number(this.config.train_pt_fallback_minutes || 31) + walk;
+      return Number(this.config.train_pt_fallback_minutes || 31);
     }
-    return pt + walk;
+    return pt;
   }
 
   _formatTravelDuration(totalMinutes, departureAt) {

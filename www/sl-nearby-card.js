@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729h";
+    return "20260729i";
   }
 
   static getStubConfig() {
@@ -17,8 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 30,
-      walking_extra_minutes: 2,
-      sites_cache_version: "20260729h",
+      sites_cache_version: "20260729i",
     };
   }
 
@@ -29,9 +28,6 @@ class SlNearbyCard extends HTMLElement {
   _ensureCaches() {
     if (!this._departureCache) {
       this._departureCache = new Map();
-    }
-    if (!this._walkCache) {
-      this._walkCache = new Map();
     }
     if (!this._modeFilters) {
       this._modeFilters = new Map();
@@ -351,97 +347,6 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
-  _callWalkingRoute(origin, destination) {
-    return this._callWithResponse("rest_command", "sl_walking_route", {
-      origin_lat: origin.lat,
-      origin_lon: origin.lon,
-      dest_lat: destination.lat,
-      dest_lon: destination.lon,
-    }).then(function (result) {
-      let payload = result;
-      if (result && result.content) {
-        payload = result.content;
-      }
-      if (typeof payload === "string") {
-        try {
-          payload = JSON.parse(payload);
-        } catch (error) {
-          payload = {};
-        }
-      }
-      if (payload && payload.routes) {
-        return payload;
-      }
-      if (result && result.routes) {
-        return result;
-      }
-      return payload;
-    });
-  }
-
-  _extractWalkingMinutes(payload) {
-    const routes = payload && payload.routes;
-    if (!routes || !routes.length || !routes[0].duration) {
-      return null;
-    }
-    return Math.max(1, Math.ceil(routes[0].duration / 60));
-  }
-
-  _getStopById(siteId) {
-    if (!this._sites) {
-      return null;
-    }
-    for (let i = 0; i < this._sites.length; i++) {
-      if (Number(this._sites[i].id) === Number(siteId)) {
-        return this._sites[i];
-      }
-    }
-    return null;
-  }
-
-  _loadWalkTime(siteId) {
-    const cacheKey = String(siteId);
-    const existing = this._walkCache.get(cacheKey);
-    if (existing && !existing.loading && (existing.minutes || existing.error)) {
-      return Promise.resolve(existing);
-    }
-    const location = this._getSearchLocation();
-    const stop = this._getStopById(siteId);
-    if (!location || !stop) {
-      return Promise.resolve(null);
-    }
-    this._walkCache.set(cacheKey, { loading: true });
-    const self = this;
-    return this._callWalkingRoute(location, { lat: stop.lat, lon: stop.lon })
-      .then(function (payload) {
-        const minutes = self._extractWalkingMinutes(payload);
-        const entry = {
-          loading: false,
-          minutes: minutes,
-          error: minutes === null ? "Kunde inte beräkna gångtid" : null,
-        };
-        self._walkCache.set(cacheKey, entry);
-        return entry;
-      })
-      .catch(function (error) {
-        const entry = {
-          loading: false,
-          minutes: null,
-          error: (error && error.message) || "Kunde inte beräkna gångtid",
-        };
-        self._walkCache.set(cacheKey, entry);
-        return entry;
-      });
-  }
-
-  _getWalkMinutes(siteId) {
-    const entry = this._walkCache.get(String(siteId));
-    if (!entry || entry.loading || !entry.minutes) {
-      return null;
-    }
-    return Number(entry.minutes) + Number(this.config.walking_extra_minutes || 2);
-  }
-
   _transportModeLabel(mode) {
     const labels = {
       BUS: "Buss",
@@ -525,19 +430,6 @@ class SlNearbyCard extends HTMLElement {
     return '<div class="mode-filters-wrap">' + filters + "</div>";
   }
 
-  _canCatchDeparture(dep, walkMinutes) {
-    if (!walkMinutes || this._isCancelled(dep)) {
-      return true;
-    }
-    const expectedAt = this._parseDate(dep.expected || dep.scheduled);
-    if (!expectedAt) {
-      return true;
-    }
-    const now = Date.now();
-    const neededMs = walkMinutes * 60000;
-    return expectedAt.getTime() >= now + neededMs;
-  }
-
   _syncRefreshTimer() {
     const seconds = Number((this.config && this.config.refresh_seconds) || 0);
     if (this._refreshTimer) {
@@ -578,12 +470,9 @@ class SlNearbyCard extends HTMLElement {
     this._updateDeparturePanel(siteId);
 
     const self = this;
-    Promise.all([
-      self._callDepartures(siteId),
-      self._loadWalkTime(siteId),
-    ])
-      .then(function (results) {
-        const payload = results[0];
+    self
+      ._callDepartures(siteId)
+      .then(function (payload) {
         cache.set(cacheKey, {
           loading: false,
           departures: self._prepareDepartures(payload.departures || []),
@@ -861,15 +750,12 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
-  _renderDepartureRow(dep, extraClass, key, now, walkMinutes) {
+  _renderDepartureRow(dep, extraClass, key, now) {
     const self = this;
     const scheduledAt = self._parseDate(dep.scheduled);
     const expectedAt = self._parseDate(dep.expected) || scheduledAt;
-    const isDeparted = self._isDeparted(expectedAt, now);
     const isCancelled = self._isCancelled(dep);
     const detailItems = self._buildDepartureDetailItems(dep);
-    const unreachable =
-      walkMinutes && !isDeparted && !isCancelled && !self._canCatchDeparture(dep, walkMinutes);
 
     let departureTime = "";
     if (isCancelled) {
@@ -890,7 +776,6 @@ class SlNearbyCard extends HTMLElement {
     return (
       '<div class="departure-block' +
       (extraClass || "") +
-      (unreachable ? " unreachable" : "") +
       '" data-departure-key="' +
       self._escapeHtml(key) +
       '"><div class="row departure">' +
@@ -912,7 +797,7 @@ class SlNearbyCard extends HTMLElement {
     );
   }
 
-  _buildDepartureRows(departures, siteId, now, walkMinutes) {
+  _buildDepartureRows(departures, siteId, now) {
     const self = this;
     const activeDeps = [];
     for (let i = 0; i < departures.length; i++) {
@@ -935,7 +820,7 @@ class SlNearbyCard extends HTMLElement {
           return self._shouldHideDeparted(expectedAt, currentNow);
         },
         renderRow: function (dep, extraClass, key) {
-          return self._renderDepartureRow(dep, extraClass, key, now, walkMinutes);
+          return self._renderDepartureRow(dep, extraClass, key, now);
         },
       });
     }
@@ -946,7 +831,7 @@ class SlNearbyCard extends HTMLElement {
         anim && anim.departureKey
           ? anim.departureKey(activeDeps[j])
           : String(j);
-      rows += self._renderDepartureRow(activeDeps[j], "", key, now, walkMinutes);
+      rows += self._renderDepartureRow(activeDeps[j], "", key, now);
     }
     return rows;
   }
@@ -978,18 +863,6 @@ class SlNearbyCard extends HTMLElement {
       return '<div class="departures-error">' + this._escapeHtml(cache.error) + "</div>";
     }
 
-    const walkEntry = this._walkCache.get(String(siteId));
-    let walkNote = "";
-    if (walkEntry && walkEntry.loading) {
-      walkNote = '<div class="walk-note">Beräknar gångtid…</div>';
-    } else if (walkEntry && walkEntry.minutes) {
-      const totalWalk = this._getWalkMinutes(siteId);
-      walkNote =
-        '<div class="walk-note">Gångtid ' +
-        this._escapeHtml(String(totalWalk)) +
-        " min</div>";
-    }
-
     const stopInfo = (cache.stop_deviations || [])
       .map(function (dev) {
         return (
@@ -1005,11 +878,9 @@ class SlNearbyCard extends HTMLElement {
     const modes = this._getTransportModes(allDepartures);
     const filtersBlock = this._renderFiltersBlock(siteId, modes);
     const departures = this._filterDeparturesByMode(allDepartures, siteId);
-    const walkMinutes = this._getWalkMinutes(siteId);
 
     if (!departures.length) {
       return (
-        walkNote +
         stopInfoBlock +
         filtersBlock +
         '<div class="departures-empty">Inga avgångar' +
@@ -1021,10 +892,9 @@ class SlNearbyCard extends HTMLElement {
     }
 
     const now = new Date();
-    const rows = this._buildDepartureRows(departures, siteId, now, walkMinutes);
+    const rows = this._buildDepartureRows(departures, siteId, now);
 
     return (
-      walkNote +
       stopInfoBlock +
       filtersBlock +
       '<div class="departures departures-list"><div class="row header"><div class="col icon"></div><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
@@ -1231,7 +1101,6 @@ class SlNearbyCard extends HTMLElement {
       ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
       ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
       ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
-      ".walk-note{padding:0 16px 8px;color:var(--secondary-text-color);font-size:smaller}",
       ".stop-body{padding:0 16px 12px;width:100%;box-sizing:border-box}",
       ".departures-empty,.departures-error{padding:8px 0 12px;color:var(--secondary-text-color)}",
       ".departures-error{color:var(--error-color)}",
