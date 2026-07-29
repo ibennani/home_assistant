@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729q";
+    return "20260729s";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729q",
+      sites_cache_version: "20260729s",
     };
   }
 
@@ -62,6 +62,10 @@ class SlNearbyCard extends HTMLElement {
     if (this._cardVersion !== SlNearbyCard.CARD_VERSION) {
       this._cardVersion = SlNearbyCard.CARD_VERSION;
       this._lastListKey = null;
+    }
+    if (!this._cardClickBound) {
+      this._cardClickBound = true;
+      this.addEventListener("click", (event) => this._onCardClick(event), true);
     }
     this._ensureSitesLoaded().then(() => this._updateView());
     this._syncRefreshTimer();
@@ -316,6 +320,23 @@ class SlNearbyCard extends HTMLElement {
     return {};
   }
 
+  _escapeJsString(value) {
+    return String(value || "")
+      .replace(/\\/g, "\\\\")
+      .replace(/'/g, "\\'")
+      .replace(/\n/g, "\\n");
+  }
+
+  openDepartureModal(siteId, departureKey) {
+    const numericSiteId = Number(siteId);
+    const dep = this._findDepartureByKey(numericSiteId, departureKey);
+    if (!dep) {
+      this._showModalMessage("Avgång", "Kunde inte läsa avgången.", true);
+      return;
+    }
+    this._openLineRouteModal(dep, numericSiteId, this._getSiteName(numericSiteId));
+  }
+
   _unwrapServiceResponse(result) {
     if (!result) {
       return {};
@@ -329,6 +350,12 @@ class SlNearbyCard extends HTMLElement {
     }
     if (result.journeys || result.locations) {
       return result;
+    }
+    if (result.content && (result.content.journeys || result.content.locations)) {
+      return result.content;
+    }
+    if (result.service_response) {
+      return this._unwrapServiceResponse(result.service_response);
     }
     if (result.response) {
       return this._unwrapServiceResponse(result.response);
@@ -1692,46 +1719,50 @@ function _defineSlNearbyCard(tag) {
 _defineSlNearbyCard("sl-nearby-card");
 _defineSlNearbyCard("ha-sl-nearby-stops-card");
 
+window.SlNearbyCardActions = {
+  openDeparture: function (event, siteId, departureKey) {
+    if (event) {
+      event.preventDefault();
+      if (event.stopPropagation) {
+        event.stopPropagation();
+      }
+    }
+    let card = null;
+    if (event && event.currentTarget) {
+      card = event.currentTarget.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+    }
+    if (!card) {
+      card = document.querySelector("sl-nearby-card, ha-sl-nearby-stops-card");
+    }
+    if (card && typeof card.openDepartureModal === "function") {
+      card.openDepartureModal(siteId, departureKey);
+      return;
+    }
+    window.alert("SL-kortet är inte redo ännu. Ladda om sidan.");
+  },
+};
+
 if (!window.__slNearbyCardGlobalClick) {
   window.__slNearbyCardGlobalClick = true;
   document.addEventListener(
     "click",
     function (event) {
-      const filter = event.target.closest(".mode-filter");
-      if (filter) {
-        const card = filter.closest("sl-nearby-card, ha-sl-nearby-stops-card");
-        if (card && typeof card._onFilterInteraction === "function") {
-          card._onFilterInteraction(event);
+      const block = event.target.closest(".departure-block");
+      if (block) {
+        const card = block.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+        if (card && typeof card._onDepartureClick === "function") {
+          card._onDepartureClick(event);
+          return;
         }
+      }
+      const filter = event.target.closest(".mode-filter");
+      if (!filter) {
         return;
       }
-      const block = event.target.closest(".departure-block[data-site-id]");
-      if (!block) {
-        return;
+      const card = filter.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+      if (card && typeof card._onFilterInteraction === "function") {
+        card._onFilterInteraction(event);
       }
-      const card = block.closest("sl-nearby-card, ha-sl-nearby-stops-card");
-      if (!card || typeof card._onDepartureClick !== "function") {
-        return;
-      }
-      card._onDepartureClick(event);
-    },
-    true,
-  );
-  document.addEventListener(
-    "keydown",
-    function (event) {
-      if (event.key !== "Enter" && event.key !== " ") {
-        return;
-      }
-      const block = event.target.closest(".departure-block[data-site-id]");
-      if (!block) {
-        return;
-      }
-      const card = block.closest("sl-nearby-card, ha-sl-nearby-stops-card");
-      if (!card || typeof card._onDepartureClick !== "function") {
-        return;
-      }
-      card._onDepartureClick(event);
     },
     true,
   );
