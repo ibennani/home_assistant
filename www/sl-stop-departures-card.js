@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729d";
+    return "20260729e";
   }
 
   static getStubConfig() {
