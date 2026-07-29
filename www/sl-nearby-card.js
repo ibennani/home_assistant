@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729u";
+    return "20260729w";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729u",
+      sites_cache_version: "20260729w",
     };
   }
 
@@ -53,8 +53,21 @@ class SlNearbyCard extends HTMLElement {
   set hass(hass) {
     this._ensureCaches();
     this._hass = hass;
+    this._ensureBusLineTerminusLabels();
     this._updateView();
     this._syncRefreshTimer();
+  }
+
+  _ensureBusLineTerminusLabels() {
+    const api = window.SlDepartureTime;
+    if (!api || !api.ensureBusLineTerminus || this._busLineTerminusBound) {
+      return;
+    }
+    this._busLineTerminusBound = true;
+    const self = this;
+    api.ensureBusLineTerminus("20260729w").then(function () {
+      self._updateView();
+    });
   }
 
   connectedCallback() {

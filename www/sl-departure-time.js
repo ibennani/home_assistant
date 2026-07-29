@@ -87,6 +87,71 @@
     return at ? at.getTime() : Number.POSITIVE_INFINITY;
   }
 
+  function normalizeDepartureName(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^stockholm,\s*/i, "")
+      .replace(/\bstockholms\b/g, "stockholm")
+      .replace(/\s+station$/i, "")
+      .replace(/\s+/g, " ");
+  }
+
+  function isGenericBusHub(name) {
+    const normalized = normalizeDepartureName(name);
+    return normalized === "stockholm c" || normalized === "city" || normalized === "centralen";
+  }
+
+  var busLineTerminusMap = null;
+  var busLineTerminusVersion = null;
+  var busLineTerminusPromise = null;
+
+  function getBusLineTerminus(designation, directionCode) {
+    if (!busLineTerminusMap || !designation) {
+      return null;
+    }
+    let branch = null;
+    if (directionCode === 2 || directionCode === "2") {
+      branch = "2";
+    } else if (directionCode === 1 || directionCode === "1") {
+      branch = "1";
+    }
+    if (!branch) {
+      return null;
+    }
+    const line = busLineTerminusMap[String(designation)];
+    return line && line[branch] ? String(line[branch]) : null;
+  }
+
+  function ensureBusLineTerminus(version) {
+    const cacheVersion = version || "1";
+    if (busLineTerminusMap && busLineTerminusVersion === cacheVersion) {
+      return Promise.resolve(busLineTerminusMap);
+    }
+    if (busLineTerminusPromise && busLineTerminusVersion === cacheVersion) {
+      return busLineTerminusPromise;
+    }
+    busLineTerminusVersion = cacheVersion;
+    busLineTerminusPromise = fetch(
+      "/local/sl-bus-line-terminus.json?v=" + encodeURIComponent(cacheVersion),
+    )
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Kunde inte ladda busslinje-data");
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        busLineTerminusMap = data || {};
+        return busLineTerminusMap;
+      })
+      .catch(function () {
+        busLineTerminusMap = {};
+        return busLineTerminusMap;
+      });
+    return busLineTerminusPromise;
+  }
+
   function formatDepartureLabel(dep) {
     if (!dep) {
       return "";
@@ -98,13 +163,26 @@
     const direction = String(dep.direction || "").trim();
     let label = destination || direction;
 
-    // Pendeltåg: destination = reseled (t.ex. Stockholm C), direction = slutstation (t.ex. Bålsta).
-    if (mode === "TRAIN" && direction && direction !== destination) {
-      label = direction;
-    }
-
     if (mode === "TRAIN") {
+      // Pendeltåg: destination = reseled, direction = slutstation.
+      if (direction && normalizeDepartureName(direction) !== normalizeDepartureName(destination)) {
+        label = direction;
+      }
       label = label.replace(destPattern, "").trim();
+    } else if (mode === "BUS") {
+      // Buss: vid korttur skiljer sig destination (t.ex. Gullmarsplan) från linjens riktning.
+      if (
+        destination &&
+        direction &&
+        normalizeDepartureName(destination) !== normalizeDepartureName(direction)
+      ) {
+        label = destination;
+      } else if (isGenericBusHub(destination)) {
+        const terminus = getBusLineTerminus(line.designation, dep.direction_code);
+        if (terminus) {
+          label = terminus;
+        }
+      }
     }
 
     return label;
@@ -215,6 +293,7 @@
     parseDepartureDate: parseDepartureDate,
     getDepartureSortMs: getDepartureSortMs,
     formatDepartureLabel: formatDepartureLabel,
+    ensureBusLineTerminus: ensureBusLineTerminus,
     compareDeparturesByTime: compareDeparturesByTime,
     sortDeparturesByTime: sortDeparturesByTime,
     needsFastClock: needsFastClock,
