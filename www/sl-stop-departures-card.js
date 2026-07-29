@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729l";
+    return "20260729m";
   }
 
   static getStubConfig() {
@@ -256,10 +256,7 @@ class SlStopDeparturesCard extends HTMLElement {
         }),
       );
     }
-    items.sort(function (a, b) {
-      return a._expectedMs - b._expectedMs;
-    });
-    return items;
+    return self._sortDeparturesByTime(items);
   }
 
   _buildJourneyMap(departures) {
@@ -291,6 +288,13 @@ class SlStopDeparturesCard extends HTMLElement {
   }
 
   _sortDeparturesByTime(departures) {
+    if (window.SlDepartureTime && window.SlDepartureTime.sortDeparturesByTime) {
+      return window.SlDepartureTime.sortDeparturesByTime(departures);
+    }
+    return this._sortDeparturesByTimeLegacy(departures);
+  }
+
+  _sortDeparturesByTimeLegacy(departures) {
     return departures.slice().sort(function (a, b) {
       const aMs = new Date(a.expected || a.scheduled || 0).getTime();
       const bMs = new Date(b.expected || b.scheduled || 0).getTime();
@@ -895,7 +899,7 @@ class SlStopDeparturesCard extends HTMLElement {
 
   _buildDepartureRows(departures, now) {
     const self = this;
-    const activeDeps = [];
+    let activeDeps = [];
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
       const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
@@ -904,6 +908,7 @@ class SlStopDeparturesCard extends HTMLElement {
       }
       activeDeps.push(dep);
     }
+    activeDeps = self._sortDeparturesByTime(activeDeps);
 
     const anim = window.SlDepartureListAnim;
     if (anim && anim.manager) {

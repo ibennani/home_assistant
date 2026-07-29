@@ -116,11 +116,15 @@
         ordered.push(entry.dep);
       }
     });
-    ordered.sort(function (a, b) {
-      var aTime = new Date(a.expected || a.scheduled || 0).getTime();
-      var bTime = new Date(b.expected || b.scheduled || 0).getTime();
-      return aTime - bTime;
-    });
+    var compare =
+      root.SlDepartureTime && root.SlDepartureTime.compareDeparturesByTime
+        ? root.SlDepartureTime.compareDeparturesByTime
+        : function (a, b) {
+            var aTime = new Date(a.expected || a.scheduled || 0).getTime();
+            var bTime = new Date(b.expected || b.scheduled || 0).getTime();
+            return aTime - bTime;
+          };
+    ordered.sort(compare);
 
     for (var k = 0; k < ordered.length; k++) {
       var dep = ordered[k];
