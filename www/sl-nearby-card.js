@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729s";
+    return "20260729t";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729s",
+      sites_cache_version: "20260729t",
     };
   }
 
@@ -66,7 +66,18 @@ class SlNearbyCard extends HTMLElement {
     if (!this._cardClickBound) {
       this._cardClickBound = true;
       this.addEventListener("click", (event) => this._onCardClick(event), true);
+      this.addEventListener(
+        "touchend",
+        (event) => {
+          if (event.target.closest(".departure-block")) {
+            event.preventDefault();
+            this._onCardClick(event);
+          }
+        },
+        { capture: true, passive: false },
+      );
     }
+    this._ensureModalStyles();
     this._ensureSitesLoaded().then(() => this._updateView());
     this._syncRefreshTimer();
   }
@@ -368,6 +379,7 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _callWithResponse(domain, service, serviceData) {
+    const self = this;
     if (this._hass && this._hass.connection && this._hass.connection.sendMessagePromise) {
       return this._hass.connection
         .sendMessagePromise({
@@ -377,17 +389,27 @@ class SlNearbyCard extends HTMLElement {
           service_data: serviceData,
           return_response: true,
         })
-        .then((msg) => (msg && msg.response) || msg || {});
+        .then(function (msg) {
+          return self._unwrapServiceResponse((msg && msg.response) || msg || {});
+        });
     }
     if (this._hass && this._hass.callApi) {
-      return this._hass.callApi(
-        "POST",
-        "services/" + domain + "/" + service + "?return_response",
-        serviceData,
-      );
+      return this._hass
+        .callApi(
+          "POST",
+          "services/" + domain + "/" + service + "?return_response",
+          serviceData,
+        )
+        .then(function (result) {
+          return self._unwrapServiceResponse(result);
+        });
     }
     if (this._hass && this._hass.callService) {
-      return this._hass.callService(domain, service, serviceData, undefined, true);
+      return this._hass
+        .callService(domain, service, serviceData, undefined, true)
+        .then(function (result) {
+          return self._unwrapServiceResponse(result);
+        });
     }
     return Promise.reject(new Error("Kunde inte anropa Home Assistant"));
   }
@@ -1204,7 +1226,44 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _getModalRoot() {
+    this._ensureModalStyles();
     return document.body || this;
+  }
+
+  _modalStyleRules() {
+    return [
+      ".sl-line-route-modal{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-end;justify-content:center}",
+      ".sl-line-route-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55)}",
+      ".sl-line-route-panel{position:relative;width:min(100%,520px);max-height:min(80vh,720px);overflow:hidden;display:flex;flex-direction:column;background:var(--card-background-color,#1c1c1c);color:var(--primary-text-color,#fff);border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.35);margin:0 0 env(safe-area-inset-bottom,0)}",
+      ".sl-line-route-header{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 8px;border-bottom:1px solid var(--divider-color,rgba(255,255,255,.12))}",
+      ".sl-line-route-title{flex:1;font-size:1rem;font-weight:600;line-height:1.35}",
+      ".sl-line-route-close{border:0;background:transparent;color:var(--primary-text-color,#fff);font-size:1.6rem;line-height:1;cursor:pointer;padding:0 4px}",
+      ".sl-line-route-meta{padding:8px 16px 12px;color:var(--secondary-text-color,#bbb);font-size:.85rem}",
+      ".sl-line-route-meta.error{color:var(--error-color,#e53935)}",
+      ".line-route-stops{list-style:none;margin:0;padding:8px 0 16px;overflow-y:auto}",
+      ".line-route-stop{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--divider-color,rgba(255,255,255,.08))}",
+      ".line-route-stop.is-current{background:rgba(250,211,112,.12)}",
+      ".line-route-stop.is-current .line-route-stop-name{color:#fad370;font-weight:600}",
+      ".line-route-stop.is-destination .line-route-stop-name{font-weight:600}",
+      ".line-route-stop-index{width:1.5rem;color:var(--secondary-text-color,#bbb);font-size:.85rem;text-align:right;flex-shrink:0}",
+      ".line-route-stop-name{flex:1;min-width:0}",
+    ].join("");
+  }
+
+  _ensureModalStyles() {
+    const styleId = "sl-nearby-card-modal-styles";
+    let styleEl = document.getElementById(styleId);
+    const version = SlNearbyCard.CARD_VERSION;
+    if (styleEl && styleEl.dataset.version === version) {
+      return;
+    }
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    styleEl.dataset.version = version;
+    styleEl.textContent = this._modalStyleRules();
   }
 
   _closeLineRouteModal() {
@@ -1441,6 +1500,8 @@ class SlNearbyCard extends HTMLElement {
       return;
     }
 
+    this._showModalMessage("Avgång", "Hämtar hållplatser…", false);
+
     const dep = this._findDepartureByKey(siteId, departureKey);
     if (!dep) {
       this._showModalMessage("Avgång", "Kunde inte läsa avgången. Försök igen om en stund.", true);
@@ -1645,8 +1706,6 @@ class SlNearbyCard extends HTMLElement {
       ".warning-message{color:var(--warning-color);font-size:smaller}",
       ".departure-block{margin-top:8px;border-radius:6px;width:100%;box-sizing:border-box;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}",
       ".departure-block:hover{background:rgba(255,255,255,.04)}",
-      ".departure-block *{pointer-events:none}",
-      ".departure-block ha-icon,.departure-block .line-icon,.departure-block .leaves-in{pointer-events:none}",
       ".departure-block .row.departure{margin-top:0}",
       ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px;width:100%;box-sizing:border-box}",
       ".detail-item{font-size:smaller;line-height:1.35}",
@@ -1668,21 +1727,6 @@ class SlNearbyCard extends HTMLElement {
       ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height .5s ease,margin-top .5s ease,opacity .5s ease}",
       ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
       "ha-icon{width:24px;height:24px;color:var(--paper-item-icon-color)}",
-      ".sl-line-route-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-end;justify-content:center}",
-      ".sl-line-route-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55)}",
-      ".sl-line-route-panel{position:relative;width:min(100%,520px);max-height:min(80vh,720px);overflow:hidden;display:flex;flex-direction:column;background:var(--card-background-color,#1c1c1c);border-radius:16px 16px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.35);margin:0 0 env(safe-area-inset-bottom,0)}",
-      ".sl-line-route-header{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 8px;border-bottom:1px solid var(--divider-color,rgba(255,255,255,.12))}",
-      ".sl-line-route-title{flex:1;font-size:1rem;font-weight:600;line-height:1.35}",
-      ".sl-line-route-close{border:0;background:transparent;color:var(--primary-text-color);font-size:1.6rem;line-height:1;cursor:pointer;padding:0 4px}",
-      ".sl-line-route-meta{padding:8px 16px 12px;color:var(--secondary-text-color);font-size:.85rem}",
-      ".sl-line-route-meta.error{color:var(--error-color)}",
-      ".line-route-stops{list-style:none;margin:0;padding:8px 0 16px;overflow-y:auto}",
-      ".line-route-stop{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--divider-color,rgba(255,255,255,.08))}",
-      ".line-route-stop.is-current{background:rgba(250,211,112,.12)}",
-      ".line-route-stop.is-current .line-route-stop-name{color:#fad370;font-weight:600}",
-      ".line-route-stop.is-destination .line-route-stop-name{font-weight:600}",
-      ".line-route-stop-index{width:1.5rem;color:var(--secondary-text-color);font-size:.85rem;text-align:right;flex-shrink:0}",
-      ".line-route-stop-name{flex:1;min-width:0}",
     ].join("");
   }
 }
@@ -1742,31 +1786,52 @@ window.SlNearbyCardActions = {
   },
 };
 
-if (!window.__slNearbyCardGlobalClick) {
-  window.__slNearbyCardGlobalClick = true;
-  document.addEventListener(
-    "click",
-    function (event) {
-      const block = event.target.closest(".departure-block");
-      if (block) {
-        const card = block.closest("sl-nearby-card, ha-sl-nearby-stops-card");
-        if (card && typeof card._onDepartureClick === "function") {
-          card._onDepartureClick(event);
-          return;
-        }
-      }
-      const filter = event.target.closest(".mode-filter");
-      if (!filter) {
+function _bindSlNearbyCardGlobalClicks(version) {
+  if (
+    window.__slNearbyCardGlobalClickHandler &&
+    window.__slNearbyCardGlobalClickVersion === version
+  ) {
+    return;
+  }
+  if (window.__slNearbyCardGlobalClickHandler) {
+    document.removeEventListener("click", window.__slNearbyCardGlobalClickHandler, true);
+    document.removeEventListener("touchend", window.__slNearbyCardGlobalTouchHandler, true);
+  }
+  window.__slNearbyCardGlobalClickVersion = version;
+  window.__slNearbyCardGlobalClickHandler = function (event) {
+    const block = event.target.closest(".departure-block");
+    if (block) {
+      const card = block.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+      if (card && typeof card._onDepartureClick === "function") {
+        card._onDepartureClick(event);
         return;
       }
-      const card = filter.closest("sl-nearby-card, ha-sl-nearby-stops-card");
-      if (card && typeof card._onFilterInteraction === "function") {
-        card._onFilterInteraction(event);
-      }
-    },
-    true,
-  );
+    }
+    const filter = event.target.closest(".mode-filter");
+    if (!filter) {
+      return;
+    }
+    const card = filter.closest("sl-nearby-card, ha-sl-nearby-stops-card");
+    if (card && typeof card._onFilterInteraction === "function") {
+      card._onFilterInteraction(event);
+    }
+  };
+  window.__slNearbyCardGlobalTouchHandler = function (event) {
+    const block = event.target.closest(".departure-block");
+    if (!block) {
+      return;
+    }
+    event.preventDefault();
+    window.__slNearbyCardGlobalClickHandler(event);
+  };
+  document.addEventListener("click", window.__slNearbyCardGlobalClickHandler, true);
+  document.addEventListener("touchend", window.__slNearbyCardGlobalTouchHandler, {
+    capture: true,
+    passive: false,
+  });
 }
+
+_bindSlNearbyCardGlobalClicks(SlNearbyCard.CARD_VERSION);
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some(function (card) { return card.type === "sl-nearby-card"; })) {
