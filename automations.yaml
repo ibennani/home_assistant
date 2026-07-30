@@ -9763,20 +9763,19 @@
   mode: restart
 - id: '1765582338276'
   alias: 'Belysning: Styr belysningen på baksidan'
-  description: ''
+  description: Synkar mysbelysning och altandörren mot lux (≤300 lx tänder mysbelysning).
+    Ignorerar unavailable/unknown på lux. Synkar mysbelysning när lampan återkommer
+    från unavailable.
   triggers:
-  - id: back_lux_gt_300
-    trigger: template
-    value_template: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | int(0) >
-      300 }}
-
-      '
-  - id: back_lux_le_300
-    trigger: template
-    value_template: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | int(0) <=
-      300 }}
-
-      '
+  - id: back_lux_changed
+    trigger: state
+    entity_id: sensor.utomhus_baksidan_ljusstyrka
+  - id: mysbelysning_back_available
+    trigger: state
+    entity_id: light.mysbelysning_baksidan
+    from:
+    - unavailable
+    - unknown
   - id: house_time_mode_changed
     trigger: state
     entity_id: input_select.house_time_modes
@@ -9786,22 +9785,21 @@
   actions:
   - variables:
       back_lux_threshold: 300
-      back_lux: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | int(0) }}'
+      back_lux_valid: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') not in [''unavailable'',
+        ''unknown''] }}'
+      back_lux: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | float(0) }}'
       house_time_mode: '{{ states(''input_select.house_time_modes'') }}'
-      mysbelysning_back_should_be_on: '{{ (back_lux <= back_lux_threshold) and (house_time_mode
-        != ''Natt'') }}
-
-        '
-      lampan_back_must_be_off_due_to_lux: '{{ back_lux > back_lux_threshold }}
-
-        '
+      mysbelysning_back_should_be_on: '{{ back_lux_valid and (back_lux <= back_lux_threshold)
+        and (house_time_mode != ''Natt'') }}'
+      lampan_back_must_be_off_due_to_lux: '{{ back_lux_valid and (back_lux > back_lux_threshold)
+        }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id in [''back_lux_gt_300'', ''back_lux_le_300'',
-          ''house_time_mode_changed''] }}
-
-          '
+        value_template: '{{ back_lux_valid }}'
+      - condition: template
+        value_template: '{{ trigger.id in [''back_lux_changed'', ''mysbelysning_back_available'',
+          ''house_time_mode_changed''] }}'
       sequence:
       - choose:
         - conditions:
@@ -9823,10 +9821,8 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id in [''back_lux_gt_300'', ''lampan_baksidan_state_changed'']
-          }}
-
-          '
+        value_template: '{{ back_lux_valid and trigger.id in [''back_lux_changed'',
+          ''lampan_baksidan_state_changed'', ''mysbelysning_back_available''] }}'
       - condition: template
         value_template: "{{ lampan_back_must_be_off_due_to_lux\n   and is_state('light.lampan_baksidan',
           'on') }}\n"
