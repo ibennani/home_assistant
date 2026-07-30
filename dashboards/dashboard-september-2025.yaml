@@ -5782,6 +5782,7 @@ views:
       - sensor.fjarr_rullgardin_vardagsrummet_batteri
       - sensor.fjarr_rullgardin_sovrummet_batteri
       - sensor.fjarr_rullgardin_annas_rum_batteri
+      - sensor.fjarr_annas_rum_battery
       - sensor.fjarr_stereon_i_koket_battery
       - sensor.fjarr_ilias_rum_battery
       - sensor.fjarr_taklampan_i_ilias_rum_battery

@@ -1305,7 +1305,8 @@ eriks_rum_satt_lage_ui:
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.eriks_rum_uppdaterar_lage
-eriks_rum_stall_in_belysningen:
+# YAML-nyckel måste matcha unique_id i entitetsregistret (albins → eriks rename).
+albins_rum_stall_in_belysningen:
   alias: Ställ in belysningen i Eriks rum
   mode: restart
   sequence:
