@@ -138,7 +138,7 @@
     name: Duschsläckning aktiv
     icon: mdi:lightbulb-off-outline
     initial: off
-# Håll ljus utanför duschen tänt tills duschsession avslutas (avbryts vid öppen duschdörr)
+# Håll ljus utanför duschen tänt tills duschsession avslutas (avbryts vid öppen duschdörr; fas 3 dörrcykel)
   badrum_dusch_ljus_last:
     name: Badrum dusch ljus låst
     icon: mdi:lock
