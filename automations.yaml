@@ -1323,11 +1323,11 @@
     id: dusch_bekraftad
     entity_id: input_select.nagon_duschar
     to: Någon duschar
-  - trigger: event
-    id: badrum_dusch_120s_klar
+  - trigger: state
+    id: badrum_dusch_dorr_60s_klar
     event_type: timer.finished
     event_data:
-      entity_id: timer.badrum_dusch_120s
+      entity_id: timer.badrum_dusch_dorr_60s
   - trigger: state
     id: duschstatus_ingen
     entity_id: input_select.nagon_duschar
@@ -1358,8 +1358,13 @@
       - condition: template
         value_template: '{{ trigger.id == ''tand'' }}'
       - condition: template
-        value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.duschslackning_aktiv', 'on') and is_state('input_boolean.badrum_dusch_ljus_last', 'off') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') }}"
+        value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') and is_state('input_boolean.badrum_dusch_ljus_last', 'off') }}"
+      - condition: template
+        value_template: "{{ is_state('input_boolean.duschslackning_aktiv', 'on') or is_state('light.takspottar_badrummet', 'off') or is_state('light.led_badrummet_handfatet', 'off') or is_state('light.led_badrummet_kommoden', 'off') or is_state('light.spegeln_badrummet', 'off') }}"
       sequence:
+      - action: timer.cancel
+        target:
+          entity_id: timer.badrum_dusch_dorr_60s
       - action: scene.turn_on
         target:
           entity_id: scene.badrum_fore_duschslackning
@@ -1371,14 +1376,36 @@
       - action: input_boolean.turn_on
         target:
           entity_id: input_boolean.badrum_dusch_ljus_last
-      - stop: Duschpaus — ljus låst tills fukt bekräftar igen
+      - stop: Duschsession — rörelse tände snapshot
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''duschdorr_oppnad'' }}'
+      - condition: template
+        value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') }}"
+      sequence:
+      - action: timer.cancel
+        target:
+          entity_id: timer.badrum_dusch_dorr_60s
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.badrum_dusch_ljus_last
+      - action: scene.turn_on
+        target:
+          entity_id: scene.badrum_fore_duschslackning
+        data:
+          transition: 0
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.duschslackning_aktiv
+      - stop: Duschdörr öppen under session
   - choose:
     - conditions:
       - condition: template
         value_template: '{{ trigger.id in [''tand'', ''badrumsdorr_stangd''] }}'
       - condition: template
         value_template: "{%- set now_ts = as_timestamp(now()) -%} {%- set door = states.binary_sensor.badrumsdorren
-          -%}\n{%- if trigger.id == 'badrumsdorr_stangd' -%}\n{{\n  is_state('binary_sensor.badrummet_rorelse', 'on')\n  and is_state('light.badrummet_alla_lampor', 'off')\n  and not is_state('timer.badrum_slackning_pagar', 'active')\n}}\n{%- else -%}\n{{\n  is_state('timer.badrum_slackning_pagar', 'active')\n  or (\n    (now_ts - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) < 1\n    and is_state('light.badrummet_alla_lampor', 'off')\n    and (\n      is_state('binary_sensor.badrumsdorren', 'on')\n      or (\n        is_state('binary_sensor.badrumsdorren', 'off')\n        and (now_ts - as_timestamp(door.last_changed)) < 10\n      )\n    )\n  )\n}}\n{%- endif -%}"
+          -%}\n{%- if trigger.id == 'badrumsdorr_stangd' -%}\n{{\n  is_state('binary_sensor.badrummet_rorelse', 'on')\n  and is_state('light.badrummet_alla_lampor', 'off')\n  and not is_state('timer.badrum_slackning_pagar', 'active')\n}}\n{%- else -%}\n{{\n  not (\n    is_state('input_select.nagon_duschar', 'Någon duschar')\n    and is_state('input_boolean.badrum_dusch_ljus_last', 'on')\n  )\n  and (\n    is_state('timer.badrum_slackning_pagar', 'active')\n    or (\n      (now_ts - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) < 1\n      and is_state('light.badrummet_alla_lampor', 'off')\n      and (\n        is_state('binary_sensor.badrumsdorren', 'on')\n        or (\n          is_state('binary_sensor.badrumsdorren', 'off')\n          and (now_ts - as_timestamp(door.last_changed)) < 10\n        )\n      )\n    )\n  )\n}}\n{%- endif -%}"
       sequence:
       - choose:
         - conditions:
@@ -1452,28 +1479,6 @@
       - choose:
         - conditions:
           - condition: template
-            value_template: '{{ trigger.id == ''duschdorr_oppnad'' }}'
-          - condition: template
-            value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'')
-              and is_state(''input_boolean.badrum_dusch_snapshot_finns'', ''on'')
-              and is_state(''input_boolean.badrum_dusch_ljus_last'', ''off'') }}'
-          - condition: template
-            value_template: '{{ is_state(''input_boolean.duschslackning_aktiv'', ''on'')
-              or is_state(''light.takspottar_badrummet'', ''off'') or is_state(''light.led_badrummet_handfatet'',
-              ''off'') or is_state(''light.led_badrummet_kommoden'', ''off'') or is_state(''light.spegeln_badrummet'',
-              ''off'') }}'
-          sequence:
-          - action: scene.turn_on
-            target:
-              entity_id: scene.badrum_fore_duschslackning
-            data:
-              transition: 0
-          - action: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.duschslackning_aktiv
-      - choose:
-        - conditions:
-          - condition: template
             value_template: "{{
   is_state('input_select.nagon_duschar', 'Ingen duschar')
   and not is_state('input_select.house_time_modes', 'Natt')
@@ -1533,46 +1538,49 @@
       - condition: template
         value_template: '{{ trigger.id == ''duschdorr_stangd'' }}'
       - condition: template
-        value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar')\n  and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on')\n  and is_state('input_boolean.duschslackning_aktiv', 'off')\n  and is_state('input_boolean.badrum_dusch_ljus_last', 'off') }}"
+        value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') and is_state('input_boolean.badrum_dusch_ljus_last', 'off') }}"
       sequence:
-      - action: input_boolean.turn_on
+      - action: timer.start
         target:
-          entity_id: input_boolean.duschslackning_aktiv
-      - action: light.turn_off
-        target:
-          entity_id:
-          - light.spegeln_badrummet
-          - light.takspottar_badrummet
-          - light.led_badrummet_handfatet
-          - light.led_badrummet_kommoden
+          entity_id: timer.badrum_dusch_dorr_60s
         data:
-          transition: 5
+          duration: '00:01:00'
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id == ''badrum_dusch_120s_klar'' }}'
+        value_template: '{{ trigger.id == ''badrum_dusch_dorr_60s_klar'' }}'
       - condition: template
-        value_template: "{{
-  is_state('input_select.nagon_duschar', 'Någon duschar')
-  and is_state('binary_sensor.duschdorren', 'off')
-  and is_state('binary_sensor.badrumsdorren', 'off')
-  and is_state('binary_sensor.badrummet_rorelse', 'off')
-  and is_state('input_boolean.duschslackning_aktiv', 'off')
-  and is_state('input_boolean.badrum_dusch_ljus_last', 'off')
-  and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on')
-}}"
+        value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') and is_state('binary_sensor.duschdorren', 'off') and is_state('input_boolean.badrum_dusch_ljus_last', 'off') }}"
       sequence:
-      - action: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.duschslackning_aktiv
-      - action: light.turn_off
-        target:
-          entity_id:
-          - light.spegeln_badrummet
-          - light.takspottar_badrummet
-          - light.led_badrummet_handfatet
-          - light.led_badrummet_kommoden
-        data:
-          transition: 5
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.badrummet_rorelse
+            state: 'on'
+          sequence:
+          - action: scene.turn_on
+            target:
+              entity_id: scene.badrum_fore_duschslackning
+            data:
+              transition: 0
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.duschslackning_aktiv
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.badrum_dusch_ljus_last
+        default:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.duschslackning_aktiv
+        - action: light.turn_off
+          target:
+            entity_id:
+            - light.spegeln_badrummet
+            - light.takspottar_badrummet
+            - light.led_badrummet_handfatet
+            - light.led_badrummet_kommoden
+          data:
+            transition: 5
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''duschstatus_ingen'' }}'
@@ -1603,7 +1611,9 @@
           - input_boolean.badrum_dusch_ljus_last
       - action: timer.cancel
         target:
-          entity_id: timer.badrum_dusch_120s
+          entity_id:
+          - timer.badrum_dusch_120s
+          - timer.badrum_dusch_dorr_60s
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''ha_start'' }}'
@@ -9905,7 +9915,7 @@
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ is_state('binary_sensor.badrumsdorren', 'off') and (\n  (is_state('input_select.nagon_duschar', 'Ingen duschar') and is_state('input_boolean.duschsekvens_giltig', 'on'))\n  or (is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_ljus_last', 'off'))\n) }}"
+            value_template: "{{ is_state('binary_sensor.badrumsdorren', 'off') and is_state('input_select.nagon_duschar', 'Ingen duschar') and is_state('input_boolean.duschsekvens_giltig', 'on') }}"
           sequence:
           - action: timer.start
             target:
@@ -10326,27 +10336,6 @@
           fukt_high_and_rising: '{{ fukt_current | float >= (states(''input_number.settings_dusch_fukt_hog_niva'') | float(62)) and fukt_current | float
             > fukt_from_v | float }}'
       - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''input_boolean.badrum_dusch_ljus_last'',
-              ''on'') }}'
-          - condition: state
-            entity_id: binary_sensor.badrumsdorren
-            state: 'off'
-          - condition: state
-            entity_id: binary_sensor.duschdorren
-            state: 'off'
-          - condition: template
-            value_template: '{{ (fukt_quick_rise | bool) or (fukt_early_rise | bool) or (fukt_high_and_rising
-              | bool) }}'
-          sequence:
-          - action: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.badrum_dusch_ljus_last
-          - action: logbook.log
-            data:
-              name: Duschstatus
-              message: Dusch bekräftad igen via fukt — ljuslås släppt.
         - conditions:
           - condition: template
             value_template: '{{ fukt_current | float > fukt_peak | float and is_state(''binary_sensor.duschdorren'',

@@ -31,6 +31,10 @@ ljus_timeout_lamporna_i_garderoben: {}
 hallen_uppdimmad_belysning:
   duration: '00:05:00'
 
-# 120 s efter stängd duschdörr (kandidat + duschsläckning)
+# 120 s efter stängd duschdörr (kandidat)
 badrum_dusch_120s:
   duration: '00:02:00'
+
+# 60 s efter stängd duschdörr under bekräftad duschsession (belysning utanför duschen)
+badrum_dusch_dorr_60s:
+  duration: '00:01:00'

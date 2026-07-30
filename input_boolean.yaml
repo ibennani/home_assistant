@@ -138,7 +138,7 @@
     name: Duschsläckning aktiv
     icon: mdi:lightbulb-off-outline
     initial: off
-# Håll badrumsljus tänt efter vifta tills fukt bekräftar dusch igen
+# Håll ljus utanför duschen tänt tills duschsession avslutas (avbryts vid öppen duschdörr)
   badrum_dusch_ljus_last:
     name: Badrum dusch ljus låst
     icon: mdi:lock
