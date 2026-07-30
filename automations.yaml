@@ -1355,27 +1355,6 @@
       - stop: Städning aktiv
   - choose:
     - conditions:
-      - condition: state
-        entity_id: binary_sensor.duschdorren
-        state: 'on'
-      - condition: template
-        value_template: "{{ not is_state('input_select.house_time_modes', 'Natt') and is_state('light.takspott_duschen', 'off') and is_state('light.led_strip_i_duschen', 'off') }}"
-      - condition: template
-        value_template: '{{ trigger.id in [''duschdorr_oppnad'', ''tand'', ''badrumsdorr_stangd''] }}'
-      sequence:
-      - variables:
-          dusch_lux: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) }}"
-          dusch_brightness: '{{ 20 if (dusch_lux | int(0)) < 2000 else 30 }}'
-      - action: light.turn_on
-        target:
-          entity_id:
-          - light.takspott_duschen
-          - light.led_strip_i_duschen
-        data:
-          brightness_pct: '{{ dusch_brightness }}'
-          transition: 0
-  - choose:
-    - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''tand'' }}'
       - condition: template
@@ -1419,6 +1398,28 @@
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.duschslackning_aktiv
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{
+  not is_state('input_select.house_time_modes', 'Natt')
+  and is_state('light.takspott_duschen', 'off')
+  and is_state('light.led_strip_i_duschen', 'off')
+}}"
+          sequence:
+          - variables:
+              dusch_lux: "{{
+  states('sensor.utomhus_framsidan_ljusstyrka') | int(0)
+}}"
+              dusch_brightness: '{{ 20 if (dusch_lux | int(0)) < 2000 else 30 }}'
+          - action: light.turn_on
+            target:
+              entity_id:
+              - light.takspott_duschen
+              - light.led_strip_i_duschen
+            data:
+              brightness_pct: '{{ dusch_brightness }}'
+              transition: 0
       - stop: Duschdörr öppen under session
   - choose:
     - conditions:
@@ -1497,6 +1498,29 @@
           - action: timer.cancel
             target:
               entity_id: timer.badrum_slackning_pagar
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{
+  is_state('input_select.nagon_duschar', 'Ingen duschar')
+  and not is_state('input_select.house_time_modes', 'Natt')
+  and is_state('light.takspott_duschen', 'off')
+  and is_state('light.led_strip_i_duschen', 'off')
+}}"
+          sequence:
+          - variables:
+              dusch_lux: "{{
+  states('sensor.utomhus_framsidan_ljusstyrka') | int(0)
+}}"
+              dusch_brightness: '{{ 20 if (dusch_lux | int(0)) < 2000 else 30 }}'
+          - action: light.turn_on
+            target:
+              entity_id:
+              - light.takspott_duschen
+              - light.led_strip_i_duschen
+            data:
+              brightness_pct: '{{ dusch_brightness }}'
+              transition: 0
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''dusch_bekraftad'' }}'
