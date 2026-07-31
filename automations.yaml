@@ -1663,9 +1663,8 @@
   mode: restart
 - id: badrum_dusch_fas3_rorelse
   alias: 'Belysning: Duschsession rörelse utanför dusch (fas 3)'
-  description: 'Under bekräftad duschsession: rörelse när ljus utanför duschen är släckta
-    eller fadear → tänd snapshot och lås ljus. Separat från dörrcykeln så 60 s-fördröjning
-    inte avbryts.
+  description: 'Under bekräftad duschsession: rörelse när duschsläckning är aktiv → tänd
+    snapshot och lås ljus. Separat från dörrcykeln så 60 s-fördröjning inte avbryts.
 
     '
   triggers:
@@ -1675,8 +1674,9 @@
   conditions:
   - condition: template
     value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') and is_state('input_boolean.badrum_dusch_ljus_last', 'off') }}"
-  - condition: template
-    value_template: "{{ is_state('input_boolean.duschslackning_aktiv', 'on') or is_state('light.takspottar_badrummet', 'off') or is_state('light.led_badrummet_handfatet', 'off') or is_state('light.led_badrummet_kommoden', 'off') or is_state('light.spegeln_badrummet', 'off') }}"
+  - condition: state
+    entity_id: input_boolean.duschslackning_aktiv
+    state: 'on'
   actions:
   - action: scene.turn_on
     target:
