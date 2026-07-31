@@ -5638,9 +5638,18 @@ views:
   - type: vertical-stack
     title: Batterinivåer
     cards:
-    - type: markdown
-      title: Enheter som behöver byta batterier
-      content: '{{ state_attr(''sensor.batterivarningar'', ''message'') }}'
+    - type: conditional
+      conditions:
+      - condition: numeric_state
+        entity: sensor.batterivarningar
+        above: 0
+      card:
+        type: markdown
+        content: >
+          {% set n = states('sensor.batterivarningar') | int(0) -%}
+          **{{ n }} {% if n == 1 %}enhet{% else %}enheter{% endif %} som behöver byta batteri**
+
+          {{ state_attr('sensor.batterivarningar', 'message') }}
     - type: custom:bar-card
       title: Temperatursensorer
       severity:
