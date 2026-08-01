@@ -1413,6 +1413,11 @@
           - light.spegeln_badrummet
         data:
           transition: 10
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.badrummet_vem
+        data:
+          option: någon
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''badrumsdorr_oppnad'' }}'
@@ -11362,7 +11367,7 @@
 # NFC: notis när Anna, Erik eller Ilias blippar Badrummet under spegeln
 - alias: "Mobilnotis: NFC Badrummet under spegeln"
   id: nfc_badrum_blipp
-  description: Skickar notis till Ilias när Anna, Erik eller Ilias blippar NFC-taggen Badrummet under spegeln.
+  description: Skickar notis till Ilias och sätter badrummet_vem när Anna, Erik eller Ilias blippar NFC-taggen Badrummet under spegeln.
   mode: single
   triggers:
     - trigger: state
@@ -11374,6 +11379,16 @@
       "e258bafb30239f66c247b133a4522e9f": Ilias
     vem: "{{ device_map.get(trigger.to_state.attributes.last_scanned_by_device_id, 'Okänd') }}"
   actions:
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: "{{ vem in ['Anna', 'Erik', 'Ilias'] }}"
+        sequence:
+        - action: input_select.select_option
+          target:
+            entity_id: input_select.badrummet_vem
+          data:
+            option: "{{ vem }}"
     - action: notify.mobile_app_ilias_s23_ultra
       data:
         title: Badrummet under spegeln

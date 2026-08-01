@@ -1615,6 +1615,12 @@ views:
         entity: binary_sensor.badrummet_rorelse
         name: Rörelsen
         state: '{% if is_state(''binary_sensor.badrummet_rorelse'', ''on'') %}Rörelse{% else %}Ingen rörelse{% endif %}'
+    - type: entities
+      title: Vem är i badrummet
+      icon: mdi:account-question
+      entities:
+      - entity: input_select.badrummet_vem
+        name: Vem
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
