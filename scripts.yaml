@@ -1990,6 +1990,15 @@ grasklipparen_starta:
               ttl: 0
               priority: high
 
+grasklipparen_stoppa:
+  alias: "Gräsklipparen: Stoppa och åk hem"
+  description: Skickar gräsklipparen till ladstationen.
+  mode: single
+  sequence:
+    - action: lawn_mower.dock
+      target:
+        entity_id: lawn_mower.grasklipparen
+
 git_synka_config:
   alias: "Git: Synka /config från GitHub"
   description: "Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP."
