@@ -198,4 +198,15 @@
     initial: Släckt
 
 
+# Vem som senast blippade NFC i badrummet
+  badrummet_vem:
+    name: Vem är i badrummet
+    options:
+      - någon
+      - Anna
+      - Ilias
+      - Erik
+    initial: någon
+    icon: mdi:account-question
+
 
