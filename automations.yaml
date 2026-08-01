@@ -1415,7 +1415,19 @@
           transition: 10
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id in [''duschdorr_oppnad'', ''badrumsdorr_oppnad''] }}'
+        value_template: '{{ trigger.id == ''badrumsdorr_oppnad'' }}'
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_state(''timer.badrum_slackning_pagar'', ''active'') }}'
+          sequence:
+          - action: timer.cancel
+            target:
+              entity_id: timer.badrum_slackning_pagar
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.id == ''duschdorr_oppnad'' }}'
       sequence:
       - choose:
         - conditions:
