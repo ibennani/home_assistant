@@ -3860,21 +3860,21 @@ views:
         bnstyle: '#6f7501'
       - value: 30
         bnstyle: '#750101'
-  - type: heading
-    heading: Blixtkartan
-    heading_style: title
-  - type: map
-    entities:
-    - zone.home
-    geo_location_sources:
-    - blitzortung
-    default_zoom: 11
-    dark_mode: true
-    hours_to_show: 24
-  - type: heading
-    heading: Väderkarta
-    heading_style: title
-  - type: custom:weather-radar-card
+  - type: vertical-stack
+    title: Blixtkartan
+    cards:
+    - type: map
+      entities:
+      - zone.home
+      geo_location_sources:
+      - blitzortung
+      default_zoom: 11
+      dark_mode: true
+      hours_to_show: 24
+  - type: vertical-stack
+    title: Regnradar
+    cards:
+    - type: custom:weather-radar-card
     height: 300px
     wind_source: dwd_aicon
     markers:
@@ -5644,12 +5644,15 @@ views:
         entity: sensor.batterivarningar
         above: 0
       card:
-        type: markdown
-        content: >
-          {% set n = states('sensor.batterivarningar') | int(0) -%}
-          **{{ n }} {% if n == 1 %}enhet{% else %}enheter{% endif %} som behöver byta batteri**
-
-          {{ state_attr('sensor.batterivarningar', 'message') }}
+        type: vertical-stack
+        cards:
+        - type: markdown
+          text_only: true
+          content: >
+            {% set n = states('sensor.batterivarningar') | int(0) -%}
+            # {{ n }} {% if n == 1 %}enhet{% else %}enheter{% endif %} som behöver byta batteri
+        - type: markdown
+          content: '{{ state_attr(''sensor.batterivarningar'', ''message'') }}'
     - type: custom:bar-card
       title: Temperatursensorer
       severity:
