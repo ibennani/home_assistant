@@ -202,11 +202,11 @@
   badrummet_vem:
     name: Vem är i badrummet
     options:
-      - någon
+      - Någon
       - Anna
       - Ilias
       - Erik
-    initial: någon
+    initial: Någon
     icon: mdi:account-question
 
 

@@ -1417,7 +1417,7 @@
         target:
           entity_id: input_select.badrummet_vem
         data:
-          option: någon
+          option: Någon
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''badrumsdorr_oppnad'' }}'
