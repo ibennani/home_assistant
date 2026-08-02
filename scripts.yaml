@@ -1999,6 +1999,15 @@ grasklipparen_stoppa:
       target:
         entity_id: lawn_mower.grasklipparen
 
+grasklipparen_pausa:
+  alias: "Gräsklipparen: Pausa klippning"
+  description: Pausar gräsklipparen där den står.
+  mode: single
+  sequence:
+    - action: lawn_mower.pause
+      target:
+        entity_id: lawn_mower.grasklipparen
+
 git_synka_config:
   alias: "Git: Synka /config från GitHub"
   description: "Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP."
