@@ -2360,3 +2360,191 @@ badrum_tom_profil:
     data:
       name: Badrumsprofil
       message: Tömde {{ person }} {{ lage }}-profil — editorn och sparad profil är tom.
+badrum_tillampa_profil:
+  alias: Badrum tillämpa sparad ljusprofil
+  description: Tillämpar sparad besöks- eller duschprofil för badrummet_vem. Avbryter tyst om ingen profil finns.
+  mode: single
+  fields:
+    lage:
+      description: besok eller dusch
+      required: true
+      selector:
+        select:
+          options:
+            - besok
+            - dusch
+  sequence:
+  - variables:
+      person: "{{ states('input_select.badrummet_vem') }}"
+      key: >-
+        {% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
+        {{ m.get(person, 'nagon') }}
+      profil_finns: >-
+        {% if lage == 'besok' %}
+        {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}
+        {% else %}
+        {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') }}
+        {% endif %}
+  - condition: template
+    value_template: "{{ profil_finns }}"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ lage == 'besok' }}"
+      sequence:
+      - variables:
+          pct_tak: "{{ states('input_number.badrum_' ~ key ~ '_besok_tak_pct') | int(0) }}"
+          pct_handfat: "{{ states('input_number.badrum_' ~ key ~ '_besok_handfat_pct') | int(0) }}"
+          pct_kommod: "{{ states('input_number.badrum_' ~ key ~ '_besok_kommod_pct') | int(0) }}"
+          pct_spegel: "{{ states('input_number.badrum_' ~ key ~ '_besok_spegel_pct') | int(0) }}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct_tak | int > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.takspottar_badrummet
+            data:
+              brightness_pct: "{{ pct_tak }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.takspottar_badrummet
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct_handfat | int > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.led_badrummet_handfatet
+            data:
+              brightness_pct: "{{ pct_handfat }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.led_badrummet_handfatet
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct_kommod | int > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.led_badrummet_kommoden
+            data:
+              brightness_pct: "{{ pct_kommod }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.led_badrummet_kommoden
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct_spegel | int > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.spegeln_badrummet
+            data:
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.spegeln_badrummet
+    - conditions:
+      - condition: template
+        value_template: "{{ lage == 'dusch' }}"
+      sequence:
+      - variables:
+          pct_dusch_tak: "{{ states('input_number.badrum_' ~ key ~ '_dusch_tak_pct') | int(0) }}"
+          pct_dusch_strip: "{{ states('input_number.badrum_' ~ key ~ '_dusch_strip_pct') | int(0) }}"
+          utanfor: "{{ states('input_select.badrum_' ~ key ~ '_dusch_utanfor') }}"
+          utanfor_pct: "{{ states('input_number.badrum_' ~ key ~ '_dusch_utanfor_pct') | int(0) }}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct_dusch_tak | int > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.takspott_duschen
+            data:
+              brightness_pct: "{{ pct_dusch_tak }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.takspott_duschen
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct_dusch_strip | int > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.led_strip_i_duschen
+            data:
+              brightness_pct: "{{ pct_dusch_strip }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.led_strip_i_duschen
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ utanfor == 'Släck' }}"
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.duschslackning_aktiv
+          - action: light.turn_off
+            target:
+              entity_id:
+              - light.spegeln_badrummet
+              - light.takspottar_badrummet
+              - light.led_badrummet_handfatet
+              - light.led_badrummet_kommoden
+            data:
+              transition: 5
+        - conditions:
+          - condition: template
+            value_template: "{{ utanfor == 'Dämpat' }}"
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.duschslackning_aktiv
+          - action: light.turn_on
+            target:
+              entity_id:
+              - light.takspottar_badrummet
+              - light.led_badrummet_handfatet
+              - light.led_badrummet_kommoden
+            data:
+              brightness_pct: "{{ utanfor_pct }}"
+              transition: 5
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: "{{ states('input_number.badrum_' ~ key ~ '_besok_spegel_pct') | int(0) > 0 }}"
+              sequence:
+              - action: light.turn_on
+                target:
+                  entity_id: light.spegeln_badrummet
+                data:
+                  transition: 5
+            default:
+            - action: light.turn_off
+              target:
+                entity_id: light.spegeln_badrummet
+              data:
+                transition: 5
+  - action: logbook.log
+    data:
+      name: Badrumsprofil
+      message: Tillämpade {{ person }} {{ lage }}-profil i badrummet.
