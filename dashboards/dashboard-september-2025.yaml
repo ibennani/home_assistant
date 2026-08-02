@@ -6479,108 +6479,47 @@ views:
       - condition: '{{ (now - last_updated) > (2*60*60) }}'
         color: red
 - title: Start
+  path: start
   icon: mdi:home-assistant
-  badges:
-  - entity: sensor.time
-    name: Klocka
-    display_type: complete
-  - entity: zone.home
-    name: Hur många är hemma
-    display_type: complete
-    title: personer
-  - entity: input_select.house_alarm_modes
-    name: Huslarmet
-    display_type: complete
-    condition: null
-  - type: entity
-    entity: sensor.oppna_fonster_och_dorrar
-    display_type: complete
-    name: Öppnade dörrar och fönster
-    title: st
-  cards: []
   type: sections
+  max_columns: 1
+  dense_section_placement: true
   sections:
   - type: grid
     cards:
     - type: heading
-      heading: New section
-    - clock_style: digital
-      clock_size: large
-      time_format: language
-      show_seconds: true
-      no_background: false
-      type: clock
-      grid_options:
-        columns: 6
-        rows: 2
-    - show_current: true
-      show_forecast: false
-      type: weather-forecast
-      entity: weather.smhi_farsta
-      forecast_type: daily
-      secondary_info_attribute: cloud_coverage
-      grid_options:
-        columns: 6
-        rows: 2
-    - type: custom:weather-radar-card
-      height: 220px
-      wind_source: dwd_aicon
-      markers:
-      - entity: person.ilias_bennani
-        track: entity
-        icon: mdi:account
-      past_minutes: 120
-      zoom_level: 9
-      show_playback: true
-      show_zoom: true
-      show_scale: true
-      show_range: true
-      extra_labels: true
-      show_recenter: true
-      double_tap_action: zoom_in
-      show_snow: true
-      show_lightning: true
-      show_wildfires: false
-      lightning_max_age_minutes: 120
-      center_latitude: 59.2617
-      center_longitude: 18.045
-      dwd_wind: arrows
-      dwd_wind_density: 0.25
-      map_style: Satellite
-      smooth_animation: true
-    - type: custom:weather-radar-card
-      height: 220px
-      wind_source: dwd_aicon
-      markers:
-      - entity: person.ilias_bennani
-        track: entity
-        icon: mdi:account
-      past_minutes: 120
-      zoom_level: 6
-      show_playback: true
-      show_zoom: true
-      show_scale: true
-      show_range: true
-      extra_labels: true
-      show_recenter: true
-      double_tap_action: zoom_in
-      show_snow: true
-      show_lightning: true
-      show_wildfires: false
-      lightning_max_age_minutes: 120
-      center_latitude: 59.2617
-      center_longitude: 18.045
-      dwd_wind: arrows
-      dwd_wind_density: 0.25
-      map_style: Satellite
-      smooth_animation: true
-  - type: grid
-    cards:
-    - type: heading
-      heading: New section
-  max_columns: 4
-  subview: false
-  dense_section_placement: true
+      heading: Badrumsprofiler
+      heading_style: title
+      icon: mdi:shower
+    - type: markdown
+      content: |
+        Ställ in badrumsbelysningen som du vill ha den. Välj person och tryck **Spara besök** eller **Spara dusch**.
+    - type: entities
+      title: Person
+      icon: mdi:account-cog
+      entities:
+      - entity: input_select.badrum_profil_valj
+        name: Profil
+    - type: entities
+      title: Spara från nuvarande ljusläge
+      icon: mdi:content-save
+      entities:
+      - type: button
+        name: Spara besök
+        icon: mdi:door-open
+        tap_action:
+          action: call-service
+          service: script.badrum_spara_profil
+          data:
+            lage: besok
+      - type: button
+        name: Spara dusch
+        icon: mdi:shower-head
+        tap_action:
+          action: call-service
+          service: script.badrum_spara_profil
+          data:
+            lage: dusch
 - title: Kollektivtrafik
   path: kollektivtrafik
   icon: mdi:train

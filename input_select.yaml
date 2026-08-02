@@ -210,3 +210,49 @@
     icon: mdi:account-question
 
 
+# Välj person när badrumsprofiler sparas från dashboard
+  badrum_profil_valj:
+    name: Badrumsprofil — välj person
+    options:
+      - Någon
+      - Anna
+      - Ilias
+      - Erik
+    initial: Någon
+    icon: mdi:account-cog
+
+
+# Strategi för lampor utanför duschen (per person)
+  badrum_nagon_dusch_utanfor:
+    name: "Badrum Någon dusch utanför"
+    options:
+      - Släck
+      - Dämpat
+      - Behåll
+    initial: Släck
+    icon: mdi:shower-head
+  badrum_anna_dusch_utanfor:
+    name: "Badrum Anna dusch utanför"
+    options:
+      - Släck
+      - Dämpat
+      - Behåll
+    initial: Släck
+    icon: mdi:shower-head
+  badrum_ilias_dusch_utanfor:
+    name: "Badrum Ilias dusch utanför"
+    options:
+      - Släck
+      - Dämpat
+      - Behåll
+    initial: Släck
+    icon: mdi:shower-head
+  badrum_erik_dusch_utanfor:
+    name: "Badrum Erik dusch utanför"
+    options:
+      - Släck
+      - Dämpat
+      - Behåll
+    initial: Släck
+    icon: mdi:shower-head
+

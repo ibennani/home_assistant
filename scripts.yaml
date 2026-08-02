@@ -2055,3 +2055,117 @@ sl_hamta_site_avgangar:
           stop_deviations: "{{ sl_dep.content.stop_deviations | default([]) }}"
     - stop: return
       response_variable: payload
+badrum_spara_profil:
+  alias: Badrum spara ljusprofil från nuvarande läge
+  description: Läser av nuvarande badrumsbelysning och sparar till vald persons profil.
+  mode: single
+  fields:
+    lage:
+      description: besok eller dusch
+      required: true
+      selector:
+        select:
+          options:
+            - besok
+            - dusch
+  sequence:
+  - variables:
+      person: "{{ states('input_select.badrum_profil_valj') }}"
+      key: >-
+        {% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
+        {{ m.get(person, 'nagon') }}
+      pct_tak: >-
+        {% set e = 'light.takspottar_badrummet' %}
+        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
+      pct_handfat: >-
+        {% set e = 'light.led_badrummet_handfatet' %}
+        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
+      pct_kommod: >-
+        {% set e = 'light.led_badrummet_kommoden' %}
+        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
+      pct_spegel: >-
+        {% set e = 'light.spegeln_badrummet' %}
+        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
+      pct_dusch_tak: >-
+        {% set e = 'light.takspott_duschen' %}
+        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
+      pct_dusch_strip: >-
+        {% set e = 'light.led_strip_i_duschen' %}
+        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
+      utanfor_on: >-
+        {% set lights = ['light.takspottar_badrummet', 'light.led_badrummet_handfatet', 'light.led_badrummet_kommoden', 'light.spegeln_badrummet'] %}
+        {% set ns = namespace(n=0) %}
+        {% for e in lights %}
+          {% if is_state(e, 'on') %}{% set ns.n = ns.n + 1 %}{% endif %}
+        {% endfor %}
+        {{ ns.n }}
+      utanfor_avg: >-
+        {% set lights = ['light.takspottar_badrummet', 'light.led_badrummet_handfatet', 'light.led_badrummet_kommoden', 'light.spegeln_badrummet'] %}
+        {% set ns = namespace(total=0, n=0) %}
+        {% for e in lights %}
+          {% if is_state(e, 'on') %}
+            {% set ns.total = ns.total + (((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int) %}
+            {% set ns.n = ns.n + 1 %}
+          {% endif %}
+        {% endfor %}
+        {{ ((ns.total / ns.n) | round(0) | int) if ns.n > 0 else 0 }}
+      utanfor_strategy: >-
+        {% if utanfor_on | int == 0 %}Släck
+        {% elif utanfor_on | int == 4 %}Behåll
+        {% else %}Dämpat{% endif %}
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ lage == 'besok' }}"
+      sequence:
+      - action: input_number.set_value
+        target:
+          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_tak_pct' }}"
+        data:
+          value: "{{ pct_tak }}"
+      - action: input_number.set_value
+        target:
+          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_handfat_pct' }}"
+        data:
+          value: "{{ pct_handfat }}"
+      - action: input_number.set_value
+        target:
+          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_kommod_pct' }}"
+        data:
+          value: "{{ pct_kommod }}"
+      - action: input_number.set_value
+        target:
+          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_spegel_pct' }}"
+        data:
+          value: "{{ pct_spegel }}"
+    - conditions:
+      - condition: template
+        value_template: "{{ lage == 'dusch' }}"
+      sequence:
+      - action: input_number.set_value
+        target:
+          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_tak_pct' }}"
+        data:
+          value: "{{ pct_dusch_tak }}"
+      - action: input_number.set_value
+        target:
+          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_strip_pct' }}"
+        data:
+          value: "{{ pct_dusch_strip }}"
+      - action: input_select.select_option
+        target:
+          entity_id: "{{ 'input_select.badrum_' ~ key ~ '_dusch_utanfor' }}"
+        data:
+          option: "{{ utanfor_strategy }}"
+      - action: input_number.set_value
+        target:
+          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_utanfor_pct' }}"
+        data:
+          value: "{{ utanfor_avg }}"
+  - action: logbook.log
+    data:
+      name: Badrumsprofil
+      message: >-
+        Sparade {{ person }} {{ lage }}-profil från nuvarande ljusläge
+        (tak {{ pct_tak }}%, handfat {{ pct_handfat }}%, kommod {{ pct_kommod }}%, spegel {{ pct_spegel }}%
+        {% if lage == 'dusch' %}; dusch {{ pct_dusch_tak }}%/{{ pct_dusch_strip }}%; utanför {{ utanfor_strategy }} {{ utanfor_avg }}%{% endif %}).
