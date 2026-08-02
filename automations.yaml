@@ -11419,3 +11419,139 @@
         data:
           ttl: 0
           priority: high
+
+- id: badrum_editor_styr_lampor
+  alias: 'Badrum: editor styr lampor live'
+  description: När sliders eller spegel-toggle ändras på inställningssidan uppdateras motsvarande lampa direkt.
+  mode: restart
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_number.badrum_editor_tak_pct
+    - input_number.badrum_editor_handfat_pct
+    - input_number.badrum_editor_kommod_pct
+    - input_number.badrum_editor_dusch_tak_pct
+    - input_number.badrum_editor_dusch_strip_pct
+  - trigger: state
+    entity_id: input_boolean.badrum_editor_spegel
+  conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state.state != trigger.from_state.state }}"
+  actions:
+  - variables:
+      pct: "{{ trigger.to_state.state | int(0) }}"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.entity_id == 'input_number.badrum_editor_tak_pct' }}"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.takspottar_badrummet
+            data:
+              brightness_pct: "{{ pct }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.takspottar_badrummet
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.entity_id == 'input_number.badrum_editor_handfat_pct' }}"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.led_badrummet_handfatet
+            data:
+              brightness_pct: "{{ pct }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.led_badrummet_handfatet
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.entity_id == 'input_number.badrum_editor_kommod_pct' }}"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.led_badrummet_kommoden
+            data:
+              brightness_pct: "{{ pct }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.led_badrummet_kommoden
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.entity_id == 'input_boolean.badrum_editor_spegel' }}"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: input_boolean.badrum_editor_spegel
+            state: 'on'
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.spegeln_badrummet
+            data:
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.spegeln_badrummet
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.entity_id == 'input_number.badrum_editor_dusch_tak_pct' }}"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.takspott_duschen
+            data:
+              brightness_pct: "{{ pct }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.takspott_duschen
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.entity_id == 'input_number.badrum_editor_dusch_strip_pct' }}"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ pct > 0 }}"
+          sequence:
+          - action: light.turn_on
+            target:
+              entity_id: light.led_strip_i_duschen
+            data:
+              brightness_pct: "{{ pct }}"
+              transition: 0
+        default:
+        - action: light.turn_off
+          target:
+            entity_id: light.led_strip_i_duschen
