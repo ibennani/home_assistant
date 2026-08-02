@@ -1201,6 +1201,67 @@
         {% endif %}
         {{ ns.best }}
 
+    - name: Ilias aktiv zon
+      unique_id: ilias_aktiv_zon
+      icon: mdi:map-marker-radius
+      state: >
+        {% set tracker = 'person.ilias_bennani' %}
+        {% set zones = [
+                  'zone.home',
+          'zone.annas_jobb',
+          'zone.eriks_skola',
+          'zone.ilias_jobb',
+          'zone.kth_campus',
+          'zone.kth_flemmingsberg',
+          'zone.albins_mamma',
+          'zone.isabelles_jobb',
+          'zone.albin',
+          'zone.grasko',
+          'zone.isabelles_mormor',
+          'zone.isabelles_skola',
+          'zone.goteborg_c',
+          'zone.isabelles_moster_jenny',
+          'zone.adrian',
+          'zone.knut',
+          'zone.milo',
+          'zone.hemma_hos_rio',
+          'zone.ellio_i_tanum',
+          'zone.digg_sundsvall',
+          'zone.ostra_sjukhuset',
+          'zone.stromstad',
+          'zone.ik_sodra_skarpnack',
+          'zone.torvallahallen',
+          'zone.zaki_och_hanna',
+          'zone.maria',
+          'zone.sixten',
+          'zone.oslo',
+          'zone.farmor_och_farfar',
+          'zone.solveig_och_lennart',
+          'zone.bengt',
+          'zone.farsta_centrum',
+          'zone.farsta_strand_pendeltagstation',
+          'zone.ellio_i_norge',
+          'zone.eina',
+          'zone.gjovik',
+          'zone.norge_2',
+          'zone.sahlgrenska_sjukhuset',
+          'zone.molndahls_sjukhus',
+          'zone.stefan',
+          'zone.elins_jobb'
+        ] %}
+        {% set ns = namespace(best='not_home', best_d=999999) %}
+        {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
+          {% for z in zones %}
+            {% set d_m = distance(tracker, z) * 1000 %}
+            {% set r = state_attr(z, 'radius') | float(0) %}
+            {% if d_m <= r and d_m < ns.best_d %}
+              {% set ns.best = z %}
+              {% set ns.best_d = d_m %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        {{ ns.best }}
+
 # END aktiv-zon-sensorer (generate-ilias-zone-automation.py)
 
     # ---- Personer / hemma ---------------------------------------------------
