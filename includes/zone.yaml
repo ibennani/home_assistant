@@ -28,5 +28,5 @@
 - name: Rödkinda 19
   latitude: 59.235683
   longitude: 18.087751
-  radius: 5
+  radius: 15
   icon: mdi:human
