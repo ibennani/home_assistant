@@ -184,13 +184,19 @@ views:
                 </td></tr>
               </table>
           - type: custom:bar-card
-            card_mod:
-              style: |
-                bar-card-backgroundbar {
-                  background: #042b06 !important;
-                  filter: none !important;
-                  opacity: 1 !important;
-                }
+            style: |-
+              bar-card-backgroundbar {
+                background: #042b06 !important;
+                filter: none !important;
+                opacity: 1 !important;
+              }
+              bar-card-currentbar {
+                background: linear-gradient(
+                  to var(--bar-direction, right),
+                  #055e09 var(--bar-percent),
+                  #042b06 var(--bar-percent)
+                ) !important;
+              }
             entities:
             - entity: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
               color: '#055e09'
