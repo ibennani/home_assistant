@@ -332,3 +332,229 @@
     initial: 62
     unit_of_measurement: "%"
     mode: box
+
+# Badrumsprofiler — sparas via script.badrum_spara_profil
+  badrum_nagon_besok_tak_pct:
+    name: "Badrum Någon besök tak"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_nagon_besok_handfat_pct:
+    name: "Badrum Någon besök handfat"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_nagon_besok_kommod_pct:
+    name: "Badrum Någon besök kommod"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_nagon_besok_spegel_pct:
+    name: "Badrum Någon besök spegel"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_nagon_dusch_tak_pct:
+    name: "Badrum Någon dusch tak"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_nagon_dusch_strip_pct:
+    name: "Badrum Någon dusch strip"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_nagon_dusch_utanfor_pct:
+    name: "Badrum Någon dusch utanför %"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_anna_besok_tak_pct:
+    name: "Badrum Anna besök tak"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_anna_besok_handfat_pct:
+    name: "Badrum Anna besök handfat"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_anna_besok_kommod_pct:
+    name: "Badrum Anna besök kommod"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_anna_besok_spegel_pct:
+    name: "Badrum Anna besök spegel"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_anna_dusch_tak_pct:
+    name: "Badrum Anna dusch tak"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_anna_dusch_strip_pct:
+    name: "Badrum Anna dusch strip"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_anna_dusch_utanfor_pct:
+    name: "Badrum Anna dusch utanför %"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_ilias_besok_tak_pct:
+    name: "Badrum Ilias besök tak"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_ilias_besok_handfat_pct:
+    name: "Badrum Ilias besök handfat"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_ilias_besok_kommod_pct:
+    name: "Badrum Ilias besök kommod"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_ilias_besok_spegel_pct:
+    name: "Badrum Ilias besök spegel"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_ilias_dusch_tak_pct:
+    name: "Badrum Ilias dusch tak"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_ilias_dusch_strip_pct:
+    name: "Badrum Ilias dusch strip"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_ilias_dusch_utanfor_pct:
+    name: "Badrum Ilias dusch utanför %"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_erik_besok_tak_pct:
+    name: "Badrum Erik besök tak"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_erik_besok_handfat_pct:
+    name: "Badrum Erik besök handfat"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_erik_besok_kommod_pct:
+    name: "Badrum Erik besök kommod"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_erik_besok_spegel_pct:
+    name: "Badrum Erik besök spegel"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_erik_dusch_tak_pct:
+    name: "Badrum Erik dusch tak"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_erik_dusch_strip_pct:
+    name: "Badrum Erik dusch strip"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
+  badrum_erik_dusch_utanfor_pct:
+    name: "Badrum Erik dusch utanför %"
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: box
+
