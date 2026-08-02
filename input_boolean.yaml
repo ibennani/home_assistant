@@ -177,3 +177,17 @@
     name: "Badrum Erik dusch-profil sparad"
     icon: mdi:account
     initial: off
+
+# Dashboard-editor för badrumsprofiler
+  badrum_editor_spegel:
+    name: Badrum editor spegel
+    icon: mdi:mirror
+    initial: off
+  badrum_editor_besok_laddad:
+    name: Badrum editor normalt laddad
+    icon: mdi:door-open
+    initial: off
+  badrum_editor_dusch_laddad:
+    name: Badrum editor dusch laddad
+    icon: mdi:shower-head
+    initial: off

@@ -2056,8 +2056,8 @@ sl_hamta_site_avgangar:
     - stop: return
       response_variable: payload
 badrum_spara_profil:
-  alias: Badrum spara ljusprofil från nuvarande läge
-  description: Läser av nuvarande badrumsbelysning och sparar till vald persons profil.
+  alias: Badrum spara ljusprofil från editor
+  description: Sparar slider-värden i editorn till vald persons profil.
   mode: single
   fields:
     lage:
@@ -2074,40 +2074,25 @@ badrum_spara_profil:
       key: >-
         {% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
         {{ m.get(person, 'nagon') }}
-      pct_tak: >-
-        {% set e = 'light.takspottar_badrummet' %}
-        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
-      pct_handfat: >-
-        {% set e = 'light.led_badrummet_handfatet' %}
-        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
-      pct_kommod: >-
-        {% set e = 'light.led_badrummet_kommoden' %}
-        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
-      pct_spegel: >-
-        {% set e = 'light.spegeln_badrummet' %}
-        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
-      pct_dusch_tak: >-
-        {% set e = 'light.takspott_duschen' %}
-        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
-      pct_dusch_strip: >-
-        {% set e = 'light.led_strip_i_duschen' %}
-        {% if is_state(e, 'on') %}{{ ((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int }}{% else %}0{% endif %}
+      pct_tak: "{{ states('input_number.badrum_editor_tak_pct') | int(0) }}"
+      pct_handfat: "{{ states('input_number.badrum_editor_handfat_pct') | int(0) }}"
+      pct_kommod: "{{ states('input_number.badrum_editor_kommod_pct') | int(0) }}"
+      pct_spegel: "{{ 100 if is_state('input_boolean.badrum_editor_spegel', 'on') else 0 }}"
+      pct_dusch_tak: "{{ states('input_number.badrum_editor_dusch_tak_pct') | int(0) }}"
+      pct_dusch_strip: "{{ states('input_number.badrum_editor_dusch_strip_pct') | int(0) }}"
       utanfor_on: >-
-        {% set lights = ['light.takspottar_badrummet', 'light.led_badrummet_handfatet', 'light.led_badrummet_kommoden', 'light.spegeln_badrummet'] %}
         {% set ns = namespace(n=0) %}
-        {% for e in lights %}
-          {% if is_state(e, 'on') %}{% set ns.n = ns.n + 1 %}{% endif %}
-        {% endfor %}
+        {% if pct_tak | int > 0 %}{% set ns.n = ns.n + 1 %}{% endif %}
+        {% if pct_handfat | int > 0 %}{% set ns.n = ns.n + 1 %}{% endif %}
+        {% if pct_kommod | int > 0 %}{% set ns.n = ns.n + 1 %}{% endif %}
+        {% if is_state('input_boolean.badrum_editor_spegel', 'on') %}{% set ns.n = ns.n + 1 %}{% endif %}
         {{ ns.n }}
       utanfor_avg: >-
-        {% set lights = ['light.takspottar_badrummet', 'light.led_badrummet_handfatet', 'light.led_badrummet_kommoden', 'light.spegeln_badrummet'] %}
         {% set ns = namespace(total=0, n=0) %}
-        {% for e in lights %}
-          {% if is_state(e, 'on') %}
-            {% set ns.total = ns.total + (((state_attr(e, 'brightness') | int(255)) * 100 / 255) | round(0) | int) %}
-            {% set ns.n = ns.n + 1 %}
-          {% endif %}
-        {% endfor %}
+        {% if pct_tak | int > 0 %}{% set ns.total = ns.total + (pct_tak | int) %}{% set ns.n = ns.n + 1 %}{% endif %}
+        {% if pct_handfat | int > 0 %}{% set ns.total = ns.total + (pct_handfat | int) %}{% set ns.n = ns.n + 1 %}{% endif %}
+        {% if pct_kommod | int > 0 %}{% set ns.total = ns.total + (pct_kommod | int) %}{% set ns.n = ns.n + 1 %}{% endif %}
+        {% if is_state('input_boolean.badrum_editor_spegel', 'on') %}{% set ns.total = ns.total + 100 %}{% set ns.n = ns.n + 1 %}{% endif %}
         {{ ((ns.total / ns.n) | round(0) | int) if ns.n > 0 else 0 }}
       utanfor_strategy: >-
         {% if utanfor_on | int == 0 %}Släck
@@ -2140,7 +2125,9 @@ badrum_spara_profil:
           value: "{{ pct_spegel }}"
       - action: input_boolean.turn_on
         target:
-          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_besok_profil' }}"
+          entity_id:
+          - "{{ 'input_boolean.badrum_' ~ key ~ '_besok_profil' }}"
+          - input_boolean.badrum_editor_besok_laddad
     - conditions:
       - condition: template
         value_template: "{{ lage == 'dusch' }}"
@@ -2167,17 +2154,142 @@ badrum_spara_profil:
           value: "{{ utanfor_avg }}"
       - action: input_boolean.turn_on
         target:
-          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_dusch_profil' }}"
+          entity_id:
+          - "{{ 'input_boolean.badrum_' ~ key ~ '_dusch_profil' }}"
+          - input_boolean.badrum_editor_dusch_laddad
   - action: logbook.log
     data:
       name: Badrumsprofil
       message: >-
-        Sparade {{ person }} {{ lage }}-profil från nuvarande ljusläge
+        Sparade {{ person }} {{ lage }}-profil från editor
         (tak {{ pct_tak }}%, handfat {{ pct_handfat }}%, kommod {{ pct_kommod }}%, spegel {{ pct_spegel }}%
         {% if lage == 'dusch' %}; dusch {{ pct_dusch_tak }}%/{{ pct_dusch_strip }}%; utanför {{ utanfor_strategy }} {{ utanfor_avg }}%{% endif %}).
+badrum_visa_profil:
+  alias: Badrum visa sparad ljusprofil i editor
+  description: Laddar sparad profil till slider-editorn, eller nollställer om ingen profil finns.
+  mode: single
+  fields:
+    lage:
+      description: besok eller dusch
+      required: true
+      selector:
+        select:
+          options:
+            - besok
+            - dusch
+  sequence:
+  - variables:
+      person: "{{ states('input_select.badrum_profil_valj') }}"
+      key: >-
+        {% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
+        {{ m.get(person, 'nagon') }}
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ lage == 'besok' }}"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}"
+          sequence:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.badrum_editor_tak_pct
+            data:
+              value: "{{ states('input_number.badrum_' ~ key ~ '_besok_tak_pct') | int(0) }}"
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.badrum_editor_handfat_pct
+            data:
+              value: "{{ states('input_number.badrum_' ~ key ~ '_besok_handfat_pct') | int(0) }}"
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.badrum_editor_kommod_pct
+            data:
+              value: "{{ states('input_number.badrum_' ~ key ~ '_besok_kommod_pct') | int(0) }}"
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: "{{ states('input_number.badrum_' ~ key ~ '_besok_spegel_pct') | int(0) > 0 }}"
+              sequence:
+              - action: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.badrum_editor_spegel
+            default:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.badrum_editor_spegel
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.badrum_editor_besok_laddad
+        default:
+        - action: input_number.set_value
+          target:
+            entity_id:
+            - input_number.badrum_editor_tak_pct
+            - input_number.badrum_editor_handfat_pct
+            - input_number.badrum_editor_kommod_pct
+          data:
+            value: 0
+        - action: input_boolean.turn_off
+          target:
+            entity_id:
+            - input_boolean.badrum_editor_spegel
+            - input_boolean.badrum_editor_besok_laddad
+    - conditions:
+      - condition: template
+        value_template: "{{ lage == 'dusch' }}"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') }}"
+          sequence:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.badrum_editor_dusch_tak_pct
+            data:
+              value: "{{ states('input_number.badrum_' ~ key ~ '_dusch_tak_pct') | int(0) }}"
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.badrum_editor_dusch_strip_pct
+            data:
+              value: "{{ states('input_number.badrum_' ~ key ~ '_dusch_strip_pct') | int(0) }}"
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.badrum_editor_dusch_laddad
+        default:
+        - action: input_number.set_value
+          target:
+            entity_id:
+            - input_number.badrum_editor_dusch_tak_pct
+            - input_number.badrum_editor_dusch_strip_pct
+          data:
+            value: 0
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.badrum_editor_dusch_laddad
+  - action: logbook.log
+    data:
+      name: Badrumsprofil
+      message: >-
+        {% if lage == 'besok' %}
+        {% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}
+        Visade {{ person }} normalt-profil i editorn.
+        {% else %}
+        Ingen sparad normalt-profil för {{ person }} — editorn är tom.
+        {% endif %}
+        {% else %}
+        {% if is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') %}
+        Visade {{ person }} dusch-profil i editorn.
+        {% else %}
+        Ingen sparad dusch-profil för {{ person }} — editorn är tom.
+        {% endif %}
+        {% endif %}
 badrum_tom_profil:
   alias: Badrum töm sparad ljusprofil
-  description: Tar bort sparad besöks- eller duschprofil så lux/natt-systemet används i stället.
+  description: Tar bort sparad besöks- eller duschprofil och nollställer editorn för läget.
   mode: single
   fields:
     lage:
@@ -2209,8 +2321,16 @@ badrum_tom_profil:
           - "{{ 'input_number.badrum_' ~ key ~ '_besok_handfat_pct' }}"
           - "{{ 'input_number.badrum_' ~ key ~ '_besok_kommod_pct' }}"
           - "{{ 'input_number.badrum_' ~ key ~ '_besok_spegel_pct' }}"
+          - input_number.badrum_editor_tak_pct
+          - input_number.badrum_editor_handfat_pct
+          - input_number.badrum_editor_kommod_pct
         data:
           value: 0
+      - action: input_boolean.turn_off
+        target:
+          entity_id:
+          - input_boolean.badrum_editor_spegel
+          - input_boolean.badrum_editor_besok_laddad
     - conditions:
       - condition: template
         value_template: "{{ lage == 'dusch' }}"
@@ -2224,6 +2344,8 @@ badrum_tom_profil:
           - "{{ 'input_number.badrum_' ~ key ~ '_dusch_tak_pct' }}"
           - "{{ 'input_number.badrum_' ~ key ~ '_dusch_strip_pct' }}"
           - "{{ 'input_number.badrum_' ~ key ~ '_dusch_utanfor_pct' }}"
+          - input_number.badrum_editor_dusch_tak_pct
+          - input_number.badrum_editor_dusch_strip_pct
         data:
           value: 0
       - action: input_select.select_option
@@ -2231,7 +2353,10 @@ badrum_tom_profil:
           entity_id: "{{ 'input_select.badrum_' ~ key ~ '_dusch_utanfor' }}"
         data:
           option: Släck
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.badrum_editor_dusch_laddad
   - action: logbook.log
     data:
       name: Badrumsprofil
-      message: Tömde {{ person }} {{ lage }}-profil — systemets lux/natt-styrning gäller igen.
+      message: Tömde {{ person }} {{ lage }}-profil — editorn och sparad profil är tom.

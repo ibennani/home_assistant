@@ -558,3 +558,40 @@
     unit_of_measurement: "%"
     mode: box
 
+# Redigeringsytor för badrumsprofiler (dashboard Start-fliken)
+  badrum_editor_tak_pct:
+    name: Badrum editor tak
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: slider
+  badrum_editor_handfat_pct:
+    name: Badrum editor handfat
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: slider
+  badrum_editor_kommod_pct:
+    name: Badrum editor kommod
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: slider
+  badrum_editor_dusch_tak_pct:
+    name: Badrum editor dusch tak
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: slider
+  badrum_editor_dusch_strip_pct:
+    name: Badrum editor dusch strip
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    mode: slider
+
