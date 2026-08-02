@@ -5200,58 +5200,85 @@
 
 - alias: 'Mobilnotis Anna: Vilka kommer hem och går hemifrån'
   id: '791834010101014158674'
+  description: Hemma-notiser till Anna via aktiv_zon (mittpunkt i zone.home).
   mode: parallel
   triggers:
-    trigger: state
+  - trigger: state
     entity_id:
-    - device_tracker.ilias_s23_ultra
-    - device_tracker.albins_iphone_12_gps_tracker
-    - device_tracker.annelies_iphone
-    - device_tracker.erik_s23
-    - device_tracker.ulrikas_iphone
-    - device_tracker.jockesiphone
-    - device_tracker.mariesiphone
-    - device_tracker.android56cbe288b1a113c8
-    - device_tracker.youssef_honor_8
-    - device_tracker.zaksiphone
-    - device_tracker.safiabennani
-    - device_tracker.78521aac945e
-    - device_tracker.84c7ea28ca07
-    - device_tracker.adinas_iphone
-    - device_tracker.hannas_iphone_7
-    - device_tracker.marias_iphone
-  condition:
+    - sensor.ilias_aktiv_zon
+    - sensor.albin_aktiv_zon
+    - sensor.isabelle_aktiv_zon
+    - sensor.erik_aktiv_zon
+    - sensor.ulrika_aktiv_zon
+    - sensor.jocke_aktiv_zon
+    - sensor.mie_aktiv_zon
+    - sensor.elin_aktiv_zon
+    - sensor.youssef_aktiv_zon
+    - sensor.zaki_aktiv_zon
+    - sensor.safia_aktiv_zon
+    - sensor.solveig_aktiv_zon
+    - sensor.sarah_aktiv_zon
+    - sensor.adina_aktiv_zon
+    - sensor.hanna_aktiv_zon
+    - sensor.maria_aktiv_zon
+  conditions:
   - condition: template
-    value_template: "{{ trigger.from_state.state != trigger.to_state.state \n  and
-      (trigger.from_state.state in [\"home\"] or trigger.to_state.state in [\"home\"])
-      \ }}\n"
-  action:
+    value_template: >
+      {{ trigger.from_state.state not in ['unknown', 'unavailable', 'none']
+         and trigger.to_state.state not in ['unknown', 'unavailable', 'none']
+         and trigger.from_state.state != trigger.to_state.state
+         and ('zone.home' in [trigger.from_state.state, trigger.to_state.state]) }}
+  actions:
+  - variables:
+      notification_message: >
+                {%- if trigger.entity_id == 'sensor.ilias_aktiv_zon' -%}
+                  {%- set person = 'Ilias' -%}
+                {%- elif trigger.entity_id == 'sensor.albin_aktiv_zon' -%}
+                  {%- set person = 'Albin' -%}
+                {%- elif trigger.entity_id == 'sensor.isabelle_aktiv_zon' -%}
+                  {%- set person = 'Isabelle' -%}
+                {%- elif trigger.entity_id == 'sensor.erik_aktiv_zon' -%}
+                  {%- set person = 'Erik' -%}
+                {%- elif trigger.entity_id == 'sensor.ulrika_aktiv_zon' -%}
+                  {%- set person = 'Ulrika' -%}
+                {%- elif trigger.entity_id == 'sensor.jocke_aktiv_zon' -%}
+                  {%- set person = 'Jocke' -%}
+                {%- elif trigger.entity_id == 'sensor.mie_aktiv_zon' -%}
+                  {%- set person = 'Mie' -%}
+                {%- elif trigger.entity_id == 'sensor.elin_aktiv_zon' -%}
+                  {%- set person = 'Elin' -%}
+                {%- elif trigger.entity_id == 'sensor.youssef_aktiv_zon' -%}
+                  {%- set person = 'Youssef' -%}
+                {%- elif trigger.entity_id == 'sensor.zaki_aktiv_zon' -%}
+                  {%- set person = 'Zaki' -%}
+                {%- elif trigger.entity_id == 'sensor.safia_aktiv_zon' -%}
+                  {%- set person = 'Safia' -%}
+                {%- elif trigger.entity_id == 'sensor.solveig_aktiv_zon' -%}
+                  {%- set person = 'Solveig' -%}
+                {%- elif trigger.entity_id == 'sensor.sarah_aktiv_zon' -%}
+                  {%- set person = 'Sarah' -%}
+                {%- elif trigger.entity_id == 'sensor.adina_aktiv_zon' -%}
+                  {%- set person = 'Adina' -%}
+                {%- elif trigger.entity_id == 'sensor.hanna_aktiv_zon' -%}
+                  {%- set person = 'Hanna' -%}
+                {%- elif trigger.entity_id == 'sensor.maria_aktiv_zon' -%}
+                  {%- set person = 'Maria' -%}
+                {%- else -%}
+                  {%- set person = 'Okänd' -%}
+                {%- endif -%}
+                {%- if trigger.to_state.state == 'zone.home' -%}
+                  {{ person }} är hemma
+                {%- elif trigger.from_state.state == 'zone.home' -%}
+                  {{ person }} har gått hemifrån
+                {%- endif -%}
   - action: notify.mobile_app_anna_s22_ultra
     data:
-      message: "HEMMET {{ now().strftime('%R') }}: \n{% if trigger.entity_id == \"device_tracker.ilias_s23_ultra\"
-        %}\n  {% set person = \"Ilias\" %}           \n{% elif trigger.entity_id ==
-        \"device_tracker.albins_iphone_12_gps_tracker\" %}\n  {% set person = \"Albin\"
-        %} \n{% elif trigger.entity_id == \"device_tracker.annelies_iphone\" %}\n
-        \ {% set person = \"Isabelle\" %}   \n{% elif trigger.entity_id == \"device_tracker.erik_s23\"
-        %}\n  {% set person = \"Erik\" %}   \n{% elif trigger.entity_id == \"device_tracker.ulrikas_iphone\"
-        %}\n  {% set person = \"Ulrika\" %}   \n{% elif trigger.entity_id == \"device_tracker.jockesiphone\"
-        %}\n  {% set person = \"Jocke\" %}\n{% elif trigger.entity_id == \"device_tracker.mariesiphone\"
-        %}\n  {% set person = \"Mie\" %}\n{% elif trigger.entity_id == \"device_tracker.android56cbe288b1a113c8\"
-        %}\n  {% set person = \"Elin\" %}\n{% elif trigger.entity_id == \"device_tracker.youssef_honor_8\"
-        %}\n  {% set person = \"Youssef\" %}\n{% elif trigger.entity_id == \"device_tracker.zaksiphonex\"
-        %}\n  {% set person = \"Zaki\" %}\n{% elif trigger.entity_id == \"device_tracker.safiabennani_2\"
-        %}\n  {% set person = \"Safia\" %}\n{% elif trigger.entity_id == \"device_tracker.78521aac945e\"
-        %}\n  {% set person = \"Solveig\" %}    \n{% elif trigger.entity_id == \"device_tracker.84c7ea28ca07\"
-        %}\n  {% set person = \"Sarah\" %}\n{% elif trigger.entity_id == \"device_tracker.adinas_iphone\"
-        %}\n  {% set person = \"Adina\" %} \n{% elif trigger.entity_id == \"device_tracker.hannas_iphone_7\"
-        %}\n  {% set person = \"Hanna\" %}      \n{% elif trigger.entity_id == \"device_tracker.marias_iphone\"
-        %}\n  {% set person = \"Maria\" %} \n{% endif %}\n{%- if trigger.to_state.state
-        == 'home' -%} {{ person }} är hemma\n{%- elif trigger.from_state.state ==
-        'home' %} {{ person }} har gått hemifrån\n{%- else %} {{ person }} är på ett
-        okänt ställe.\n{% endif %}\n"
+      message: "HEMMET {{ now().strftime('%R') }}: 
+{{ notification_message }}"
       data:
         ttl: 0
         priority: high
+
 - alias: 'Mobilnotis: Posten har kommit'
   id: '7918365089098048674'
   mode: single

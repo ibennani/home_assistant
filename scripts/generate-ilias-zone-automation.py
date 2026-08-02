@@ -33,6 +33,31 @@ TRACKED_PEOPLE = [
     ("device_tracker.marias_iphone", "Maria", "maria"),
 ]
 
+# Extra aktiv_zon-sensorer (t.ex. för Annas hemma-notiser, inte Ilias platsnotis-triggers)
+EXTRA_AKTIV_ZON_SENSORS = [
+    ("person.ilias_bennani", "Ilias", "ilias"),
+]
+
+# Personer som Annas hemma-notis bevakar (ej Anna själv)
+ANNA_TRACKED_PEOPLE = [
+    ("person.ilias_bennani", "Ilias", "ilias"),
+    ("device_tracker.albins_iphone_12_gps_tracker", "Albin", "albin"),
+    ("person.isabelle_sovig", "Isabelle", "isabelle"),
+    ("person.erik_bennani", "Erik", "erik"),
+    ("device_tracker.ulrikas_iphone", "Ulrika", "ulrika"),
+    ("device_tracker.jockesiphone", "Jocke", "jocke"),
+    ("device_tracker.mariesiphone", "Mie", "mie"),
+    ("device_tracker.android56cbe288b1a113c8", "Elin", "elin"),
+    ("device_tracker.youssef_honor_8", "Youssef", "youssef"),
+    ("device_tracker.zaksiphone", "Zaki", "zaki"),
+    ("device_tracker.safiabennani", "Safia", "safia"),
+    ("device_tracker.78521aac945e", "Solveig", "solveig"),
+    ("device_tracker.84c7ea28ca07", "Sarah", "sarah"),
+    ("device_tracker.adinas_iphone", "Adina", "adina"),
+    ("device_tracker.hannas_iphone_7", "Hanna", "hanna"),
+    ("device_tracker.marias_iphone", "Maria", "maria"),
+]
+
 ZONES = [
     ("zone.home", "home"),
     ("zone.annas_jobb", "annas_jobb"),
@@ -247,6 +272,17 @@ ZONE_MESSAGES = {
 TEMPLATE_BEGIN = "# BEGIN aktiv-zon-sensorer (generate-ilias-zone-automation.py)"
 TEMPLATE_END = "# END aktiv-zon-sensorer (generate-ilias-zone-automation.py)"
 AUTOMATION_ID = "7918348674111555999"
+ANNA_AUTOMATION_ID = "791834010101014158674"
+
+
+def all_aktiv_zon_people() -> list[tuple[str, str, str]]:
+    seen: set[str] = set()
+    combined: list[tuple[str, str, str]] = []
+    for item in TRACKED_PEOPLE + EXTRA_AKTIV_ZON_SENSORS:
+        if item[2] not in seen:
+            seen.add(item[2])
+            combined.append(item)
+    return combined
 
 
 def zone_list_jinja(indent: str = "          ") -> str:
@@ -280,7 +316,7 @@ def aktiv_zon_state_template(tracker: str) -> str:
 
 def build_template_sensors() -> str:
     lines = [TEMPLATE_BEGIN, "    # ---- Aktiv zon (mittpunkt i zon, en zon åt gången) ----"]
-    for _tracker, display_name, slug in TRACKED_PEOPLE:
+    for _tracker, display_name, slug in all_aktiv_zon_people():
         state_tpl = aktiv_zon_state_template(_tracker)
         lines.append(f"    - name: {display_name} aktiv zon")
         lines.append(f"      unique_id: {slug}_aktiv_zon")
@@ -381,6 +417,63 @@ def build_automation() -> str:
     return "\n".join(lines)
 
 
+def build_anna_notification_message_template() -> str:
+    person_lines = []
+    for index, (_tracker, display_name, slug) in enumerate(ANNA_TRACKED_PEOPLE):
+        keyword = "if" if index == 0 else "elif"
+        person_lines.append(
+            f"        {{%- {keyword} trigger.entity_id == 'sensor.{slug}_aktiv_zon' -%}}\n"
+            f"          {{%- set person = '{display_name}' -%}}"
+        )
+    person_lines.append("        {%- else -%}")
+    person_lines.append("          {%- set person = 'Okänd' -%}")
+    person_lines.append("        {%- endif -%}")
+    person_lines.append("        {%- if trigger.to_state.state == 'zone.home' -%}")
+    person_lines.append("          {{ person }} är hemma")
+    person_lines.append("        {%- elif trigger.from_state.state == 'zone.home' -%}")
+    person_lines.append("          {{ person }} har gått hemifrån")
+    person_lines.append("        {%- endif -%}")
+    return "\n".join(person_lines)
+
+
+def build_anna_automation() -> str:
+    entity_ids = [f"sensor.{slug}_aktiv_zon" for _t, _n, slug in ANNA_TRACKED_PEOPLE]
+    message = build_anna_notification_message_template()
+    lines = [
+        "- alias: 'Mobilnotis Anna: Vilka kommer hem och går hemifrån'",
+        f"  id: '{ANNA_AUTOMATION_ID}'",
+        "  description: Hemma-notiser till Anna via aktiv_zon (mittpunkt i zone.home).",
+        "  mode: parallel",
+        "  triggers:",
+        "  - trigger: state",
+        "    entity_id:",
+    ]
+    lines.extend(f"    - {eid}" for eid in entity_ids)
+    lines += [
+        "  conditions:",
+        "  - condition: template",
+        "    value_template: >",
+        "      {{ trigger.from_state.state not in ['unknown', 'unavailable', 'none']",
+        "         and trigger.to_state.state not in ['unknown', 'unavailable', 'none']",
+        "         and trigger.from_state.state != trigger.to_state.state",
+        "         and ('zone.home' in [trigger.from_state.state, trigger.to_state.state]) }}",
+        "  actions:",
+        "  - variables:",
+        "      notification_message: >",
+    ]
+    for line in message.splitlines():
+        lines.append(f"        {line}")
+    lines += [
+        "  - action: notify.mobile_app_anna_s22_ultra",
+        "    data:",
+        "      message: \"HEMMET {{ now().strftime('%R') }}: \\n{{ notification_message }}\"",
+        "      data:",
+        "        ttl: 0",
+        "        priority: high",
+    ]
+    return "\n".join(lines)
+
+
 def replace_marked_block(content: str, begin: str, end: str, new_block: str) -> str:
     pattern = re.compile(re.escape(begin) + r".*?" + re.escape(end), re.DOTALL)
     if not pattern.search(content):
@@ -398,10 +491,19 @@ def replace_automation(content: str, new_automation: str) -> str:
     return pattern.sub(new_automation + "\n", content, count=1)
 
 
-def patch_files() -> None:
-    template_block = build_template_sensors()
-    automation_block = build_automation()
+def replace_anna_automation(content: str, new_automation: str) -> str:
+    pattern = re.compile(
+        rf"- alias: 'Mobilnotis Anna: Vilka kommer hem och går hemifrån'\n"
+        rf"  id: '{ANNA_AUTOMATION_ID}'.*?(?=\n- alias: 'Mobilnotis: Posten har kommit')",
+        re.DOTALL,
+    )
+    if not pattern.search(content):
+        raise ValueError(f"Automation {ANNA_AUTOMATION_ID} not found")
+    return pattern.sub(new_automation + "\n", content, count=1)
 
+
+def patch_template_sensors() -> None:
+    template_block = build_template_sensors()
     template_content = TEMPLATE_FILE.read_text(encoding="utf-8")
     if TEMPLATE_BEGIN in template_content:
         template_content = replace_marked_block(
@@ -418,21 +520,44 @@ def patch_files() -> None:
         )
     TEMPLATE_FILE.write_text(template_content, encoding="utf-8")
 
+
+def patch_files() -> None:
+    patch_template_sensors()
+    automation_block = build_automation()
     automations_content = AUTOMATIONS_FILE.read_text(encoding="utf-8")
     automations_content = replace_automation(automations_content, automation_block)
+    AUTOMATIONS_FILE.write_text(automations_content, encoding="utf-8")
+
+
+def patch_anna_files() -> None:
+    patch_template_sensors()
+    anna_block = build_anna_automation()
+    automations_content = AUTOMATIONS_FILE.read_text(encoding="utf-8")
+    automations_content = replace_anna_automation(automations_content, anna_block)
     AUTOMATIONS_FILE.write_text(automations_content, encoding="utf-8")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--templates", action="store_true", help="Skriv template-sensorer till stdout")
-    parser.add_argument("--automation", action="store_true", help="Skriv automation till stdout")
-    parser.add_argument("--patch", action="store_true", help="Uppdatera includes/template.yaml och automations.yaml")
+    parser.add_argument("--automation", action="store_true", help="Skriv Ilias-automation till stdout")
+    parser.add_argument("--anna-automation", action="store_true", help="Skriv Anna-automation till stdout")
+    parser.add_argument("--patch", action="store_true", help="Uppdatera Ilias-automation och template-sensorer")
+    parser.add_argument(
+        "--patch-anna",
+        action="store_true",
+        help="Uppdatera Anna-automation och template-sensorer (t.ex. ilias_aktiv_zon)",
+    )
     args = parser.parse_args()
 
     if args.patch:
         patch_files()
-        print("Patched includes/template.yaml and automations.yaml", file=sys.stderr)
+        print("Patched includes/template.yaml and Ilias automation", file=sys.stderr)
+        return
+
+    if args.patch_anna:
+        patch_anna_files()
+        print("Patched includes/template.yaml and Anna automation", file=sys.stderr)
         return
 
     if args.templates:
@@ -441,6 +566,10 @@ def main() -> None:
 
     if args.automation:
         print(build_automation())
+        return
+
+    if args.anna_automation:
+        print(build_anna_automation())
         return
 
     print(build_automation())
