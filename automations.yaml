@@ -5051,6 +5051,10 @@
                   {{ person }} har lämnat moster Jenny
                 {%- elif to_slug == 'not_home' and from_slug == 'adrian' -%}
                   {{ person }} har lämnat Adrian
+                {%- elif to_slug == 'not_home' and from_slug == 'justus' -%}
+                  {{ person }} har lämnat Justus
+                {%- elif to_slug == 'not_home' and from_slug == 'rodkinda_19' -%}
+                  {{ person }} har lämnat Rödkinda 19
                 {%- elif to_slug == 'not_home' and from_slug == 'knut' -%}
                   {{ person }} har lämnat Knut
                 {%- elif to_slug == 'not_home' and from_slug == 'milo' -%}
@@ -5133,6 +5137,10 @@
                   {{ person }} är hos moster Jenny
                 {%- elif to_slug == 'adrian' -%}
                   {{ person }} är hos Adrian
+                {%- elif to_slug == 'justus' -%}
+                  {{ person }} är hos Justus
+                {%- elif to_slug == 'rodkinda_19' -%}
+                  {{ person }} är hos Rödkinda 19
                 {%- elif to_slug == 'knut' -%}
                   {{ person }} är hos Knut
                 {%- elif to_slug == 'milo' -%}

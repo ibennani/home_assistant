@@ -74,6 +74,8 @@ ZONES = [
     ("zone.goteborg_c", "goteborg_c"),
     ("zone.isabelles_moster_jenny", "isabelles_moster_jenny"),
     ("zone.adrian", "adrian"),
+    ("zone.justus", "justus"),
+    ("zone.rodkinda_19", "rodkinda_19"),
     ("zone.knut", "knut"),
     ("zone.milo", "milo"),
     ("zone.hemma_hos_rio", "hemma_hos_rio"),
@@ -162,6 +164,14 @@ ZONE_MESSAGES = {
     "adrian": {
         "entered": "{{ person }} är hos Adrian",
         "left": "{{ person }} har lämnat Adrian",
+    },
+    "justus": {
+        "entered": "{{ person }} är hos Justus",
+        "left": "{{ person }} har lämnat Justus",
+    },
+    "rodkinda_19": {
+        "entered": "{{ person }} är hos Rödkinda 19",
+        "left": "{{ person }} har lämnat Rödkinda 19",
     },
     "knut": {
         "entered": "{{ person }} är hos Knut",
