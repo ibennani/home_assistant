@@ -2362,7 +2362,7 @@ badrum_tom_profil:
       message: Tömde {{ person }} {{ lage }}-profil — editorn och sparad profil är tom.
 badrum_tillampa_profil:
   alias: Badrum tillämpa sparad ljusprofil
-  description: Tillämpar sparad besöks- eller duschprofil för badrummet_vem. Avbryter tyst om ingen profil finns.
+  description: Tillämpar sparad besöks- eller duschprofil för badrummet_vem. Avbryter tyst om ingen profil finns. Med endast_dusch_ljus sätts bara dusch-tak och strip.
   mode: single
   fields:
     lage:
@@ -2373,12 +2373,19 @@ badrum_tillampa_profil:
           options:
             - besok
             - dusch
+    endast_dusch_ljus:
+      description: Endast takspott och strip i duschen (ingen utanför-logik)
+      required: false
+      default: false
+      selector:
+        boolean:
   sequence:
   - variables:
       person: "{{ states('input_select.badrummet_vem') }}"
       key: >-
         {% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
         {{ m.get(person, 'nagon') }}
+      bara_dusch: "{{ endast_dusch_ljus | default(false) }}"
       profil_finns: >-
         {% if lage == 'besok' %}
         {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}
@@ -2495,6 +2502,8 @@ badrum_tillampa_profil:
         - action: light.turn_off
           target:
             entity_id: light.led_strip_i_duschen
+      - condition: template
+        value_template: "{{ not bara_dusch }}"
       - choose:
         - conditions:
           - condition: template
