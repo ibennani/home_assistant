@@ -30,3 +30,9 @@
   longitude: 18.087751
   radius: 15
   icon: mdi:human
+
+- name: Eddie
+  latitude: 57.761141
+  longitude: 12.041550
+  radius: 20
+  icon: mdi:human
