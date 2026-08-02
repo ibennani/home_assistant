@@ -171,18 +171,27 @@ views:
             {% else %}
               {% set tid_kvar_text = none %}
             {% endif %}
-            Program: **{{ program_formaterat }}°**.
-            {% if tid_kvar_text and sluttid_ts is not none %}
-            Klar om {{ tid_kvar_text }} (kl {{ sluttid_ts | timestamp_custom('%H:%M', true) }}).
-            {% elif sluttid_ts is not none %}
-            Klar kl {{ sluttid_ts | timestamp_custom('%H:%M', true) }}.
-            {% endif %}
-            {% if progress_str not in ['unknown','unavailable','none',''] %}
-            <div style="margin-top:10px;background:var(--divider-color,rgba(127,127,127,0.25));border-radius:6px;height:28px;overflow:hidden;position:relative;">
-              <div style="width:{{ progress }}%;height:100%;background:var(--primary-color,#03a9f4);transition:width 0.3s ease;"></div>
-              <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:13px;font-weight:500;line-height:1;">{{ progress }} %</span>
-            </div>
-            {% endif %}
+            <table role="presentation" width="100%">
+              <tr><td>Program: <strong>{{ program_formaterat }}°</strong>.</td></tr>
+              <tr><td style="padding-top:8px;">
+                {%- if tid_kvar_text and sluttid_ts is not none -%}
+                Klar om {{ tid_kvar_text }} (kl {{ sluttid_ts | timestamp_custom('%H:%M', true) }}).
+                {%- elif sluttid_ts is not none -%}
+                Klar kl {{ sluttid_ts | timestamp_custom('%H:%M', true) }}.
+                {%- endif -%}
+              </td></tr>
+              {%- if progress_str not in ['unknown','unavailable','none',''] -%}
+              <tr><td style="padding-top:12px;">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td width="{{ progress }}%" bgcolor="#03a9f4" height="28">&nbsp;</td>
+                    <td bgcolor="#666666" height="28">&nbsp;</td>
+                  </tr>
+                </table>
+              </td></tr>
+              <tr><td align="center" style="padding-top:6px;"><strong>{{ progress }} %</strong></td></tr>
+              {%- endif -%}
+            </table>
       - type: conditional
         conditions:
         - condition: state
