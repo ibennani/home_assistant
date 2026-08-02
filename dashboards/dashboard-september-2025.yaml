@@ -4,6 +4,8 @@
 
 title: HA Management
 resources:
+- url: /hacsfiles/lovelace-card-mod/card-mod.js
+  type: module
 - url: /hacsfiles/bar-card/bar-card.js
   type: module
 - url: /hacsfiles/bignumber-card/bignumber-card.js
@@ -182,11 +184,24 @@ views:
                 </td></tr>
               </table>
           - type: custom:bar-card
+            card_mod:
+              style: |
+                bar-card-backgroundbar {
+                  background: #042b06 !important;
+                }
+                bar-card-currentbar {
+                  background: #055e09 !important;
+                }
             entities:
             - entity: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
+              color: '#055e09'
               direction: right
               max: 100
               min: 0
+              severity:
+              - color: '#055e09'
+                from: 0
+                to: 100
               positions:
                 icon: 'off'
                 indicator: 'off'
