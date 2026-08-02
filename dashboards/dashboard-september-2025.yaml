@@ -148,50 +148,54 @@ views:
           entity: sensor.diskmaskin_current_operation_mode
           state: Run
         card:
-          type: markdown
-          title: Diskmaskinen är igång
-          content: |
-            {% set progress_str = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress') %}
-            {% set progress = progress_str | float(0) | round(0) | int %}
-            {% set sluttid_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime') %}
-            {% set sluttid_ts = as_timestamp(sluttid_raw) if sluttid_raw not in ['unknown','unavailable','none',''] else none %}
-            {% set tid_kvar = (sluttid_ts - as_timestamp(now())) if sluttid_ts is not none else none %}
-            {% if tid_kvar is not none and tid_kvar < 0 %}{% set tid_kvar = 0 %}{% endif %}
-            {% set timmar = (tid_kvar // 3600) | int if tid_kvar is not none else none %}
-            {% set minuter = ((tid_kvar % 3600) // 60) | int if tid_kvar is not none else none %}
-            {% set program_raw = states('select.bosch_sma67md06e_68a40e70cb46_programs') %}
-            {% set program = program_raw.split('.')[-1] if program_raw not in ['unknown','unavailable','none',''] else 'Okänt program' %}
-            {% set program_formaterat = program | regex_replace(find='(\\D+)(\\d+)', replace='\\1 \\2') %}
-            {% if timmar is not none and minuter is not none %}
-              {% if timmar > 0 %}
-                {% set tid_kvar_text = timmar ~ ' h ' ~ minuter ~ ' min' %}
+          type: vertical-stack
+          cards:
+          - type: markdown
+            title: Diskmaskinen är igång
+            content: |
+              {% set sluttid_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime') %}
+              {% set sluttid_ts = as_timestamp(sluttid_raw) if sluttid_raw not in ['unknown','unavailable','none',''] else none %}
+              {% set tid_kvar = (sluttid_ts - as_timestamp(now())) if sluttid_ts is not none else none %}
+              {% if tid_kvar is not none and tid_kvar < 0 %}{% set tid_kvar = 0 %}{% endif %}
+              {% set timmar = (tid_kvar // 3600) | int if tid_kvar is not none else none %}
+              {% set minuter = ((tid_kvar % 3600) // 60) | int if tid_kvar is not none else none %}
+              {% set program_raw = states('select.bosch_sma67md06e_68a40e70cb46_programs') %}
+              {% set program = program_raw.split('.')[-1] if program_raw not in ['unknown','unavailable','none',''] else 'Okänt program' %}
+              {% set program_formaterat = program | regex_replace(find='(\\D+)(\\d+)', replace='\\1 \\2') %}
+              {% if timmar is not none and minuter is not none %}
+                {% if timmar > 0 %}
+                  {% set tid_kvar_text = timmar ~ ' h ' ~ minuter ~ ' min' %}
+                {% else %}
+                  {% set tid_kvar_text = minuter ~ ' min' %}
+                {% endif %}
               {% else %}
-                {% set tid_kvar_text = minuter ~ ' min' %}
+                {% set tid_kvar_text = none %}
               {% endif %}
-            {% else %}
-              {% set tid_kvar_text = none %}
-            {% endif %}
-            <table role="presentation" width="100%">
-              <tr><td>Program: <strong>{{ program_formaterat }}°</strong>.</td></tr>
-              <tr><td style="padding-top:8px;">
-                {%- if tid_kvar_text and sluttid_ts is not none -%}
-                Klar om {{ tid_kvar_text }} (kl {{ sluttid_ts | timestamp_custom('%H:%M', true) }}).
-                {%- elif sluttid_ts is not none -%}
-                Klar kl {{ sluttid_ts | timestamp_custom('%H:%M', true) }}.
-                {%- endif -%}
-              </td></tr>
-              {%- if progress_str not in ['unknown','unavailable','none',''] -%}
-              <tr><td style="padding-top:12px;">
-                <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                  <tr>
-                    <td width="{{ progress }}%" bgcolor="#03a9f4" height="28">&nbsp;</td>
-                    <td bgcolor="#666666" height="28">&nbsp;</td>
-                  </tr>
-                </table>
-              </td></tr>
-              <tr><td align="center" style="padding-top:6px;"><strong>{{ progress }} %</strong></td></tr>
-              {%- endif -%}
-            </table>
+              <table role="presentation" width="100%">
+                <tr><td>Program: <strong>{{ program_formaterat }}°</strong>.</td></tr>
+                <tr><td style="padding-top:8px;">
+                  {%- if tid_kvar_text and sluttid_ts is not none -%}
+                  Klar om {{ tid_kvar_text }} (kl {{ sluttid_ts | timestamp_custom('%H:%M', true) }}).
+                  {%- elif sluttid_ts is not none -%}
+                  Klar kl {{ sluttid_ts | timestamp_custom('%H:%M', true) }}.
+                  {%- endif -%}
+                </td></tr>
+              </table>
+          - type: custom:bar-card
+            entities:
+            - entity: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
+              direction: right
+              max: 100
+              min: 0
+              positions:
+                icon: 'off'
+                indicator: 'off'
+                name: 'off'
+                value: inside
+              height: 28px
+              width: 100%
+              tap_action:
+                action: none
       - type: conditional
         conditions:
         - condition: state
