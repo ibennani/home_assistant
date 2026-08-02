@@ -11363,7 +11363,7 @@
 # NFC: notis när Anna, Erik eller Ilias blippar Badrummet under spegeln
 - alias: "Mobilnotis: NFC Badrummet under spegeln"
   id: nfc_badrum_blipp
-  description: Skickar notis till Ilias och sätter badrummet_vem när Anna, Erik eller Ilias blippar NFC-taggen Badrummet under spegeln.
+  description: Sätter badrummet_vem och tillämpar sparad profil när Anna, Erik eller Ilias blippar NFC-taggen.
   mode: single
   triggers:
     - trigger: state
@@ -11374,6 +11374,15 @@
       "bf89f3a7b19d34ddd87e5cf49c752ca7": Erik
       "e258bafb30239f66c247b133a4522e9f": Ilias
     vem: "{{ device_map.get(trigger.to_state.attributes.last_scanned_by_device_id, 'Okänd') }}"
+    key: >-
+      {% set m = {'Anna': 'anna', 'Erik': 'erik', 'Ilias': 'ilias'} %}
+      {{ m.get(vem, 'nagon') }}
+    har_besok_profil: "{{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}"
+    har_dusch_profil: "{{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') }}"
+    dusch_bekraftad: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') }}"
+    dusch_ljus_pa: >-
+      {{ is_state('light.takspott_duschen', 'on')
+      or is_state('light.led_strip_i_duschen', 'on') }}
   actions:
     - choose:
       - conditions:
@@ -11388,30 +11397,29 @@
         - choose:
           - conditions:
             - condition: template
-              value_template: "{{ not is_state('input_select.house_time_modes', 'Natt') }}"
+              value_template: "{{ dusch_bekraftad and har_dusch_profil }}"
             sequence:
-            - choose:
-              - conditions:
-                - condition: template
-                  value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') }}"
-                sequence:
-                - action: script.badrum_tillampa_profil
-                  data:
-                    lage: dusch
-              - conditions:
-                - condition: template
-                  value_template: >-
-                    {{ is_state('light.takspott_duschen', 'on')
-                    or is_state('light.led_strip_i_duschen', 'on') }}
-                sequence:
-                - action: script.badrum_tillampa_profil
-                  data:
-                    lage: dusch
-                    endast_dusch_ljus: true
-              default:
+            - action: script.badrum_tillampa_profil
+              data:
+                lage: dusch
+          default:
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: "{{ har_besok_profil }}"
+              sequence:
               - action: script.badrum_tillampa_profil
                 data:
                   lage: besok
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: "{{ har_dusch_profil and dusch_ljus_pa and not dusch_bekraftad }}"
+              sequence:
+              - action: script.badrum_tillampa_profil
+                data:
+                  lage: dusch
+                  endast_dusch_ljus: true
     - action: notify.mobile_app_ilias_s23_ultra
       data:
         title: Badrummet under spegeln
