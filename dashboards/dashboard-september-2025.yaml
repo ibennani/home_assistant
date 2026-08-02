@@ -152,22 +152,32 @@ views:
           cards:
           - type: markdown
             title: Diskmaskinen är igång
-            content: "{# ----------------------- PROGRESS ----------------------- #} {% set progress_str = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress')\
-              \ %} {% set progress_num = progress_str | float(none) %} {% set progress_text =\n  ((progress_num | round(0))\
-              \ | int ~ ' %')\n  if progress_num is not none else '? %'\n%}\n{# ----------------------- SLUTTID ------------------------\
-              \ #} {% set sluttid_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime')\
-              \ %} {% set sluttid_ts = as_timestamp(sluttid_raw) if sluttid_raw not in ['unknown','unavailable','none','']\
-              \ else none %} {% set nu_ts = as_timestamp(now()) %}\n{# ----------------------- TID KVAR -----------------------\
-              \ #} {% set tid_kvar =\n  (sluttid_ts - nu_ts)\n  if (sluttid_ts is not none and nu_ts is not none)\n  else\
-              \ none\n%} {% if tid_kvar is not none and tid_kvar < 0 %}\n  {% set tid_kvar = 0 %}\n{% endif %} {% set timmar\
-              \ = (tid_kvar // 3600) | int if tid_kvar is not none else none %} {% set minuter = ((tid_kvar % 3600) // 60)\
-              \ | int if tid_kvar is not none else none %}\n{# ----------------------- PROGRAM ------------------------ #}\
-              \ {% set program_raw = states('select.bosch_sma67md06e_68a40e70cb46_programs') %} {% set program =\n  program_raw.split('.')[-1]\n\
-              \  if program_raw not in ['unknown','unavailable','none','']\n  else 'OkÃƒÂ¤nt program'\n%} {% set program_formaterat\
-              \ =\n  program | regex_replace(find='(\\\\D+)(\\\\d+)', replace='\\\\1 \\\\2')\n%}\n{{ progress_text }}. Klar\
-              \ {% if sluttid_ts is not none %}\n  {{ sluttid_ts | timestamp_custom('%H:%M', true) }}\n{% else %}\n  ?\n{%\
-              \ endif %} ( {% if timmar is not none and minuter is not none %}\n  om {{ timmar }}:{{ '%02d' | format(minuter)\
-              \ }}\n{% else %}\n  tid kvar okÃƒÂ¤nd\n{% endif %} ). Program: {{ program_formaterat }}\n"
+            content: |
+              {% set sluttid_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime') %}
+              {% set sluttid_ts = as_timestamp(sluttid_raw) if sluttid_raw not in ['unknown','unavailable','none',''] else none %}
+              {% set tid_kvar = (sluttid_ts - as_timestamp(now())) if sluttid_ts is not none else none %}
+              {% if tid_kvar is not none and tid_kvar < 0 %}{% set tid_kvar = 0 %}{% endif %}
+              {% set timmar = (tid_kvar // 3600) | int if tid_kvar is not none else none %}
+              {% set minuter = ((tid_kvar % 3600) // 60) | int if tid_kvar is not none else none %}
+              {% set program_raw = states('select.bosch_sma67md06e_68a40e70cb46_programs') %}
+              {% set program = program_raw.split('.')[-1] if program_raw not in ['unknown','unavailable','none',''] else 'Okänt program' %}
+              {% set program_formaterat = program | regex_replace(find='(\\D+)(\\d+)', replace='\\1 \\2') %}
+              {% if timmar is not none and minuter is not none %}
+                {% if timmar > 0 %}
+                  {% set tid_kvar_text = timmar ~ ' h ' ~ minuter ~ ' min' %}
+                {% else %}
+                  {% set tid_kvar_text = minuter ~ ' min' %}
+                {% endif %}
+              {% else %}
+                {% set tid_kvar_text = none %}
+              {% endif %}
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;line-height:1.35;margin:-2px 0 0;">
+                <span style="opacity:0.9">{{ program_formaterat }}</span>
+                <span style="text-align:right;white-space:nowrap">
+                  {% if sluttid_ts is not none %}kl <strong>{{ sluttid_ts | timestamp_custom('%H:%M', true) }}</strong>{% endif %}
+                  {% if tid_kvar_text %}<span style="opacity:0.72"> · {{ tid_kvar_text }}</span>{% endif %}
+                </span>
+              </div>
           - type: conditional
             conditions:
             - condition: numeric_state
@@ -186,7 +196,7 @@ views:
                   indicator: 'off'
                   name: 'off'
                   value: inside
-                height: 40px
+                height: 28px
                 width: 100%
                 tap_action:
                   action: none
