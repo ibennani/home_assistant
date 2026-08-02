@@ -142,7 +142,8 @@ views:
       current:
         secondary_info_attribute: cloud_coverage
         temperature_entity: sensor.framsidan_temperatur
-    - type: vertical-stack
+    - &diskmaskin_status_kort
+      type: vertical-stack
       cards:
       - type: conditional
         conditions:
@@ -1197,6 +1198,7 @@ views:
         name: Pucken
       - entity: media_player.hogtalarna_i_koket
         name: Högtalarna
+    - *diskmaskin_status_kort
     - type: horizontal-stack
       title: Kyl
       cards:
@@ -5992,136 +5994,7 @@ views:
     - entity: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
     - entity: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_operationstate
     - entity: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_setting_powerstate
-  - type: vertical-stack
-    cards:
-    - type: vertical-stack
-      cards:
-      - type: custom:config-template-card
-        entities:
-        - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative
-        - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime
-        - select.bosch_sma67md06e_68a40e70cb46_programs
-        variables:
-          start_in: '{{ states(''sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative'') }}'
-          start_in_seconds: "{% set s = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative') %}\
-            \ {% if s in ['unknown','unavailable','none',''] %}\n  0\n{% else %}\n  {% set p = s.split(':') %}\n  {{ (p[0]\
-            \ | int(0)) * 3600 + (p[1] | int(0)) * 60 }}\n{% endif %}"
-        condition: '{{ (start_in_seconds | int(0)) > 0 }}'
-        card:
-          type: markdown
-          title: Diskmaskinen startar med fördröjning
-          content: "{% set fordrojning_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative')\
-            \ %} {% set sluttid_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime')\
-            \ %} {% if fordrojning_raw in ['unknown','unavailable','none',''] or sluttid_raw in ['unknown','unavailable','none','']\
-            \ %}\nTidsdata fÃƒÂ¶r diskmaskinen ÃƒÂ¤r inte tillgÃƒÂ¤nglig just nu.\n{% else %}\n  {% set sluttid = sluttid_raw\
-            \ | as_datetime %}\n  {% if fordrojning_raw and ':' in fordrojning_raw %}\n    {% set fordrojning_parts = fordrojning_raw.split(':')\
-            \ %}\n    {% set fordrojning = timedelta(hours=fordrojning_parts[0]|int(0), minutes=fordrojning_parts[1]|int(0))\
-            \ %}\n  {% else %}\n    {% set fordrojning = timedelta() %}\n  {% endif %}\n  {% set extra_timmar = 2 if now().utcoffset().total_seconds()\
-            \ == 7200 else 1 %}\n  {% set program_raw = states('select.bosch_sma67md06e_68a40e70cb46_programs') %}\n  {% set\
-            \ program = program_raw.split('.')[-1] if program_raw not in ['unknown','unavailable','none',''] else 'OkÃƒÂ¤nt\
-            \ program' %}\n  {% set program_formaterat = program | regex_replace(find='(\\\\D+)(\\\\d+)', replace='\\\\1 \\\
-            \\2') %}\n  {% if fordrojning_raw == '0:00' %}\n    {% set sluttid_vis = sluttid + timedelta(hours=extra_timmar)\
-            \ if sluttid else none %}\n    Diskmaskinen startar snart och ÃƒÂ¤r klar kl {% if sluttid_vis %}{{ sluttid_vis.strftime('%H:%M')\
-            \ }}{% else %}?{% endif %}. Program: {{ program_formaterat }}\n  {% else %}\n    {% set start_tid = now() + fordrojning\
-            \ %}\n    {% set sluttid_vis = sluttid + fordrojning + timedelta(hours=extra_timmar) if sluttid else none %}\n\
-            \    Diskmaskinen kommer starta kl {{ start_tid | timestamp_custom('%H:%M', true) }} och vara klar kl {% if sluttid_vis\
-            \ %}{{ sluttid_vis.strftime('%H:%M') }}{% else %}?{% endif %}. Program: {{ program_formaterat }}\n  {% endif %}\n\
-            {% endif %}\n"
-      - type: custom:config-template-card
-        entities:
-        - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
-        - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative
-        - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime
-        - select.bosch_sma67md06e_68a40e70cb46_programs
-        variables:
-          progress: '{{ states(''sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress'') }}'
-          start_in_seconds: "{% set s = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative') %}\
-            \ {% if s in ['unknown','unavailable','none',''] %}\n  0\n{% else %}\n  {% set p = s.split(':') %}\n  {{ (p[0]\
-            \ | int(0)) * 3600 + (p[1] | int(0)) * 60 }}\n{% endif %}"
-        condition: "{{ (start_in_seconds | int(0)) == 0\n   and (progress | float(none)) is not none\n   and 0 <= (progress\
-          \ | float) < 100 }}"
-        card:
-          type: vertical-stack
-          cards:
-          - type: markdown
-            title: Diskmaskinen är igång
-            content: "{# ----------------------- PROGRESS ----------------------- #} {% set progress_str = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress')\
-              \ %} {% set progress_num = progress_str | float(none) %} {% set progress_text =\n  ((progress_num | round(0))\
-              \ | int ~ ' %')\n  if progress_num is not none else '? %'\n%}\n{# ----------------------- SLUTTID ------------------------\
-              \ #} {% set sluttid_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime')\
-              \ %} {% set sluttid_ts = as_timestamp(sluttid_raw) if sluttid_raw not in ['unknown','unavailable','none','']\
-              \ else none %} {% set nu_ts = as_timestamp(now()) %}\n{# ----------------------- TID KVAR -----------------------\
-              \ #} {% set tid_kvar =\n  (sluttid_ts - nu_ts)\n  if (sluttid_ts is not none and nu_ts is not none)\n  else\
-              \ none\n%} {% if tid_kvar is not none and tid_kvar < 0 %}\n  {% set tid_kvar = 0 %}\n{% endif %} {% set timmar\
-              \ = (tid_kvar // 3600) | int if tid_kvar is not none else none %} {% set minuter = ((tid_kvar % 3600) // 60)\
-              \ | int if tid_kvar is not none else none %}\n{# ----------------------- PROGRAM ------------------------ #}\
-              \ {% set program_raw = states('select.bosch_sma67md06e_68a40e70cb46_programs') %} {% set program =\n  program_raw.split('.')[-1]\n\
-              \  if program_raw not in ['unknown','unavailable','none','']\n  else 'OkÃƒÆ’Ã‚Â¤nt program'\n%} {% set program_formaterat\
-              \ =\n  program | regex_replace(find='(\\\\D+)(\\\\d+)', replace='\\\\1 \\\\2')\n%}\n{{ progress_text }}. Klar\
-              \ {% if sluttid_ts is not none %}\n  {{ sluttid_ts | timestamp_custom('%H:%M', true) }}\n{% else %}\n  ?\n{%\
-              \ endif %} ( {% if timmar is not none and minuter is not none %}\n  om {{ timmar }}:{{ '%02d' | format(minuter)\
-              \ }}\n{% else %}\n  tid kvar okÃƒÆ’Ã‚Â¤nd\n{% endif %} ). Program: {{ program_formaterat }}\n"
-          - type: custom:bar-card
-            entities:
-            - entity: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
-              direction: right
-              max: 100
-              min: 0
-              positions:
-                icon: 'off'
-                indicator: 'off'
-                name: 'off'
-                value: inside
-              height: 40px
-              width: 100%
-              tap_action:
-                action: none
-      - type: custom:config-template-card
-        entities:
-        - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
-        - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative
-        - select.bosch_sma67md06e_68a40e70cb46_programs
-        variables:
-          progress: '{{ states(''sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress'') }}'
-          start_in_seconds: "{% set s = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative') %}\
-            \ {% if s in ['unknown','unavailable','none',''] %}\n  0\n{% else %}\n  {% set p = s.split(':') %}\n  {{ (p[0]\
-            \ | int(0)) * 3600 + (p[1] | int(0)) * 60 }}\n{% endif %}"
-          is_running: '{{ (progress | float(none)) is not none and 0 <= (progress | float) < 100 }}'
-        condition: '{{ (start_in_seconds | int(0)) == 0 and not is_running }}'
-        card:
-          type: markdown
-          title: Diskmaskinen står stilla
-          content: 'Inget är igång eller kommer starta senare.
-
-            '
-    - type: custom:config-template-card
-      entities:
-      - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative
-      - sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime
-      - select.bosch_sma67md06e_68a40e70cb46_programs
-      variables:
-        start_in: '{{ states(''sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative'') }}'
-      condition: '{{ start_in not in [''0:00'', ''unknown'', ''unavailable'', ''none'', ''''] }}'
-      card:
-        type: markdown
-        title: Diskmaskinen startar med fördröjning
-        content: "{% set fordrojning_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative')\
-          \ %} {% set sluttid_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime')\
-          \ %} {% if fordrojning_raw in ['unknown','unavailable','none',''] or sluttid_raw in ['unknown','unavailable','none','']\
-          \ %}\nTidsdata fÃƒÂ¶r diskmaskinen ÃƒÂ¤r inte tillgÃƒÂ¤nglig just nu.\n{% else %}\n  {% set sluttid = sluttid_raw\
-          \ | as_datetime %}\n  {% if fordrojning_raw and ':' in fordrojning_raw %}\n    {% set fordrojning_parts = fordrojning_raw.split(':')\
-          \ %}\n    {% set fordrojning = timedelta(hours=fordrojning_parts[0]|int(0), minutes=fordrojning_parts[1]|int(0))\
-          \ %}\n  {% else %}\n    {% set fordrojning = timedelta() %}\n  {% endif %}\n  {% set extra_timmar = 2 if now().utcoffset().total_seconds()\
-          \ == 7200 else 1 %}\n  {% set program_raw = states('select.bosch_sma67md06e_68a40e70cb46_programs') %}\n  {% set\
-          \ program = program_raw.split('.')[-1] if program_raw not in ['unknown','unavailable','none',''] else 'OkÃƒÂ¤nt\
-          \ program' %}\n  {% set program_formaterat = program | regex_replace(find='(\\\\D+)(\\\\d+)', replace='\\\\1 \\\\\
-          2') %}\n  {% if fordrojning_raw == '0:00' %}\n    {% set sluttid_vis = sluttid + timedelta(hours=extra_timmar) if\
-          \ sluttid else none %}\n    Diskmaskinen startar snart och ÃƒÂ¤r klar kl {% if sluttid_vis %}{{ sluttid_vis.strftime('%H:%M')\
-          \ }}{% else %}?{% endif %}. Program: {{ program_formaterat }}\n  {% else %}\n    {% set start_tid = now() + fordrojning\
-          \ %}\n    {% set sluttid_vis = sluttid + fordrojning + timedelta(hours=extra_timmar) if sluttid else none %}\n \
-          \   Diskmaskinen kommer starta kl {{ start_tid | timestamp_custom('%H:%M', true) }} och vara klar kl {% if sluttid_vis\
-          \ %}{{ sluttid_vis.strftime('%H:%M') }}{% else %}?{% endif %}. Program: {{ program_formaterat }}\n  {% endif %}\n\
-          {% endif %}\n"
+  - *diskmaskin_status_kort
   - type: entities
     title: Strömbrytare
     entities:
