@@ -6494,6 +6494,8 @@ views:
     - type: markdown
       content: |
         Ställ in badrumsbelysningen som du vill ha den. Välj person och tryck **Spara besök** eller **Spara dusch**.
+
+        **Töm** tar bort den sparade profilen — då gäller systemets vanliga styrning (ljusstyrka utomhus + nattläge) i stället för fasta värden.
     - type: entities
       title: Person
       icon: mdi:account-cog
@@ -6518,6 +6520,26 @@ views:
         tap_action:
           action: call-service
           service: script.badrum_spara_profil
+          data:
+            lage: dusch
+    - type: entities
+      title: Töm sparad profil
+      icon: mdi:delete-outline
+      entities:
+      - type: button
+        name: Töm besök
+        icon: mdi:door-open
+        tap_action:
+          action: call-service
+          service: script.badrum_tom_profil
+          data:
+            lage: besok
+      - type: button
+        name: Töm dusch
+        icon: mdi:shower-head
+        tap_action:
+          action: call-service
+          service: script.badrum_tom_profil
           data:
             lage: dusch
 - title: Kollektivtrafik

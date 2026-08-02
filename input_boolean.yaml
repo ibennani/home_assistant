@@ -143,3 +143,37 @@
     name: Badrum dusch ljus låst
     icon: mdi:lock
     initial: off
+
+# Badrumsprofiler sparade från dashboard (av = använd lux/natt-systemet)
+  badrum_nagon_besok_profil:
+    name: "Badrum Någon besök-profil sparad"
+    icon: mdi:account-question
+    initial: off
+  badrum_nagon_dusch_profil:
+    name: "Badrum Någon dusch-profil sparad"
+    icon: mdi:account-question
+    initial: off
+  badrum_anna_besok_profil:
+    name: "Badrum Anna besök-profil sparad"
+    icon: mdi:account
+    initial: off
+  badrum_anna_dusch_profil:
+    name: "Badrum Anna dusch-profil sparad"
+    icon: mdi:account
+    initial: off
+  badrum_ilias_besok_profil:
+    name: "Badrum Ilias besök-profil sparad"
+    icon: mdi:account
+    initial: off
+  badrum_ilias_dusch_profil:
+    name: "Badrum Ilias dusch-profil sparad"
+    icon: mdi:account
+    initial: off
+  badrum_erik_besok_profil:
+    name: "Badrum Erik besök-profil sparad"
+    icon: mdi:account
+    initial: off
+  badrum_erik_dusch_profil:
+    name: "Badrum Erik dusch-profil sparad"
+    icon: mdi:account
+    initial: off

@@ -2138,6 +2138,9 @@ badrum_spara_profil:
           entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_spegel_pct' }}"
         data:
           value: "{{ pct_spegel }}"
+      - action: input_boolean.turn_on
+        target:
+          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_besok_profil' }}"
     - conditions:
       - condition: template
         value_template: "{{ lage == 'dusch' }}"
@@ -2162,6 +2165,9 @@ badrum_spara_profil:
           entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_utanfor_pct' }}"
         data:
           value: "{{ utanfor_avg }}"
+      - action: input_boolean.turn_on
+        target:
+          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_dusch_profil' }}"
   - action: logbook.log
     data:
       name: Badrumsprofil
@@ -2169,3 +2175,63 @@ badrum_spara_profil:
         Sparade {{ person }} {{ lage }}-profil från nuvarande ljusläge
         (tak {{ pct_tak }}%, handfat {{ pct_handfat }}%, kommod {{ pct_kommod }}%, spegel {{ pct_spegel }}%
         {% if lage == 'dusch' %}; dusch {{ pct_dusch_tak }}%/{{ pct_dusch_strip }}%; utanför {{ utanfor_strategy }} {{ utanfor_avg }}%{% endif %}).
+badrum_tom_profil:
+  alias: Badrum töm sparad ljusprofil
+  description: Tar bort sparad besöks- eller duschprofil så lux/natt-systemet används i stället.
+  mode: single
+  fields:
+    lage:
+      description: besok eller dusch
+      required: true
+      selector:
+        select:
+          options:
+            - besok
+            - dusch
+  sequence:
+  - variables:
+      person: "{{ states('input_select.badrum_profil_valj') }}"
+      key: >-
+        {% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
+        {{ m.get(person, 'nagon') }}
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ lage == 'besok' }}"
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_besok_profil' }}"
+      - action: input_number.set_value
+        target:
+          entity_id:
+          - "{{ 'input_number.badrum_' ~ key ~ '_besok_tak_pct' }}"
+          - "{{ 'input_number.badrum_' ~ key ~ '_besok_handfat_pct' }}"
+          - "{{ 'input_number.badrum_' ~ key ~ '_besok_kommod_pct' }}"
+          - "{{ 'input_number.badrum_' ~ key ~ '_besok_spegel_pct' }}"
+        data:
+          value: 0
+    - conditions:
+      - condition: template
+        value_template: "{{ lage == 'dusch' }}"
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_dusch_profil' }}"
+      - action: input_number.set_value
+        target:
+          entity_id:
+          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_tak_pct' }}"
+          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_strip_pct' }}"
+          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_utanfor_pct' }}"
+        data:
+          value: 0
+      - action: input_select.select_option
+        target:
+          entity_id: "{{ 'input_select.badrum_' ~ key ~ '_dusch_utanfor' }}"
+        data:
+          option: Släck
+  - action: logbook.log
+    data:
+      name: Badrumsprofil
+      message: Tömde {{ person }} {{ lage }}-profil — systemets lux/natt-styrning gäller igen.
