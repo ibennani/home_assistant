@@ -1453,18 +1453,36 @@
 }}"
           sequence:
           - variables:
-              dusch_lux: "{{
+              person_key: >-
+                {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
+                {{ m.get(states('input_select.badrummet_vem'), 'invalid') }}
+              besok_profil_finns: >-
+                {% if person_key == 'invalid' %}false{% else %}
+                {{ is_state('input_boolean.badrum_' ~ person_key ~ '_besok_profil', 'on') }}
+                {% endif %}
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: '{{ besok_profil_finns }}'
+              sequence:
+              - action: script.badrum_tillampa_profil
+                data:
+                  lage: besok
+                  endast_dusch_ljus: true
+            default:
+            - variables:
+                dusch_lux: "{{
   states('sensor.utomhus_framsidan_ljusstyrka') | int(0)
 }}"
-              dusch_brightness: '{{ 20 if (dusch_lux | int(0)) < 2000 else 30 }}'
-          - action: light.turn_on
-            target:
-              entity_id:
-              - light.takspott_duschen
-              - light.led_strip_i_duschen
-            data:
-              brightness_pct: '{{ dusch_brightness }}'
-              transition: 0
+                dusch_brightness: '{{ 20 if (dusch_lux | int(0)) < 2000 else 30 }}'
+            - action: light.turn_on
+              target:
+                entity_id:
+                - light.takspott_duschen
+                - light.led_strip_i_duschen
+              data:
+                brightness_pct: '{{ dusch_brightness }}'
+                transition: 0
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''dusch_bekraftad'' }}'
@@ -1488,18 +1506,36 @@
             entity_id: binary_sensor.duschdorren
             state: 'off'
           sequence:
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.duschslackning_aktiv
-          - action: light.turn_off
-            target:
-              entity_id:
-              - light.spegeln_badrummet
-              - light.takspottar_badrummet
-              - light.led_badrummet_handfatet
-              - light.led_badrummet_kommoden
-            data:
-              transition: 5
+          - variables:
+              person_key: >-
+                {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
+                {{ m.get(states('input_select.badrummet_vem'), 'invalid') }}
+              dusch_profil_finns: >-
+                {% if person_key == 'invalid' %}false{% else %}
+                {{ is_state('input_boolean.badrum_' ~ person_key ~ '_dusch_profil', 'on') }}
+                {% endif %}
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: '{{ dusch_profil_finns }}'
+              sequence:
+              - action: script.badrum_tillampa_profil
+                data:
+                  lage: dusch
+                  transition: 5
+            default:
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.duschslackning_aktiv
+            - action: light.turn_off
+              target:
+                entity_id:
+                - light.spegeln_badrummet
+                - light.takspottar_badrummet
+                - light.led_badrummet_handfatet
+                - light.led_badrummet_kommoden
+              data:
+                transition: 5
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''duschstatus_ingen'' }}'
@@ -1615,18 +1651,36 @@
 }}"
           sequence:
           - variables:
-              dusch_lux: "{{
+              person_key: >-
+                {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
+                {{ m.get(states('input_select.badrummet_vem'), 'invalid') }}
+              besok_profil_finns: >-
+                {% if person_key == 'invalid' %}false{% else %}
+                {{ is_state('input_boolean.badrum_' ~ person_key ~ '_besok_profil', 'on') }}
+                {% endif %}
+          - choose:
+            - conditions:
+              - condition: template
+                value_template: '{{ besok_profil_finns }}'
+              sequence:
+              - action: script.badrum_tillampa_profil
+                data:
+                  lage: besok
+                  endast_dusch_ljus: true
+            default:
+            - variables:
+                dusch_lux: "{{
   states('sensor.utomhus_framsidan_ljusstyrka') | int(0)
 }}"
-              dusch_brightness: '{{ 20 if (dusch_lux | int(0)) < 2000 else 30 }}'
-          - action: light.turn_on
-            target:
-              entity_id:
-              - light.takspott_duschen
-              - light.led_strip_i_duschen
-            data:
-              brightness_pct: '{{ dusch_brightness }}'
-              transition: 0
+                dusch_brightness: '{{ 20 if (dusch_lux | int(0)) < 2000 else 30 }}'
+            - action: light.turn_on
+              target:
+                entity_id:
+                - light.takspott_duschen
+                - light.led_strip_i_duschen
+              data:
+                brightness_pct: '{{ dusch_brightness }}'
+                transition: 0
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''duschdorr_stangd'' }}'
@@ -11307,7 +11361,7 @@
 # NFC: notis när Anna, Erik eller Ilias blippar Badrummet under spegeln
 - alias: "Mobilnotis: NFC Badrummet under spegeln"
   id: nfc_badrum_blipp
-  description: Sätter badrummet_vem och tillämpar sparad profil när Anna, Erik eller Ilias blippar NFC-taggen.
+  description: Sätter badrummet_vem och tillämpar besöksprofil (ej dusch) vid NFC-blipp.
   mode: single
   triggers:
     - trigger: state
@@ -11320,13 +11374,11 @@
     vem: "{{ device_map.get(trigger.to_state.attributes.last_scanned_by_device_id, 'Okänd') }}"
     key: >-
       {% set m = {'Anna': 'anna', 'Erik': 'erik', 'Ilias': 'ilias'} %}
-      {{ m.get(vem, 'nagon') }}
-    har_besok_profil: "{{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}"
-    har_dusch_profil: "{{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') }}"
-    dusch_bekraftad: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') }}"
-    dusch_ljus_pa: >-
-      {{ is_state('light.takspott_duschen', 'on')
-      or is_state('light.led_strip_i_duschen', 'on') }}
+      {{ m.get(vem, 'invalid') }}
+    har_besok_profil: >-
+      {% if key == 'invalid' %}false{% else %}
+      {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}
+      {% endif %}
   actions:
     - choose:
       - conditions:
@@ -11341,29 +11393,14 @@
         - choose:
           - conditions:
             - condition: template
-              value_template: "{{ dusch_bekraftad and har_dusch_profil }}"
+              value_template: "{{ har_besok_profil }}"
             sequence:
             - action: script.badrum_tillampa_profil
               data:
-                lage: dusch
-          default:
-          - choose:
-            - conditions:
-              - condition: template
-                value_template: "{{ har_besok_profil }}"
-              sequence:
-              - action: script.badrum_tillampa_profil
-                data:
-                  lage: besok
-          - choose:
-            - conditions:
-              - condition: template
-                value_template: "{{ har_dusch_profil and dusch_ljus_pa and not dusch_bekraftad }}"
-              sequence:
-              - action: script.badrum_tillampa_profil
-                data:
-                  lage: dusch
-                  endast_dusch_ljus: true
+                lage: besok
+                utan_dusch_ljus: true
+                transition: 1
+                person: "{{ vem }}"
     - action: notify.mobile_app_ilias_s23_ultra
       data:
         title: Badrummet under spegeln
