@@ -1,25 +1,36 @@
 #!/usr/bin/env python3
-"""Generera Mobilnotis Ilias-automation med zone.entered/zone.left."""
+"""Generera aktiv_zon-sensorer och platsnotis-automation (mittpunkt i zon)."""
 
+from __future__ import annotations
+
+import argparse
+import re
+import sys
 import textwrap
+from pathlib import Path
 
-TRACKED_ENTITIES = [
-    "person.anna_bennani",
-    "device_tracker.albins_iphone_12_gps_tracker",
-    "device_tracker.annelies_iphone",
-    "device_tracker.erik_s23",
-    "device_tracker.ulrikas_iphone",
-    "device_tracker.jockesiphone",
-    "device_tracker.mariesiphone",
-    "device_tracker.android56cbe288b1a113c8",
-    "device_tracker.youssef_honor_8",
-    "device_tracker.zaksiphone",
-    "device_tracker.safiabennani",
-    "device_tracker.78521aac945e",
-    "device_tracker.84c7ea28ca07",
-    "device_tracker.adinas_iphone",
-    "device_tracker.hannas_iphone_7",
-    "device_tracker.marias_iphone",
+ROOT = Path(__file__).resolve().parents[1]
+TEMPLATE_FILE = ROOT / "includes" / "template.yaml"
+AUTOMATIONS_FILE = ROOT / "automations.yaml"
+
+# tracker_entity, visningsnamn, sensor-slug (sensor.<slug>_aktiv_zon)
+TRACKED_PEOPLE = [
+    ("person.anna_bennani", "Anna", "anna"),
+    ("person.erik_bennani", "Erik", "erik"),
+    ("person.isabelle_sovig", "Isabelle", "isabelle"),
+    ("device_tracker.albins_iphone_12_gps_tracker", "Albin", "albin"),
+    ("device_tracker.ulrikas_iphone", "Ulrika", "ulrika"),
+    ("device_tracker.jockesiphone", "Jocke", "jocke"),
+    ("device_tracker.mariesiphone", "Mie", "mie"),
+    ("device_tracker.android56cbe288b1a113c8", "Elin", "elin"),
+    ("device_tracker.youssef_honor_8", "Youssef", "youssef"),
+    ("device_tracker.zaksiphone", "Zaki", "zaki"),
+    ("device_tracker.safiabennani", "Safia", "safia"),
+    ("device_tracker.78521aac945e", "Solveig", "solveig"),
+    ("device_tracker.84c7ea28ca07", "Sarah", "sarah"),
+    ("device_tracker.adinas_iphone", "Adina", "adina"),
+    ("device_tracker.hannas_iphone_7", "Hanna", "hanna"),
+    ("device_tracker.marias_iphone", "Maria", "maria"),
 ]
 
 ZONES = [
@@ -61,12 +72,11 @@ ZONES = [
     ("zone.gjovik", "gjovik"),
     ("zone.norge_2", "norge_2"),
     ("zone.sahlgrenska_sjukhuset", "sahlgrenska_sjukhuset"),
-    ("zone.molndahls_sjukhus", "molndahls_sjukhus"),
+    ("zone.molndahls_sjukhus", "molndahls_sjukhuset"),
     ("zone.stefan", "stefan"),
     ("zone.elins_jobb", "elins_jobb"),
 ]
 
-# Jinja-meddelanden per zon (entered / left) – från befintlig automation.
 ZONE_MESSAGES = {
     "home": {
         "entered": "{{ person }} är hemma",
@@ -222,7 +232,7 @@ ZONE_MESSAGES = {
     },
     "molndahls_sjukhus": {
         "entered": "{{ person }} är på Mölndahls sjukhus",
-        "left": "{{ person }} har lämnat Mölndahls sjukhus",
+        "left": "{{ person }} har lämnat Mölndahls sjukhuset",
     },
     "stefan": {
         "entered": "{{ person }} är hos Stefan",
@@ -234,120 +244,125 @@ ZONE_MESSAGES = {
     },
 }
 
+TEMPLATE_BEGIN = "# BEGIN aktiv-zon-sensorer (generate-ilias-zone-automation.py)"
+TEMPLATE_END = "# END aktiv-zon-sensorer (generate-ilias-zone-automation.py)"
+AUTOMATION_ID = "7918348674111555999"
 
-def indent_block(text: str, spaces: int) -> str:
-    pad = " " * spaces
-    return "\n".join(pad + line if line else line for line in text.splitlines())
 
-
-def build_triggers() -> str:
-    lines = []
-    for zone_entity, slug in ZONES:
-        lines.append(f"  - trigger: zone.entered")
-        lines.append(f"    id: entered_{slug}")
-        lines.append(f"    target:")
-        lines.append(f"      entity_id:")
-        for ent in TRACKED_ENTITIES:
-            lines.append(f"      - {ent}")
-        lines.append(f"    options:")
-        lines.append(f"      zone: {zone_entity}")
-        lines.append(f"  - trigger: zone.left")
-        lines.append(f"    id: left_{slug}")
-        lines.append(f"    target:")
-        lines.append(f"      entity_id:")
-        for ent in TRACKED_ENTITIES:
-            lines.append(f"      - {ent}")
-        lines.append(f"    options:")
-        lines.append(f"      zone: {zone_entity}")
+def zone_list_jinja(indent: str = "          ") -> str:
+    lines = [f"{indent}'{zone}'," for zone, _slug in ZONES]
+    if lines:
+        lines[-1] = lines[-1].rstrip(",")
     return "\n".join(lines)
 
 
-def build_message_template() -> str:
-    person_map = textwrap.dedent(
-        """\
-        {%- if trigger.entity_id == 'person.anna_bennani' -%}
-          {%- set person = 'Anna' -%}
-        {%- elif trigger.entity_id == 'device_tracker.albins_iphone_12_gps_tracker' -%}
-          {%- set person = 'Albin' -%}
-        {%- elif trigger.entity_id == 'device_tracker.annelies_iphone' -%}
-          {%- set person = 'Isabelle' -%}
-        {%- elif trigger.entity_id == 'device_tracker.erik_s23' -%}
-          {%- set person = 'Erik' -%}
-        {%- elif trigger.entity_id == 'device_tracker.ulrikas_iphone' -%}
-          {%- set person = 'Ulrika' -%}
-        {%- elif trigger.entity_id == 'device_tracker.jockesiphone' -%}
-          {%- set person = 'Jocke' -%}
-        {%- elif trigger.entity_id == 'device_tracker.mariesiphone' -%}
-          {%- set person = 'Mie' -%}
-        {%- elif trigger.entity_id == 'device_tracker.android56cbe288b1a113c8' -%}
-          {%- set person = 'Elin' -%}
-        {%- elif trigger.entity_id == 'device_tracker.youssef_honor_8' -%}
-          {%- set person = 'Youssef' -%}
-        {%- elif trigger.entity_id == 'device_tracker.zaksiphone' -%}
-          {%- set person = 'Zaki' -%}
-        {%- elif trigger.entity_id == 'device_tracker.safiabennani' -%}
-          {%- set person = 'Safia' -%}
-        {%- elif trigger.entity_id == 'device_tracker.78521aac945e' -%}
-          {%- set person = 'Solveig' -%}
-        {%- elif trigger.entity_id == 'device_tracker.84c7ea28ca07' -%}
-          {%- set person = 'Sarah' -%}
-        {%- elif trigger.entity_id == 'device_tracker.adinas_iphone' -%}
-          {%- set person = 'Adina' -%}
-        {%- elif trigger.entity_id == 'device_tracker.hannas_iphone_7' -%}
-          {%- set person = 'Hanna' -%}
-        {%- elif trigger.entity_id == 'device_tracker.marias_iphone' -%}
-          {%- set person = 'Maria' -%}
-        {%- else -%}
-          {%- set person = 'Okänd' -%}
-        {%- endif -%}
-        {%- if trigger.id.startswith('entered_') -%}
-          {%- set event = 'entered' -%}
-          {%- set zone_slug = trigger.id[8:] -%}
-        {%- else -%}
-          {%- set event = 'left' -%}
-          {%- set zone_slug = trigger.id[5:] -%}
-        {%- endif -%}"""
+def aktiv_zon_state_template(tracker: str) -> str:
+    return textwrap.dedent(
+        f"""\
+        {{% set tracker = '{tracker}' %}}
+        {{% set zones = [
+        {zone_list_jinja()}
+        ] %}}
+        {{% set ns = namespace(best='not_home', best_d=999999) %}}
+        {{% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}}
+          {{% for z in zones %}}
+            {{% set d_m = distance(tracker, z) * 1000 %}}
+            {{% set r = state_attr(z, 'radius') | float(0) %}}
+            {{% if d_m <= r and d_m < ns.best_d %}}
+              {{% set ns.best = z %}}
+              {{% set ns.best_d = d_m %}}
+            {{% endif %}}
+          {{% endfor %}}
+        {{% endif %}}
+        {{{{ ns.best }}}}"""
     )
 
-    branches = []
-    for slug in ZONE_MESSAGES:
-        entered = ZONE_MESSAGES[slug]["entered"]
-        left = ZONE_MESSAGES[slug]["left"]
+
+def build_template_sensors() -> str:
+    lines = [TEMPLATE_BEGIN, "    # ---- Aktiv zon (mittpunkt i zon, en zon åt gången) ----"]
+    for _tracker, display_name, slug in TRACKED_PEOPLE:
+        state_tpl = aktiv_zon_state_template(_tracker)
+        lines.append(f"    - name: {display_name} aktiv zon")
+        lines.append(f"      unique_id: {slug}_aktiv_zon")
+        lines.append("      icon: mdi:map-marker-radius")
+        lines.append("      state: >")
+        for line in state_tpl.splitlines():
+            lines.append(f"        {line}")
+        lines.append("")
+    lines.append(TEMPLATE_END)
+    return "\n".join(lines)
+
+
+def slug_from_state_expr(state_var: str) -> str:
+    return (
+        f"{{{{ {state_var}.replace('zone.', '') "
+        f"if {state_var}.startswith('zone.') else {state_var} }}}}"
+    )
+
+
+def build_notification_message_template() -> str:
+    person_lines = []
+    for index, (_tracker, display_name, slug) in enumerate(TRACKED_PEOPLE):
+        keyword = "if" if index == 0 else "elif"
+        person_lines.append(
+            f"        {{%- {keyword} trigger.entity_id == 'sensor.{slug}_aktiv_zon' -%}}\n"
+            f"          {{%- set person = '{display_name}' -%}}"
+        )
+    person_lines.append("        {%- else -%}")
+    person_lines.append("          {%- set person = 'Okänd' -%}")
+    person_lines.append("        {%- endif -%}")
+    person_lines.append(
+        "        {%- set from_slug = trigger.from_state.state.replace('zone.', '') "
+        "if trigger.from_state.state.startswith('zone.') else trigger.from_state.state -%}"
+    )
+    person_lines.append(
+        "        {%- set to_slug = trigger.to_state.state.replace('zone.', '') "
+        "if trigger.to_state.state.startswith('zone.') else trigger.to_state.state -%}"
+    )
+
+    branches: list[str] = []
+    for slug, msgs in ZONE_MESSAGES.items():
         branches.append(
-            f"        {{%- elif zone_slug == '{slug}' and event == 'entered' -%}}\n"
-            f"          {entered}\n"
-            f"        {{%- elif zone_slug == '{slug}' and event == 'left' -%}}\n"
-            f"          {left}"
+            f"        {{%- elif to_slug == 'not_home' and from_slug == '{slug}' -%}}\n"
+            f"          {msgs['left']}"
+        )
+    for slug, msgs in ZONE_MESSAGES.items():
+        branches.append(
+            f"        {{%- elif to_slug == '{slug}' -%}}\n"
+            f"          {msgs['entered']}"
         )
 
-    body = person_map + "\n" + "\n".join(branches)
-    body += "\n        {%- else -%}\n          {{ person }} zonhändelse ({{ zone_slug }}/{{ event }})\n        {%- endif -%}"
-    # Fix first branch from elif to if
-    body = body.replace("        {%- elif zone_slug ==", "        {%- if zone_slug ==", 1)
+    body = "\n".join(person_lines) + "\n" + "\n".join(branches)
+    body += (
+        "\n        {%- else -%}\n"
+        "          {{ person }} platsändring ({{ from_slug }} → {{ to_slug }})\n"
+        "        {%- endif -%}"
+    )
+    body = body.replace("        {%- elif to_slug ==", "        {%- if to_slug ==", 1)
     return body
 
 
 def build_automation() -> str:
-    message = build_message_template()
+    entity_ids = [f"sensor.{slug}_aktiv_zon" for _t, _n, slug in TRACKED_PEOPLE]
+    message = build_notification_message_template()
     lines = [
-        "- id: '7918348674111555999'",
+        f"- id: '{AUTOMATION_ID}'",
         "  alias: 'Mobilnotis Ilias: Vilka kommer hem och går hemifrån'",
+        "  description: Platsnotiser via aktiv_zon (mittpunkt i zon, en zon åt gången).",
         "  mode: parallel",
         "  triggers:",
-        build_triggers(),
+        "  - trigger: state",
+        "    entity_id:",
+    ]
+    lines.extend(f"    - {eid}" for eid in entity_ids)
+    lines += [
+        "  conditions:",
+        "  - condition: template",
+        "    value_template: >",
+        "      {{ trigger.from_state.state not in ['unknown', 'unavailable', 'none']",
+        "         and trigger.to_state.state not in ['unknown', 'unavailable', 'none']",
+        "         and trigger.from_state.state != trigger.to_state.state }}",
         "  actions:",
-        "  - variables:",
-        "      zone_slug: >-",
-        "        {% if trigger.id.startswith('entered_') %}{{ trigger.id[8:] }}{% else %}{{ trigger.id[5:] }}{% endif %}",
-        "      is_left: \"{{ trigger.id.startswith('left_') }}\"",
-        "  - if:",
-        "    - condition: template",
-        "      value_template: \"{{ is_left }}\"",
-        "    then:",
-        "    - delay:",
-        "        seconds: 5",
-        "    - condition: template",
-        "      value_template: \"{{ state_attr(trigger.entity_id, 'in_zones') | default([], true) | length == 0 }}\"",
         "  - variables:",
         "      notification_message: >",
     ]
@@ -366,5 +381,70 @@ def build_automation() -> str:
     return "\n".join(lines)
 
 
-if __name__ == "__main__":
+def replace_marked_block(content: str, begin: str, end: str, new_block: str) -> str:
+    pattern = re.compile(re.escape(begin) + r".*?" + re.escape(end), re.DOTALL)
+    if not pattern.search(content):
+        raise ValueError(f"Marker block not found: {begin} ... {end}")
+    return pattern.sub(new_block, content, count=1)
+
+
+def replace_automation(content: str, new_automation: str) -> str:
+    pattern = re.compile(
+        rf"- id: '{AUTOMATION_ID}'.*?(?=\n- alias: 'Mobilnotis Anna:)",
+        re.DOTALL,
+    )
+    if not pattern.search(content):
+        raise ValueError(f"Automation {AUTOMATION_ID} not found")
+    return pattern.sub(new_automation + "\n", content, count=1)
+
+
+def patch_files() -> None:
+    template_block = build_template_sensors()
+    automation_block = build_automation()
+
+    template_content = TEMPLATE_FILE.read_text(encoding="utf-8")
+    if TEMPLATE_BEGIN in template_content:
+        template_content = replace_marked_block(
+            template_content, TEMPLATE_BEGIN, TEMPLATE_END, template_block
+        )
+    else:
+        marker = "    # ---- Personer / hemma ---------------------------------------------------"
+        if marker not in template_content:
+            raise ValueError("Could not find insertion point in template.yaml")
+        template_content = template_content.replace(
+            marker,
+            template_block + "\n\n" + marker,
+            1,
+        )
+    TEMPLATE_FILE.write_text(template_content, encoding="utf-8")
+
+    automations_content = AUTOMATIONS_FILE.read_text(encoding="utf-8")
+    automations_content = replace_automation(automations_content, automation_block)
+    AUTOMATIONS_FILE.write_text(automations_content, encoding="utf-8")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--templates", action="store_true", help="Skriv template-sensorer till stdout")
+    parser.add_argument("--automation", action="store_true", help="Skriv automation till stdout")
+    parser.add_argument("--patch", action="store_true", help="Uppdatera includes/template.yaml och automations.yaml")
+    args = parser.parse_args()
+
+    if args.patch:
+        patch_files()
+        print("Patched includes/template.yaml and automations.yaml", file=sys.stderr)
+        return
+
+    if args.templates:
+        print(build_template_sensors())
+        return
+
+    if args.automation:
+        print(build_automation())
+        return
+
     print(build_automation())
+
+
+if __name__ == "__main__":
+    main()
