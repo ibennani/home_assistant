@@ -6491,57 +6491,96 @@ views:
       heading: Badrumsprofiler
       heading_style: title
       icon: mdi:shower
-    - type: markdown
-      content: |
-        Ställ in badrumsbelysningen som du vill ha den. Välj person och tryck **Spara besök** eller **Spara dusch**.
-
-        **Töm** tar bort den sparade profilen — då gäller systemets vanliga styrning (ljusstyrka utomhus + nattläge) i stället för fasta värden.
     - type: entities
-      title: Person
-      icon: mdi:account-cog
+      title: Hantera
+      icon: mdi:tune-variant
       entities:
       - entity: input_select.badrum_profil_valj
-        name: Profil
-    - type: entities
-      title: Spara från nuvarande ljusläge
-      icon: mdi:content-save
-      entities:
+        name: Person
+    - type: horizontal-stack
+      cards:
+      - type: markdown
+        content: |
+          **Normalt**
       - type: button
-        name: Spara besök
-        icon: mdi:door-open
+        name: Spara
+        icon: mdi:content-save
+        show_icon: true
+        show_name: true
         tap_action:
           action: call-service
           service: script.badrum_spara_profil
           data:
             lage: besok
       - type: button
-        name: Spara dusch
-        icon: mdi:shower-head
-        tap_action:
-          action: call-service
-          service: script.badrum_spara_profil
-          data:
-            lage: dusch
-    - type: entities
-      title: Töm sparad profil
-      icon: mdi:delete-outline
-      entities:
-      - type: button
-        name: Töm besök
-        icon: mdi:door-open
+        name: Töm
+        icon: mdi:delete-outline
+        show_icon: true
+        show_name: true
         tap_action:
           action: call-service
           service: script.badrum_tom_profil
           data:
             lage: besok
+    - type: horizontal-stack
+      cards:
+      - type: markdown
+        content: |
+          **Dusch**
       - type: button
-        name: Töm dusch
-        icon: mdi:shower-head
+        name: Spara
+        icon: mdi:content-save
+        show_icon: true
+        show_name: true
+        tap_action:
+          action: call-service
+          service: script.badrum_spara_profil
+          data:
+            lage: dusch
+      - type: button
+        name: Töm
+        icon: mdi:delete-outline
+        show_icon: true
+        show_name: true
         tap_action:
           action: call-service
           service: script.badrum_tom_profil
           data:
             lage: dusch
+    - type: entities
+      title: Visa
+      icon: mdi:eye
+      entities:
+      - type: custom:template-entity-row
+        entity: light.takspottar_badrummet
+        name: Takspottarna
+        icon: mdi:ceiling-light
+        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_besok_tak_pct') | int }} %{% else %}Inget värde{% endif %}"
+      - type: custom:template-entity-row
+        entity: light.led_badrummet_handfatet
+        name: Handfatet
+        icon: mdi:vanity-light
+        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_besok_handfat_pct') | int }} %{% else %}Inget värde{% endif %}"
+      - type: custom:template-entity-row
+        entity: light.led_badrummet_kommoden
+        name: Kommoden
+        icon: mdi:led-strip-variant
+        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_besok_kommod_pct') | int }} %{% else %}Inget värde{% endif %}"
+      - type: custom:template-entity-row
+        entity: light.spegeln_badrummet
+        name: Spegeln
+        icon: mdi:mirror
+        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_besok_spegel_pct') | int }} %{% else %}Inget värde{% endif %}"
+      - type: custom:template-entity-row
+        entity: light.takspott_duschen
+        name: Dusch tak
+        icon: mdi:ceiling-light
+        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_dusch_tak_pct') | int }} %{% else %}Inget värde{% endif %}"
+      - type: custom:template-entity-row
+        entity: light.led_strip_i_duschen
+        name: Dusch LED-strip
+        icon: mdi:led-strip-variant
+        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_dusch_strip_pct') | int }} %{% else %}Inget värde{% endif %}"
 - title: Kollektivtrafik
   path: kollektivtrafik
   icon: mdi:train
