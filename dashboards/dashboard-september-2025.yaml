@@ -6522,6 +6522,16 @@ views:
           service: script.badrum_tom_profil
           data:
             lage: besok
+      - type: button
+        name: Visa
+        icon: mdi:eye
+        show_icon: true
+        show_name: true
+        tap_action:
+          action: call-service
+          service: script.badrum_visa_profil
+          data:
+            lage: besok
     - type: horizontal-stack
       cards:
       - type: markdown
@@ -6547,40 +6557,57 @@ views:
           service: script.badrum_tom_profil
           data:
             lage: dusch
+      - type: button
+        name: Visa
+        icon: mdi:eye
+        show_icon: true
+        show_name: true
+        tap_action:
+          action: call-service
+          service: script.badrum_visa_profil
+          data:
+            lage: dusch
     - type: entities
-      title: Visa
-      icon: mdi:eye
+      title: Lampor
+      icon: mdi:lightbulb
       entities:
       - type: custom:template-entity-row
-        entity: light.takspottar_badrummet
+        entity: input_boolean.badrum_editor_besok_laddad
+        name: Normalt
+        icon: mdi:door-open
+        state: "{% if is_state('input_boolean.badrum_editor_besok_laddad', 'on') %}Laddad i editorn{% else %}Inget värde{% endif %}"
+      - type: custom:slider-entity-row
+        entity: input_number.badrum_editor_tak_pct
         name: Takspottarna
-        icon: mdi:ceiling-light
-        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_besok_tak_pct') | int }} %{% else %}Inget värde{% endif %}"
-      - type: custom:template-entity-row
-        entity: light.led_badrummet_handfatet
+        toggle: true
+        step: 1
+      - type: custom:slider-entity-row
+        entity: input_number.badrum_editor_handfat_pct
         name: Handfatet
-        icon: mdi:vanity-light
-        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_besok_handfat_pct') | int }} %{% else %}Inget värde{% endif %}"
-      - type: custom:template-entity-row
-        entity: light.led_badrummet_kommoden
+        toggle: true
+        step: 1
+      - type: custom:slider-entity-row
+        entity: input_number.badrum_editor_kommod_pct
         name: Kommoden
-        icon: mdi:led-strip-variant
-        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_besok_kommod_pct') | int }} %{% else %}Inget värde{% endif %}"
-      - type: custom:template-entity-row
-        entity: light.spegeln_badrummet
+        toggle: true
+        step: 1
+      - entity: input_boolean.badrum_editor_spegel
         name: Spegeln
-        icon: mdi:mirror
-        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_besok_spegel_pct') | int }} %{% else %}Inget värde{% endif %}"
       - type: custom:template-entity-row
-        entity: light.takspott_duschen
+        entity: input_boolean.badrum_editor_dusch_laddad
+        name: Dusch
+        icon: mdi:shower-head
+        state: "{% if is_state('input_boolean.badrum_editor_dusch_laddad', 'on') %}Laddad i editorn{% else %}Inget värde{% endif %}"
+      - type: custom:slider-entity-row
+        entity: input_number.badrum_editor_dusch_tak_pct
         name: Dusch tak
-        icon: mdi:ceiling-light
-        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_dusch_tak_pct') | int }} %{% else %}Inget värde{% endif %}"
-      - type: custom:template-entity-row
-        entity: light.led_strip_i_duschen
+        toggle: true
+        step: 1
+      - type: custom:slider-entity-row
+        entity: input_number.badrum_editor_dusch_strip_pct
         name: Dusch LED-strip
-        icon: mdi:led-strip-variant
-        state: "{% set m = {'Någon': 'nagon', 'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}{% set key = m.get(states('input_select.badrum_profil_valj'), 'nagon') %}{% if is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') %}{{ states('input_number.badrum_' ~ key ~ '_dusch_strip_pct') | int }} %{% else %}Inget värde{% endif %}"
+        toggle: true
+        step: 1
 - title: Kollektivtrafik
   path: kollektivtrafik
   icon: mdi:train
