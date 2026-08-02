@@ -10630,7 +10630,7 @@
 - id: '1767296601267'
   alias: 'Belysning: Dimma eller släck i köket vid inaktivitet'
   description: >-
-    Normalt → Mysigt när group.rorelse_i_koket varit av i 15 min. Morgon, Måltid,
+    Normalt och Morgon → Mysigt när group.rorelse_i_koket varit av i 15 min. Måltid,
     Buffé, Maxbelysning och Spelkväll → Mysigt när gruppen varit av i 30 min. Läge
     kollas när for-triggern löper ut, inte vid lägesbyte. Kort rörelse nollställer
     for-timern i Home Assistant — inga delay-timers i automationen.
@@ -10655,7 +10655,9 @@
         id: inaktiv_15
       - condition: state
         entity_id: input_select.koket_belysning
-        state: Normalt
+        state:
+        - Normalt
+        - Morgon
       sequence:
       - action: input_select.select_option
         target:
@@ -10674,7 +10676,6 @@
       - condition: state
         entity_id: input_select.koket_belysning
         state:
-        - Morgon
         - Måltid
         - Buffé
         - Maxbelysning
