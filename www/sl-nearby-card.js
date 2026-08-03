@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260803a";
+    return "20260803b";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260803a",
+      sites_cache_version: "20260803b",
     };
   }
 
@@ -40,6 +40,9 @@ class SlNearbyCard extends HTMLElement {
       const input = config && typeof config === "object" ? config : {};
       this.config = Object.assign({}, base, input);
       this._ensureCaches();
+      if (!this._visibleStopCount) {
+        this._visibleStopCount = Number(this.config.max_stops) || 20;
+      }
       this._updateView();
     } catch (error) {
       this.config = SlNearbyCard.getStubConfig();
@@ -60,6 +63,7 @@ class SlNearbyCard extends HTMLElement {
       this._departureCache.clear();
       this._openSiteId = null;
       this._lastListKey = null;
+      this._visibleStopCount = Number(this.config && this.config.max_stops) || 20;
     }
     this._ensureBusLineTerminusLabels();
     this._updateView();
@@ -84,6 +88,7 @@ class SlNearbyCard extends HTMLElement {
     if (this._cardVersion !== SlNearbyCard.CARD_VERSION) {
       this._cardVersion = SlNearbyCard.CARD_VERSION;
       this._lastListKey = null;
+      this._visibleStopCount = Number((this.config && this.config.max_stops) || 20);
     }
     if (!this._cardClickBound) {
       this._cardClickBound = true;
@@ -103,9 +108,14 @@ class SlNearbyCard extends HTMLElement {
     this._ensureSitesLoaded().then(() => this._updateView());
     this._ensureVisibilityObserver();
     this._syncRefreshTimer();
+    this._syncGpsStatusClock();
   }
 
   disconnectedCallback() {
+    if (this._gpsStatusTimer) {
+      clearInterval(this._gpsStatusTimer);
+      this._gpsStatusTimer = undefined;
+    }
     if (this._locationRefreshTimer) {
       clearInterval(this._locationRefreshTimer);
       this._locationRefreshTimer = undefined;
@@ -362,6 +372,7 @@ class SlNearbyCard extends HTMLElement {
         }
         self._isVisible = visible;
         self._syncLocationRefreshTimer();
+        self._syncGpsStatusClock();
       },
       { threshold: [0, 0.01] },
     );
@@ -448,12 +459,11 @@ class SlNearbyCard extends HTMLElement {
     return earthRadius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
-  _getNearestStops() {
+  _getAllNearestStops() {
     const location = this._getSearchLocation();
     if (!location || !this._sites || !this._sites.length) {
       return [];
     }
-    const maxStops = Number(this.config.max_stops || 20);
     const self = this;
     return this._sites
       .map(function (site) {
@@ -463,8 +473,87 @@ class SlNearbyCard extends HTMLElement {
       })
       .sort(function (a, b) {
         return a.distance_m - b.distance_m;
-      })
-      .slice(0, maxStops);
+      });
+  }
+
+  _ensureVisibleStopCount() {
+    const pageSize = Number((this.config && this.config.max_stops) || 20);
+    if (!this._visibleStopCount || this._visibleStopCount < pageSize) {
+      this._visibleStopCount = pageSize;
+    }
+  }
+
+  _getVisibleStops() {
+    this._ensureVisibleStopCount();
+    return this._getAllNearestStops().slice(0, this._visibleStopCount);
+  }
+
+  _getGpsLastUpdatedMs() {
+    const entityId = this._getLocationEntity();
+    if (!entityId || !this._hass || !this._hass.states[entityId]) {
+      return null;
+    }
+    const state = this._hass.states[entityId];
+    const updated = state.last_updated || state.last_changed;
+    if (!updated) {
+      return null;
+    }
+    const ms = Date.parse(updated);
+    return isFinite(ms) ? ms : null;
+  }
+
+  _formatGpsAge(ms) {
+    const totalSec = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+    const hours = Math.floor(totalSec / 3600);
+    const minutes = Math.floor((totalSec % 3600) / 60);
+    const seconds = totalSec % 60;
+    return hours + " tim " + minutes + " min " + seconds + " sek";
+  }
+
+  _getGpsStatusText() {
+    if (!this._getLocationEntity()) {
+      return "GPS uppdaterades senast — inget användarkonto";
+    }
+    const ms = this._getGpsLastUpdatedMs();
+    if (!ms) {
+      return "GPS uppdaterades senast — ingen position ännu";
+    }
+    return "GPS uppdaterades senast " + this._formatGpsAge(ms) + " sedan";
+  }
+
+  _updateGpsStatusDisplay() {
+    const el = this.querySelector(".gps-status");
+    if (!el) {
+      return;
+    }
+    el.textContent = this._getGpsStatusText();
+  }
+
+  _syncGpsStatusClock() {
+    if (this._gpsStatusTimer) {
+      clearInterval(this._gpsStatusTimer);
+      this._gpsStatusTimer = undefined;
+    }
+    const shouldRun = this._isVisible !== false;
+    if (!shouldRun) {
+      return;
+    }
+    this._updateGpsStatusDisplay();
+    const self = this;
+    this._gpsStatusTimer = window.setInterval(function () {
+      self._updateGpsStatusDisplay();
+    }, 1000);
+  }
+
+  _renderShowMoreButton(allStops) {
+    if (!allStops || allStops.length <= this._visibleStopCount) {
+      return "";
+    }
+    return '<button type="button" class="show-more-btn">Visa fler</button>';
+  }
+
+  _getNearestStops() {
+    return this._getVisibleStops();
   }
 
   _formatDistance(meters) {
@@ -2025,7 +2114,24 @@ class SlNearbyCard extends HTMLElement {
     this._updateDeparturePanel(siteId);
   }
 
+  _onShowMore(event) {
+    const button = event.target.closest(".show-more-btn");
+    if (!button || !this.contains(button)) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    const pageSize = Number((this.config && this.config.max_stops) || 20);
+    this._visibleStopCount = (this._visibleStopCount || pageSize) + pageSize;
+    this._lastListKey = null;
+    this._updateView();
+  }
+
   _onCardClick(event) {
+    if (event.target.closest(".show-more-btn")) {
+      this._onShowMore(event);
+      return;
+    }
     if (event.target.closest(".sl-line-route-modal")) {
       this._onDepartureClick(event);
       return;
@@ -2077,56 +2183,69 @@ class SlNearbyCard extends HTMLElement {
 
     const locationEntity = this._getLocationEntity();
     const location = this._getSearchLocation();
-    const stops = this._getNearestStops();
+    this._ensureVisibleStopCount();
+    const allStops = this._getAllNearestStops();
+    const stops = allStops.slice(0, this._visibleStopCount);
+    const gpsBlock =
+      '<div class="gps-status">' + this._escapeHtml(this._getGpsStatusText()) + "</div>";
     let body = "";
 
     if (this._sitesError) {
-      body = '<div class="status-message error">' + this._escapeHtml(this._sitesError) + "</div>";
+      body =
+        gpsBlock +
+        '<div class="status-message error">' +
+        this._escapeHtml(this._sitesError) +
+        "</div>";
     } else if (!this._sites) {
-      body = '<div class="status-message">Laddar hållplatser…</div>';
+      body = gpsBlock + '<div class="status-message">Laddar hållplatser…</div>';
     } else if (!locationEntity) {
       body =
+        gpsBlock +
         '<div class="status-message">Ingen person entitet kopplad till ditt Home Assistant-konto.</div>';
     } else if (!location) {
       body =
+        gpsBlock +
         '<div class="status-message">Ingen GPS-position från ' +
         this._escapeHtml(this._getLocationLabel()) +
         ".</div>";
     } else if (!stops.length) {
-      body = '<div class="status-message">Inga hållplatser hittades.</div>';
+      body = gpsBlock + '<div class="status-message">Inga hållplatser hittades.</div>';
     } else {
       const self = this;
-      body = stops
-        .map(function (stop) {
-          const openAttr = self._openSiteId === stop.id ? " open" : "";
-          return (
-            '<details class="stop-accordion" data-site-id="' +
-            stop.id +
-            '"' +
-            openAttr +
-            ">" +
-            '<summary class="stop-summary">' +
-            self._renderStopSummary(stop) +
-            "</summary>" +
-            '<div class="stop-body">' +
-            self._renderDepartures(stop.id) +
-            "</div></details>"
-          );
-        })
-        .join("");
+      body =
+        gpsBlock +
+        stops
+          .map(function (stop) {
+            const openAttr = self._openSiteId === stop.id ? " open" : "";
+            return (
+              '<details class="stop-accordion" data-site-id="' +
+              stop.id +
+              '"' +
+              openAttr +
+              ">" +
+              '<summary class="stop-summary">' +
+              self._renderStopSummary(stop) +
+              "</summary>" +
+              '<div class="stop-body">' +
+              self._renderDepartures(stop.id) +
+              "</div></details>"
+            );
+          })
+          .join("") +
+        self._renderShowMoreButton(allStops);
       self._prefetchDepartures(stops);
     }
 
-    const listKey = stops
-      .map(function (stop) {
-        return stop.id + ":" + Math.round(stop.distance_m);
-      })
-      .join(",");
+    const listKey =
+      String(this._visibleStopCount) +
+      ":" +
+      stops
+        .map(function (stop) {
+          return stop.id + ":" + Math.round(stop.distance_m);
+        })
+        .join(",");
     if (this._lastListKey === listKey && this.querySelector(".stop-accordion")) {
-      const header = root.querySelector(".list-header");
-      if (header) {
-        header.remove();
-      }
+      this._updateGpsStatusDisplay();
       for (let i = 0; i < stops.length; i++) {
         const distEl = root.querySelector(
           '.stop-accordion[data-site-id="' + stops[i].id + '"] .stop-distance',
@@ -2135,6 +2254,13 @@ class SlNearbyCard extends HTMLElement {
           distEl.textContent = this._formatDistance(stops[i].distance_m);
         }
       }
+      const showMoreBtn = root.querySelector(".show-more-btn");
+      const shouldShowMore = allStops.length > this._visibleStopCount;
+      if (shouldShowMore && !showMoreBtn) {
+        root.insertAdjacentHTML("beforeend", this._renderShowMoreButton(allStops));
+      } else if (!shouldShowMore && showMoreBtn) {
+        showMoreBtn.remove();
+      }
       if (this._openSiteId) {
         this._updateDeparturePanel(this._openSiteId);
       }
@@ -2142,6 +2268,7 @@ class SlNearbyCard extends HTMLElement {
     }
     this._lastListKey = listKey;
     root.innerHTML = body;
+    this._syncGpsStatusClock();
   }
 
   _styles() {
@@ -2149,6 +2276,9 @@ class SlNearbyCard extends HTMLElement {
       ":host{display:block;width:100%}",
       "ha-card{padding:0 0 12px;width:100%;box-sizing:border-box;display:block}",
       ".sl-card-root{width:100%;box-sizing:border-box}",
+      ".gps-status{padding:10px 16px 12px;font-size:.85rem;color:var(--secondary-text-color);border-bottom:1px solid var(--divider-color,rgba(255,255,255,.12))}",
+      ".show-more-btn{display:block;width:calc(100% - 32px);margin:12px 16px 4px;padding:12px 16px;border:1px solid var(--divider-color,rgba(255,255,255,.2));border-radius:8px;background:transparent;color:var(--primary-color,#03a9f4);font-size:.95rem;font-weight:500;cursor:pointer;touch-action:manipulation}",
+      ".show-more-btn:hover{background:rgba(255,255,255,.06)}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".stop-accordion{width:100%;box-sizing:border-box;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
