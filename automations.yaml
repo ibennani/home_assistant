@@ -557,7 +557,6 @@
   action:
   - action: '{% if is_state(''var.vem_ar_ensam_hemma'',''Ilias'') %} notify.mobile_app_ilias_s23_ultra
       {% elif is_state(''var.vem_ar_ensam_hemma'',''Anna'') %} notify.mobile_app_anna_s22_ultra
-      {% elif is_state(''var.vem_ar_ensam_hemma'',''Albin'') %} notify.mobile_app_iphone_12_pro_max
       {% elif is_state(''var.vem_ar_ensam_hemma'',''Isabelle'') %} notify.mobile_app_ashers_iphone
       {% elif is_state(''var.vem_ar_ensam_hemma'',''Erik'') %} notify.mobile_app_erik_s23
       {% else %} script.do_nothing {% endif %}
@@ -4962,19 +4961,6 @@
     - sensor.anna_aktiv_zon
     - sensor.erik_aktiv_zon
     - sensor.isabelle_aktiv_zon
-    - sensor.albin_aktiv_zon
-    - sensor.ulrika_aktiv_zon
-    - sensor.jocke_aktiv_zon
-    - sensor.mie_aktiv_zon
-    - sensor.elin_aktiv_zon
-    - sensor.youssef_aktiv_zon
-    - sensor.zaki_aktiv_zon
-    - sensor.safia_aktiv_zon
-    - sensor.solveig_aktiv_zon
-    - sensor.sarah_aktiv_zon
-    - sensor.adina_aktiv_zon
-    - sensor.hanna_aktiv_zon
-    - sensor.maria_aktiv_zon
   conditions:
   - condition: template
     value_template: >
@@ -4990,32 +4976,6 @@
                   {%- set person = 'Erik' -%}
                 {%- elif trigger.entity_id == 'sensor.isabelle_aktiv_zon' -%}
                   {%- set person = 'Isabelle' -%}
-                {%- elif trigger.entity_id == 'sensor.albin_aktiv_zon' -%}
-                  {%- set person = 'Albin' -%}
-                {%- elif trigger.entity_id == 'sensor.ulrika_aktiv_zon' -%}
-                  {%- set person = 'Ulrika' -%}
-                {%- elif trigger.entity_id == 'sensor.jocke_aktiv_zon' -%}
-                  {%- set person = 'Jocke' -%}
-                {%- elif trigger.entity_id == 'sensor.mie_aktiv_zon' -%}
-                  {%- set person = 'Mie' -%}
-                {%- elif trigger.entity_id == 'sensor.elin_aktiv_zon' -%}
-                  {%- set person = 'Elin' -%}
-                {%- elif trigger.entity_id == 'sensor.youssef_aktiv_zon' -%}
-                  {%- set person = 'Youssef' -%}
-                {%- elif trigger.entity_id == 'sensor.zaki_aktiv_zon' -%}
-                  {%- set person = 'Zaki' -%}
-                {%- elif trigger.entity_id == 'sensor.safia_aktiv_zon' -%}
-                  {%- set person = 'Safia' -%}
-                {%- elif trigger.entity_id == 'sensor.solveig_aktiv_zon' -%}
-                  {%- set person = 'Solveig' -%}
-                {%- elif trigger.entity_id == 'sensor.sarah_aktiv_zon' -%}
-                  {%- set person = 'Sarah' -%}
-                {%- elif trigger.entity_id == 'sensor.adina_aktiv_zon' -%}
-                  {%- set person = 'Adina' -%}
-                {%- elif trigger.entity_id == 'sensor.hanna_aktiv_zon' -%}
-                  {%- set person = 'Hanna' -%}
-                {%- elif trigger.entity_id == 'sensor.maria_aktiv_zon' -%}
-                  {%- set person = 'Maria' -%}
                 {%- else -%}
                   {%- set person = 'Okänd' -%}
                 {%- endif -%}
@@ -5030,15 +4990,15 @@
                 {%- elif to_slug == 'not_home' and from_slug == 'ilias_jobb' -%}
                   {{ person }} {% if person == 'Ilias' %}har lämnat jobbet {% else %}har lämnat Ilias jobb{% endif %}
                 {%- elif to_slug == 'not_home' and from_slug == 'kth_campus' -%}
-                  {{ person }} {% if person == 'Albin' %}har lämnat KTH {% else %}har lämnat KTH{% endif %}
+                  {{ person }} har lämnat KTH
                 {%- elif to_slug == 'not_home' and from_slug == 'kth_flemmingsberg' -%}
                   {{ person }} har lämnat Youssef och Emma
                 {%- elif to_slug == 'not_home' and from_slug == 'albins_mamma' -%}
-                  {{ person }} {% if person == 'Albin' %}har åkt hemifrån mamma {% else %}har åkt ifrån Albins mamma{% endif %}
+                  {{ person }} har åkt ifrån Albins mamma
                 {%- elif to_slug == 'not_home' and from_slug == 'isabelles_jobb' -%}
                   {{ person }} {% if person == 'Isabelle' %}har lämnat jobbet {% else %}har lämnat Isabelles jobb{% endif %}
                 {%- elif to_slug == 'not_home' and from_slug == 'albin' -%}
-                  {{ person }} {% if person == 'Albin' %}har lämnat sitt hem {% else %}har åkt hemifrån Albin{% endif %}
+                  {{ person }} har åkt hemifrån Albin
                 {%- elif to_slug == 'not_home' and from_slug == 'grasko' -%}
                   {{ person }} har lämnat Gräskö
                 {%- elif to_slug == 'not_home' and from_slug == 'isabelles_mormor' -%}
@@ -5118,15 +5078,15 @@
                 {%- elif to_slug == 'ilias_jobb' -%}
                   {{ person }} {% if person == 'Ilias' %}är på jobbet {% else %}är på Ilias jobb{% endif %}
                 {%- elif to_slug == 'kth_campus' -%}
-                  {{ person }} {% if person == 'Albin' %}är på KTH {% else %}är på KTH{% endif %}
+                  {{ person }} är på KTH
                 {%- elif to_slug == 'kth_flemmingsberg' -%}
                   {{ person }} är på Youssef och Emma
                 {%- elif to_slug == 'albins_mamma' -%}
-                  {{ person }} {% if person == 'Albin' %}är hos mamma {% else %}är hos Albins mamma{% endif %}
+                  {{ person }} är hos Albins mamma
                 {%- elif to_slug == 'isabelles_jobb' -%}
                   {{ person }} {% if person == 'Isabelle' %}är på jobbet {% else %}är på Isabelles jobb{% endif %}
                 {%- elif to_slug == 'albin' -%}
-                  {{ person }} {% if person == 'Albin' %}är i sitt hem {% else %}är hemma hos Albin{% endif %}
+                  {{ person }} är hemma hos Albin
                 {%- elif to_slug == 'grasko' -%}
                   {{ person }} är på Gräskö
                 {%- elif to_slug == 'isabelles_mormor' -%}
@@ -5217,22 +5177,9 @@
   triggers:
   - trigger: state
     entity_id:
-    - sensor.ilias_aktiv_zon
-    - sensor.albin_aktiv_zon
-    - sensor.isabelle_aktiv_zon
     - sensor.erik_aktiv_zon
-    - sensor.ulrika_aktiv_zon
-    - sensor.jocke_aktiv_zon
-    - sensor.mie_aktiv_zon
-    - sensor.elin_aktiv_zon
-    - sensor.youssef_aktiv_zon
-    - sensor.zaki_aktiv_zon
-    - sensor.safia_aktiv_zon
-    - sensor.solveig_aktiv_zon
-    - sensor.sarah_aktiv_zon
-    - sensor.adina_aktiv_zon
-    - sensor.hanna_aktiv_zon
-    - sensor.maria_aktiv_zon
+    - sensor.isabelle_aktiv_zon
+    - sensor.ilias_aktiv_zon
   conditions:
   - condition: template
     value_template: >
@@ -5243,38 +5190,12 @@
   actions:
   - variables:
       notification_message: >
-                {%- if trigger.entity_id == 'sensor.ilias_aktiv_zon' -%}
-                  {%- set person = 'Ilias' -%}
-                {%- elif trigger.entity_id == 'sensor.albin_aktiv_zon' -%}
-                  {%- set person = 'Albin' -%}
+                {%- if trigger.entity_id == 'sensor.erik_aktiv_zon' -%}
+                  {%- set person = 'Erik' -%}
                 {%- elif trigger.entity_id == 'sensor.isabelle_aktiv_zon' -%}
                   {%- set person = 'Isabelle' -%}
-                {%- elif trigger.entity_id == 'sensor.erik_aktiv_zon' -%}
-                  {%- set person = 'Erik' -%}
-                {%- elif trigger.entity_id == 'sensor.ulrika_aktiv_zon' -%}
-                  {%- set person = 'Ulrika' -%}
-                {%- elif trigger.entity_id == 'sensor.jocke_aktiv_zon' -%}
-                  {%- set person = 'Jocke' -%}
-                {%- elif trigger.entity_id == 'sensor.mie_aktiv_zon' -%}
-                  {%- set person = 'Mie' -%}
-                {%- elif trigger.entity_id == 'sensor.elin_aktiv_zon' -%}
-                  {%- set person = 'Elin' -%}
-                {%- elif trigger.entity_id == 'sensor.youssef_aktiv_zon' -%}
-                  {%- set person = 'Youssef' -%}
-                {%- elif trigger.entity_id == 'sensor.zaki_aktiv_zon' -%}
-                  {%- set person = 'Zaki' -%}
-                {%- elif trigger.entity_id == 'sensor.safia_aktiv_zon' -%}
-                  {%- set person = 'Safia' -%}
-                {%- elif trigger.entity_id == 'sensor.solveig_aktiv_zon' -%}
-                  {%- set person = 'Solveig' -%}
-                {%- elif trigger.entity_id == 'sensor.sarah_aktiv_zon' -%}
-                  {%- set person = 'Sarah' -%}
-                {%- elif trigger.entity_id == 'sensor.adina_aktiv_zon' -%}
-                  {%- set person = 'Adina' -%}
-                {%- elif trigger.entity_id == 'sensor.hanna_aktiv_zon' -%}
-                  {%- set person = 'Hanna' -%}
-                {%- elif trigger.entity_id == 'sensor.maria_aktiv_zon' -%}
-                  {%- set person = 'Maria' -%}
+                {%- elif trigger.entity_id == 'sensor.ilias_aktiv_zon' -%}
+                  {%- set person = 'Ilias' -%}
                 {%- else -%}
                   {%- set person = 'Okänd' -%}
                 {%- endif -%}

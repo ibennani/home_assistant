@@ -14,49 +14,18 @@ TEMPLATE_FILE = ROOT / "includes" / "template.yaml"
 AUTOMATIONS_FILE = ROOT / "automations.yaml"
 
 # tracker_entity, visningsnamn, sensor-slug (sensor.<slug>_aktiv_zon)
-TRACKED_PEOPLE = [
+AKTIV_ZON_PEOPLE = [
     ("person.anna_bennani", "Anna", "anna"),
     ("person.erik_bennani", "Erik", "erik"),
     ("person.isabelle_sovig", "Isabelle", "isabelle"),
-    ("device_tracker.albins_iphone_12_gps_tracker", "Albin", "albin"),
-    ("device_tracker.ulrikas_iphone", "Ulrika", "ulrika"),
-    ("device_tracker.jockesiphone", "Jocke", "jocke"),
-    ("device_tracker.mariesiphone", "Mie", "mie"),
-    ("device_tracker.android56cbe288b1a113c8", "Elin", "elin"),
-    ("device_tracker.youssef_honor_8", "Youssef", "youssef"),
-    ("device_tracker.zaksiphone", "Zaki", "zaki"),
-    ("device_tracker.safiabennani", "Safia", "safia"),
-    ("device_tracker.78521aac945e", "Solveig", "solveig"),
-    ("device_tracker.84c7ea28ca07", "Sarah", "sarah"),
-    ("device_tracker.adinas_iphone", "Adina", "adina"),
-    ("device_tracker.hannas_iphone_7", "Hanna", "hanna"),
-    ("device_tracker.marias_iphone", "Maria", "maria"),
-]
-
-# Extra aktiv_zon-sensorer (t.ex. för Annas hemma-notiser, inte Ilias platsnotis-triggers)
-EXTRA_AKTIV_ZON_SENSORS = [
     ("person.ilias_bennani", "Ilias", "ilias"),
 ]
 
-# Personer som Annas hemma-notis bevakar (ej Anna själv)
-ANNA_TRACKED_PEOPLE = [
-    ("person.ilias_bennani", "Ilias", "ilias"),
-    ("device_tracker.albins_iphone_12_gps_tracker", "Albin", "albin"),
-    ("person.isabelle_sovig", "Isabelle", "isabelle"),
-    ("person.erik_bennani", "Erik", "erik"),
-    ("device_tracker.ulrikas_iphone", "Ulrika", "ulrika"),
-    ("device_tracker.jockesiphone", "Jocke", "jocke"),
-    ("device_tracker.mariesiphone", "Mie", "mie"),
-    ("device_tracker.android56cbe288b1a113c8", "Elin", "elin"),
-    ("device_tracker.youssef_honor_8", "Youssef", "youssef"),
-    ("device_tracker.zaksiphone", "Zaki", "zaki"),
-    ("device_tracker.safiabennani", "Safia", "safia"),
-    ("device_tracker.78521aac945e", "Solveig", "solveig"),
-    ("device_tracker.84c7ea28ca07", "Sarah", "sarah"),
-    ("device_tracker.adinas_iphone", "Adina", "adina"),
-    ("device_tracker.hannas_iphone_7", "Hanna", "hanna"),
-    ("device_tracker.marias_iphone", "Maria", "maria"),
-]
+# Ilias platsnotiser: övriga familjemedlemmar (ej Ilias själv)
+TRACKED_PEOPLE = [p for p in AKTIV_ZON_PEOPLE if p[2] != "ilias"]
+
+# Annas hemma-notiser: övriga familjemedlemmar (ej Anna själv)
+ANNA_TRACKED_PEOPLE = [p for p in AKTIV_ZON_PEOPLE if p[2] != "anna"]
 
 ZONES = [
     ("zone.home", "home"),
@@ -123,24 +92,24 @@ ZONE_MESSAGES = {
         "left": "{{ person }} {% if person == 'Ilias' %}har lämnat jobbet {% else %}har lämnat Ilias jobb{% endif %}",
     },
     "kth_campus": {
-        "entered": "{{ person }} {% if person == 'Albin' %}är på KTH {% else %}är på KTH{% endif %}",
-        "left": "{{ person }} {% if person == 'Albin' %}har lämnat KTH {% else %}har lämnat KTH{% endif %}",
+        "entered": "{{ person }} är på KTH",
+        "left": "{{ person }} har lämnat KTH",
     },
     "kth_flemmingsberg": {
         "entered": "{{ person }} är på Youssef och Emma",
         "left": "{{ person }} har lämnat Youssef och Emma",
     },
     "albins_mamma": {
-        "entered": "{{ person }} {% if person == 'Albin' %}är hos mamma {% else %}är hos Albins mamma{% endif %}",
-        "left": "{{ person }} {% if person == 'Albin' %}har åkt hemifrån mamma {% else %}har åkt ifrån Albins mamma{% endif %}",
+        "entered": "{{ person }} är hos Albins mamma",
+        "left": "{{ person }} har åkt ifrån Albins mamma",
     },
     "isabelles_jobb": {
         "entered": "{{ person }} {% if person == 'Isabelle' %}är på jobbet {% else %}är på Isabelles jobb{% endif %}",
         "left": "{{ person }} {% if person == 'Isabelle' %}har lämnat jobbet {% else %}har lämnat Isabelles jobb{% endif %}",
     },
     "albin": {
-        "entered": "{{ person }} {% if person == 'Albin' %}är i sitt hem {% else %}är hemma hos Albin{% endif %}",
-        "left": "{{ person }} {% if person == 'Albin' %}har lämnat sitt hem {% else %}har åkt hemifrån Albin{% endif %}",
+        "entered": "{{ person }} är hemma hos Albin",
+        "left": "{{ person }} har åkt hemifrån Albin",
     },
     "grasko": {
         "entered": "{{ person }} är på Gräskö",
@@ -291,13 +260,7 @@ ANNA_AUTOMATION_ID = "791834010101014158674"
 
 
 def all_aktiv_zon_people() -> list[tuple[str, str, str]]:
-    seen: set[str] = set()
-    combined: list[tuple[str, str, str]] = []
-    for item in TRACKED_PEOPLE + EXTRA_AKTIV_ZON_SENSORS:
-        if item[2] not in seen:
-            seen.add(item[2])
-            combined.append(item)
-    return combined
+    return list(AKTIV_ZON_PEOPLE)
 
 
 def zone_list_jinja(indent: str = "          ") -> str:
@@ -561,9 +524,23 @@ def main() -> None:
     parser.add_argument(
         "--patch-anna",
         action="store_true",
-        help="Uppdatera Anna-automation och template-sensorer (t.ex. ilias_aktiv_zon)",
+        help="Uppdatera Anna-automation och template-sensorer",
+    )
+    parser.add_argument(
+        "--patch-all",
+        action="store_true",
+        help="Uppdatera template-sensorer samt Ilias- och Anna-automationer",
     )
     args = parser.parse_args()
+
+    if args.patch_all:
+        patch_template_sensors()
+        automations_content = AUTOMATIONS_FILE.read_text(encoding="utf-8")
+        automations_content = replace_automation(automations_content, build_automation())
+        automations_content = replace_anna_automation(automations_content, build_anna_automation())
+        AUTOMATIONS_FILE.write_text(automations_content, encoding="utf-8")
+        print("Patched includes/template.yaml, Ilias automation and Anna automation", file=sys.stderr)
+        return
 
     if args.patch:
         patch_files()
