@@ -274,7 +274,9 @@
           'zone.sahlgrenska_sjukhuset',
           'zone.molndahls_sjukhus',
           'zone.stefan',
-          'zone.elins_jobb'
+          'zone.elins_jobb',
+          'zone.visby',
+          'zone.gotlandslagret'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
         {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
@@ -338,7 +340,9 @@
           'zone.sahlgrenska_sjukhuset',
           'zone.molndahls_sjukhus',
           'zone.stefan',
-          'zone.elins_jobb'
+          'zone.elins_jobb',
+          'zone.visby',
+          'zone.gotlandslagret'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
         {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
@@ -402,7 +406,9 @@
           'zone.sahlgrenska_sjukhuset',
           'zone.molndahls_sjukhus',
           'zone.stefan',
-          'zone.elins_jobb'
+          'zone.elins_jobb',
+          'zone.visby',
+          'zone.gotlandslagret'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
         {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
@@ -466,7 +472,9 @@
           'zone.sahlgrenska_sjukhuset',
           'zone.molndahls_sjukhus',
           'zone.stefan',
-          'zone.elins_jobb'
+          'zone.elins_jobb',
+          'zone.visby',
+          'zone.gotlandslagret'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
         {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}

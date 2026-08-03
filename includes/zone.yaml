@@ -36,3 +36,16 @@
   longitude: 12.041550
   radius: 20
   icon: mdi:human
+
+# Städer / läger
+- name: Visby
+  latitude: 57.6348
+  longitude: 18.2948
+  radius: 4000
+  icon: mdi:city
+
+- name: Gotlandslägret
+  latitude: 57.793995
+  longitude: 18.785422
+  radius: 130
+  icon: mdi:tent
