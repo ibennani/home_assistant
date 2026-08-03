@@ -6235,6 +6235,8 @@ views:
       - zone.ellio_i_norge
       - zone.eina
       - zone.norge_2
+      - zone.visby
+      - zone.gotlandslagret
       - zone.home
       history: true
       hours_to_show: 24
@@ -6278,6 +6280,8 @@ views:
       - zone.ellio_i_norge
       - zone.eina
       - zone.norge_2
+      - zone.visby
+      - zone.gotlandslagret
       - zone.home
       history: true
       hours_to_show: 24
@@ -6321,6 +6325,8 @@ views:
       - zone.ellio_i_norge
       - zone.eina
       - zone.norge_2
+      - zone.visby
+      - zone.gotlandslagret
       - zone.home
       history: true
       hours_to_show: 24
@@ -6364,6 +6370,8 @@ views:
       - zone.ellio_i_norge
       - zone.eina
       - zone.norge_2
+      - zone.visby
+      - zone.gotlandslagret
       - zone.home
       show_zone_label: true
       history: true
