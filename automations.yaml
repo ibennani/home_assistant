@@ -8214,11 +8214,7 @@
           entity_id: input_boolean.duschsekvens_giltig
       - action: notify.mobile_app_ilias_s23_ultra
         data:
-          message: 'HEMMET {{ now().strftime(''%R'') }}:
-
-            Någon kanske duschar.
-
-            '
+          message: "{% set vem = states('input_select.badrummet_vem') %}{% set namn = vem if vem in ['Anna', 'Erik', 'Ilias'] else 'Någon' %}HEMMET {{ now().strftime('%R') }}:\n\n{{ namn }} kanske duschar.\n\n"
           data:
             ttl: 0
             priority: high
@@ -8315,10 +8311,7 @@
           entity_id: input_boolean.duschsekvens_giltig
       - action: notify.mobile_app_ilias_s23_ultra
         data:
-          message: "{% if was_kandidat %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
-            duschar.\n\nTid sedan start: {{ elapsed_text }}.\n\nBekräftat via fuktökning
-            (öppen duschdörr).\n\n{% else %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
-            duschar.\n\nBekräftat via fuktökning (öppen duschdörr).\n\n{% endif %}"
+          message: "{% set vem = states('input_select.badrummet_vem') %}{% set namn = vem if vem in ['Anna', 'Erik', 'Ilias'] else 'Någon' %}{% if was_kandidat %}HEMMET {{ now().strftime('%R') }}:\n\n{{ namn }} duschar.\n\nTid sedan start: {{ elapsed_text }}.\n\nBekräftat via fuktökning (öppen duschdörr).\n\n{% else %}HEMMET {{ now().strftime('%R') }}:\n\n{{ namn }} duschar.\n\nBekräftat via fuktökning (öppen duschdörr).\n\n{% endif %}"
           data:
             ttl: 0
             priority: high
@@ -8382,10 +8375,7 @@
           entity_id: input_boolean.duschsekvens_giltig
       - action: notify.mobile_app_ilias_s23_ultra
         data:
-          message: "{% if was_kandidat %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
-            duschar.\n\nTid sedan start: {{ elapsed_text }}.\n\nBekräftat via kraftig
-            fuktökning.\n\n{% else %}\nHEMMET {{ now().strftime('%R') }}:\n\nNågon
-            duschar.\n\nBekräftat via kraftig fuktökning.\n\n{% endif %}"
+          message: "{% set vem = states('input_select.badrummet_vem') %}{% set namn = vem if vem in ['Anna', 'Erik', 'Ilias'] else 'Någon' %}{% if was_kandidat %}HEMMET {{ now().strftime('%R') }}:\n\n{{ namn }} duschar.\n\nTid sedan start: {{ elapsed_text }}.\n\nBekräftat via kraftig fuktökning.\n\n{% else %}HEMMET {{ now().strftime('%R') }}:\n\n{{ namn }} duschar.\n\nBekräftat via kraftig fuktökning.\n\n{% endif %}"
           data:
             ttl: 0
             priority: high
@@ -8437,13 +8427,7 @@
           entity_id: input_boolean.duschsekvens_giltig
       - action: notify.mobile_app_ilias_s23_ultra
         data:
-          message: 'HEMMET {{ now().strftime(''%R'') }}:
-
-            Någon duschar.
-
-            Bekräftat via fukt och duschdörrssekvens.
-
-            '
+          message: "{% set vem = states('input_select.badrummet_vem') %}{% set namn = vem if vem in ['Anna', 'Erik', 'Ilias'] else 'Någon' %}HEMMET {{ now().strftime('%R') }}:\n\n{{ namn }} duschar.\n\nBekräftat via fukt och duschdörrssekvens.\n\n"
           data:
             ttl: 0
             priority: high
@@ -8489,13 +8473,7 @@
           entity_id: input_boolean.duschsekvens_giltig
       - action: notify.mobile_app_ilias_s23_ultra
         data:
-          message: 'HEMMET {{ now().strftime(''%R'') }}:
-
-            Någon duschar.
-
-            Tid sedan start: {{ elapsed_text }}.
-
-            '
+          message: "{% set vem = states('input_select.badrummet_vem') %}{% set namn = vem if vem in ['Anna', 'Erik', 'Ilias'] else 'Någon' %}HEMMET {{ now().strftime('%R') }}:\n\n{{ namn }} duschar.\n\nTid sedan start: {{ elapsed_text }}.\n\n"
           data:
             ttl: 0
             priority: high
@@ -8559,13 +8537,7 @@
           sequence:
           - action: notify.mobile_app_ilias_s23_ultra
             data:
-              message: 'HEMMET {{ now().strftime(''%R'') }}:
-
-                Någon har duschat klart.
-
-                Total tid: {{ elapsed_text }}.
-
-                '
+              message: "{% set vem = states('input_select.badrummet_vem') %}{% set namn = vem if vem in ['Anna', 'Erik', 'Ilias'] else 'Någon' %}HEMMET {{ now().strftime('%R') }}:\n\n{{ namn }} har duschat klart.\n\nTotal tid: {{ elapsed_text }}.\n\n"
               data:
                 ttl: 0
                 priority: high
