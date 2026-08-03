@@ -5063,6 +5063,10 @@
                   {{ person }} har åkt ifrån Stefan
                 {%- elif to_slug == 'not_home' and from_slug == 'elins_jobb' -%}
                   {{ person }} har lämnat Elins jobb
+                {%- elif to_slug == 'not_home' and from_slug == 'visby' -%}
+                  {{ person }} har lämnat Visby
+                {%- elif to_slug == 'not_home' and from_slug == 'gotlandslagret' -%}
+                  {{ person }} har lämnat Gotlandslägret
                 {%- elif to_slug == 'home' -%}
                   {{ person }} är hemma
                 {%- elif to_slug == 'annas_jobb' -%}
@@ -5151,6 +5155,10 @@
                   {{ person }} är hos Stefan
                 {%- elif to_slug == 'elins_jobb' -%}
                   {{ person }} är på Elins jobb
+                {%- elif to_slug == 'visby' -%}
+                  {{ person }} är i Visby
+                {%- elif to_slug == 'gotlandslagret' -%}
+                  {{ person }} är på Gotlandslägret
                 {%- else -%}
                   {{ person }} platsändring ({{ from_slug }} → {{ to_slug }})
                 {%- endif -%}
