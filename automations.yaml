@@ -98,14 +98,14 @@
     below: 2000
   - trigger: state
     entity_id:
-    - person.ilias_bennani
-    - person.anna_bennani
-    to: home
+    - sensor.ilias_aktiv_zon
+    - sensor.anna_aktiv_zon
+    to: zone.home
   - trigger: state
     entity_id:
-    - person.ilias_bennani
-    - person.anna_bennani
-    from: home
+    - sensor.ilias_aktiv_zon
+    - sensor.anna_aktiv_zon
+    from: zone.home
     for: 00:02:00
   - trigger: state
     entity_id:
@@ -137,8 +137,8 @@
         not in _bad else none %}\n{% set t_natt_lediga = states('input_datetime.huset_nattid_lediga')
         %} {% set nattid_lediga_ts = as_timestamp(today_at(t_natt_lediga)) if t_natt_lediga
         not in _bad else none %}\n{% set ljusstyrka_framsidan = states('sensor.utomhus_framsidan_ljusstyrka')
-        | int(0) %}\n{% set ilias_hemma = is_state('person.ilias_bennani','home')
-        %} {% set anna_hemma  = is_state('person.anna_bennani','home') %} {% set någon_hemma
+        | int(0) %}\n{% set ilias_hemma = is_state('sensor.ilias_aktiv_zon','zone.home')
+        %} {% set anna_hemma  = is_state('sensor.anna_aktiv_zon','zone.home') %} {% set någon_hemma
         = ilias_hemma or anna_hemma %}\n{% set ilias_mobil_laddar = is_state('sensor.ilias_s23_ultra_charger_type','ac')
         %} {% set annas_mobil_laddar = is_state('sensor.anna_s22_ultra_charger_type','ac')
         %}\n{# Robust hantering av laddvillkor beroende på vem som är hemma #} {%
@@ -501,8 +501,8 @@
     - binary_sensor.skafferidorren
   condition:
   - condition: template
-    value_template: "{{    not is_state(\"device_tracker.ilias_s23_ultra\",\"home\")\n
-      \ and not is_state(\"person.anna_bennani\",\"home\") \n  and not trigger.to_state.attributes.friendly_name
+    value_template: "{{    not is_state(\"sensor.ilias_aktiv_zon\",\"zone.home\")\n
+      \ and not is_state(\"sensor.anna_aktiv_zon\",\"zone.home\") \n  and not trigger.to_state.attributes.friendly_name
       == \"None\" \n  and not trigger.to_state.attributes.friendly_name == \"False\"
       }}\n"
   action:
@@ -782,7 +782,7 @@
       option: "{% if (states(\"sensor.time\") == \"06:00\" or states(\"sensor.time\")
         == \"07:00\") \n      and now().strftime('%u') | int(default=0) in [1,2,3,4,5]
         \n      and states(\"sensor.utomhus_baksidan_ljusstyrka\") | int(default =
-        0) < 2000 %}\n  {% if is_state(\"device_tracker.annelies_iphone\", \"home\")
+        0) < 2000 %}\n  {% if is_state(\"sensor.isabelle_aktiv_zon\", \"zone.home\")
         %} {{ states('input_select.ilias_rum_belysning') }}\n  {% elif is_state(\"sensor.ilias_s23_ultra_charger_type\",
         \"ac\") %} Lamporna i fönstret\n  {% else %} Tänt\n  {% endif %}\n{% else
         %} {{ states('input_select.ilias_rum_belysning') }} {% endif %}\n"
@@ -1235,7 +1235,7 @@
     id: door_ding
   conditions:
   - condition: template
-    value_template: "{{ is_state('person.erik_bennani', 'home')\n   and not is_state('input_select.house_time_modes',
+    value_template: "{{ is_state('sensor.erik_aktiv_zon', 'zone.home')\n   and not is_state('input_select.house_time_modes',
       'Natt')\n   and is_state('input_boolean.gaster_hemma', 'off')\n   and is_state('var.morgoninfo_koket_redan_upplast',
       'true') }}"
   actions:
@@ -1888,8 +1888,8 @@
   mode: restart
   triggers:
     trigger: template
-    value_template: '{{ is_state("group.rorelse_i_vardagsrummet","on")  and is_state("zone.home","1")
-      and state_attr("zone.home","persons")[0] == "person.ilias_bennani"  and states("input_select.house_time_modes")
+    value_template: '{{ is_state("group.rorelse_i_vardagsrummet","on")  and is_state("sensor.ilias_aktiv_zon","zone.home")
+      and not is_state("sensor.anna_aktiv_zon","zone.home") and not is_state("sensor.erik_aktiv_zon","zone.home") and not is_state("sensor.isabelle_aktiv_zon","zone.home")  and states("input_select.house_time_modes")
       in ["Morgon","Dag"] and is_state("input_boolean.stadning_pagar","off") and is_state("input_boolean.gaster_hemma","off")
       and states("sensor.utomhus_framsidan_ljusstyrka") | int(default = 0) < 13000
       }}
@@ -1953,7 +1953,7 @@
   - trigger: template
     id: TändRörelseNärHemma
     value_template: "{{ is_state('binary_sensor.nedre_trappan_rorelse','on')\n   and
-      is_state('zone.home','1')\n   and is_state('person.ilias_bennani','home') }}"
+      is_state('zone.home','1')\n   and is_state('sensor.ilias_aktiv_zon','zone.home') }}"
   - trigger: state
     id: Städning
     entity_id: input_boolean.stadning_pagar
@@ -2215,7 +2215,7 @@
   - trigger: template
     value_template: "{{ is_state(\"binary_sensor.wc_rorelse\",\"on\")\n   and is_state(\"binary_sensor.wc_dorr\",\"on\")\n
       \  and (states.binary_sensor.wc_rorelse.last_changed > states.binary_sensor.wc_dorr.last_changed)\n
-      \  and (not is_state(\"person.anna_bennani\",\"home\")\n        or is_state(\"input_boolean.gaster_hemma\",\"on\")\n
+      \  and (not is_state(\"sensor.anna_aktiv_zon\",\"zone.home\")\n        or is_state(\"input_boolean.gaster_hemma\",\"on\")\n
       \       or is_state(\"input_select.house_time_modes\",\"Kväll\")) }}\n"
     id: motion_on
   - trigger: template
@@ -3547,10 +3547,12 @@
       in [\"Morgon\",\"Dag\",\"Kväll\"] %} {% set gaster_borta = is_state(\"input_boolean.gaster_hemma\",
       \"off\") %} {% set vacation_mode = ( is_state(\"input_boolean.vacation_mode\",
       \"off\") or \n                        (\n                            is_state(\"input_boolean.vacation_mode\",
-      \"on\") and \n                            is_state(\"zone.home\", \"1\") and
-      \n                            state_attr(\"zone.home\", \"persons\")[0] == \"person.ilias_bennani\"\n
-      \                       )) %}\n{% set annelies_iphone_borta = not is_state(\"device_tracker.annelies_iphone\",
-      \"home\") %} {% set nagon_ar_hemma = not is_state(\"zone.home\", \"0\") %} {%
+      \"on\") and \n                            is_state(\"sensor.ilias_aktiv_zon\", \"zone.home\") and\n
+      \                           not is_state(\"sensor.anna_aktiv_zon\", \"zone.home\") and\n
+      \                           not is_state(\"sensor.erik_aktiv_zon\", \"zone.home\") and\n
+      \                           not is_state(\"sensor.isabelle_aktiv_zon\", \"zone.home\")\n
+      \                       )) %}\n{% set annelies_iphone_borta = not is_state(\"sensor.isabelle_aktiv_zon\",
+      \"zone.home\") %} {% set nagon_ar_hemma = not is_state(\"zone.home\", \"0\") %} {%
       set googlehome_fritt = not is_state(\"media_player.googlehome_ilias_rum\",
       \"playing\") %}\n{{ kvart and giltig_tid and gaster_borta and vacation_mode
       and annelies_iphone_borta and nagon_ar_hemma and googlehome_fritt }}\n"
@@ -3560,18 +3562,10 @@
       entity_id: script.las_upp_tiden
     data:
       variables:
-        hogtalare: "{% if is_state(\"zone.home\",\"1\")\n  and state_attr(\"zone.home\",\"persons\")[0]
-          == \"person.ilias_bennani\" %} \n  {% set vem_ar_hemma = \"ilias\" %}\n{%
-          elif states(\"zone.home\") | int > 1 \n  and states(\"device_tracker.ilias_s23_ultra\")
-          == \"home\" %}\n  {% set vem_ar_hemma = \"flera\" %}\n{% else %}\n  {% set
-          vem_ar_hemma = \"ointressant\" %}\n{% endif %} {% if vem_ar_hemma == \"ilias\"
+        hogtalare: "{% set familj_hemma = [\n  is_state('sensor.ilias_aktiv_zon', 'zone.home'),\n  is_state('sensor.anna_aktiv_zon', 'zone.home'),\n  is_state('sensor.erik_aktiv_zon', 'zone.home'),\n  is_state('sensor.isabelle_aktiv_zon', 'zone.home')\n] | select('true') | list | count %}\n{% if familj_hemma == 1 and is_state('sensor.ilias_aktiv_zon', 'zone.home') %}\n  {% set vem_ar_hemma = \"ilias\" %}\n{% elif familj_hemma > 1 and is_state('sensor.ilias_aktiv_zon', 'zone.home') %}\n  {% set vem_ar_hemma = \"flera\" %}\n{% else %}\n  {% set vem_ar_hemma = \"ointressant\" %}\n{% endif %} {% if vem_ar_hemma == \"ilias\"
           \n  and is_state(\"input_boolean.stadning_pagar\",\"off\") %} media_player.googlehome_alla_puckar
           \n{% else %} media_player.googlehome_ilias_rum {% endif %}\n"
-        volym: "{% if is_state(\"zone.home\",\"1\")\n  and state_attr(\"zone.home\",\"persons\")[0]
-          == \"person.ilias_bennani\" %} \n  {% set vem_ar_hemma = \"ilias\" %}\n{%
-          elif states(\"zone.home\") | int > 1 \n  and states(\"device_tracker.ilias_s23_ultra\")
-          == \"home\" %}\n  {% set vem_ar_hemma = \"flera\" %}\n{% else %}\n  {% set
-          vem_ar_hemma = \"ointressant\" %}\n{% endif %} {% if vem_ar_hemma == \"ilias\"
+        volym: "{% set familj_hemma = [\n  is_state('sensor.ilias_aktiv_zon', 'zone.home'),\n  is_state('sensor.anna_aktiv_zon', 'zone.home'),\n  is_state('sensor.erik_aktiv_zon', 'zone.home'),\n  is_state('sensor.isabelle_aktiv_zon', 'zone.home')\n] | select('true') | list | count %}\n{% if familj_hemma == 1 and is_state('sensor.ilias_aktiv_zon', 'zone.home') %}\n  {% set vem_ar_hemma = \"ilias\" %}\n{% elif familj_hemma > 1 and is_state('sensor.ilias_aktiv_zon', 'zone.home') %}\n  {% set vem_ar_hemma = \"flera\" %}\n{% else %}\n  {% set vem_ar_hemma = \"ointressant\" %}\n{% endif %} {% if vem_ar_hemma == \"ilias\"
           %} 0.15 {% else %} 0.10 {% endif %}\n"
 - alias: 'Google home: Läs upp tiden på morgonen i alla högtalare om Erik är ensam
     hemma.'
@@ -3587,8 +3581,8 @@
       \n                                \"08:30\", \n                                \"08:40\",
       \n                                \"08:50\", \n                                \"09:00\",
       \n                                \"09:10\", \n                                \"09:20\",
-      \n                                \"09:30\"] \n    and is_state(\"zone.home\",\"1\")\n
-      \   and is_state(\"device_tracker.erik_s23\", \"home\")\n    and is_state(\"input_boolean.gaster_hemma\",
+      \n                                \"09:30\"] \n    and is_state(\"sensor.erik_aktiv_zon\",\"zone.home\")\n
+      \   and not is_state(\"sensor.ilias_aktiv_zon\",\"zone.home\")\n    and not is_state(\"sensor.anna_aktiv_zon\",\"zone.home\")\n    and not is_state(\"sensor.isabelle_aktiv_zon\",\"zone.home\")\n    and is_state(\"input_boolean.gaster_hemma\",
       \"off\")\n    and is_state(\"input_boolean.stadning_pagar\", \"off\")\n    and
       not is_state(\"media_player.googlehome_eriks_rum\", \"playing\") }}\n"
   action:
@@ -4245,6 +4239,8 @@
     - input_boolean.stadning_pagar
     - input_boolean.julbelysning
     - input_boolean.gaster_hemma
+    - sensor.ilias_aktiv_zon
+    - sensor.isabelle_aktiv_zon
     id: context_state_change
   - trigger: numeric_state
     entity_id: sensor.utomhus_framsidan_ljusstyrka
@@ -4262,7 +4258,7 @@
     value_template: '{{ (as_timestamp(now()) - as_timestamp(states(''sensor.time_online'')
       | default(now()))) > 60 }}'
   actions:
-  - wait_template: "{{ states('person.isabelle_sovig') not in ['unknown', 'unavailable',
+  - wait_template: "{{ states('sensor.isabelle_aktiv_zon') not in ['unknown', 'unavailable',
       'none', '']\n   and states('input_select.house_time_modes') not in ['unknown',
       'unavailable', 'none', ''] }}"
     timeout: 00:00:10
@@ -4271,15 +4267,15 @@
       huslage: '{{ states(''input_select.house_time_modes'') | trim }}'
       utomhus_ljus: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
       gaster_hemma: '{{ is_state(''input_boolean.gaster_hemma'', ''on'') }}'
-      isabelle_hemma: '{{ is_state(''person.isabelle_sovig'', ''home'') }}'
-      ilias_hemma: '{{ is_state(''person.ilias_bennani'', ''home'') }}'
+      isabelle_hemma: '{{ is_state(''sensor.isabelle_aktiv_zon'', ''zone.home'') }}'
+      ilias_hemma: '{{ is_state(''sensor.ilias_aktiv_zon'', ''zone.home'') }}'
       laddare_typ: '{{ states(''sensor.ilias_s23_ultra_charger_type'') | trim | lower
         }}'
       julbelysning: '{{ is_state(''input_boolean.julbelysning'', ''on'') }}'
       stadning: '{{ is_state(''input_boolean.stadning_pagar'', ''on'') }}'
       morgoninfo_redan_upplast: '{{ is_state(''var.morgoninfo_koket_redan_upplast'',
         ''true'') }}'
-      system_ready: '{{ states(''person.isabelle_sovig'') not in [''unknown'', ''unavailable'']
+      system_ready: '{{ states(''sensor.isabelle_aktiv_zon'') not in [''unknown'', ''unavailable'']
         and states(''zone.home'') not in [''unknown'', ''unavailable''] }}'
   - variables:
       ac_ska_slacka_ilias_rum: "{% set tid = now().strftime('%H:%M') %} {% set
@@ -4417,7 +4413,7 @@
       id: fjarr_annas_rum
   - trigger: state
     id: anna_state
-    entity_id: person.anna_bennani
+    entity_id: sensor.anna_aktiv_zon
   - trigger: numeric_state
     id: lux_above_2000
     entity_id: sensor.utomhus_baksidan_ljusstyrka
@@ -4436,7 +4432,7 @@
       mode_house: '{{ states(''input_select.house_time_modes'') }}'
       current: '{{ states(''input_select.annas_rum_belysning'') }}'
       jul: '{{ is_state(''input_boolean.julbelysning'', ''on'') }}'
-      anna_home: '{{ is_state(''person.anna_bennani'', ''home'') }}'
+      anna_home: '{{ is_state(''sensor.anna_aktiv_zon'', ''zone.home'') }}'
       ev: '{{ trigger.event.data.event | int(0) if trigger.id == ''remote'' else 0
         }}'
   - choose:
@@ -4513,7 +4509,7 @@
   id: 015091598558904098dg498fsf890dgdgr
   triggers:
   - trigger: state
-    entity_id: person.anna_bennani
+    entity_id: sensor.anna_aktiv_zon
   - trigger: state
     entity_id: input_select.house_time_modes
   action:
@@ -4522,7 +4518,7 @@
     target:
       entity_id: input_select.annas_rum_belysning
     data:
-      option: "{% set anna_home = is_state('person.anna_bennani', 'home') %} {% set
+      option: "{% set anna_home = is_state('sensor.anna_aktiv_zon', 'zone.home') %} {% set
         time_mode_day = is_state('input_select.house_time_modes', 'Dag') %} {% set
         light_intensity_high = states('sensor.utomhus_framsidan_ljusstyrka')|float
         >= 2000 %} {% set vakna = states(\"var.morgoninfo_koket_redan_upplast\") ==
@@ -4609,14 +4605,12 @@
       id: fjarr_2_eriks_rum
   - id: erik_home
     trigger: state
-    entity_id: person.erik_bennani
-    from: not_home
-    to: home
+    entity_id: sensor.erik_aktiv_zon
+    to: zone.home
   - id: erik_away
     trigger: state
-    entity_id: person.erik_bennani
-    from: home
-    to: not_home
+    entity_id: sensor.erik_aktiv_zon
+    from: zone.home
   actions:
   - variables:
       house_mode: '{{ states(''input_select.house_time_modes'') }}'
@@ -5734,12 +5728,10 @@
     from: 'off'
     to: 'on'
   condition:
-  - condition: state
-    entity_id: person.anna_bennani
-    state: not_home
-  - condition: state
-    entity_id: device_tracker.ilias_s23_ultra
-    state: not_home
+  - condition: template
+    value_template: '{{ not is_state("sensor.anna_aktiv_zon", "zone.home") }}'
+  - condition: template
+    value_template: '{{ not is_state("sensor.ilias_aktiv_zon", "zone.home") }}'
   - condition: state
     entity_id: input_boolean.stadning_pagar
     state: 'off'
@@ -5762,12 +5754,10 @@
     from: 'off'
     to: 'on'
   condition:
-  - condition: state
-    entity_id: person.anna_bennani
-    state: not_home
-  - condition: state
-    entity_id: device_tracker.ilias_s23_ultra
-    state: not_home
+  - condition: template
+    value_template: '{{ not is_state("sensor.anna_aktiv_zon", "zone.home") }}'
+  - condition: template
+    value_template: '{{ not is_state("sensor.ilias_aktiv_zon", "zone.home") }}'
   action:
   - action: notify.foraldrar
     data:
@@ -5792,8 +5782,8 @@
   condition:
   - condition: template
     value_template: '{{  is_state("input_boolean.stadning_pagar","off")   and not
-      is_state("device_tracker.ilias_s23_ultra", "home")  and not is_state("person.anna_bennani",
-      "home") }}
+      is_state("sensor.ilias_aktiv_zon", "zone.home")  and not is_state("sensor.anna_aktiv_zon",
+      "zone.home") }}
 
       '
   action:
@@ -6329,7 +6319,7 @@
     entity_id: zone.home
     id: albin_narvaro_total_andrad_v2
   - trigger: state
-    entity_id: device_tracker.erik_s23
+    entity_id: sensor.erik_aktiv_zon
     id: albin_narvaro_erik_andrad_v2
   - trigger: state
     entity_id: input_boolean.gaster_hemma
@@ -6352,9 +6342,8 @@
         target:
           entity_id: cover.rullgardin_eriks_rum
     - conditions:
-      - condition: state
-        entity_id: device_tracker.erik_s23
-        state: not_home
+      - condition: template
+        value_template: '{{ not is_state("sensor.erik_aktiv_zon", "zone.home") }}'
       sequence:
       - action: cover.open_cover
         target:
@@ -6365,7 +6354,7 @@
   triggers:
   - trigger: template
     value_template: '{{ is_state("binary_sensor.ilias_skrivbord_rorelse","on")
-      and is_state("zone.home","1")  and state_attr("zone.home","persons")[0] == "person.ilias_bennani"  and
+      and is_state("sensor.ilias_aktiv_zon","zone.home")  and not is_state("sensor.anna_aktiv_zon","zone.home") and not is_state("sensor.erik_aktiv_zon","zone.home") and not is_state("sensor.isabelle_aktiv_zon","zone.home")  and
       is_state("input_boolean.stadning_pagar","off")  and is_state("input_boolean.gaster_hemma","off")
       and states("input_select.house_time_modes") in ["Morgon","Dag"]  }}
 
@@ -6786,9 +6775,9 @@
       (as_timestamp(now()) - as_timestamp(states.binary_sensor.hallen_rorelse.last_changed))
       | int(default = 0) > (3 * 60)\n  and is_state(\"binary_sensor.ytterdorren\",
       \"on\") \n    and (as_timestamp(now()) - as_timestamp(states.binary_sensor.ytterdorren.last_changed))
-      | int(default = 0) > (3 * 60))\n  and not is_state(\"device_tracker.ilias_s23_ultra\",
-      \"home\")\n  and not is_state(\"person.anna_bennani\", \"home\")\n  and is_state(\"device_tracker.erik_s23\",
-      \"home\") }}"
+      | int(default = 0) > (3 * 60))\n  and not is_state(\"sensor.ilias_aktiv_zon\",
+      \"zone.home\")\n  and not is_state(\"sensor.anna_aktiv_zon\", \"zone.home\")\n  and is_state(\"sensor.erik_aktiv_zon\",
+      \"zone.home\") }}"
   action:
   - action: homeassistant.turn_on
     entity_id: siren.brandvarnare_ovre_trappan
@@ -7275,11 +7264,12 @@
   id: asdfasdf94044130669404413066499
   triggers:
   - trigger: state
-    entity_id: device_tracker.ilias_s23_ultra
+    entity_id: sensor.ilias_aktiv_zon
   condition:
     condition: template
-    value_template: "{{    is_state(\"device_tracker.ilias_s23_ultra\",\"home\") \n
-      \ and trigger.to_state.state == \"home\" \n  and trigger.to_state.state != trigger.from_state.state\n
+    value_template: "{{    is_state(\"sensor.ilias_aktiv_zon\",\"zone.home\") \n
+      \ and trigger.to_state.state == \"zone.home\" \n  and trigger.from_state.state != trigger.to_state.state\n
+      \ and trigger.from_state.state not in ['zone.home', 'unknown', 'unavailable', 'none']\n
       \ and is_state(\"lock.ytterdorr\",\"locked\") }}\n"
   action:
   - action: notify.mobile_app_ilias_s23_ultra
@@ -7330,11 +7320,12 @@
   id: asdfasdf94044130669404413066000
   triggers:
   - trigger: state
-    entity_id: device_tracker.annelies_iphone
+    entity_id: sensor.isabelle_aktiv_zon
   condition:
     condition: template
-    value_template: "{{    is_state(\"device_tracker.annelies_iphone\",\"home\") \n
-      \ and trigger.to_state.state == \"home\" \n  and trigger.to_state.state != trigger.from_state.state\n
+    value_template: "{{    is_state(\"sensor.isabelle_aktiv_zon\",\"zone.home\") \n
+      \ and trigger.to_state.state == \"zone.home\" \n  and trigger.to_state.state != trigger.from_state.state\n
+      \ and trigger.from_state.state not in ['zone.home', 'unknown', 'unavailable', 'none']\n
       \ and is_state(\"lock.ytterdorr\",\"locked\") }}\n"
   action:
   - action: notify.mobile_app_ashers_iphone
