@@ -58,7 +58,7 @@ resources:
   type: module
 - url: /local/sl-departure-list-animation.js?v=20260729x
   type: module
-- url: /local/sl-nearby-card.js?v=20260729x
+- url: /local/sl-nearby-card.js?v=20260803a
   type: module
 - url: /local/sl-stop-departures-card.js?v=20260729x
   type: module
@@ -6570,7 +6570,6 @@ views:
       grid_options:
         columns: full
     - type: custom:sl-nearby-card
-      location_entity: person.ilias_bennani
       home_zone_entity: zone.home
       reference_lat: 59.331136036994
       reference_lon: 18.0576584245687

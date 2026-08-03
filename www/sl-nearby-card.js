@@ -1,11 +1,10 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729x";
+    return "20260803a";
   }
 
   static getStubConfig() {
     return {
-      location_entity: "person.ilias_bennani",
       home_zone_entity: "zone.home",
       reference_lat: 59.331136036994,
       reference_lon: 18.0576584245687,
@@ -17,7 +16,8 @@ class SlNearbyCard extends HTMLElement {
       show_time_always: true,
       language: "sv-SE",
       refresh_seconds: 15,
-      sites_cache_version: "20260729x",
+      location_refresh_seconds: 15,
+      sites_cache_version: "20260803a",
     };
   }
 
@@ -52,10 +52,19 @@ class SlNearbyCard extends HTMLElement {
 
   set hass(hass) {
     this._ensureCaches();
+    const prevLocationKey = this._locationKey;
     this._hass = hass;
+    const nextLocationKey = this._getLocationKey();
+    this._locationKey = nextLocationKey;
+    if (prevLocationKey !== undefined && prevLocationKey !== nextLocationKey) {
+      this._departureCache.clear();
+      this._openSiteId = null;
+      this._lastListKey = null;
+    }
     this._ensureBusLineTerminusLabels();
     this._updateView();
     this._syncRefreshTimer();
+    this._syncLocationRefreshTimer();
   }
 
   _ensureBusLineTerminusLabels() {
@@ -92,10 +101,21 @@ class SlNearbyCard extends HTMLElement {
     }
     this._ensureModalStyles();
     this._ensureSitesLoaded().then(() => this._updateView());
+    this._ensureVisibilityObserver();
     this._syncRefreshTimer();
   }
 
   disconnectedCallback() {
+    if (this._locationRefreshTimer) {
+      clearInterval(this._locationRefreshTimer);
+      this._locationRefreshTimer = undefined;
+    }
+    if (this._visibilityObserver) {
+      this._visibilityObserver.disconnect();
+      this._visibilityObserver = undefined;
+    }
+    this._locationRefreshActive = false;
+    this._isVisible = false;
     if (this._refreshTimer) {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
@@ -233,6 +253,151 @@ class SlNearbyCard extends HTMLElement {
     return { lat: lat, lon: lon };
   }
 
+  _resolveLoggedInPersonEntity() {
+    if (!this._hass || !this._hass.user || !this._hass.user.id) {
+      return null;
+    }
+    const userId = this._hass.user.id;
+    const states = this._hass.states;
+    const ids = Object.keys(states);
+    for (let i = 0; i < ids.length; i++) {
+      const entityId = ids[i];
+      if (!entityId.startsWith("person.")) {
+        continue;
+      }
+      const state = states[entityId];
+      if (state && state.attributes && state.attributes.user_id === userId) {
+        return entityId;
+      }
+    }
+    return null;
+  }
+
+  _getLocationEntity() {
+    return this._resolveLoggedInPersonEntity();
+  }
+
+  _getLocationLabel() {
+    const entityId = this._getLocationEntity();
+    if (!entityId || !this._hass || !this._hass.states[entityId]) {
+      return entityId || "okänd användare";
+    }
+    return this._hass.states[entityId].attributes.friendly_name || entityId;
+  }
+
+  _getLocationKey() {
+    const entityId = this._getLocationEntity();
+    if (!entityId) {
+      return "none";
+    }
+    const coords = this._readCoords(entityId);
+    if (!coords) {
+      return entityId + ":none";
+    }
+    return entityId + ":" + coords.lat.toFixed(4) + "," + coords.lon.toFixed(4);
+  }
+
+  _notifyServiceForPerson(personEntityId) {
+    if (!personEntityId || !this._hass) {
+      return null;
+    }
+    const person = this._hass.states[personEntityId];
+    if (!person || !person.attributes) {
+      return null;
+    }
+    const candidates = [];
+    const source = person.attributes.source;
+    if (source && String(source).indexOf("device_tracker.") === 0) {
+      candidates.push(source);
+    }
+    const trackers = person.attributes.device_trackers || [];
+    for (let i = 0; i < trackers.length; i++) {
+      if (candidates.indexOf(trackers[i]) < 0) {
+        candidates.push(trackers[i]);
+      }
+    }
+    for (let j = 0; j < candidates.length; j++) {
+      const suffix = String(candidates[j]).replace(/^device_tracker\./, "");
+      if (suffix) {
+        return "mobile_app_" + suffix;
+      }
+    }
+    return null;
+  }
+
+  _requestLocationUpdate() {
+    if (!this._hass) {
+      return;
+    }
+    const personEntity = this._getLocationEntity();
+    const service = this._notifyServiceForPerson(personEntity);
+    if (!service) {
+      return;
+    }
+    this._hass
+      .callService("notify", service, {
+        message: "request_location_update",
+      })
+      .catch(function () {
+        /* telefonen kanske inte är tillgänglig */
+      });
+  }
+
+  _ensureVisibilityObserver() {
+    if (this._visibilityObserver || typeof IntersectionObserver === "undefined") {
+      if (!this._visibilityObserver) {
+        this._isVisible = true;
+        this._syncLocationRefreshTimer();
+      }
+      return;
+    }
+    const self = this;
+    this._visibilityObserver = new IntersectionObserver(
+      function (entries) {
+        const visible = entries.some(function (entry) {
+          return entry.isIntersecting && entry.intersectionRatio > 0;
+        });
+        if (self._isVisible === visible) {
+          return;
+        }
+        self._isVisible = visible;
+        self._syncLocationRefreshTimer();
+      },
+      { threshold: [0, 0.01] },
+    );
+    this._visibilityObserver.observe(this);
+  }
+
+  _syncLocationRefreshTimer() {
+    const seconds = Number((this.config && this.config.location_refresh_seconds) || 15);
+    if (this._locationRefreshTimer) {
+      clearInterval(this._locationRefreshTimer);
+      this._locationRefreshTimer = undefined;
+    }
+
+    const shouldRun = !!(this._isVisible && this._hass);
+    if (!shouldRun) {
+      this._locationRefreshActive = false;
+      return;
+    }
+
+    const justBecameVisible = !this._locationRefreshActive;
+    this._locationRefreshActive = true;
+
+    if (justBecameVisible) {
+      this._requestLocationUpdate();
+    }
+
+    if (!seconds || seconds < 5) {
+      return;
+    }
+
+    const self = this;
+    this._locationRefreshTimer = window.setInterval(function () {
+      self._requestLocationUpdate();
+    }, seconds * 1000);
+  }
+
   _getReferenceLocation() {
     const lat = Number(this.config.reference_lat);
     const lon = Number(this.config.reference_lon);
@@ -243,7 +408,8 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _getSearchLocation() {
-    const personLoc = this._readCoords(this.config.location_entity);
+    const locationEntity = this._getLocationEntity();
+    const personLoc = locationEntity ? this._readCoords(locationEntity) : null;
     const homeLoc = this._readCoords(this.config.home_zone_entity);
     const refLoc = this._getReferenceLocation();
     const maxDistanceM = Number(this.config.max_gps_km || 200) * 1000;
@@ -1909,6 +2075,7 @@ class SlNearbyCard extends HTMLElement {
       this._lastListKey = null;
     }
 
+    const locationEntity = this._getLocationEntity();
     const location = this._getSearchLocation();
     const stops = this._getNearestStops();
     let body = "";
@@ -1917,10 +2084,13 @@ class SlNearbyCard extends HTMLElement {
       body = '<div class="status-message error">' + this._escapeHtml(this._sitesError) + "</div>";
     } else if (!this._sites) {
       body = '<div class="status-message">Laddar hållplatser…</div>';
+    } else if (!locationEntity) {
+      body =
+        '<div class="status-message">Ingen person entitet kopplad till ditt Home Assistant-konto.</div>';
     } else if (!location) {
       body =
         '<div class="status-message">Ingen GPS-position från ' +
-        this._escapeHtml(this.config.location_entity) +
+        this._escapeHtml(this._getLocationLabel()) +
         ".</div>";
     } else if (!stops.length) {
       body = '<div class="status-message">Inga hållplatser hittades.</div>';
