@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260803b";
+    return "20260803c";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260803b",
+      sites_cache_version: "20260803c",
     };
   }
 
@@ -507,7 +507,17 @@ class SlNearbyCard extends HTMLElement {
     const hours = Math.floor(totalSec / 3600);
     const minutes = Math.floor((totalSec % 3600) / 60);
     const seconds = totalSec % 60;
-    return hours + " tim " + minutes + " min " + seconds + " sek";
+    const parts = [];
+    if (hours > 0) {
+      parts.push(hours + " tim");
+    }
+    if (minutes > 0) {
+      parts.push(minutes + " min");
+    }
+    if (seconds > 0 || !parts.length) {
+      parts.push(seconds + " sek");
+    }
+    return parts.join(" ");
   }
 
   _getGpsStatusText() {
@@ -519,6 +529,23 @@ class SlNearbyCard extends HTMLElement {
       return "GPS uppdaterades senast — ingen position ännu";
     }
     return "GPS uppdaterades senast " + this._formatGpsAge(ms) + " sedan";
+  }
+
+  _ensureGpsStatusElement(root) {
+    if (!root) {
+      return;
+    }
+    let el = root.querySelector(".gps-status");
+    if (!el) {
+      root.insertAdjacentHTML(
+        "afterbegin",
+        '<div class="gps-status">' + this._escapeHtml(this._getGpsStatusText()) + "</div>",
+      );
+      el = root.querySelector(".gps-status");
+    }
+    if (el) {
+      el.textContent = this._getGpsStatusText();
+    }
   }
 
   _updateGpsStatusDisplay() {
@@ -2245,7 +2272,7 @@ class SlNearbyCard extends HTMLElement {
         })
         .join(",");
     if (this._lastListKey === listKey && this.querySelector(".stop-accordion")) {
-      this._updateGpsStatusDisplay();
+      this._ensureGpsStatusElement(root);
       for (let i = 0; i < stops.length; i++) {
         const distEl = root.querySelector(
           '.stop-accordion[data-site-id="' + stops[i].id + '"] .stop-distance',
@@ -2276,7 +2303,7 @@ class SlNearbyCard extends HTMLElement {
       ":host{display:block;width:100%}",
       "ha-card{padding:0 0 12px;width:100%;box-sizing:border-box;display:block}",
       ".sl-card-root{width:100%;box-sizing:border-box}",
-      ".gps-status{padding:10px 16px 12px;font-size:.85rem;color:var(--secondary-text-color);border-bottom:1px solid var(--divider-color,rgba(255,255,255,.12))}",
+      ".gps-status{padding:12px 16px;font-size:.9rem;color:var(--primary-text-color,#e0e0e0);font-weight:500;border-bottom:1px solid var(--divider-color,rgba(255,255,255,.12));background:rgba(255,255,255,.04)}",
       ".show-more-btn{display:block;width:calc(100% - 32px);margin:12px 16px 4px;padding:12px 16px;border:1px solid var(--divider-color,rgba(255,255,255,.2));border-radius:8px;background:transparent;color:var(--primary-color,#03a9f4);font-size:.95rem;font-weight:500;cursor:pointer;touch-action:manipulation}",
       ".show-more-btn:hover{background:rgba(255,255,255,.06)}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
