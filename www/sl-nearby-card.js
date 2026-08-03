@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260803c";
+    return "20260803d";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260803c",
+      sites_cache_version: "20260803d",
     };
   }
 
@@ -2466,6 +2466,8 @@ function _bindSlNearbyCardGlobalClicks(version) {
 }
 
 _bindSlNearbyCardGlobalClicks(SlNearbyCard.CARD_VERSION);
+
+window.SlNearbyCardVersion = SlNearbyCard.CARD_VERSION;
 
 window.customCards = window.customCards || [];
 if (!window.customCards.some(function (card) { return card.type === "sl-nearby-card"; })) {
