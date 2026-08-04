@@ -2,6 +2,33 @@ do_nothing:
   alias: Gör ingenting
   mode: parallel
   sequence: []
+koksflakten_stang_av_och_sla_pa:
+  alias: Köksfläkten stäng av och slå på
+  description: Cyklar spissfläkten (av → på) efter stilla kök
+  mode: single
+  sequence:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.koket_arbetsbanken_rorelse
+      state: 'off'
+      for: 00:00:30
+    then:
+    - delay: 00:00:00
+    else:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: binary_sensor.koket_arbetsbanken_rorelse
+        to: 'off'
+        for: 00:00:30
+      timeout: 01:00:00
+      continue_on_timeout: true
+  - action: switch.turn_off
+    target:
+      entity_id: switch.koksflakten
+  - delay: 00:00:01
+  - action: switch.turn_on
+    target:
+      entity_id: switch.koksflakten
 koket_stall_in_belysningen:
   alias: Ställ in belysningen i köket
   mode: restart
