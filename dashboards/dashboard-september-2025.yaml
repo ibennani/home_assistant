@@ -138,12 +138,14 @@ views:
         extra_attribute: precipitation_probability
         show_attribute_selector: true
         hourly_group_size: 1
+        temperature_precision: 1
       forecast_action:
         hold_action:
           action: more-info
       current:
         secondary_info_attribute: cloud_coverage
         temperature_entity: sensor.framsidan_temperatur
+        temperature_precision: 1
     - &diskmaskin_status_kort
       type: vertical-stack
       cards:
@@ -3734,12 +3736,14 @@ views:
       extra_attribute: precipitation_probability
       show_attribute_selector: true
       hourly_group_size: 1
+      temperature_precision: 1
     forecast_action:
       hold_action:
         action: more-info
     current:
       secondary_info_attribute: cloud_coverage
       temperature_entity: sensor.framsidan_temperatur
+      temperature_precision: 1
   - type: heading
     heading: Vädret utomhus
     heading_style: title
