@@ -144,7 +144,7 @@ views:
           action: more-info
       current:
         secondary_info_attribute: cloud_coverage
-        temperature_entity: sensor.framsidan_temperatur
+        temperature_entity: sensor.framsidan_temperatur_visning
         temperature_precision: 1
     - &diskmaskin_status_kort
       type: vertical-stack
@@ -3742,7 +3742,7 @@ views:
         action: more-info
     current:
       secondary_info_attribute: cloud_coverage
-      temperature_entity: sensor.framsidan_temperatur
+      temperature_entity: sensor.framsidan_temperatur_visning
       temperature_precision: 1
   - type: heading
     heading: Vädret utomhus
