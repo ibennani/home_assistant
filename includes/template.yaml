@@ -37,6 +37,14 @@
       unique_id: sun_next_dusk
       state: "{{ as_timestamp(state_attr('sun.sun','next_dusk')) | timestamp_custom('%H:%M') }}"
 
+    # Väderkort: en decimal för visning (källan har ofta två)
+    - name: Framsidan temperatur visning
+      unique_id: framsidan_temperatur_visning
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      state: "{{ states('sensor.framsidan_temperatur') | float(0) | round(1) }}"
+
     # ---- Ljusstyrka utomhus -------------------------------------------------
     - name: utomhus_ljusstyrka_differens
       unique_id: utomhus_ljusstyrka_differens
