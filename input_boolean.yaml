@@ -133,6 +133,11 @@
     name: Badrum dusch-snapshot finns
     icon: mdi:camera
     initial: off
+# Känd person (NFC): växlar besök/dusch-profil i stället för snapshot
+  badrum_dusch_profil_session:
+    name: Badrum dusch profil-session
+    icon: mdi:account-switch
+    initial: off
 # Ljus utanför duschen är släckta under bekräftad dusch
   duschslackning_aktiv:
     name: Duschsläckning aktiv
