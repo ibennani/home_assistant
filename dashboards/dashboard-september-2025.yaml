@@ -1168,6 +1168,9 @@ views:
         toggle: true
         step: 1
         name: Elljusstaken
+      - entity: switch.koksflakten
+        name: Köksfläkten
+        icon: mdi:fan
     - type: entities
       title: Fönster och dörrar
       icon: mdi:door-sliding-open
