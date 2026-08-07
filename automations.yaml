@@ -1353,10 +1353,11 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id in [''tand'', ''badrumsdorr_stangd''] }}'
+        value_template: '{{ trigger.id in [''tand'', ''badrumsdorr_stangd'', ''badrumsdorr_oppnad'']
+          }}'
       - condition: template
         value_template: "{%- set now_ts = as_timestamp(now()) -%} {%- set door = states.binary_sensor.badrumsdorren
-          -%}\n{%- if trigger.id == 'badrumsdorr_stangd' -%}\n{{\n  is_state('binary_sensor.badrummet_rorelse', 'on')\n  and is_state('light.badrummet_alla_lampor', 'off')\n  and not is_state('timer.badrum_slackning_pagar', 'active')\n}}\n{%- else -%}\n{{\n  is_state('timer.badrum_slackning_pagar', 'active')\n  or (\n    (now_ts - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) < 1\n    and is_state('light.badrummet_alla_lampor', 'off')\n    and (\n      is_state('binary_sensor.badrumsdorren', 'on')\n      or (\n        is_state('binary_sensor.badrumsdorren', 'off')\n        and (now_ts - as_timestamp(door.last_changed)) < 10\n      )\n    )\n  )\n}}\n{%- endif -%}"
+          -%} {%- set main_lights_off = (\n  is_state('light.takspottar_badrummet', 'off')\n  and is_state('light.led_badrummet_handfatet', 'off')\n  and is_state('light.led_badrummet_kommoden', 'off')\n  and is_state('light.spegeln_badrummet', 'off')\n) -%}\n{%- if trigger.id in ['badrumsdorr_stangd', 'badrumsdorr_oppnad'] -%}\n{{\n  is_state('binary_sensor.badrummet_rorelse', 'on')\n  and main_lights_off\n  and not is_state('timer.badrum_slackning_pagar', 'active')\n}}\n{%- else -%}\n{{\n  is_state('timer.badrum_slackning_pagar', 'active')\n  or (\n    is_state('binary_sensor.badrummet_rorelse', 'on')\n    and main_lights_off\n    and (\n      is_state('binary_sensor.badrumsdorren', 'on')\n      or (\n        is_state('binary_sensor.badrumsdorren', 'off')\n        and (now_ts - as_timestamp(door.last_changed)) < 10\n        and (now_ts - as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)) < 1\n      )\n    )\n  )\n}}\n{%- endif -%}"
       sequence:
       - choose:
         - conditions:
