@@ -9,17 +9,16 @@
     if (!dep) {
       return "";
     }
-    var jid = dep.journey && dep.journey.id;
-    if (jid != null && jid !== "") {
-      return "j:" + String(jid);
-    }
     var line = dep.line || {};
+    var stopPoint = dep.stop_point || {};
+    // SL återanvänder journey.id mellan helt olika avgångar — använd aldrig bara journey-id.
     return [
-      dep.scheduled || "",
-      dep.expected || "",
+      dep.scheduled || dep.expected || "",
       line.designation || "",
       line.transport_mode || "",
-      dep.destination || "",
+      dep.destination || dep.direction || "",
+      dep.direction_code != null ? String(dep.direction_code) : "",
+      stopPoint.designation || "",
     ].join("|");
   }
 

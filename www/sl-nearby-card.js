@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260803d";
+    return "20260808a";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260803d",
+      sites_cache_version: "20260808a",
     };
   }
 
@@ -1840,13 +1840,7 @@ class SlNearbyCard extends HTMLElement {
         String((self.config && self.config.forecast_minutes) || 60) +
         " min.</div>";
     } else {
-      let rows = "";
-      for (let i = 0; i < departures.length; i++) {
-        const dep = departures[i];
-        const key =
-          anim && anim.departureKey ? anim.departureKey(dep) : String(i);
-        rows += self._renderDepartureRow(dep, "", key, now, siteId);
-      }
+      const rows = self._buildDepartureRows(departures, siteId, now);
       body +=
         '<div class="departures departures-list modal-departures-list">' +
         '<div class="row header"><div class="col icon"></div><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
