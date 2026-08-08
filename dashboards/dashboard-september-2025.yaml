@@ -60,7 +60,7 @@ resources:
   type: module
 - url: /local/sl-tab-cache-bust.js?v=20260808e
   type: module
-- url: /local/sl-nearby-card.js?v=20260808e
+- url: /local/sl-nearby-card.js?v=20260808f
   type: module
 - url: /local/sl-stop-departures-card.js?v=20260729x
   type: module
