@@ -221,6 +221,16 @@ class SlNearbyStopsCard extends HTMLElement {
     this._render();
   }
 
+  _shouldHideDepartedDeparture(dep, now) {
+    const hideDeparted = !this.config || this.config.hide_departed !== false;
+    const api = window.SlDepartureTime;
+    if (api && api.shouldHideDepartedDeparture) {
+      return api.shouldHideDepartedDeparture(dep, now, hideDeparted);
+    }
+    const expectedAt = this._parseDate(dep.expected) || this._parseDate(dep.scheduled);
+    return this._shouldHideDeparted(expectedAt, now);
+  }
+
   _shouldHideDeparted(expectedAt, now) {
     const hideDeparted = !this.config || this.config.hide_departed !== false;
     if (window.SlDepartureTime && window.SlDepartureTime.shouldHideDeparted) {
@@ -380,10 +390,7 @@ class SlNearbyStopsCard extends HTMLElement {
 
     const now = new Date();
     const rows = cache.departures
-      .filter((dep) => {
-        const expectedAt = this._parseDate(dep.expected) || this._parseDate(dep.scheduled);
-        return !this._shouldHideDeparted(expectedAt, now);
-      })
+      .filter((dep) => !this._shouldHideDepartedDeparture(dep, now))
       .map((dep) => {
         const scheduledAt = this._parseDate(dep.scheduled);
         const expectedAt = this._parseDate(dep.expected) || scheduledAt;

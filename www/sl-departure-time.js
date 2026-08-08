@@ -57,7 +57,10 @@
   }
 
   function isDeparted(expectedAt, now) {
-    return ceilMinutesUntil(now, expectedAt) < 0;
+    if (!expectedAt || !now) {
+      return false;
+    }
+    return now.getTime() > expectedAt.getTime();
   }
 
   function shouldHideDeparted(expectedAt, now, hideDeparted) {
@@ -67,9 +70,55 @@
     return isDeparted(expectedAt, now);
   }
 
+  function getDepartureScheduledAt(dep) {
+    if (!dep || !dep.scheduled) {
+      return null;
+    }
+    const parsed = new Date(dep.scheduled);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  /** Prognostiserad avgångstid (inkl. försening). Inte samma som schemalagd tid. */
+  function getDepartureEffectiveAt(dep) {
+    if (!dep) {
+      return null;
+    }
+    if (dep.expected) {
+      const expectedAt = new Date(dep.expected);
+      if (!isNaN(expectedAt.getTime())) {
+        return expectedAt;
+      }
+    }
+    return getDepartureScheduledAt(dep);
+  }
+
+  function getDepartureDelayMinutes(dep) {
+    const scheduledAt = getDepartureScheduledAt(dep);
+    const effectiveAt = getDepartureEffectiveAt(dep);
+    if (!scheduledAt || !effectiveAt) {
+      return 0;
+    }
+    return Math.max(0, Math.floor((effectiveAt.getTime() - scheduledAt.getTime()) / 60000));
+  }
+
+  function isDepartedDeparture(dep, now) {
+    return isDeparted(getDepartureEffectiveAt(dep), now);
+  }
+
+  function shouldHideDepartedDeparture(dep, now, hideDeparted) {
+    if (hideDeparted === false) {
+      return false;
+    }
+    return isDepartedDeparture(dep, now);
+  }
+
   function parseDepartureDate(dep) {
     if (!dep) {
       return null;
+    }
+    const effective = getDepartureEffectiveAt(dep);
+    if (effective) {
+      return effective;
     }
     const raw = dep.expected || dep.scheduled;
     if (!raw) {
@@ -308,6 +357,11 @@
     formatHtml: formatDepartureTimeHtml,
     isDeparted: isDeparted,
     shouldHideDeparted: shouldHideDeparted,
+    getDepartureScheduledAt: getDepartureScheduledAt,
+    getDepartureEffectiveAt: getDepartureEffectiveAt,
+    getDepartureDelayMinutes: getDepartureDelayMinutes,
+    isDepartedDeparture: isDepartedDeparture,
+    shouldHideDepartedDeparture: shouldHideDepartedDeparture,
     parseDepartureDate: parseDepartureDate,
     getDepartureSortMs: getDepartureSortMs,
     departureKey: departureKey,

@@ -200,14 +200,28 @@
         return "train";
       }
 
+      function shouldHideDepartedDeparture(dep, now) {
+        if (!dep) {
+          return false;
+        }
+        var expectedAt = dep.expected ? new Date(dep.expected) : null;
+        if (!expectedAt || isNaN(expectedAt.getTime())) {
+          expectedAt = dep.scheduled ? new Date(dep.scheduled) : null;
+        }
+        if (!expectedAt || isNaN(expectedAt.getTime())) {
+          return false;
+        }
+        return now.getTime() > expectedAt.getTime();
+      }
+
       function prepareDepartures(list) {
         var now = Date.now();
         var out = [];
         for (var i = 0; i < list.length; i++) {
           var dep = list[i];
+          if (shouldHideDepartedDeparture(dep, new Date(now))) continue;
           var expected = dep.expected || dep.scheduled;
           var expectedMs = expected ? new Date(expected).getTime() : Number.POSITIVE_INFINITY;
-          if (isFinite(expectedMs) && expectedMs + 5 * 60 * 1000 < now) continue;
           out.push({ dep: dep, expectedMs: expectedMs });
         }
         out.sort(function (a, b) { return a.expectedMs - b.expectedMs; });

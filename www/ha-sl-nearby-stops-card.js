@@ -312,6 +312,16 @@ class HaSlNearbyStopsCard extends HTMLElement {
       });
   }
 
+  _shouldHideDepartedDeparture(dep, now) {
+    const hideDeparted = !this.config || this.config.hide_departed !== false;
+    const api = window.SlDepartureTime;
+    if (api && api.shouldHideDepartedDeparture) {
+      return api.shouldHideDepartedDeparture(dep, now, hideDeparted);
+    }
+    const expectedAt = this._parseDate(dep.expected) || this._parseDate(dep.scheduled);
+    return this._shouldHideDeparted(expectedAt, now);
+  }
+
   _shouldHideDeparted(expectedAt, now) {
     const hideDeparted = !this.config || this.config.hide_departed !== false;
     if (window.SlDepartureTime && window.SlDepartureTime.shouldHideDeparted) {
@@ -321,7 +331,7 @@ class HaSlNearbyStopsCard extends HTMLElement {
       return false;
     }
     const expectedMs = expectedAt.getTime();
-    return expectedMs + 60 * 1000 < now.getTime();
+    return expectedMs < now.getTime();
   }
 
   _prepareDepartures(departures) {
@@ -429,6 +439,9 @@ class HaSlNearbyStopsCard extends HTMLElement {
 
     for (let i = 0; i < departures.length; i++) {
       const dep = departures[i];
+      if (self._shouldHideDepartedDeparture(dep, now)) {
+        continue;
+      }
       const line = dep.line || {};
       const expectedAt = dep.expected ? new Date(dep.expected) : dep.scheduled ? new Date(dep.scheduled) : null;
       const isCancelled =
