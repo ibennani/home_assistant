@@ -9433,10 +9433,22 @@
       {% set m = {'Anna': 'anna', 'Erik': 'erik', 'Ilias': 'ilias'} %}
       {{ m.get(vem, 'invalid') }}
     har_besok_profil: >-
-      {% if key == 'invalid' %}false{% else %}
-      {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}
+      {% if key == 'invalid' %}false
+      {% else %}
+      {% set nums = [
+        'input_number.badrum_' ~ key ~ '_besok_tak_pct',
+        'input_number.badrum_' ~ key ~ '_besok_handfat_pct',
+        'input_number.badrum_' ~ key ~ '_besok_kommod_pct',
+        'input_number.badrum_' ~ key ~ '_besok_spegel_pct',
+        'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct',
+        'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'
+      ] %}
+      {% set ns = namespace(v=false) %}
+      {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
+      {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') or ns.v }}
       {% endif %}
   actions:
+    - action: script.badrum_synka_profil_flaggor
     - choose:
       - conditions:
         - condition: template
@@ -9601,3 +9613,13 @@
         - action: light.turn_off
           target:
             entity_id: light.led_strip_i_duschen
+
+- id: badrum_synka_profil_flaggor_vid_start
+  alias: "Badrum: synka profil-flaggor vid HA-start"
+  description: Återställer profil-flaggor från sparade input_number-värden efter omstart.
+  mode: single
+  triggers:
+    - trigger: homeassistant
+      event: start
+  actions:
+    - action: script.badrum_synka_profil_flaggor

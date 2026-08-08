@@ -2232,10 +2232,31 @@ badrum_visa_profil:
         {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
         {{ m.get(person, 'invalid') }}
       profil_finns: >-
-        {% if lage == 'besok' %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}
+        {% if key == 'invalid' %}false
+        {% elif lage == 'besok' %}
+        {% set nums = [
+          'input_number.badrum_' ~ key ~ '_besok_tak_pct',
+          'input_number.badrum_' ~ key ~ '_besok_handfat_pct',
+          'input_number.badrum_' ~ key ~ '_besok_kommod_pct',
+          'input_number.badrum_' ~ key ~ '_besok_spegel_pct',
+          'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct',
+          'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'
+        ] %}
+        {% set ns = namespace(v=false) %}
+        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
+        {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') or ns.v }}
         {% else %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') }}
+        {% set nums = [
+          'input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_handfat_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_kommod_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_spegel_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_tak_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_strip_pct'
+        ] %}
+        {% set ns = namespace(v=false) %}
+        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
+        {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') or ns.v }}
         {% endif %}
   - choose:
     - conditions:
@@ -2368,12 +2389,31 @@ badrum_tillampa_profil:
       utan_dusch: "{{ utan_dusch_ljus | default(false) }}"
       fade: "{{ transition | default(0) | int }}"
       profil_finns: >-
-        {% if key == 'invalid' %}
-        false
+        {% if key == 'invalid' %}false
         {% elif lage == 'besok' %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') }}
+        {% set nums = [
+          'input_number.badrum_' ~ key ~ '_besok_tak_pct',
+          'input_number.badrum_' ~ key ~ '_besok_handfat_pct',
+          'input_number.badrum_' ~ key ~ '_besok_kommod_pct',
+          'input_number.badrum_' ~ key ~ '_besok_spegel_pct',
+          'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct',
+          'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'
+        ] %}
+        {% set ns = namespace(v=false) %}
+        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
+        {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') or ns.v }}
         {% else %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') }}
+        {% set nums = [
+          'input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_handfat_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_kommod_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_spegel_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_tak_pct',
+          'input_number.badrum_' ~ key ~ '_dusch_strip_pct'
+        ] %}
+        {% set ns = namespace(v=false) %}
+        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
+        {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') or ns.v }}
         {% endif %}
   - condition: template
     value_template: "{{ profil_finns }}"
@@ -2644,8 +2684,19 @@ badrum_besok_eller_default:
         {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
         {{ m.get(states('input_select.badrummet_vem'), 'invalid') }}
       besok_profil_finns: >-
-        {% if person_key == 'invalid' %}false{% else %}
-        {{ is_state('input_boolean.badrum_' ~ person_key ~ '_besok_profil', 'on') }}
+        {% if person_key == 'invalid' %}false
+        {% else %}
+        {% set nums = [
+          'input_number.badrum_' ~ person_key ~ '_besok_tak_pct',
+          'input_number.badrum_' ~ person_key ~ '_besok_handfat_pct',
+          'input_number.badrum_' ~ person_key ~ '_besok_kommod_pct',
+          'input_number.badrum_' ~ person_key ~ '_besok_spegel_pct',
+          'input_number.badrum_' ~ person_key ~ '_besok_dusch_tak_pct',
+          'input_number.badrum_' ~ person_key ~ '_besok_dusch_strip_pct'
+        ] %}
+        {% set ns = namespace(v=false) %}
+        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
+        {{ is_state('input_boolean.badrum_' ~ person_key ~ '_besok_profil', 'on') or ns.v }}
         {% endif %}
   - action: input_boolean.turn_off
     target:
@@ -2684,8 +2735,19 @@ badrum_dusch_eller_default:
         {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
         {{ m.get(states('input_select.badrummet_vem'), 'invalid') }}
       dusch_profil_finns: >-
-        {% if person_key == 'invalid' %}false{% else %}
-        {{ is_state('input_boolean.badrum_' ~ person_key ~ '_dusch_profil', 'on') }}
+        {% if person_key == 'invalid' %}false
+        {% else %}
+        {% set nums = [
+          'input_number.badrum_' ~ person_key ~ '_dusch_badrum_tak_pct',
+          'input_number.badrum_' ~ person_key ~ '_dusch_handfat_pct',
+          'input_number.badrum_' ~ person_key ~ '_dusch_kommod_pct',
+          'input_number.badrum_' ~ person_key ~ '_dusch_spegel_pct',
+          'input_number.badrum_' ~ person_key ~ '_dusch_tak_pct',
+          'input_number.badrum_' ~ person_key ~ '_dusch_strip_pct'
+        ] %}
+        {% set ns = namespace(v=false) %}
+        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
+        {{ is_state('input_boolean.badrum_' ~ person_key ~ '_dusch_profil', 'on') or ns.v }}
         {% endif %}
   - choose:
     - conditions:
@@ -2700,3 +2762,69 @@ badrum_dusch_eller_default:
     - action: script.badrum_default_dusch
       data:
         transition: "{{ transition | default(5) | int }}"
+badrum_synka_profil_flaggor:
+  alias: Badrum synka profil-flaggor från sparade värden
+  description: Återställer input_boolean profil-flaggor från input_number efter omstart.
+  mode: single
+  sequence:
+  - repeat:
+      for_each:
+        - key: anna
+        - key: ilias
+        - key: erik
+      sequence:
+      - variables:
+          besok_nums: >-
+            {{ [
+              'input_number.badrum_' ~ repeat.item.key ~ '_besok_tak_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_besok_handfat_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_besok_kommod_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_besok_spegel_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_besok_dusch_tak_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_besok_dusch_strip_pct'
+            ] }}
+          dusch_nums: >-
+            {{ [
+              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_badrum_tak_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_handfat_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_kommod_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_spegel_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_tak_pct',
+              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_strip_pct'
+            ] }}
+          besok_har: >-
+            {% set ns = namespace(v=false) %}
+            {% for e in besok_nums %}
+              {% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}
+            {% endfor %}
+            {{ ns.v }}
+          dusch_har: >-
+            {% set ns = namespace(v=false) %}
+            {% for e in dusch_nums %}
+              {% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}
+            {% endfor %}
+            {{ ns.v }}
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ besok_har }}"
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_besok_profil' }}"
+        default:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_besok_profil' }}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ dusch_har }}"
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_dusch_profil' }}"
+        default:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_dusch_profil' }}"
