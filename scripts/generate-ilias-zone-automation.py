@@ -75,6 +75,7 @@ ZONES = [
     ("zone.visby", "visby"),
     ("zone.gotlandslagret", "gotlandslagret"),
     ("zone.nynashamn", "nynashamn"),
+    ("zone.isabelle", "isabelle"),
 ]
 
 ZONE_MESSAGES = {
@@ -265,6 +266,10 @@ ZONE_MESSAGES = {
     "nynashamn": {
         "entered": "{{ person }} är i Nynäshamn",
         "left": "{{ person }} har lämnat Nynäshamn",
+    },
+    "isabelle": {
+        "entered": "{{ person }} {% if person == 'Isabelle' %}är hemma hos sig{% else %}är hos Isabelle{% endif %}",
+        "left": "{{ person }} {% if person == 'Isabelle' %}har åkt hemifrån sitt hem{% else %}har lämnat Isabelle{% endif %}",
     },
 }
 
