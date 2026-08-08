@@ -87,6 +87,26 @@
     return at ? at.getTime() : Number.POSITIVE_INFINITY;
   }
 
+  function departureKey(dep) {
+    if (!dep) {
+      return "";
+    }
+    const line = dep.line || {};
+    const stopPoint = dep.stop_point || {};
+    const jid = dep.journey && dep.journey.id;
+    return [
+      dep.scheduled || "",
+      dep.expected || "",
+      jid != null && jid !== "" ? String(jid) : "",
+      line.designation || "",
+      line.transport_mode || "",
+      dep._rawDestination || dep.destination || dep.direction || "",
+      dep.direction_code != null ? String(dep.direction_code) : "",
+      stopPoint.designation || "",
+      stopPoint.id != null ? String(stopPoint.id) : "",
+    ].join("|");
+  }
+
   function normalizeDepartureName(value) {
     return String(value || "")
       .trim()
@@ -292,6 +312,7 @@
     shouldHideDeparted: shouldHideDeparted,
     parseDepartureDate: parseDepartureDate,
     getDepartureSortMs: getDepartureSortMs,
+    departureKey: departureKey,
     formatDepartureLabel: formatDepartureLabel,
     ensureBusLineTerminus: ensureBusLineTerminus,
     getBusLineTerminus: getBusLineTerminus,

@@ -6,14 +6,17 @@
   var EXIT_MS = 500;
 
   function departureKey(dep) {
+    if (root.SlDepartureTime && root.SlDepartureTime.departureKey) {
+      return root.SlDepartureTime.departureKey(dep);
+    }
     if (!dep) {
       return "";
     }
     var line = dep.line || {};
     var stopPoint = dep.stop_point || {};
-    // SL återanvänder journey.id mellan helt olika avgångar — använd aldrig bara journey-id.
     return [
-      dep.scheduled || dep.expected || "",
+      dep.scheduled || "",
+      dep.expected || "",
       line.designation || "",
       line.transport_mode || "",
       dep.destination || dep.direction || "",
@@ -78,43 +81,7 @@
     var shouldHideDeparted = options.shouldHideDeparted;
     var now = options.now || new Date();
     var scope = this._getScope(scopeId);
-
-    var activeMap = new Map();
-    var allMap = new Map();
-    for (var i = 0; i < allDeps.length; i++) {
-      var allKey = departureKey(allDeps[i]);
-      if (allKey) {
-        allMap.set(allKey, allDeps[i]);
-      }
-    }
-    for (var j = 0; j < activeDeps.length; j++) {
-      var activeKey = departureKey(activeDeps[j]);
-      if (activeKey) {
-        activeMap.set(activeKey, activeDeps[j]);
-      }
-    }
-
-    if (scope.lastVisibleKeys) {
-      scope.lastVisibleKeys.forEach(function (key) {
-        if (activeMap.has(key) || scope.exiting.has(key)) {
-          return;
-        }
-        var dep = allMap.get(key) || scope.lastDepsByKey.get(key);
-        if (!dep || !shouldHideDeparted(dep, now)) {
-          return;
-        }
-        scope.exiting.set(key, { dep: dep, phase: "pending-exit" });
-      });
-    }
-
-    var renderItems = [];
-    var seen = new Set();
-    var ordered = activeDeps.slice();
-    scope.exiting.forEach(function (entry, key) {
-      if (!activeMap.has(key)) {
-        ordered.push(entry.dep);
-      }
-    });
+    var keyFn = departureKey;
     var compare =
       root.SlDepartureTime && root.SlDepartureTime.compareDeparturesByTime
         ? root.SlDepartureTime.compareDeparturesByTime
@@ -123,29 +90,63 @@
             var bTime = new Date(b.expected || b.scheduled || 0).getTime();
             return aTime - bTime;
           };
-    ordered.sort(compare);
 
-    for (var k = 0; k < ordered.length; k++) {
-      var dep = ordered[k];
-      var key = departureKey(dep);
-      if (!key || seen.has(key)) {
-        continue;
+    var allMap = new Map();
+    for (var i = 0; i < allDeps.length; i++) {
+      var allDep = allDeps[i];
+      var allKey = keyFn(allDep);
+      if (allKey) {
+        allMap.set(allKey, allDep);
       }
-      seen.add(key);
-      renderItems.push(key);
     }
 
-    scope.lastVisibleKeys = new Set(activeMap.keys());
-    scope.lastDepsByKey = allMap;
+    var activeItems = [];
+    var activeKeySet = new Set();
+    for (var j = 0; j < activeDeps.length; j++) {
+      var dep = activeDeps[j];
+      var baseKey = keyFn(dep) || "dep-" + String(j);
+      var key = baseKey;
+      var suffix = 0;
+      while (activeKeySet.has(key)) {
+        suffix++;
+        key = baseKey + "#" + suffix;
+      }
+      activeKeySet.add(key);
+      activeItems.push({ dep: dep, key: key, isExiting: false });
+    }
 
-    return renderItems.map(function (key) {
-      var dep = activeMap.get(key) || scope.exiting.get(key).dep;
-      return {
-        dep: dep,
-        key: key,
-        isExiting: scope.exiting.has(key),
-      };
+    if (scope.lastVisibleKeys) {
+      scope.lastVisibleKeys.forEach(function (prevKey) {
+        if (activeKeySet.has(prevKey) || scope.exiting.has(prevKey)) {
+          return;
+        }
+        var dep = allMap.get(prevKey) || scope.lastDepsByKey.get(prevKey);
+        if (!dep || !shouldHideDeparted(dep, now)) {
+          return;
+        }
+        scope.exiting.set(prevKey, { dep: dep, phase: "pending-exit" });
+      });
+    }
+
+    var renderItems = activeItems.slice();
+    scope.exiting.forEach(function (entry, key) {
+      if (activeKeySet.has(key)) {
+        return;
+      }
+      renderItems.push({ dep: entry.dep, key: key, isExiting: true });
     });
+
+    renderItems.sort(function (a, b) {
+      return compare(a.dep, b.dep);
+    });
+
+    scope.lastVisibleKeys = activeKeySet;
+    scope.lastDepsByKey = new Map(allMap);
+    for (var k = 0; k < activeItems.length; k++) {
+      scope.lastDepsByKey.set(activeItems[k].key, activeItems[k].dep);
+    }
+
+    return renderItems;
   };
 
   Manager.prototype.buildRows = function (scopeId, options) {
@@ -195,6 +196,10 @@
         }
       }, EXIT_MS);
     });
+
+    if (remaining === 0 && typeof onComplete === "function") {
+      onComplete();
+    }
   };
 
   Manager.prototype.isAnimating = function (scopeId) {

@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260808b";
+    return "20260808c";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260808b",
+      sites_cache_version: "20260808c",
     };
   }
 
@@ -141,6 +141,21 @@ class SlNearbyCard extends HTMLElement {
     this._closeLineRouteModal();
   }
 
+  _getVisibleDepartures(departures, siteId) {
+    const now = new Date();
+    const self = this;
+    const modeFiltered = this._filterDeparturesByMode(departures || [], siteId);
+    const visible = [];
+    for (let i = 0; i < modeFiltered.length; i++) {
+      const dep = modeFiltered[i];
+      const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
+      if (!self._shouldHideDeparted(expectedAt, now)) {
+        visible.push(dep);
+      }
+    }
+    return self._sortDeparturesByTime(visible);
+  }
+
   _getOpenDepartures() {
     if (!this._openSiteId) {
       return [];
@@ -149,7 +164,7 @@ class SlNearbyCard extends HTMLElement {
     if (!cache || !cache.departures) {
       return [];
     }
-    return this._filterDeparturesByMode(cache.departures, this._openSiteId);
+    return this._getVisibleDepartures(cache.departures, this._openSiteId);
   }
 
   _ensureDepartureClock() {
@@ -928,7 +943,6 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _prepareDepartures(departures) {
-    const now = new Date();
     const items = [];
     const self = this;
 
@@ -938,9 +952,6 @@ class SlNearbyCard extends HTMLElement {
       const expectedAt = expected ? new Date(expected) : null;
       const expectedMs = expectedAt ? expectedAt.getTime() : Number.POSITIVE_INFINITY;
       const destination = self._formatDepartureLabel(dep);
-      if (self._shouldHideDeparted(expectedAt, now)) {
-        continue;
-      }
       items.push(
         Object.assign({}, dep, {
           destination: destination,
@@ -1205,16 +1216,7 @@ class SlNearbyCard extends HTMLElement {
 
   _buildDepartureRows(departures, siteId, now) {
     const self = this;
-    let activeDeps = [];
-    for (let i = 0; i < departures.length; i++) {
-      const dep = departures[i];
-      const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
-      if (self._shouldHideDeparted(expectedAt, now)) {
-        continue;
-      }
-      activeDeps.push(dep);
-    }
-    activeDeps = self._sortDeparturesByTime(activeDeps);
+    const activeDeps = self._getVisibleDepartures(departures, siteId);
 
     const anim = window.SlDepartureListAnim;
     if (anim && anim.manager) {
@@ -1284,9 +1286,9 @@ class SlNearbyCard extends HTMLElement {
     const allDepartures = cache.departures || [];
     const modes = this._getTransportModes(allDepartures);
     const filtersBlock = this._renderFiltersBlock(siteId, modes);
-    const departures = this._filterDeparturesByMode(allDepartures, siteId);
+    const visibleDepartures = this._getVisibleDepartures(allDepartures, siteId);
 
-    if (!departures.length) {
+    if (!visibleDepartures.length) {
       return (
         stopInfoBlock +
         filtersBlock +
@@ -1299,7 +1301,7 @@ class SlNearbyCard extends HTMLElement {
     }
 
     const now = new Date();
-    const rows = this._buildDepartureRows(departures, siteId, now);
+    const rows = this._buildDepartureRows(allDepartures, siteId, now);
 
     return (
       stopInfoBlock +
@@ -1318,8 +1320,10 @@ class SlNearbyCard extends HTMLElement {
     const scopeId = String(siteId);
     const anim = window.SlDepartureListAnim;
     if (anim && anim.manager.isAnimating(scopeId)) {
+      this._pendingDeparturePanelSiteId = siteId;
       return;
     }
+    this._pendingDeparturePanelSiteId = null;
     panel.innerHTML = this._renderDepartures(siteId);
     this._runDepartureListAnimation(siteId, panel);
     if (this._departureClock) {
