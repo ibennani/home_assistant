@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260808e";
+    return "20260808f";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260808e",
+      sites_cache_version: "20260808f",
     };
   }
 
@@ -166,14 +166,15 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _getOpenDepartures() {
-    if (!this._openSiteId) {
+    const siteId = this._modalDeparturesSiteId || this._openSiteId;
+    if (!siteId) {
       return [];
     }
-    const cache = this._getCache().get(String(this._openSiteId));
+    const cache = this._getCache().get(String(siteId));
     if (!cache || !cache.departures) {
       return [];
     }
-    return this._getVisibleDepartures(cache.departures, this._openSiteId);
+    return this._getVisibleDepartures(cache.departures, siteId);
   }
 
   _ensureDepartureClock() {
@@ -192,6 +193,9 @@ class SlNearbyCard extends HTMLElement {
       onTick: function () {
         if (self._openSiteId) {
           self._updateDeparturePanel(self._openSiteId);
+        }
+        if (self._lineRouteModalOpen && self._modalRouteContext && self._modalRouteContext.view === "departures") {
+          self._refreshModalDeparturesPanel();
         }
       },
     });
@@ -218,6 +222,9 @@ class SlNearbyCard extends HTMLElement {
     this._departureClockTimer = window.setInterval(function () {
       if (self._openSiteId) {
         self._updateDeparturePanel(self._openSiteId);
+      }
+      if (self._lineRouteModalOpen && self._modalRouteContext && self._modalRouteContext.view === "departures") {
+        self._refreshModalDeparturesPanel();
       }
     }, 15000);
   }
@@ -833,13 +840,16 @@ class SlNearbyCard extends HTMLElement {
       clearInterval(this._refreshTimer);
       this._refreshTimer = undefined;
     }
-    if (!seconds || seconds < 10 || !this._openSiteId) {
+    const refreshSiteId =
+      this._modalDeparturesSiteId || this._openSiteId;
+    if (!seconds || seconds < 10 || !refreshSiteId) {
       return;
     }
     const self = this;
     this._refreshTimer = window.setInterval(function () {
-      if (self._openSiteId) {
-        self._loadDepartures(self._openSiteId, true);
+      const siteId = self._modalDeparturesSiteId || self._openSiteId;
+      if (siteId) {
+        self._loadDepartures(siteId, true);
       }
     }, seconds * 1000);
   }
@@ -889,6 +899,9 @@ class SlNearbyCard extends HTMLElement {
           fetched_at: Date.now(),
         });
         self._updateDeparturePanel(siteId);
+        if (Number(self._modalDeparturesSiteId) === Number(siteId)) {
+          self._refreshModalDeparturesPanel();
+        }
       })
       .catch(function (error) {
         if (showCachedWhileRefreshing && existing) {
@@ -1761,10 +1774,70 @@ class SlNearbyCard extends HTMLElement {
       ".line-route-stop-index{width:1.5rem;color:var(--secondary-text-color,#bbb);font-size:.85rem;text-align:right;flex-shrink:0}",
       ".line-route-stop-name{flex:1;min-width:0}",
       ".sl-line-route-back-btn{border:0;background:transparent;color:var(--primary-text-color,#fff);font-size:1.25rem;line-height:1;cursor:pointer;padding:0 4px 0 0;flex-shrink:0}",
-      ".modal-departures-wrap{overflow-y:auto;max-height:calc(min(80vh,720px) - 88px)}",
-      ".modal-departures-wrap .departures-list{padding:0 16px 16px}",
-      ".modal-departures-wrap .departure-block{margin-top:4px}",
-      ".modal-departures-empty{padding:16px;color:var(--secondary-text-color)}",
+      ".modal-departures-wrap{overflow-y:auto;max-height:calc(min(80vh,720px) - 88px);width:100%;box-sizing:border-box}",
+      ".modal-departures-empty{padding:8px 16px 12px;color:var(--secondary-text-color)}",
+      this._departureListStyleRules(".sl-line-route-modal"),
+    ].join("");
+  }
+
+  _departureListStyleRules(scopePrefix) {
+    const s = scopePrefix ? scopePrefix + " " : "";
+    return [
+      s + ".stop-body{padding:0 16px 12px;width:100%;box-sizing:border-box}",
+      s + ".mode-filters-wrap{padding:0 16px 12px;width:100%;box-sizing:border-box}",
+      s + ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
+      s +
+        ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
+      s +
+        ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
+      s + ".departures-empty,.departures-error{padding:8px 0 12px;color:var(--secondary-text-color)}",
+      s + ".departures-error{color:var(--error-color)}",
+      s + ".departures.departures-list{width:100%;box-sizing:border-box}",
+      s +
+        ".row{margin-top:8px;display:grid;grid-template-columns:40px 40px minmax(0,1fr) auto;align-items:center;width:100%;box-sizing:border-box}",
+      s + ".col{display:flex;flex-direction:column;justify-content:center;position:relative;min-width:0}",
+      s + ".row.header{height:40px;font-size:medium;font-weight:400;opacity:var(--dark-primary-opacity)}",
+      s + ".main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+      s +
+        ".transport-icon{width:40px;height:40px;display:inline-flex;justify-content:center;align-items:center;flex-shrink:0}",
+      s +
+        ".line-icon{border-radius:3px;padding:3px 3px 0 3px;color:#fff;width:36px;min-width:36px;height:22px;font-weight:500;display:inline-block;text-align:center;box-sizing:border-box;text-shadow:1px 1px 2px var(--outline-color)}",
+      s + ".bus{border:1px solid var(--outline-color);color:var(--primary-text-color)}",
+      s + ".bus_red,.bus.red,.red{background-color:#9e0e13;color:#fff;border:none}",
+      s + ".blue{background-color:#0089ca}",
+      s + ".green{background-color:#179d4d}",
+      s + ".metro{background:#0061eb}",
+      s + ".train{background:#ec619f}",
+      s + ".tram{background:#985141}",
+      s + ".warning-message{color:var(--warning-color);font-size:smaller}",
+      s +
+        ".departure-block{margin-top:8px;border-radius:6px;width:100%;box-sizing:border-box;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}",
+      s + ".departure-block:hover{background:rgba(255,255,255,.04)}",
+      s + ".departure-block .row.departure{margin-top:0}",
+      s +
+        ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px;width:100%;box-sizing:border-box}",
+      s + ".detail-item{font-size:smaller;line-height:1.35}",
+      s + ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
+      s +
+        ".stop-info{margin:0 0 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
+      s + ".stop-info-item{color:#fad370!important}",
+      s + ".stop-info-item+.stop-info-item{margin-top:6px}",
+      s + ".short-train{color:#0abcfc;font-size:smaller;font-weight:600;margin-left:.35em;text-transform:lowercase}",
+      s + ".old-time{text-decoration:line-through;opacity:.65;margin-right:.35em}",
+      s + ".new-time{color:#0abcfc;font-weight:600}",
+      s + ".delay-min{color:#0abcfc;font-weight:600}",
+      s + ".departure-now{color:#fad370!important;font-weight:600}",
+      s + ".cancelled-time{color:#e53935;font-weight:600}",
+      s + ".leaves-in{white-space:nowrap;min-width:5.5rem;text-align:right;display:inline-block}",
+      s + ".mr1{margin-right:8px}",
+      s + ".left{text-align:left}",
+      s + ".right{text-align:right}",
+      s + ".departure-block[data-departure-key]{max-height:500px}",
+      s +
+        ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height .5s ease,margin-top .5s ease,opacity .5s ease}",
+      s +
+        ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
+      s + "ha-icon{width:24px;height:24px;color:var(--paper-item-icon-color)}",
     ].join("");
   }
 
@@ -1791,6 +1864,9 @@ class SlNearbyCard extends HTMLElement {
     }
     this._lineRouteModalOpen = false;
     this._modalRouteContext = null;
+    this._modalDeparturesSiteId = null;
+    this._syncDepartureClock();
+    this._syncRefreshTimer();
   }
 
   _ensureModalOwnerId() {
@@ -1980,8 +2056,12 @@ class SlNearbyCard extends HTMLElement {
   _renderModalDeparturesPanel(stopName, siteId, departures, stopDeviations) {
     const self = this;
     const now = new Date();
-    const anim = window.SlDepartureListAnim;
+    const allDepartures = departures || [];
+    const modes = self._getTransportModes(allDepartures);
+    const filtersBlock = self._renderFiltersBlock(siteId, modes);
+    const visibleDepartures = self._getVisibleDepartures(allDepartures, siteId);
     let body = "";
+
     const stopInfo = (stopDeviations || [])
       .map(function (dev) {
         return (
@@ -1994,30 +2074,58 @@ class SlNearbyCard extends HTMLElement {
     if (stopInfo) {
       body += '<div class="stop-info">' + stopInfo + "</div>";
     }
-    if (!departures || !departures.length) {
+
+    if (!visibleDepartures.length) {
       body +=
-        '<div class="modal-departures-empty">Inga avgångar inom ' +
+        '<div class="modal-departures-empty">Inga avgångar' +
+        (modes.length > 1 ? " för valt trafikslag" : "") +
+        " inom " +
         String((self.config && self.config.forecast_minutes) || 60) +
         " min.</div>";
     } else {
-      const rows = self._buildDepartureRows(departures, siteId, now);
+      const rows = self._buildDepartureRows(allDepartures, siteId, now);
       body +=
         '<div class="departures departures-list modal-departures-list">' +
         '<div class="row header"><div class="col icon"></div><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
         rows +
         "</div>";
     }
+
     return (
-      self._renderModalHeader("Avgångar · " + stopName, { showBack: true }) +
+      self._renderModalHeader(stopName, { showBack: true }) +
       '<div class="sl-line-route-meta">' +
-      (departures ? departures.length : 0) +
+      visibleDepartures.length +
       " avgångar inom " +
       String((self.config && self.config.forecast_minutes) || 60) +
       " min</div>" +
       '<div class="modal-departures-wrap">' +
+      filtersBlock +
+      '<div class="stop-body modal-stop-body">' +
       body +
-      "</div>"
+      "</div></div>"
     );
+  }
+
+  _refreshModalDeparturesPanel() {
+    const ctx = this._modalRouteContext;
+    if (!ctx || ctx.view !== "departures" || !ctx.siteId || !this._lineRouteModalOpen) {
+      return;
+    }
+    const cache = this._getCache().get(String(ctx.siteId));
+    if (!cache || cache.loading) {
+      return;
+    }
+    this._setModalPanelInner(
+      this._renderModalDeparturesPanel(
+        ctx.stopName,
+        ctx.siteId,
+        cache.departures || [],
+        cache.stop_deviations || [],
+      ),
+    );
+    if (this._departureClock) {
+      this._departureClock.reschedule();
+    }
   }
 
   _restoreModalRouteStops() {
@@ -2027,6 +2135,9 @@ class SlNearbyCard extends HTMLElement {
     }
     const back = ctx.routeBack;
     this._modalRouteContext = back;
+    this._modalDeparturesSiteId = null;
+    this._syncDepartureClock();
+    this._syncRefreshTimer();
     this._setModalPanelInner(
       this._renderDepartureStopsPanelInner(back.stops, back.dep, back.siteId, back.siteName),
     );
@@ -2071,6 +2182,9 @@ class SlNearbyCard extends HTMLElement {
           siteId: result.siteId,
           routeBack: routeBack,
         };
+        self._modalDeparturesSiteId = result.siteId;
+        self._syncDepartureClock();
+        self._syncRefreshTimer();
         self._setModalPanelInner(
           self._renderModalDeparturesPanel(
             name,
@@ -2113,7 +2227,24 @@ class SlNearbyCard extends HTMLElement {
     if (backTarget) {
       event.preventDefault();
       event.stopPropagation();
+      this._modalDeparturesSiteId = null;
+      this._syncDepartureClock();
+      this._syncRefreshTimer();
       this._restoreModalRouteStops();
+      return;
+    }
+
+    const filterTarget = event.target.closest(".mode-filter");
+    if (filterTarget && filterTarget.closest(".sl-line-route-modal")) {
+      event.preventDefault();
+      event.stopPropagation();
+      const siteId = Number(filterTarget.dataset.siteId);
+      const mode = filterTarget.dataset.mode || "ALL";
+      this._setActiveModeFilter(siteId, mode);
+      if (window.SlDepartureListAnim) {
+        window.SlDepartureListAnim.manager.resetScope(String(siteId));
+      }
+      this._refreshModalDeparturesPanel();
       return;
     }
 
@@ -2470,51 +2601,7 @@ class SlNearbyCard extends HTMLElement {
       ".stop-header-row .card-header{flex:1;min-width:0;margin:0}",
       ".card-header .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
       ".stop-distance{color:var(--secondary-text-color);white-space:nowrap;padding-top:16px;flex-shrink:0}",
-      ".mode-filters-wrap{padding:0 16px 12px;width:100%;box-sizing:border-box}",
-      ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
-      ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
-      ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
-      ".stop-body{padding:0 16px 12px;width:100%;box-sizing:border-box}",
-      ".departures-empty,.departures-error{padding:8px 0 12px;color:var(--secondary-text-color)}",
-      ".departures-error{color:var(--error-color)}",
-      ".departures.departures-list{width:100%;box-sizing:border-box}",
-      ".row{margin-top:8px;display:grid;grid-template-columns:40px 40px minmax(0,1fr) auto;align-items:center;width:100%;box-sizing:border-box}",
-      ".col{display:flex;flex-direction:column;justify-content:center;position:relative;min-width:0}",
-      ".row.header{height:40px;font-size:medium;font-weight:400;opacity:var(--dark-primary-opacity)}",
-      ".main{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
-      ".transport-icon{width:40px;height:40px;display:inline-flex;justify-content:center;align-items:center;flex-shrink:0}",
-      ".line-icon{border-radius:3px;padding:3px 3px 0 3px;color:#fff;width:36px;min-width:36px;height:22px;font-weight:500;display:inline-block;text-align:center;box-sizing:border-box;text-shadow:1px 1px 2px var(--outline-color)}",
-      ".bus{border:1px solid var(--outline-color);color:var(--primary-text-color)}",
-      ".bus_red,.bus.red,.red{background-color:#9e0e13;color:#fff;border:none}",
-      ".blue{background-color:#0089ca}",
-      ".green{background-color:#179d4d}",
-      ".metro{background:#0061eb}",
-      ".train{background:#ec619f}",
-      ".tram{background:#985141}",
-      ".warning-message{color:var(--warning-color);font-size:smaller}",
-      ".departure-block{margin-top:8px;border-radius:6px;width:100%;box-sizing:border-box;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}",
-      ".departure-block:hover{background:rgba(255,255,255,.04)}",
-      ".departure-block .row.departure{margin-top:0}",
-      ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px;width:100%;box-sizing:border-box}",
-      ".detail-item{font-size:smaller;line-height:1.35}",
-      ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
-      ".stop-info{margin:0 0 8px;padding:8px 12px 0;font-size:smaller;line-height:1.35;color:#fad370!important;border-top:1px solid var(--divider-color,rgba(0,0,0,.12))}",
-      ".stop-info-item{color:#fad370!important}",
-      ".stop-info-item+.stop-info-item{margin-top:6px}",
-      ".short-train{color:#0abcfc;font-size:smaller;font-weight:600;margin-left:.35em;text-transform:lowercase}",
-      ".old-time{text-decoration:line-through;opacity:.65;margin-right:.35em}",
-      ".new-time{color:#0abcfc;font-weight:600}",
-      ".delay-min{color:#0abcfc;font-weight:600}",
-      ".departure-now{color:#fad370!important;font-weight:600}",
-      ".cancelled-time{color:#e53935;font-weight:600}",
-      ".leaves-in{white-space:nowrap;min-width:5.5rem;text-align:right;display:inline-block}",
-      ".mr1{margin-right:8px}",
-      ".left{text-align:left}",
-      ".right{text-align:right}",
-      ".departure-block[data-departure-key]{max-height:500px}",
-      ".departure-block.departure-exit-slide{overflow:hidden;box-sizing:border-box;transition:max-height .5s ease,margin-top .5s ease,opacity .5s ease}",
-      ".departure-block.departure-exit-slide.departure-exit-slide-active{max-height:0!important;margin-top:0!important;opacity:0}",
-      "ha-icon{width:24px;height:24px;color:var(--paper-item-icon-color)}",
+      this._departureListStyleRules(":host"),
     ].join("");
   }
 }
