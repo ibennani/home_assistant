@@ -4,12 +4,19 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 import urllib.request
 from pathlib import Path
 
 API_URL = "https://transport.integration.sl.se/v1/sites"
 OUTPUT = Path(__file__).resolve().parents[1] / "www" / "sl-sites.json"
+TEST_SITE_RE = re.compile(r"^Test\s*\d+$", re.IGNORECASE)
+
+
+def is_test_site(site: dict) -> bool:
+    name = str(site.get("name") or "").strip()
+    return bool(TEST_SITE_RE.match(name))
 
 
 def main() -> int:
@@ -24,7 +31,9 @@ def main() -> int:
             "lon": site["lon"],
         }
         for site in sites
-        if site.get("lat") is not None and site.get("lon") is not None
+        if site.get("lat") is not None
+        and site.get("lon") is not None
+        and not is_test_site(site)
     ]
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)

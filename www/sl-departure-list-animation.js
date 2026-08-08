@@ -16,12 +16,11 @@
     var stopPoint = dep.stop_point || {};
     return [
       dep.scheduled || "",
-      dep.expected || "",
       line.designation || "",
       line.transport_mode || "",
       dep.destination || dep.direction || "",
       dep.direction_code != null ? String(dep.direction_code) : "",
-      stopPoint.designation || "",
+      stopPoint.id != null ? String(stopPoint.id) : stopPoint.designation || "",
     ].join("|");
   }
 

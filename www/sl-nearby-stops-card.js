@@ -241,7 +241,6 @@ class SlNearbyStopsCard extends HTMLElement {
   }
 
   _prepareDepartures(departures) {
-    const now = new Date();
     const self = this;
 
     return departures
@@ -252,11 +251,12 @@ class SlNearbyStopsCard extends HTMLElement {
         const destination = self._formatDepartureLabel(dep);
         return Object.assign({}, dep, {
           destination: destination,
+          _rawDestination: dep.destination,
+          _rawDirection: dep.direction,
           _expectedMs: expectedMs,
           _expectedAt: expectedAt,
         });
       })
-      .filter((dep) => !this._shouldHideDeparted(dep._expectedAt, now))
       .sort((a, b) => a._expectedMs - b._expectedMs);
   }
 

@@ -240,7 +240,11 @@ class HaSlNearbyStopsCard extends HTMLElement {
   }
 
   _callDepartures(siteId) {
-    const serviceData = { site_id: Number(siteId) };
+    const forecast = Number((this.config && this.config.forecast_minutes) || 60);
+    const serviceData = {
+      site_id: Number(siteId),
+      forecast: forecast,
+    };
     return this._callWithResponse("rest_command", "sl_site_departures", serviceData).then(
       (result) => this._extractPayload(result),
     );
@@ -321,7 +325,6 @@ class HaSlNearbyStopsCard extends HTMLElement {
   }
 
   _prepareDepartures(departures) {
-    const now = new Date();
     const destPattern = /(?: station(?: \([^)]+\))?| \([^)]+\))$/;
     const items = [];
     const self = this;
@@ -335,10 +338,13 @@ class HaSlNearbyStopsCard extends HTMLElement {
       if (dep.line && dep.line.transport_mode === "TRAIN") {
         destination = destination.replace(destPattern, "").trim();
       }
-      if (self._shouldHideDeparted(expectedAt, now)) {
-        continue;
-      }
-      items.push(Object.assign({}, dep, { destination: destination, _expectedMs: expectedMs }));
+      items.push(
+        Object.assign({}, dep, {
+          destination: destination,
+          _rawDestination: dep.destination,
+          _expectedMs: expectedMs,
+        }),
+      );
     }
 
     items.sort(function (a, b) {

@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260808c";
+    return "20260808d";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260808c",
+      sites_cache_version: "20260808d",
     };
   }
 
@@ -725,7 +725,11 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _callDepartures(siteId) {
-    const serviceData = { site_id: Number(siteId) };
+    const forecast = Number((this.config && this.config.forecast_minutes) || 60);
+    const serviceData = {
+      site_id: Number(siteId),
+      forecast: forecast,
+    };
     return this._callWithResponse("rest_command", "sl_site_departures", serviceData).then(
       (result) => this._extractPayload(result),
     );

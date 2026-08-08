@@ -93,17 +93,15 @@
     }
     const line = dep.line || {};
     const stopPoint = dep.stop_point || {};
-    const jid = dep.journey && dep.journey.id;
+    // SL återanvänder journey.id mellan olika linjer (t.ex. 830 och 831 mot Farsta).
+    // Använd schemalagd tid + linje + riktning + läge — inte expected (uppdateras varje poll).
     return [
       dep.scheduled || "",
-      dep.expected || "",
-      jid != null && jid !== "" ? String(jid) : "",
       line.designation || "",
       line.transport_mode || "",
       dep._rawDestination || dep.destination || dep.direction || "",
       dep.direction_code != null ? String(dep.direction_code) : "",
-      stopPoint.designation || "",
-      stopPoint.id != null ? String(stopPoint.id) : "",
+      stopPoint.id != null ? String(stopPoint.id) : stopPoint.designation || "",
     ].join("|");
   }
 
