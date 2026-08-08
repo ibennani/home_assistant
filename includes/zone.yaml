@@ -44,5 +44,12 @@
   radius: 300
   icon: mdi:ferry
 
+# Isabelles hem (minsta omslutande cirkel, GPS senaste 24 h)
+- name: Isabelle
+  latitude: 60.797447
+  longitude: 10.693697
+  radius: 39
+  icon: mdi:human
+
 # Visby och Gotlandslägret finns i HA storage (skapade via UI/MCP).
 # Lägg inte till här — zone.reload skapar dubbletter (visby_2, gotlandslagret_2).
