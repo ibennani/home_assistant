@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260808d";
+    return "20260808e";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260808d",
+      sites_cache_version: "20260808e",
     };
   }
 
@@ -141,6 +141,16 @@ class SlNearbyCard extends HTMLElement {
     this._closeLineRouteModal();
   }
 
+  _shouldHideDepartedDeparture(dep, now) {
+    const hideDeparted = !this.config || this.config.hide_departed !== false;
+    const api = window.SlDepartureTime;
+    if (api && api.shouldHideDepartedDeparture) {
+      return api.shouldHideDepartedDeparture(dep, now, hideDeparted);
+    }
+    const expectedAt = this._parseDate(dep.expected) || this._parseDate(dep.scheduled);
+    return this._shouldHideDeparted(expectedAt, now);
+  }
+
   _getVisibleDepartures(departures, siteId) {
     const now = new Date();
     const self = this;
@@ -148,8 +158,7 @@ class SlNearbyCard extends HTMLElement {
     const visible = [];
     for (let i = 0; i < modeFiltered.length; i++) {
       const dep = modeFiltered[i];
-      const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
-      if (!self._shouldHideDeparted(expectedAt, now)) {
+      if (!self._shouldHideDepartedDeparture(dep, now)) {
         visible.push(dep);
       }
     }
@@ -1229,8 +1238,7 @@ class SlNearbyCard extends HTMLElement {
         allDeps: departures,
         now: now,
         shouldHideDeparted: function (dep, currentNow) {
-          const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
-          return self._shouldHideDeparted(expectedAt, currentNow);
+          return self._shouldHideDepartedDeparture(dep, currentNow);
         },
         renderRow: function (dep, extraClass, key) {
           return self._renderDepartureRow(dep, extraClass, key, now, siteId);

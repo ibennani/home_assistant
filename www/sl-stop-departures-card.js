@@ -274,14 +274,23 @@ class SlStopDeparturesCard extends HTMLElement {
     return self._sortDeparturesByTime(items);
   }
 
+  _shouldHideDepartedDeparture(dep, now) {
+    const hideDeparted = !this.config || this.config.hide_departed !== false;
+    const api = window.SlDepartureTime;
+    if (api && api.shouldHideDepartedDeparture) {
+      return api.shouldHideDepartedDeparture(dep, now, hideDeparted);
+    }
+    const expectedAt = this._parseDate(dep.expected) || this._parseDate(dep.scheduled);
+    return this._shouldHideDeparted(expectedAt, now);
+  }
+
   _getVisibleDepartures(departures) {
     const now = new Date();
     const self = this;
     const visible = [];
     for (let i = 0; i < (departures || []).length; i++) {
       const dep = departures[i];
-      const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
-      if (!self._shouldHideDeparted(expectedAt, now)) {
+      if (!self._shouldHideDepartedDeparture(dep, now)) {
         visible.push(dep);
       }
     }
@@ -937,8 +946,7 @@ class SlStopDeparturesCard extends HTMLElement {
         allDeps: departures,
         now: now,
         shouldHideDeparted: function (dep, currentNow) {
-          const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
-          return self._shouldHideDeparted(expectedAt, currentNow);
+          return self._shouldHideDepartedDeparture(dep, currentNow);
         },
         renderRow: function (dep, extraClass, key) {
           return self._renderDepartureRow(dep, extraClass, key, now);
