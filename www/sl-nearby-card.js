@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260808a";
+    return "20260808b";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260808a",
+      sites_cache_version: "20260808b",
     };
   }
 
@@ -941,7 +941,14 @@ class SlNearbyCard extends HTMLElement {
       if (self._shouldHideDeparted(expectedAt, now)) {
         continue;
       }
-      items.push(Object.assign({}, dep, { destination: destination, _expectedMs: expectedMs }));
+      items.push(
+        Object.assign({}, dep, {
+          destination: destination,
+          _rawDestination: dep.destination,
+          _rawDirection: dep.direction,
+          _expectedMs: expectedMs,
+        }),
+      );
     }
 
     return self._sortDeparturesByTime(items);
@@ -1344,26 +1351,113 @@ class SlNearbyCard extends HTMLElement {
     if (!target || !this._sites || !this._sites.length) {
       return null;
     }
-    let bestId = null;
-    let bestScore = -1;
     for (let i = 0; i < this._sites.length; i++) {
       const site = this._sites[i];
       const siteName = this._normalizeStopName(site.name);
-      if (!siteName) {
-        continue;
-      }
-      if (target === siteName) {
+      if (siteName && target === siteName) {
         return Number(site.id);
       }
-      if (target.includes(siteName) || siteName.includes(target)) {
-        const score = siteName.length;
-        if (score > bestScore) {
-          bestScore = score;
-          bestId = Number(site.id);
+    }
+    return null;
+  }
+
+  _journeyDestinationCandidates(dep) {
+    const result = [];
+    const self = this;
+    const add = function (value) {
+      const text = String(value || "").trim();
+      if (!text) {
+        return;
+      }
+      const normalized = self._normalizeStopName(text);
+      for (let i = 0; i < result.length; i++) {
+        if (self._normalizeStopName(result[i]) === normalized) {
+          return;
+        }
+      }
+      result.push(text);
+    };
+
+    add(dep && dep.destination);
+    add(dep && dep._rawDestination);
+    add(dep && dep.direction);
+    add(dep && dep._rawDirection);
+
+    const line = (dep && dep.line) || {};
+    const mode = String(line.transport_mode || "").toUpperCase();
+    const api = window.SlDepartureTime;
+    if (mode === "BUS" && api && api.getBusLineTerminus) {
+      add(api.getBusLineTerminus(line.designation, dep && dep.direction_code));
+      const opposite =
+        dep && (dep.direction_code === 1 || dep.direction_code === "1") ? "2" : "1";
+      add(api.getBusLineTerminus(line.designation, opposite));
+    }
+
+    return result;
+  }
+
+  _scoreDepartureStops(stops, dep, siteId, siteName) {
+    if (!stops || !stops.length) {
+      return -1;
+    }
+    const lastName = stops[stops.length - 1].name;
+    const candidates = this._journeyDestinationCandidates(dep);
+    let matchesDestination = false;
+    let matchesPrimary = false;
+    const primary = String(
+      (dep && dep.destination) || (dep && dep._rawDestination) || "",
+    ).trim();
+    for (let i = 0; i < candidates.length; i++) {
+      if (this._findStopIndex([{ name: lastName }], candidates[i]) >= 0) {
+        matchesDestination = true;
+        if (
+          primary &&
+          this._normalizeStopName(candidates[i]) === this._normalizeStopName(primary)
+        ) {
+          matchesPrimary = true;
         }
       }
     }
-    return bestId;
+    let score = stops.length;
+    if (matchesDestination) {
+      score += 1000;
+    }
+    if (matchesPrimary) {
+      score += 500;
+    }
+    return score;
+  }
+
+  _resolveNameToGid(name) {
+    const label = String(name || "").trim();
+    if (!label) {
+      return Promise.resolve(null);
+    }
+    const siteId = this._resolveSiteIdByName(label);
+    if (siteId) {
+      return Promise.resolve(this._siteGid(siteId));
+    }
+    const self = this;
+    return this._callWithResponse("rest_command", "sl_stop_finder", {
+      name: label,
+    })
+      .then(function (payload) {
+        let location = self._pickStopFinderLocation(self._unwrapServiceResponse(payload), label);
+        if (location && location.id) {
+          return String(location.id);
+        }
+        return self
+          ._callWithResponse("rest_command", "sl_stop_finder", {
+            name: label + ", Stockholm",
+          })
+          .then(function (retryPayload) {
+            location = self._pickStopFinderLocation(
+              self._unwrapServiceResponse(retryPayload),
+              label,
+            );
+            return location && location.id ? String(location.id) : null;
+          });
+      });
   }
 
   _siteGid(siteId) {
@@ -1409,11 +1503,53 @@ class SlNearbyCard extends HTMLElement {
     return result;
   }
 
+  _findStopIndex(stops, targetName) {
+    const target = this._normalizeStopName(targetName);
+    if (!target) {
+      return -1;
+    }
+    for (let i = 0; i < (stops || []).length; i++) {
+      const name = this._normalizeStopName((stops[i] && stops[i].name) || "");
+      if (!name) {
+        continue;
+      }
+      if (name === target || name.includes(target) || target.includes(name)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  _sliceStopsFromCurrent(stops, dep, siteId, siteName) {
+    if (!stops || !stops.length) {
+      return [];
+    }
+    const stopAreaName = dep && dep.stop_area && dep.stop_area.name;
+    const currentIndex = this._findCurrentStopIndex(stops, siteId, stopAreaName || siteName);
+    let slice = currentIndex >= 0 ? stops.slice(currentIndex) : stops.slice();
+
+    const candidates = this._journeyDestinationCandidates(dep);
+    let bestEnd = -1;
+    for (let i = 0; i < candidates.length; i++) {
+      const endIndex = this._findStopIndex(slice, candidates[i]);
+      if (endIndex > 0 && (bestEnd < 0 || endIndex < bestEnd)) {
+        bestEnd = endIndex;
+      }
+    }
+    if (bestEnd > 0) {
+      slice = slice.slice(0, bestEnd + 1);
+    }
+    return slice;
+  }
+
   _extractDepartureStops(payload, dep, siteId, siteName) {
     const line = (dep && dep.line) || {};
     const designation = String(line.designation || "").trim();
     const journeys = (payload && payload.journeys) || [];
     let bestStops = [];
+    let bestRemaining = -1;
+    const stopAreaName = dep && dep.stop_area && dep.stop_area.name;
+    const currentSiteLabel = stopAreaName || siteName;
 
     for (let i = 0; i < journeys.length; i++) {
       const legs = journeys[i].legs || [];
@@ -1439,55 +1575,36 @@ class SlNearbyCard extends HTMLElement {
             stops.push({ name: String(name).trim() });
           }
         }
-        if (stops.length > bestStops.length) {
-          bestStops = stops;
+        const deduped = this._dedupeStopNames(stops);
+        const currentIndex = this._findCurrentStopIndex(deduped, siteId, currentSiteLabel);
+        const remaining =
+          currentIndex >= 0 ? deduped.length - currentIndex : deduped.length;
+        if (remaining > bestRemaining) {
+          bestRemaining = remaining;
+          bestStops = deduped;
         }
       }
     }
 
-    bestStops = this._dedupeStopNames(bestStops);
-    if (!bestStops.length) {
-      return [];
-    }
-
-    const stopAreaName = dep && dep.stop_area && dep.stop_area.name;
-    const currentIndex = this._findCurrentStopIndex(bestStops, siteId, stopAreaName || siteName);
-    if (currentIndex >= 0) {
-      return bestStops.slice(currentIndex);
-    }
-    return bestStops;
+    return this._sliceStopsFromCurrent(bestStops, dep, siteId, siteName);
   }
 
   _resolveDestinationGid(dep) {
-    const destination = String((dep && dep.destination) || (dep && dep.direction) || "").trim();
-    if (!destination) {
+    const candidates = this._journeyDestinationCandidates(dep);
+    if (!candidates.length) {
       return Promise.resolve(null);
     }
-    const siteId = this._resolveSiteIdByName(destination);
-    if (siteId) {
-      return Promise.resolve(this._siteGid(siteId));
-    }
     const self = this;
-    return this._callWithResponse("rest_command", "sl_stop_finder", {
-      name: destination,
-    })
-      .then(function (payload) {
-        let location = self._pickStopFinderLocation(self._unwrapServiceResponse(payload), destination);
-        if (location && location.id) {
-          return String(location.id);
+    let chain = Promise.resolve(null);
+    candidates.forEach(function (name) {
+      chain = chain.then(function (gid) {
+        if (gid) {
+          return gid;
         }
-        return self
-          ._callWithResponse("rest_command", "sl_stop_finder", {
-            name: destination + ", Stockholm",
-          })
-          .then(function (retryPayload) {
-            location = self._pickStopFinderLocation(
-              self._unwrapServiceResponse(retryPayload),
-              destination,
-            );
-            return location && location.id ? String(location.id) : null;
-          });
+        return self._resolveNameToGid(name);
       });
+    });
+    return chain;
   }
 
   _journeyMotParams(dep) {
@@ -1532,33 +1649,60 @@ class SlNearbyCard extends HTMLElement {
 
   _fetchDepartureStops(dep, siteId, siteName) {
     const self = this;
+    const api = window.SlDepartureTime;
+    const terminusReady =
+      api && api.ensureBusLineTerminus
+        ? api.ensureBusLineTerminus(self.config.sites_cache_version || SlNearbyCard.CARD_VERSION)
+        : Promise.resolve();
     return this._ensureSitesLoaded()
       .then(function () {
-        return self._resolveDestinationGid(dep);
+        return terminusReady;
       })
-      .then(function (destGid) {
-        if (!destGid) {
-          throw new Error("Kunde inte hitta destinationen " + (dep.destination || ""));
+      .then(function () {
+        const candidates = self._journeyDestinationCandidates(dep);
+        if (!candidates.length) {
+          throw new Error("Kunde inte hitta destinationen för avgången");
         }
-        return self._callWithResponse(
-          "rest_command",
-          "sl_journey_stops",
-          Object.assign(
-            {
-              origin_site: Number(siteId),
-              dest_gid: destGid,
-            },
-            self._journeyMotParams(dep),
-          ),
-        );
-      })
-      .then(function (payload) {
-        return self._extractDepartureStops(
-          self._unwrapServiceResponse(payload),
-          dep,
-          siteId,
-          siteName,
-        );
+        let bestStops = [];
+        let bestScore = -1;
+        let chain = Promise.resolve();
+        candidates.forEach(function (destName) {
+          chain = chain.then(function () {
+            return self._resolveNameToGid(destName).then(function (destGid) {
+              if (!destGid) {
+                return;
+              }
+              return self
+                ._callWithResponse(
+                  "rest_command",
+                  "sl_journey_stops",
+                  Object.assign(
+                    {
+                      origin_site: Number(siteId),
+                      dest_gid: destGid,
+                    },
+                    self._journeyMotParams(dep),
+                  ),
+                )
+                .then(function (payload) {
+                  const stops = self._extractDepartureStops(
+                    self._unwrapServiceResponse(payload),
+                    dep,
+                    siteId,
+                    siteName,
+                  );
+                  const score = self._scoreDepartureStops(stops, dep, siteId, siteName);
+                  if (score > bestScore) {
+                    bestScore = score;
+                    bestStops = stops;
+                  }
+                });
+            });
+          });
+        });
+        return chain.then(function () {
+          return bestStops;
+        });
       });
   }
 

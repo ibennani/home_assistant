@@ -294,6 +294,7 @@
     getDepartureSortMs: getDepartureSortMs,
     formatDepartureLabel: formatDepartureLabel,
     ensureBusLineTerminus: ensureBusLineTerminus,
+    getBusLineTerminus: getBusLineTerminus,
     compareDeparturesByTime: compareDeparturesByTime,
     sortDeparturesByTime: sortDeparturesByTime,
     needsFastClock: needsFastClock,
