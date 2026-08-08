@@ -249,7 +249,6 @@ class SlStopDeparturesCard extends HTMLElement {
   }
 
   _prepareDepartures(departures) {
-    const now = new Date();
     const items = [];
     const self = this;
     for (let i = 0; i < departures.length; i++) {
@@ -262,18 +261,31 @@ class SlStopDeparturesCard extends HTMLElement {
       const expectedAt = expected ? new Date(expected) : null;
       const expectedMs = expectedAt ? expectedAt.getTime() : Number.POSITIVE_INFINITY;
       const destination = self._formatDepartureLabel(dep);
-      if (self._shouldHideDeparted(expectedAt, now)) {
-        continue;
-      }
       items.push(
         Object.assign({}, dep, {
           destination: destination,
+          _rawDestination: dep.destination,
+          _rawDirection: dep.direction,
           _expectedMs: expectedMs,
           _kind: kind,
         }),
       );
     }
     return self._sortDeparturesByTime(items);
+  }
+
+  _getVisibleDepartures(departures) {
+    const now = new Date();
+    const self = this;
+    const visible = [];
+    for (let i = 0; i < (departures || []).length; i++) {
+      const dep = departures[i];
+      const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
+      if (!self._shouldHideDeparted(expectedAt, now)) {
+        visible.push(dep);
+      }
+    }
+    return self._sortDeparturesByTime(visible);
   }
 
   _buildJourneyMap(departures) {
@@ -916,16 +928,7 @@ class SlStopDeparturesCard extends HTMLElement {
 
   _buildDepartureRows(departures, now) {
     const self = this;
-    let activeDeps = [];
-    for (let i = 0; i < departures.length; i++) {
-      const dep = departures[i];
-      const expectedAt = self._parseDate(dep.expected) || self._parseDate(dep.scheduled);
-      if (self._shouldHideDeparted(expectedAt, now)) {
-        continue;
-      }
-      activeDeps.push(dep);
-    }
-    activeDeps = self._sortDeparturesByTime(activeDeps);
+    const activeDeps = self._getVisibleDepartures(departures);
 
     const anim = window.SlDepartureListAnim;
     if (anim && anim.manager) {
