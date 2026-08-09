@@ -44,6 +44,13 @@
   radius: 300
   icon: mdi:ferry
 
+# SRF Stockholm (Gotlandsgatan 44)
+- name: SRF Stockholm
+  latitude: 59.3094671
+  longitude: 18.0767329
+  radius: 300
+  icon: mdi:office-building
+
 # Isabelles hem (minsta omslutande cirkel, GPS senaste 24 h)
 - name: Isabelle
   latitude: 60.797447

@@ -4989,6 +4989,8 @@
                   {{ person }} {% if person == 'Erik' %}har lämnat skolan {% else %}har lämnat Eriks skola{% endif %}
                 {%- elif to_slug == 'not_home' and from_slug == 'ilias_jobb' -%}
                   {{ person }} {% if person == 'Ilias' %}har lämnat jobbet {% else %}har lämnat Ilias jobb{% endif %}
+                {%- elif to_slug == 'not_home' and from_slug == 'srf_stockholm' -%}
+                  {{ person }} har lämnat SRF Stockholm
                 {%- elif to_slug == 'not_home' and from_slug == 'kth_campus' -%}
                   {{ person }} har lämnat KTH
                 {%- elif to_slug == 'not_home' and from_slug == 'kth_flemmingsberg' -%}
@@ -5085,6 +5087,8 @@
                   {{ person }} {% if person == 'Erik' %}är i skolan {% else %}är i Eriks skola{% endif %}
                 {%- elif to_slug == 'ilias_jobb' -%}
                   {{ person }} {% if person == 'Ilias' %}är på jobbet {% else %}är på Ilias jobb{% endif %}
+                {%- elif to_slug == 'srf_stockholm' -%}
+                  {{ person }} är på SRF Stockholm
                 {%- elif to_slug == 'kth_campus' -%}
                   {{ person }} är på KTH
                 {%- elif to_slug == 'kth_flemmingsberg' -%}
