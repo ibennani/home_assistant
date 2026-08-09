@@ -32,6 +32,7 @@ ZONES = [
     ("zone.annas_jobb", "annas_jobb"),
     ("zone.eriks_skola", "eriks_skola"),
     ("zone.ilias_jobb", "ilias_jobb"),
+    ("zone.srf_stockholm", "srf_stockholm"),
     ("zone.kth_campus", "kth_campus"),
     ("zone.kth_flemmingsberg", "kth_flemmingsberg"),
     ("zone.albins_mamma", "albins_mamma"),
@@ -94,6 +95,10 @@ ZONE_MESSAGES = {
     "ilias_jobb": {
         "entered": "{{ person }} {% if person == 'Ilias' %}är på jobbet {% else %}är på Ilias jobb{% endif %}",
         "left": "{{ person }} {% if person == 'Ilias' %}har lämnat jobbet {% else %}har lämnat Ilias jobb{% endif %}",
+    },
+    "srf_stockholm": {
+        "entered": "{{ person }} är på SRF Stockholm",
+        "left": "{{ person }} har lämnat SRF Stockholm",
     },
     "kth_campus": {
         "entered": "{{ person }} är på KTH",

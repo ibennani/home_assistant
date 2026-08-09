@@ -6208,6 +6208,7 @@ views:
       - person.ilias_bennani
       - zone.hemma_hos_rio
       - zone.ilias_jobb
+      - zone.srf_stockholm
       - zone.digg_sundsvall
       - zone.annas_jobb
       - zone.eriks_skola
@@ -6255,6 +6256,7 @@ views:
       - person.anna_bennani
       - zone.hemma_hos_rio
       - zone.ilias_jobb
+      - zone.srf_stockholm
       - zone.digg_sundsvall
       - zone.annas_jobb
       - zone.eriks_skola
@@ -6302,6 +6304,7 @@ views:
       - person.isabelle_sovig
       - zone.hemma_hos_rio
       - zone.ilias_jobb
+      - zone.srf_stockholm
       - zone.digg_sundsvall
       - zone.annas_jobb
       - zone.eriks_skola
@@ -6349,6 +6352,7 @@ views:
       - person.erik_bennani
       - zone.hemma_hos_rio
       - zone.ilias_jobb
+      - zone.srf_stockholm
       - zone.digg_sundsvall
       - zone.annas_jobb
       - zone.eriks_skola
