@@ -5071,12 +5071,6 @@
                   {{ person }} har åkt ifrån Stefan
                 {%- elif to_slug == 'not_home' and from_slug == 'elins_jobb' -%}
                   {{ person }} har lämnat Elins jobb
-                {%- elif to_slug == 'not_home' and from_slug == 'visby' -%}
-                  {{ person }} har lämnat Visby
-                {%- elif to_slug == 'not_home' and from_slug == 'gotlandslagret' -%}
-                  {{ person }} har lämnat Gotlandslägret
-                {%- elif to_slug == 'not_home' and from_slug == 'nynashamn' -%}
-                  {{ person }} har lämnat Nynäshamn
                 {%- elif to_slug == 'not_home' and from_slug == 'isabelle' -%}
                   {{ person }} {% if person == 'Isabelle' %}har åkt hemifrån sitt hem{% else %}har lämnat Isabelle{% endif %}
                 {%- elif to_slug == 'home' -%}
@@ -5169,12 +5163,6 @@
                   {{ person }} är hos Stefan
                 {%- elif to_slug == 'elins_jobb' -%}
                   {{ person }} är på Elins jobb
-                {%- elif to_slug == 'visby' -%}
-                  {{ person }} är i Visby
-                {%- elif to_slug == 'gotlandslagret' -%}
-                  {{ person }} är på Gotlandslägret
-                {%- elif to_slug == 'nynashamn' -%}
-                  {{ person }} är i Nynäshamn
                 {%- elif to_slug == 'isabelle' -%}
                   {{ person }} {% if person == 'Isabelle' %}är hemma hos sig{% else %}är hos Isabelle{% endif %}
                 {%- else -%}
