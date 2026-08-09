@@ -33,6 +33,7 @@ config:
 energy:
 frontend:
   extra_module_url:
+    - /hacsfiles/custom-sidebar/custom-sidebar-plugin.js?v=16.1.0
     - /local/sl-departure-time.js?v=20260808e
     - /local/sl-departure-list-animation.js?v=20260808e
     - /local/sl-stop-departures-card.js?v=20260729x
