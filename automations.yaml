@@ -8011,7 +8011,8 @@
     vid timerutgång. Kandidat ligger kvar tills badrums- eller duschdörr öppnas, eller
     rörelse avbryter. Kraftig fuktökning bekräftar till Någon duschar. Bekräftad session
     avslutas endast när badrumsdörren öppnas. Fukt spåras under session för toppvärde
-    och för att släppa ljuslås efter paus.
+    och för att släppa ljuslås efter paus. Detektion startar inte när alla badrumslampor
+    är tända och de fem dimmbara lyser på max (binary_sensor.badrum_fullt_upplyst_manuellt).
 
     '
   triggers:
@@ -8123,6 +8124,9 @@
         - conditions:
           - condition: template
             value_template: "{{ is_state('binary_sensor.badrumsdorren', 'off') and is_state('input_select.nagon_duschar', 'Ingen duschar') and is_state('input_boolean.duschsekvens_giltig', 'on') }}"
+          - condition: state
+            entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+            state: 'off'
           sequence:
           - action: timer.start
             target:
@@ -8144,6 +8148,9 @@
         value_template: '{{ is_state(''binary_sensor.duschdorren'', ''off'') }}'
       - condition: template
         value_template: '{{ is_state(''binary_sensor.badrummet_rorelse'', ''off'') }}'
+      - condition: state
+        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        state: 'off'
       sequence:
       - action: input_datetime.set_datetime
         target:
@@ -8210,6 +8217,9 @@
       - condition: state
         entity_id: binary_sensor.duschdorren
         state: 'on'
+      - condition: state
+        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        state: 'off'
       - condition: template
         value_template: "{% set bad = ['unknown', 'unavailable', 'none', 'None', '']
           %} {% set valid_trigger = trigger.from_state is not none and trigger.to_state
@@ -8273,6 +8283,9 @@
           or is_state(''input_select.nagon_duschar'', ''Någon kanske duschar'') }}'
       - condition: state
         entity_id: binary_sensor.badrumsdorren
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
         state: 'off'
       - condition: template
         value_template: "{% set bad = ['unknown', 'unavailable', 'none', 'None', '']
@@ -8338,6 +8351,9 @@
       - condition: template
         value_template: '{{ is_state(''input_boolean.duschsekvens_giltig'', ''on'')
           }}'
+      - condition: state
+        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        state: 'off'
       - condition: template
         value_template: "{% set bad = ['unknown', 'unavailable', 'none', 'None', '']
           %} {% set valid_trigger = trigger.from_state is not none and trigger.to_state
@@ -8383,6 +8399,9 @@
       - condition: template
         value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon kanske
           duschar'') }}'
+      - condition: state
+        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        state: 'off'
       - condition: template
         value_template: "{% set bad = ['unknown', 'unavailable', 'none', 'None', '']
           %} {% set valid_trigger = trigger.from_state is not none and trigger.to_state

@@ -695,6 +695,25 @@
       delay_off: "00:02:00"
       state: "{{ states('sensor.tvattmaskinen_switch_power') | float(0) > 5 }}"
 
+    - name: Badrum fullt upplyst manuellt
+      unique_id: badrum_fullt_upplyst_manuellt
+      icon: mdi:ceiling-light-multiple
+      state: >-
+        {% set dim = [
+          'light.takspottar_badrummet',
+          'light.led_badrummet_handfatet',
+          'light.led_badrummet_kommoden',
+          'light.takspott_duschen',
+          'light.led_strip_i_duschen'
+        ] %}
+        {% set ns = namespace(ok=true) %}
+        {% if not is_state('light.spegeln_badrummet', 'on') %}{% set ns.ok = false %}{% endif %}
+        {% for e in dim %}
+          {% if not is_state(e, 'on') %}{% set ns.ok = false %}{% endif %}
+          {% if state_attr(e, 'brightness') | int(0) < 250 %}{% set ns.ok = false %}{% endif %}
+        {% endfor %}
+        {{ ns.ok }}
+
     # ---- Kalender -----------------------------------------------------------
     - name: "Julbelysning"
       unique_id: julbelysningen
