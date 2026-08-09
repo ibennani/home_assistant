@@ -1,0 +1,14 @@
+# Dölj Kartor i HA:s inbyggda sidomeny för alla utom Ilias.
+# Kräver custom-sidebar (HACS) + extra_module_url i configuration.yaml.
+order:
+  - item: /map
+    match: href
+    hide: true
+
+exceptions:
+  - user: Ilias Bennani
+    extend_from: base
+    order:
+      - item: /map
+        match: href
+        hide: false
