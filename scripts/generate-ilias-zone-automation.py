@@ -73,9 +73,6 @@ ZONES = [
     ("zone.molndahls_sjukhus", "molndahls_sjukhuset"),
     ("zone.stefan", "stefan"),
     ("zone.elins_jobb", "elins_jobb"),
-    ("zone.visby", "visby"),
-    ("zone.gotlandslagret", "gotlandslagret"),
-    ("zone.nynashamn", "nynashamn"),
     ("zone.isabelle", "isabelle"),
 ]
 
@@ -259,18 +256,6 @@ ZONE_MESSAGES = {
     "elins_jobb": {
         "entered": "{{ person }} är på Elins jobb",
         "left": "{{ person }} har lämnat Elins jobb",
-    },
-    "visby": {
-        "entered": "{{ person }} är i Visby",
-        "left": "{{ person }} har lämnat Visby",
-    },
-    "gotlandslagret": {
-        "entered": "{{ person }} är på Gotlandslägret",
-        "left": "{{ person }} har lämnat Gotlandslägret",
-    },
-    "nynashamn": {
-        "entered": "{{ person }} är i Nynäshamn",
-        "left": "{{ person }} har lämnat Nynäshamn",
     },
     "isabelle": {
         "entered": "{{ person }} {% if person == 'Isabelle' %}är hemma hos sig{% else %}är hos Isabelle{% endif %}",

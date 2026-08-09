@@ -37,13 +37,6 @@
   radius: 20
   icon: mdi:human
 
-# Färjeterminalen i Nynäshamn (Destination Gotland m.fl.)
-- name: Nynäshamn
-  latitude: 58.9085
-  longitude: 17.9566
-  radius: 300
-  icon: mdi:ferry
-
 # SRF Stockholm (Gotlandsgatan 44)
 - name: SRF Stockholm
   latitude: 59.3094671
@@ -57,6 +50,3 @@
   longitude: 10.693697
   radius: 39
   icon: mdi:human
-
-# Visby och Gotlandslägret finns i HA storage (skapade via UI/MCP).
-# Lägg inte till här — zone.reload skapar dubbletter (visby_2, gotlandslagret_2).

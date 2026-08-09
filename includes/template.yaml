@@ -284,9 +284,6 @@
           'zone.molndahls_sjukhus',
           'zone.stefan',
           'zone.elins_jobb',
-          'zone.visby',
-          'zone.gotlandslagret',
-          'zone.nynashamn',
           'zone.isabelle'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
@@ -353,9 +350,6 @@
           'zone.molndahls_sjukhus',
           'zone.stefan',
           'zone.elins_jobb',
-          'zone.visby',
-          'zone.gotlandslagret',
-          'zone.nynashamn',
           'zone.isabelle'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
@@ -422,9 +416,6 @@
           'zone.molndahls_sjukhus',
           'zone.stefan',
           'zone.elins_jobb',
-          'zone.visby',
-          'zone.gotlandslagret',
-          'zone.nynashamn',
           'zone.isabelle'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
@@ -491,9 +482,6 @@
           'zone.molndahls_sjukhus',
           'zone.stefan',
           'zone.elins_jobb',
-          'zone.visby',
-          'zone.gotlandslagret',
-          'zone.nynashamn',
           'zone.isabelle'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}

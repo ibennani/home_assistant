@@ -6243,9 +6243,6 @@ views:
       - zone.ellio_i_norge
       - zone.eina
       - zone.norge_2
-      - zone.visby
-      - zone.gotlandslagret
-      - zone.nynashamn
       - zone.isabelle
       - zone.home
       history: true
@@ -6291,9 +6288,6 @@ views:
       - zone.ellio_i_norge
       - zone.eina
       - zone.norge_2
-      - zone.visby
-      - zone.gotlandslagret
-      - zone.nynashamn
       - zone.isabelle
       - zone.home
       history: true
@@ -6339,9 +6333,6 @@ views:
       - zone.ellio_i_norge
       - zone.eina
       - zone.norge_2
-      - zone.visby
-      - zone.gotlandslagret
-      - zone.nynashamn
       - zone.isabelle
       - zone.home
       history: true
@@ -6387,9 +6378,6 @@ views:
       - zone.ellio_i_norge
       - zone.eina
       - zone.norge_2
-      - zone.visby
-      - zone.gotlandslagret
-      - zone.nynashamn
       - zone.isabelle
       - zone.home
       show_zone_label: true
