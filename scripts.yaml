@@ -1924,6 +1924,91 @@ ilias_rum_stall_in_belysningen:
         {% endif %}'
       target:
         entity_id: light.ilias_myslampa
+media_morgonradio_tyst_start:
+  alias: 'Media: Morgonradio med tyst start på morgonhögtalarna'
+  description: Castar till MA-gruppen morgonhogtalarna_mass i synk och sätter volym per enhet från noll.
+  mode: restart
+  fields:
+    station:
+      description: Stationsnamn (som i input_select.play_radiostation). Väljs automatiskt efter tid/dag om utelämnat.
+      example: Sveriges Radio P1
+    uppdatera_input_select:
+      description: Uppdatera input_select för radio efter start (sätt false vid anrop från morgonrutinen).
+      example: true
+  sequence:
+  - variables:
+      group_entity: media_player.morgonhogtalarna_mass
+      selected_station: "{% if station is defined and station %}{{ station }}{% else %}{% set day = now().weekday() + 1 %}{% set t = now().strftime('%H:%M:%S') %}{% if day in range(1, 6) %}{% if t < '06:00:00' %}Sveriges Radio P4 Stockholm{% elif t < '11:00:00' %}Sveriges Radio P1{% elif t < '16:00:00' %}Sveriges Radio P4 Stockholm{% elif t < '18:15:00' %}Sveriges Radio P1{% else %}Sveriges Radio P4 Stockholm{% endif %}{% elif day == 6 %}Sveriges Radio P4 Stockholm{% else %}{% if t < '08:00:00' %}Sveriges Radio P4 Stockholm{% elif t < '11:00:00' %}Sveriges Radio P1{% else %}Sveriges Radio P4 Stockholm{% endif %}{% endif %}{% endif %}"
+      station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n
+        \ \"Sveriges Radio P2\": \"library://radio/10\",\n  \"Sveriges Radio P3\":
+        \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n
+        \ \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio
+        Ekot Direkt\": \"library://radio/14\"\n} %}\n{{ streams.get(selected_station) }}"
+  - action: media_player.media_stop
+    continue_on_error: true
+    target:
+      entity_id:
+      - media_player.hogtalarna_i_koket_mass
+      - media_player.morgonhogtalarna_mass
+      - media_player.pucken_i_ilias_rum
+  - action: media_player.volume_set
+    target:
+      entity_id:
+      - media_player.hogtalarna_i_koket
+      - media_player.googlehome_annas_rum
+      - media_player.googlehome_sovrummet
+      - media_player.googlehome_ilias_rum
+      - media_player.googlehome_vardagsrummet
+    data:
+      volume_level: 0
+  - action: media_player.play_media
+    target:
+      entity_id: '{{ group_entity }}'
+    data:
+      media_content_id: '{{ station_url }}'
+      media_content_type: music
+      metadata: {}
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: media_player.morgonhogtalarna_mass
+      to: playing
+    timeout:
+      seconds: 15
+  - parallel:
+    - action: media_player.volume_set
+      target:
+        entity_id: media_player.hogtalarna_i_koket
+      data:
+        volume_level: 0.08
+    - action: media_player.volume_set
+      target:
+        entity_id:
+        - media_player.googlehome_annas_rum
+        - media_player.googlehome_sovrummet
+      data:
+        volume_level: 0.15
+    - action: media_player.volume_set
+      target:
+        entity_id:
+        - media_player.googlehome_ilias_rum
+        - media_player.googlehome_vardagsrummet
+      data:
+        volume_level: 0.2
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ uppdatera_input_select | default(true) | bool }}'
+      sequence:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.play_radiostation_target
+        data:
+          option: Morgonhögtalarna
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.play_radiostation
+        data:
+          option: '{{ selected_station }}'
 media_lyssna_pa_radio:
   alias: 'Media: Lyssna på radio'
   mode: restart
@@ -1939,6 +2024,15 @@ media_lyssna_pa_radio:
         '
       example: 0.1
   sequence:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ speaker_option == 'Morgonhögtalarna' }}"
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.media_morgonradio_tyst_start
+      - stop: ''
   - variables:
       speaker_entity: "{% if speaker_option == 'Högtalarna i köket' %}\n  media_player.hogtalarna_i_koket\n{%
         elif speaker_option == 'Morgonhögtalarna' %}\n  media_player.morgonhogtalarna\n{%
