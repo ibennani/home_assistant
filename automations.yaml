@@ -3177,7 +3177,19 @@
     - conditions:
       - condition: template
         value_template: "{{ station_url is not none \n   and station_url != ''\n   and
-          target_entity is not none \n   and target_entity != '' }}\n"
+          target_name == 'Morgonhögtalarna' }}\n"
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.media_morgonradio_tyst_start
+        data:
+          variables:
+            station: '{{ station }}'
+    - conditions:
+      - condition: template
+        value_template: "{{ station_url is not none \n   and station_url != ''\n   and
+          target_entity is not none \n   and target_entity != ''\n   and target_name
+          != 'Morgonhögtalarna' }}\n"
       sequence:
       - action: media_player.media_stop
         continue_on_error: true
@@ -3386,13 +3398,10 @@
     continue_on_timeout: true
   - action: script.turn_on
     target:
-      entity_id: script.media_lyssna_pa_radio
+      entity_id: script.media_morgonradio_tyst_start
     data:
       variables:
-        volym: 0.08
-        speaker_option: "{% set is_weekday = (now().isoweekday() in [1,2,3,4,5]) %}
-          \ {% if is_weekday and is_state('input_boolean.vacation_mode','off') %}\n
-          \ Högtalarna i köket\n{% else %}\n  Högtalarna i köket\n{% endif %}    \n"
+        uppdatera_input_select: false
   mode: queued
 - alias: 'Media: Sätt var.morgoninfo_koket_redan_upplast till true'
   id: 79183480484080dsfshr08888674
