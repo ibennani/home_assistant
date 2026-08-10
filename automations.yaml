@@ -3149,6 +3149,18 @@
           entity_id: input_select.play_radiostation_target
         data:
           option: Ingen högtalare
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.entity_id == 'input_select.play_radiostation'\n   and
+          states('input_select.play_radiostation_target') == 'Ingen högtalare'\n   and
+          states('input_select.play_radiostation') != 'Tyst' }}\n"
+      sequence:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.play_radiostation
+        data:
+          option: Tyst
+      - stop: ''
   - variables:
       station: '{{ states(''input_select.play_radiostation'') }}'
       target_name: '{{ states(''input_select.play_radiostation_target'') }}'
@@ -3164,8 +3176,7 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ station == ''Tyst'' or target_name == ''Ingen högtalare''
-          }}'
+        value_template: '{{ station == ''Tyst'' }}'
       sequence:
       - action: media_player.media_stop
         continue_on_error: true
@@ -3396,12 +3407,24 @@
       '
     timeout: 00:00:30
     continue_on_timeout: true
-  - action: script.turn_on
+  - action: input_select.select_option
     target:
-      entity_id: script.media_morgonradio_tyst_start
+      entity_id: input_select.play_radiostation_target
     data:
-      variables:
-        uppdatera_input_select: false
+      option: Morgonhögtalarna
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.play_radiostation
+    data:
+      option: "{% set day = now().weekday() + 1 %} {% set t = now().strftime('%H:%M:%S')
+        %}\n{% if day in range(1, 6) %}\n  {% if t < '06:00:00' %}\n    Sveriges Radio
+        P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges Radio P1\n  {% elif
+        t < '16:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif t < '18:15:00'
+        %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges Radio P4 Stockholm\n
+        \ {% endif %}\n{% elif day == 6 %}\n  Sveriges Radio P4 Stockholm\n{% else
+        %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif
+        t < '11:00:00' %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges Radio
+        P4 Stockholm\n  {% endif %}\n{% endif %}\n"
   mode: queued
 - alias: 'Media: Sätt var.morgoninfo_koket_redan_upplast till true'
   id: 79183480484080dsfshr08888674
