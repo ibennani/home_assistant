@@ -1932,9 +1932,6 @@ media_morgonradio_tyst_start:
     station:
       description: Stationsnamn (som i input_select.play_radiostation). Väljs automatiskt efter tid/dag om utelämnat.
       example: Sveriges Radio P1
-    uppdatera_input_select:
-      description: Uppdatera input_select för radio efter start (sätt false vid anrop från morgonrutinen).
-      example: true
   sequence:
   - variables:
       group_entity: media_player.morgonhogtalarna_mass
@@ -1994,21 +1991,6 @@ media_morgonradio_tyst_start:
         - media_player.googlehome_vardagsrummet
       data:
         volume_level: 0.2
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ uppdatera_input_select | default(true) | bool }}'
-      sequence:
-      - action: input_select.select_option
-        target:
-          entity_id: input_select.play_radiostation_target
-        data:
-          option: Morgonhögtalarna
-      - action: input_select.select_option
-        target:
-          entity_id: input_select.play_radiostation
-        data:
-          option: '{{ selected_station }}'
 media_lyssna_pa_radio:
   alias: 'Media: Lyssna på radio'
   mode: restart
@@ -2029,9 +2011,24 @@ media_lyssna_pa_radio:
       - condition: template
         value_template: "{{ speaker_option == 'Morgonhögtalarna' }}"
       sequence:
-      - action: script.turn_on
+      - action: input_select.select_option
         target:
-          entity_id: script.media_morgonradio_tyst_start
+          entity_id: input_select.play_radiostation_target
+        data:
+          option: Morgonhögtalarna
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.play_radiostation
+        data:
+          option: "{% set day = now().weekday() + 1 %} {% set t = now().strftime('%H:%M:%S')
+            %}\n{% if day in range(1, 6) %}\n  {% if t < '06:00:00' %}\n    Sveriges
+            Radio P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges Radio P1\n
+            \ {% elif t < '16:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif
+            t < '18:15:00' %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges
+            Radio P4 Stockholm\n  {% endif %}\n{% elif day == 6 %}\n  Sveriges Radio
+            P4 Stockholm\n{% else %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio
+            P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges Radio P1\n  {%
+            else %}\n    Sveriges Radio P4 Stockholm\n  {% endif %}\n{% endif %}\n"
       - stop: ''
   - variables:
       speaker_entity: "{% if speaker_option == 'Högtalarna i köket' %}\n  media_player.hogtalarna_i_koket\n{%
