@@ -6207,13 +6207,20 @@ views:
               show_icon: false
               show_name: true
               tap_action:
-                action: call-service
-                service: notify.mobile_app_ilias_s23_ultra
-                data:
-                  message: request_location_update
+                action: fire-dom-event
+                browser_mod:
+                  service: browser_mod.sequence
                   data:
-                    priority: high
-                    ttl: 0
+                    sequence:
+                    - service: notify.mobile_app_ilias_s23_ultra
+                      data:
+                        message: request_location_update
+                        data:
+                          priority: high
+                          ttl: 0
+                    - service: browser_mod.notification
+                      data:
+                        message: Uppdaterar positioner
           - type: entities
             entities:
             - device_tracker.ilias_s23_ultra
