@@ -2929,5 +2929,6 @@ spion_uppdatera_ilias_position:
       data:
         priority: high
         ttl: 0
-  - delay:
-      seconds: 2
+  - action: browser_mod.notification
+    data:
+      message: Uppdaterar positioner
