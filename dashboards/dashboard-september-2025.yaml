@@ -6200,15 +6200,20 @@ views:
         show_icon: false
         show_name: true
         tap_action:
-          action: call-service
-          service: script.spion_uppdatera_ilias_position
-    - type: conditional
-      conditions:
-      - entity: script.spion_uppdatera_ilias_position
-        state: 'on'
-      card:
-        type: markdown
-        content: '*Uppdaterar positioner*'
+          action: fire-dom-event
+          browser_mod:
+            service: browser_mod.sequence
+            data:
+              sequence:
+              - service: notify.mobile_app_ilias_s23_ultra
+                data:
+                  message: request_location_update
+                  data:
+                    priority: high
+                    ttl: 0
+              - service: browser_mod.notification
+                data:
+                  message: Uppdaterar positioner
     - type: custom:state-switch
       entity: group
       states:
