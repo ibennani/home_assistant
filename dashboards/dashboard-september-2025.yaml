@@ -6195,13 +6195,31 @@ views:
       entity: group
       states:
         admin:
-          type: entities
-          title: Familjens mobiler
-          entities:
-          - device_tracker.ilias_s23_ultra
-          - device_tracker.anna_s22_ultra
-          - device_tracker.annelies_iphone
-          - device_tracker.erik_s23
+          type: vertical-stack
+          cards:
+          - type: horizontal-stack
+            cards:
+            - type: markdown
+              content: |
+                **Familjens mobiler**
+            - type: button
+              name: Uppdatera positioner
+              show_icon: false
+              show_name: true
+              tap_action:
+                action: call-service
+                service: notify.mobile_app_ilias_s23_ultra
+                data:
+                  message: request_location_update
+                  data:
+                    priority: high
+                    ttl: 0
+          - type: entities
+            entities:
+            - device_tracker.ilias_s23_ultra
+            - device_tracker.anna_s22_ultra
+            - device_tracker.annelies_iphone
+            - device_tracker.erik_s23
     - type: map
       title: Ilias senaste 24 timmarna
       entities:
