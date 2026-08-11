@@ -6202,6 +6202,13 @@ views:
         tap_action:
           action: call-service
           service: script.spion_uppdatera_ilias_position
+    - type: conditional
+      conditions:
+      - entity: script.spion_uppdatera_ilias_position
+        state: 'on'
+      card:
+        type: markdown
+        content: '*Uppdaterar positioner*'
     - type: custom:state-switch
       entity: group
       states:
