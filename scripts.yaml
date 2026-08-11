@@ -2919,3 +2919,17 @@ badrum_synka_profil_flaggor:
         - action: input_boolean.turn_off
           target:
             entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_dusch_profil' }}"
+spion_uppdatera_ilias_position:
+  alias: 'Spion: Uppdatera Ilias GPS-position'
+  mode: single
+  sequence:
+  - action: notify.mobile_app_ilias_s23_ultra
+    data:
+      message: request_location_update
+      data:
+        priority: high
+        ttl: 0
+  - action: browser_mod.notification
+    continue_on_error: true
+    data:
+      message: Uppdaterar positioner
