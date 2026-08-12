@@ -1,4 +1,4 @@
-# Dölj Kartor i HA:s inbyggda sidomeny för alla utom Ilias.
+# Sidomeny: Översikt först, Kartor dold för alla utom Ilias.
 # Kräver custom-sidebar (HACS) + extra_module_url i configuration.yaml.
 order:
   - item: /dashboard-september-2025
