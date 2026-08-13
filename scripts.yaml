@@ -2058,6 +2058,61 @@ media_lyssna_pa_radio:
         %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif
         t < '11:00:00' %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges Radio
         P4 Stockholm\n  {% endif %}\n{% endif %}\n"
+media_koksradio_tyst_start:
+  alias: 'Media: Kökradio med tyst start'
+  description: Väcker kökschromecast, castar till hogtalarna_i_koket_mass och sätter volym på enheten från noll.
+  mode: restart
+  fields:
+    station:
+      description: Stationsnamn (som i input_select.play_radiostation). Använder aktuellt val om utelämnat.
+      example: Sveriges Radio P1
+    volym:
+      description: Slutvolym (0.0–1.0) på kökschromecast efter tyst start.
+      example: 0.15
+  sequence:
+  - variables:
+      group_entity: media_player.hogtalarna_i_koket_mass
+      chromecast_entity: media_player.hogtalarna_i_koket
+      selected_station: "{% if station is defined and station %}{{ station }}{% else %}{{ states('input_select.play_radiostation') }}{% endif %}"
+      station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n  \"Sveriges Radio P2\": \"library://radio/10\",\n  \"Sveriges Radio P3\": \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n  \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio Ekot Direkt\": \"library://radio/14\"\n} %}\n{{ streams.get(selected_station) }}"
+      slutvolym: '{{ volym | default(0.15) | float }}'
+  - action: media_player.media_stop
+    continue_on_error: true
+    target:
+      entity_id:
+      - media_player.hogtalarna_i_koket_mass
+      - media_player.morgonhogtalarna_mass
+      - media_player.pucken_i_ilias_rum
+  - action: media_player.turn_on
+    continue_on_error: true
+    target:
+      entity_id: '{{ chromecast_entity }}'
+  - action: media_player.volume_set
+    target:
+      entity_id: '{{ chromecast_entity }}'
+    data:
+      volume_level: 0
+  - action: media_player.play_media
+    target:
+      entity_id: '{{ group_entity }}'
+    data:
+      media_content_id: '{{ station_url }}'
+      media_content_type: music
+      metadata: {}
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: media_player.hogtalarna_i_koket_mass
+      to: playing
+    - trigger: state
+      entity_id: media_player.hogtalarna_i_koket
+      to: playing
+    timeout:
+      seconds: 20
+  - action: media_player.volume_set
+    target:
+      entity_id: '{{ chromecast_entity }}'
+    data:
+      volume_level: '{{ slutvolym }}'
 test_spela_p1_i_ilias_rum_med_tyst_start:
   alias: Spela P1 i Ilias rum med tyst start
   sequence:
