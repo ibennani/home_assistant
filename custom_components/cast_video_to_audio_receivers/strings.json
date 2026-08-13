@@ -1,0 +1,25 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Cast video to audio receivers",
+        "description": "Konfigurera en zon som virtuell Cast-mottagare. Ljudet spelas på den valda högtalaren när du castar från mobilen.",
+        "data": {
+          "friendly_name": "Namn i cast-listan",
+          "target_entity": "Fysisk högtalare (Chromecast Audio / Nest)",
+          "cert_manifest": "Sökväg till cert manifest (JSON från Chromecast)",
+          "enable_monitor": "Övervaka även cast till TV och relaya ljud automatiskt",
+          "monitor_video_entity": "TV/media_player att övervaka (valfritt)"
+        }
+      }
+    },
+    "error": {
+      "invalid_target": "Välj en giltig media_player-entitet.",
+      "cert_missing": "Cert manifest-filen finns inte.",
+      "name_exists": "Detta namn används redan."
+    },
+    "abort": {
+      "already_configured": "Zonen är redan konfigurerad."
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "cast-video-to-audio-receiver",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Virtual Cast receiver for Cast video to audio receivers HA integration",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@tristanpenman/castv2": "github:tristanpenman/node-castv2",
+    "uuid": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
