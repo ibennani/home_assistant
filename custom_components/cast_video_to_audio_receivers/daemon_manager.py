@@ -27,6 +27,12 @@ class ReceiverDaemonManager:
         self._processes: dict[str, asyncio.subprocess.Process] = {}
 
     def _node_binary(self) -> str:
+        env_node = os.environ.get("CAST_RECEIVER_NODE")
+        if env_node:
+            return env_node
+        bundled = Path("/config/.node20/bin/node")
+        if bundled.is_file():
+            return str(bundled)
         return shutil.which("node") or "node"
 
     def _receiver_entry(self) -> Path:
