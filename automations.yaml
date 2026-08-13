@@ -3199,8 +3199,19 @@
     - conditions:
       - condition: template
         value_template: "{{ station_url is not none \n   and station_url != ''\n   and
+          target_name == 'Högtalarna i köket' }}\n"
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.media_koksradio_tyst_start
+        data:
+          variables:
+            station: '{{ station }}'
+    - conditions:
+      - condition: template
+        value_template: "{{ station_url is not none \n   and station_url != ''\n   and
           target_entity is not none \n   and target_entity != ''\n   and target_name
-          != 'Morgonhögtalarna' }}\n"
+          not in ['Morgonhögtalarna', 'Högtalarna i köket'] }}\n"
       sequence:
       - action: media_player.media_stop
         continue_on_error: true
