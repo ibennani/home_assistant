@@ -1429,6 +1429,9 @@
   triggers:
   - trigger: state
     entity_id: event.front_door_ding
+    not_from:
+    - unavailable
+    - unknown
     id: door_ding
   conditions:
   - condition: template
@@ -2268,6 +2271,9 @@
   trigger:
   - trigger: state
     entity_id: event.front_door_ding
+    not_from:
+    - unavailable
+    - unknown
     id: ring_pa_dorren
   - trigger: state
     entity_id: binary_sensor.ytterdorren
@@ -2309,6 +2315,9 @@
   triggers:
   - trigger: state
     entity_id: event.front_door_ding
+    not_from:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.ytterdorren
   - trigger: state
@@ -7567,6 +7576,9 @@
   triggers:
   - trigger: state
     entity_id: event.front_door_ding
+    not_from:
+    - unavailable
+    - unknown
   action:
   - action: notify.android_tv_sony_tv_i_vardagsrummet
     data:
@@ -7609,6 +7621,9 @@
   triggers:
   - trigger: state
     entity_id: event.front_door_ding
+    not_from:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: "{{ not is_state(\"input_select.house_time_modes\", \"Natt\")
