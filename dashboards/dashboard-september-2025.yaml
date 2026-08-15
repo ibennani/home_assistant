@@ -754,7 +754,7 @@ views:
       points_per_hour: 60
       aminate: true
       decimals: 0
-      lower_bound: 33
+      lower_bound: 30
       upper_bound: 60
       show:
         fill: true
@@ -764,7 +764,7 @@ views:
         graph: line
       color_thresholds_transition: hard
       color_thresholds:
-      - value: 33
+      - value: 30
         color: '#4dff59'
       - value: 40
         color: '#fff426'
