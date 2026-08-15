@@ -1183,9 +1183,6 @@
       not_from:
       - unavailable
       - unknown
-      not_to:
-      - unavailable
-      - unknown
     - trigger: state
       entity_id: event.front_door_motion
       id: rorelse_event_backup
@@ -1273,9 +1270,6 @@
       not_from:
       - unavailable
       - unknown
-      not_to:
-      - unavailable
-      - unknown
     - trigger: state
       entity_id: event.front_door_motion
       id: ring_motion_event_backup
@@ -1327,9 +1321,6 @@
     to: 'on'
     id: ring_motion_mqtt
     not_from:
-    - unavailable
-    - unknown
-    not_to:
     - unavailable
     - unknown
   - trigger: state
@@ -1599,9 +1590,6 @@
       not_from:
       - unavailable
       - unknown
-      not_to:
-      - unavailable
-      - unknown
     - trigger: state
       entity_id: event.front_door_motion
       id: ring_motion_event
@@ -1679,9 +1667,6 @@
     to: 'on'
     id: door_ding_mqtt
     not_from:
-    - unavailable
-    - unknown
-    not_to:
     - unavailable
     - unknown
   - trigger: state
@@ -2708,9 +2693,6 @@
     not_from:
     - unavailable
     - unknown
-    not_to:
-    - unavailable
-    - unknown
   - trigger: state
     entity_id: event.front_door_ding
     not_from:
@@ -2781,9 +2763,6 @@
     to: 'on'
     id: ring_ding_mqtt
     not_from:
-    - unavailable
-    - unknown
-    not_to:
     - unavailable
     - unknown
   - trigger: state
@@ -8449,9 +8428,6 @@
     not_from:
     - unavailable
     - unknown
-    not_to:
-    - unavailable
-    - unknown
   - trigger: state
     entity_id: event.front_door_ding
     id: ding_event
@@ -8517,9 +8493,6 @@
     to: 'on'
     id: ding_mqtt
     not_from:
-    - unavailable
-    - unknown
-    not_to:
     - unavailable
     - unknown
   - trigger: state
