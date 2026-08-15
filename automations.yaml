@@ -1230,6 +1230,50 @@
     target:
       entity_id: scene.framsida_blink_restore
   mode: single
+# Engångs: notis till mobil när nästa framsida-rörelse sker — blink-automationen fungerade eller inte.
+# Stängs av automatiskt efter notis (input_boolean.ring_blink_verifiering).
+- id: ring_blink_verifiering_8c5c
+  alias: 'Test: Verifiera blink i badrum vid framsida-rörelse (engångs)'
+  mode: single
+  triggers:
+    - trigger: state
+      entity_id: event.front_door_motion
+  conditions:
+    - condition: state
+      entity_id: input_boolean.ring_blink_verifiering
+      state: "on"
+    - condition: template
+      value_template: >
+        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}
+  actions:
+    - variables:
+        motion_at: "{{ trigger.to_state.last_changed }}"
+    - delay: "00:00:12"
+    - variables:
+        blink_ok: >
+          {% set blink = 'automation.belysning_blinka_i_wc_och_badrummet_vid_rorelse_pa_framsidan' %}
+          {% set triggered = state_attr(blink, 'last_triggered') %}
+          {% if triggered is none or triggered in ['unknown', 'unavailable', 'None'] %}
+            false
+          {% else %}
+            {{ as_timestamp(triggered) >= as_timestamp(motion_at) - 2
+               and (as_timestamp(states[blink].last_updated) - as_timestamp(triggered)) >= 4 }}
+          {% endif %}
+    - action: notify.mobile_app_ilias_s23_ultra
+      data:
+        message: >
+          {% if blink_ok | bool %}
+          Automatsäkringen fungerar.
+          {% else %}
+          Automatsäkringen fungerar inte.
+          {% endif %}
+        data:
+          ttl: 0
+          priority: high
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ring_blink_verifiering
 - id: sdfsksdgsd56dgsd16sddga6s068sggg
   alias: 'Belysning: Blinka mysbelysningen i Eriks rum när det ringer på dörren'
   triggers:

@@ -188,3 +188,9 @@
     name: Badrum editor dusch laddad
     icon: mdi:shower-head
     initial: off
+
+# Engångsbevakning: notis om blink-automationen vid nästa Ring-rörelse på framsidan
+  ring_blink_verifiering:
+    name: Verifiera blink badrum vid framsida-rörelse (engångs)
+    icon: mdi:motion-sensor
+    initial: on
