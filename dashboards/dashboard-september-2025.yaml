@@ -817,7 +817,7 @@ views:
         name: Rörelsen
         state: '{% if is_state(''binary_sensor.ovre_trappan_rorelse'', ''on'') %}Rörelse{% else %}Ingen rörelse{% endif %}'
   - type: custom:expander-card
-    expanded: true
+    expanded: false
     title-card-clickable: true
     title-card-button-overlay: true
     title-card:
