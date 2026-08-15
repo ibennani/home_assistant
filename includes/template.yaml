@@ -283,7 +283,8 @@
           'zone.molndahls_sjukhus',
           'zone.stefan',
           'zone.elins_jobb',
-          'zone.isabelle'
+          'zone.isabelle',
+          'zone.ralambshovsparken'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
         {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
@@ -348,7 +349,8 @@
           'zone.molndahls_sjukhus',
           'zone.stefan',
           'zone.elins_jobb',
-          'zone.isabelle'
+          'zone.isabelle',
+          'zone.ralambshovsparken'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
         {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
@@ -413,7 +415,8 @@
           'zone.molndahls_sjukhus',
           'zone.stefan',
           'zone.elins_jobb',
-          'zone.isabelle'
+          'zone.isabelle',
+          'zone.ralambshovsparken'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
         {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
@@ -478,7 +481,8 @@
           'zone.molndahls_sjukhus',
           'zone.stefan',
           'zone.elins_jobb',
-          'zone.isabelle'
+          'zone.isabelle',
+          'zone.ralambshovsparken'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
         {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
