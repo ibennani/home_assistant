@@ -764,7 +764,7 @@ views:
         name: Rörelsen
         state: '{% if is_state(''binary_sensor.ovre_trappan_rorelse'', ''on'') %}Rörelse{% else %}Ingen rörelse{% endif %}'
   - type: custom:expander-card
-    expanded: false
+    expanded: true
     title-card-clickable: true
     title-card-button-overlay: true
     title-card:
@@ -790,6 +790,10 @@ views:
         unit: '%'
         min: 0
         max: 100
+    - type: thermostat
+      entity: climate.elementet_i_sovrummet
+      name: Elementet
+      show_current_as_primary: true
     - type: entities
       title: Belysning
       icon: mdi:lightbulb
@@ -859,12 +863,6 @@ views:
       entities:
       - entity: media_player.googlehome_sovrummet
         name: Pucken
-    - type: entities
-      title: Värme
-      icon: mdi:radiator
-      entities:
-      - entity: climate.elementet_i_sovrummet
-        name: Elementet
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
