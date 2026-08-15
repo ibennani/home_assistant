@@ -1135,7 +1135,7 @@
     - action: switch.turn_off
       target:
         entity_id: switch.vattenslang_framsidan
-# Ring-rörelse: last_activity (category=motion) + backup när kameran får ny video (last_video_id).
+# Ring-rörelse via last_activity (category=motion). Direkt blink — ingen kamera-delay.
 # Inte dörrklocka — dörrklocka använder event.front_door_ding.
 - id: '8348674'
   alias: 'Belysning: Blinka i WC och badrummet vid rörelse på framsidan'
@@ -1144,35 +1144,13 @@
   triggers:
   - trigger: state
     entity_id: sensor.front_door_last_activity
-    id: last_activity
-  - trigger: state
-    entity_id: camera.front_door
-    attribute: last_video_id
-    id: kamera_video
   conditions:
   - condition: template
     value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
       and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}"
-  actions:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: kamera_video
-      sequence:
-      - variables:
-          ny_video_id: "{{ trigger.to_state.attributes.get('last_video_id') }}"
-      - delay: "00:00:10"
   - condition: template
-    value_template: >
-      {% if trigger.id == 'last_activity' %}
-        {{ trigger.to_state.attributes.get('category') == 'motion' }}
-      {% else %}
-        {{ state_attr('sensor.front_door_last_activity', 'category') == 'motion'
-           or (
-             state_attr('camera.front_door', 'last_video_id') == ny_video_id
-             and (as_timestamp(now()) - as_timestamp(states.event.front_door_ding.last_changed)) > 45
-           ) }}
-      {% endif %}
+    value_template: "{{ trigger.to_state.attributes.get('category') == 'motion' }}"
+  actions:
   - alias: Spara nuvarande ljusläge
     action: scene.create
     data:
