@@ -790,10 +790,6 @@ views:
         unit: '%'
         min: 0
         max: 100
-    - type: thermostat
-      entity: climate.elementet_i_sovrummet
-      name: Elementet
-      show_current_as_primary: true
     - type: entities
       title: Belysning
       icon: mdi:lightbulb
@@ -863,6 +859,10 @@ views:
       entities:
       - entity: media_player.googlehome_sovrummet
         name: Pucken
+    - type: thermostat
+      entity: climate.elementet_i_sovrummet
+      name: Elementet
+      show_current_as_primary: true
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
