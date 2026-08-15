@@ -801,8 +801,6 @@ views:
       title: Belysning
       icon: mdi:lightbulb
       entities:
-      - entity: input_select.ovre_trappan_belysning
-        name: Belysningsläget
       - type: custom:slider-entity-row
         entity: light.taklampan_ovre_trappan_level
         toggle: true
