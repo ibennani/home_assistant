@@ -1241,20 +1241,25 @@
       entity_id: scene.framsida_blink_restore
   - alias: Verifiera återställning — fortsätt tills lamporna matchar snapshot
     repeat:
-      while:
-      - condition: template
-        value_template: >
-          {% set d_ok = (expected_duschen_on | bool and is_state('light.takspott_duschen', 'on')
-            and (state_attr('light.takspott_duschen', 'brightness') | int(0)) == (expected_duschen_brightness | int(0)))
-            or (not expected_duschen_on | bool and is_state('light.takspott_duschen', 'off')) %}
-          {% set b_ok = (expected_badrummet_on | bool and is_state('light.takspottar_badrummet', 'on')
-            and (state_attr('light.takspottar_badrummet', 'brightness') | int(0)) == (expected_badrummet_brightness | int(0)))
-            or (not expected_badrummet_on | bool and is_state('light.takspottar_badrummet', 'off')) %}
-          {% set w_ok = (expected_wc_on | bool and is_state('light.taklampa_wc', 'on')
-            and (state_attr('light.taklampa_wc', 'brightness') | int(0)) == (expected_wc_brightness | int(0)))
-            or (not expected_wc_on | bool and is_state('light.taklampa_wc', 'off')) %}
-          {{ not (d_ok and b_ok and w_ok) }}
+      count: 15
       sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: >
+              {% set d_ok = (expected_duschen_on | bool and is_state('light.takspott_duschen', 'on')
+                and (state_attr('light.takspott_duschen', 'brightness') | int(0)) == (expected_duschen_brightness | int(0)))
+                or (not expected_duschen_on | bool and is_state('light.takspott_duschen', 'off')) %}
+              {% set b_ok = (expected_badrummet_on | bool and is_state('light.takspottar_badrummet', 'on')
+                and (state_attr('light.takspottar_badrummet', 'brightness') | int(0)) == (expected_badrummet_brightness | int(0)))
+                or (not expected_badrummet_on | bool and is_state('light.takspottar_badrummet', 'off')) %}
+              {% set w_ok = (expected_wc_on | bool and is_state('light.taklampa_wc', 'on')
+                and (state_attr('light.taklampa_wc', 'brightness') | int(0)) == (expected_wc_brightness | int(0)))
+                or (not expected_wc_on | bool and is_state('light.taklampa_wc', 'off')) %}
+              {{ d_ok and b_ok and w_ok }}
+          sequence:
+          - stop: Lampor återställda till snapshot-läge
+        default: []
       - delay: 00:00:02
       - action: scene.turn_on
         continue_on_error: true
@@ -1312,7 +1317,6 @@
               continue_on_error: true
               target:
                 entity_id: light.taklampa_wc
-      count: 15
 # Engångs: notis till mobil när nästa framsida-rörelse sker — blink-automationen fungerade eller inte.
 # Stängs av automatiskt efter notis (input_boolean.ring_blink_verifiering).
 - id: ring_blink_verifiering_8c5c
