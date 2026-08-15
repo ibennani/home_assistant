@@ -1432,8 +1432,16 @@
     not_from:
     - unavailable
     - unknown
+    not_to:
+    - unavailable
+    - unknown
     id: door_ding
   conditions:
+  - condition: template
+    value_template: >
+      {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+         and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+         and trigger.to_state.state != trigger.from_state.state }}
   - condition: template
     value_template: "{{ is_state('sensor.erik_aktiv_zon', 'zone.home')\n   and not is_state('input_select.house_time_modes',
       'Natt')\n   and is_state('input_boolean.gaster_hemma', 'off')\n   and is_state('var.morgoninfo_koket_redan_upplast',
@@ -2274,6 +2282,9 @@
     not_from:
     - unavailable
     - unknown
+    not_to:
+    - unavailable
+    - unknown
     id: ring_pa_dorren
   - trigger: state
     entity_id: binary_sensor.ytterdorren
@@ -2318,6 +2329,9 @@
     not_from:
     - unavailable
     - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.ytterdorren
   - trigger: state
@@ -2338,6 +2352,16 @@
     hallen_natt: 0
     dag_lux_grans: 2000
     avstangnings_lux_grans: 13000
+  conditions:
+  - condition: template
+    value_template: >
+      {% if trigger.entity_id == 'event.front_door_ding' %}
+        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.to_state.state != trigger.from_state.state }}
+      {% else %}
+        true
+      {% endif %}
   action:
   - action: homeassistant.turn_on
     entity_id: light.takspottarna_hallen_level
@@ -7579,6 +7603,15 @@
     not_from:
     - unavailable
     - unknown
+    not_to:
+    - unavailable
+    - unknown
+  conditions:
+  - condition: template
+    value_template: >
+      {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+         and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+         and trigger.to_state.state != trigger.from_state.state }}
   action:
   - action: notify.android_tv_sony_tv_i_vardagsrummet
     data:
@@ -7624,7 +7657,15 @@
     not_from:
     - unavailable
     - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
+  - condition: template
+    value_template: >
+      {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+         and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+         and trigger.to_state.state != trigger.from_state.state }}
   - condition: template
     value_template: "{{ not is_state(\"input_select.house_time_modes\", \"Natt\")
       \n  and is_state(\"var.morgoninfo_koket_redan_upplast\", \"true\") }}\n"
