@@ -1135,9 +1135,10 @@
     - action: switch.turn_off
       target:
         entity_id: switch.vattenslang_framsidan
-# Framsida-rörelse: event.front_door_motion (realtid om Ring push fungerar) +
-# sensor.front_door_last_activity med category motion (poll, ~2–3 min fördröjning).
-# Inte dörrklocka/live view — filtrera on_demand via category; ding via event.front_door_ding.
+# Framsida-rörelse: event.front_door_motion (realtid via Ring push, port 5228).
+# Backup: sensor.front_door_last_activity (poll ~2–3 min) om push tystnar.
+# ring-mqtt (MQTT) kan läggas som tredje trigger när addon är inloggad.
+# Inte dörrklocka/live view — filtrera on_demand; ding via event.front_door_ding.
 - id: '8348674'
   alias: 'Belysning: Blinka i WC och badrummet vid rörelse på framsidan'
   mode: queued
@@ -1145,6 +1146,7 @@
   triggers:
   - trigger: state
     entity_id: event.front_door_motion
+    from: null
     id: ring_motion_event
   - trigger: state
     entity_id: sensor.front_door_last_activity
@@ -1159,7 +1161,8 @@
         {{ trigger.to_state.attributes.get('category') == 'motion'
            and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none', '']
-           and trigger.to_state.state != trigger.from_state.state }}
+           and trigger.to_state.state != trigger.from_state.state
+           and (as_timestamp(trigger.to_state.state) - as_timestamp(states.event.front_door_motion.state)) > 120 }}
       {% endif %}
   actions:
   - alias: Spara nuvarande ljusläge
@@ -1331,8 +1334,8 @@
 - id: ring_reload_motion_event_8c5c
   alias: 'Ring: Ladda om integration vid trasigt motion-event'
   description: >
-    Ring push (port 5228) kan tystna efter nätverksavbrott eller för många
-    Authorized Client Devices. Återställer event.front_door_motion utan manuell omstart.
+    Ring push (port 5228) kan tystna. Reload när event unavailable, dagligen 04:00,
+    eller när last_activity visar motion men event.front_door_motion hänger kvar på gammal tid.
   mode: single
   triggers:
   - trigger: state
@@ -1340,9 +1343,26 @@
     to: unavailable
     for:
       minutes: 2
+  - trigger: state
+    entity_id: sensor.front_door_last_activity
+    id: stale_motion_event
   - trigger: time
     at: "04:00:00"
     id: daglig_reload
+  - trigger: time
+    at: "10:00:00"
+    id: daglig_reload_morgon
+  conditions:
+  - condition: template
+    value_template: >
+      {% if trigger.id == 'stale_motion_event' %}
+        {{ trigger.to_state.attributes.get('category') == 'motion'
+           and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
+           and states.event.front_door_motion.state not in ['unavailable', 'unknown', 'none', '']
+           and (as_timestamp(trigger.to_state.state) - as_timestamp(states.event.front_door_motion.state)) > 300 }}
+      {% else %}
+        true
+      {% endif %}
   actions:
   - action: homeassistant.reload_config_entry
     data:
@@ -1355,6 +1375,7 @@
   triggers:
     - trigger: state
       entity_id: event.front_door_motion
+      from: null
       id: ring_motion_event
     - trigger: state
       entity_id: sensor.front_door_last_activity
@@ -1372,7 +1393,8 @@
           {{ trigger.to_state.attributes.get('category') == 'motion'
              and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
              and trigger.from_state.state not in ['unavailable', 'unknown', 'none', '']
-             and trigger.to_state.state != trigger.from_state.state }}
+             and trigger.to_state.state != trigger.from_state.state
+             and (as_timestamp(trigger.to_state.state) - as_timestamp(states.event.front_door_motion.state)) > 120 }}
         {% endif %}
   actions:
     - variables:
