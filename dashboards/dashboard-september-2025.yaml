@@ -755,7 +755,7 @@ views:
       aminate: true
       decimals: 0
       lower_bound: 33
-      upper_bound: 70
+      upper_bound: 60
       show:
         fill: true
         extrema: true
