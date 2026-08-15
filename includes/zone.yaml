@@ -20,9 +20,9 @@
 
 # Personzoner (radie = minsta omslutande cirkel av Eriks GPS vid besök)
 - name: Justus
-  latitude: 59.23149
-  longitude: 18.073242
-  radius: 255
+  latitude: 59.231265
+  longitude: 18.072723
+  radius: 310
   icon: mdi:human
 
 - name: Rödkinda 19
