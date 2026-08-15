@@ -3907,6 +3907,8 @@ views:
     - type: custom:auto-entities
       card:
         type: map
+        entities:
+        - zone.home
         geo_location_sources:
         - blitzortung
         default_zoom: 11
@@ -6237,12 +6239,13 @@ views:
       card:
         type: map
         title: Ilias senaste 24 timmarna
+        entities:
+        - person.ilias_bennani
         history: true
         hours_to_show: 24
       card_param: entities
       filter:
         include:
-        - entity_id: person.ilias_bennani
         - domain: zone
         exclude:
         - state: unavailable
@@ -6251,12 +6254,13 @@ views:
       card:
         type: map
         title: Anna senaste 24 timmarna
+        entities:
+        - person.anna_bennani
         history: true
         hours_to_show: 24
       card_param: entities
       filter:
         include:
-        - entity_id: person.anna_bennani
         - domain: zone
         exclude:
         - state: unavailable
@@ -6265,12 +6269,13 @@ views:
       card:
         type: map
         title: Isabelle senaste 24 timmarna
+        entities:
+        - person.isabelle_sovig
         history: true
         hours_to_show: 24
       card_param: entities
       filter:
         include:
-        - entity_id: person.isabelle_sovig
         - domain: zone
         exclude:
         - state: unavailable
@@ -6279,6 +6284,8 @@ views:
       card:
         type: map
         title: Erik senaste 24 timmarna
+        entities:
+        - person.erik_bennani
         show_zone_label: true
         marker-color:
         - condition: '{{ (now - last_updated) <= (60*60) }}'
@@ -6292,7 +6299,6 @@ views:
       card_param: entities
       filter:
         include:
-        - entity_id: person.erik_bennani
         - domain: zone
         exclude:
         - state: unavailable
