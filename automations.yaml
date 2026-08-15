@@ -1170,15 +1170,25 @@
         target:
           entity_id: light.stralkastaren
 # Tänd / släck strålkastaren om något rör sig på framsidan
-# Ring-rörelsen rapporteras som event (event.front_door_motion), inte on/off.
+# Primär: ring-mqtt (binary_sensor.front_door_motion_2). Backup: event.front_door_motion.
 # Släckning kräver 3 min utan rörelse och att båda dörrarna är stängda.
 - alias: "Belysning: Tänd och Släck strålkastaren vid rörelse på framsidan"
   id: '7918151123333574'
   mode: single
   triggers:
     - trigger: state
-      entity_id: event.front_door_motion
+      entity_id: binary_sensor.front_door_motion_2
+      to: 'on'
       id: rorelse
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
+    - trigger: state
+      entity_id: event.front_door_motion
+      id: rorelse_event_backup
       not_from:
       - unavailable
       - unknown
@@ -1204,7 +1214,18 @@
     - choose:
         - conditions:
             - condition: trigger
-              id: rorelse
+              id:
+                - rorelse
+                - rorelse_event_backup
+            - condition: template
+              value_template: >
+                {% if trigger.id == 'rorelse_event_backup' %}
+                  {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+                     and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+                     and trigger.to_state.state != trigger.from_state.state }}
+                {% else %}
+                  true
+                {% endif %}
             - condition: state
               entity_id: input_select.house_alarm_modes
               state:
@@ -1233,7 +1254,7 @@
               state: "off"
             - condition: template
               value_template: >
-                {{ (now() - states.event.front_door_motion.last_changed).total_seconds() > 180 }}
+                {{ (now() - states.binary_sensor.front_door_motion_2.last_changed).total_seconds() > 180 }}
           sequence:
             - action: light.turn_off
               target:
@@ -1246,7 +1267,18 @@
   mode: single
   triggers:
     - trigger: state
+      entity_id: binary_sensor.front_door_motion_2
+      to: 'on'
+      id: ring_motion_mqtt
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
+    - trigger: state
       entity_id: event.front_door_motion
+      id: ring_motion_event_backup
       not_from:
       - unavailable
       - unknown
@@ -1254,6 +1286,15 @@
       - unavailable
       - unknown
   conditions:
+    - condition: template
+      value_template: >
+        {% if trigger.id == 'ring_motion_event_backup' %}
+          {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+             and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+             and trigger.to_state.state != trigger.from_state.state }}
+        {% else %}
+          true
+        {% endif %}
     - condition: state
       entity_id: input_select.house_time_modes
       state: Natt
@@ -1273,15 +1314,24 @@
     - action: switch.turn_off
       target:
         entity_id: switch.vattenslang_framsidan
-# Framsida-rörelse: event.front_door_motion (realtid via Ring push, port 5228).
-# Backup: sensor.front_door_last_activity (poll ~2–3 min) om push tystnar.
-# ring-mqtt (MQTT) kan läggas som tredje trigger när addon är inloggad.
-# Inte dörrklocka/live view — filtrera on_demand; ding via event.front_door_ding.
+# Framsida-rörelse: primär ring-mqtt (binary_sensor.front_door_motion_2).
+# Backup: event.front_door_motion (Ring push) och sensor.front_door_last_activity (poll).
+# Inte dörrklocka/live view — filtrera on_demand; ding via binary_sensor.front_door_ding.
 - id: '8348674'
   alias: 'Belysning: Blinka i WC och badrummet vid rörelse på framsidan'
   mode: queued
   max: 3
   triggers:
+  - trigger: state
+    entity_id: binary_sensor.front_door_motion_2
+    to: 'on'
+    id: ring_motion_mqtt
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: event.front_door_motion
     id: ring_motion_event
@@ -1303,15 +1353,22 @@
   conditions:
   - condition: template
     value_template: >
-      {% if trigger.id == 'ring_motion_event' %}
+      {% if trigger.id == 'ring_motion_mqtt' %}
+        {{ trigger.to_state.state == 'on'
+           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+      {% elif trigger.id == 'ring_motion_event' %}
         {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}
       {% else %}
+        {% set mqtt_ts = as_timestamp(states.binary_sensor.front_door_motion_2.last_changed) %}
+        {% set event_ts = as_timestamp(states.event.front_door_motion.state)
+           if states.event.front_door_motion.state not in ['unavailable', 'unknown', 'none', ''] else 0 %}
+        {% set latest = mqtt_ts if event_ts < mqtt_ts else event_ts %}
         {{ trigger.to_state.attributes.get('category') == 'motion'
            and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none', '']
            and trigger.to_state.state != trigger.from_state.state
-           and (as_timestamp(trigger.to_state.state) - as_timestamp(states.event.front_door_motion.state)) > 120 }}
+           and (as_timestamp(trigger.to_state.state) - latest) > 120 }}
       {% endif %}
   actions:
   - alias: Spara nuvarande ljusläge
@@ -1483,8 +1540,8 @@
 - id: ring_reload_motion_event_8c5c
   alias: 'Ring: Ladda om integration vid trasigt motion-event'
   description: >
-    Ring push (port 5228) kan tystna. Reload när event unavailable, dagligen 04:00,
-    eller när last_activity visar motion men event.front_door_motion hänger kvar på gammal tid.
+    Ring push (FCM) kan tystna. Reload när event unavailable, dagligen 04:00/10:00,
+    eller när last_activity visar motion men MQTT/event hänger kvar på gammal tid.
   mode: single
   triggers:
   - trigger: state
@@ -1514,10 +1571,14 @@
   - condition: template
     value_template: >
       {% if trigger.id == 'stale_motion_event' %}
+        {% set mqtt_ts = as_timestamp(states.binary_sensor.front_door_motion_2.last_changed) %}
+        {% set event_ts = as_timestamp(states.event.front_door_motion.state)
+           if states.event.front_door_motion.state not in ['unavailable', 'unknown', 'none', ''] else 0 %}
+        {% set latest = mqtt_ts if event_ts < mqtt_ts else event_ts %}
         {{ trigger.to_state.attributes.get('category') == 'motion'
            and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
-           and states.event.front_door_motion.state not in ['unavailable', 'unknown', 'none', '']
-           and (as_timestamp(trigger.to_state.state) - as_timestamp(states.event.front_door_motion.state)) > 300 }}
+           and latest > 0
+           and (as_timestamp(trigger.to_state.state) - latest) > 300 }}
       {% else %}
         true
       {% endif %}
@@ -1531,6 +1592,16 @@
   alias: 'Test: Verifiera blink i badrum vid framsida-rörelse (engångs)'
   mode: single
   triggers:
+    - trigger: state
+      entity_id: binary_sensor.front_door_motion_2
+      to: 'on'
+      id: ring_motion_mqtt
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
     - trigger: state
       entity_id: event.front_door_motion
       id: ring_motion_event
@@ -1555,15 +1626,22 @@
       state: "on"
     - condition: template
       value_template: >
-        {% if trigger.id == 'ring_motion_event' %}
+        {% if trigger.id == 'ring_motion_mqtt' %}
+          {{ trigger.to_state.state == 'on'
+             and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+        {% elif trigger.id == 'ring_motion_event' %}
           {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
              and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}
         {% else %}
+          {% set mqtt_ts = as_timestamp(states.binary_sensor.front_door_motion_2.last_changed) %}
+          {% set event_ts = as_timestamp(states.event.front_door_motion.state)
+             if states.event.front_door_motion.state not in ['unavailable', 'unknown', 'none', ''] else 0 %}
+          {% set latest = mqtt_ts if event_ts < mqtt_ts else event_ts %}
           {{ trigger.to_state.attributes.get('category') == 'motion'
              and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
              and trigger.from_state.state not in ['unavailable', 'unknown', 'none', '']
              and trigger.to_state.state != trigger.from_state.state
-             and (as_timestamp(trigger.to_state.state) - as_timestamp(states.event.front_door_motion.state)) > 120 }}
+             and (as_timestamp(trigger.to_state.state) - latest) > 120 }}
         {% endif %}
   actions:
     - variables:
@@ -1597,6 +1675,16 @@
   alias: 'Belysning: Blinka mysbelysningen i Eriks rum när det ringer på dörren'
   triggers:
   - trigger: state
+    entity_id: binary_sensor.front_door_ding
+    to: 'on'
+    id: door_ding_mqtt
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  - trigger: state
     entity_id: event.front_door_ding
     not_from:
     - unavailable
@@ -1604,13 +1692,18 @@
     not_to:
     - unavailable
     - unknown
-    id: door_ding
+    id: door_ding_event
   conditions:
   - condition: template
     value_template: >
-      {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
-         and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
-         and trigger.to_state.state != trigger.from_state.state }}
+      {% if trigger.id == 'door_ding_event' %}
+        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.to_state.state != trigger.from_state.state }}
+      {% else %}
+        {{ trigger.to_state.state == 'on'
+           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+      {% endif %}
   - condition: template
     value_template: "{{ is_state('sensor.erik_aktiv_zon', 'zone.home')\n   and not is_state('input_select.house_time_modes',
       'Natt')\n   and is_state('input_boolean.gaster_hemma', 'off')\n   and is_state('var.morgoninfo_koket_redan_upplast',
@@ -2609,6 +2702,16 @@
   mode: restart
   trigger:
   - trigger: state
+    entity_id: binary_sensor.front_door_ding
+    to: 'on'
+    id: ring_pa_dorren_mqtt
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  - trigger: state
     entity_id: event.front_door_ding
     not_from:
     - unavailable
@@ -2616,7 +2719,7 @@
     not_to:
     - unavailable
     - unknown
-    id: ring_pa_dorren
+    id: ring_pa_dorren_event
   - trigger: state
     entity_id: binary_sensor.ytterdorren
     from: 'on'
@@ -2634,11 +2737,23 @@
       | int < 100 }}
 
       '
+  - condition: template
+    value_template: >
+      {% if trigger.id == 'ring_pa_dorren_event' %}
+        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.to_state.state != trigger.from_state.state }}
+      {% elif trigger.id == 'ring_pa_dorren_mqtt' %}
+        {{ trigger.to_state.state == 'on'
+           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+      {% else %}
+        true
+      {% endif %}
   action:
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id == ''ring_pa_dorren'' }}'
+        value_template: '{{ trigger.id in [''ring_pa_dorren_mqtt'', ''ring_pa_dorren_event''] }}'
       sequence:
       - action: light.turn_on
         target:
@@ -2662,7 +2777,18 @@
   mode: restart
   triggers:
   - trigger: state
+    entity_id: binary_sensor.front_door_ding
+    to: 'on'
+    id: ring_ding_mqtt
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  - trigger: state
     entity_id: event.front_door_ding
+    id: ring_ding_event
     not_from:
     - unavailable
     - unknown
@@ -2726,6 +2852,9 @@
         {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.to_state.state != trigger.from_state.state }}
+      {% elif trigger.entity_id == 'binary_sensor.front_door_ding' %}
+        {{ trigger.to_state.state == 'on'
+           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
       {% else %}
         true
       {% endif %}
@@ -8314,7 +8443,18 @@
   mode: parallel
   triggers:
   - trigger: state
+    entity_id: binary_sensor.front_door_ding
+    to: 'on'
+    id: ding_mqtt
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  - trigger: state
     entity_id: event.front_door_ding
+    id: ding_event
     not_from:
     - unavailable
     - unknown
@@ -8324,9 +8464,14 @@
   conditions:
   - condition: template
     value_template: >
-      {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
-         and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
-         and trigger.to_state.state != trigger.from_state.state }}
+      {% if trigger.id == 'ding_event' %}
+        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.to_state.state != trigger.from_state.state }}
+      {% else %}
+        {{ trigger.to_state.state == 'on'
+           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+      {% endif %}
   action:
   - action: notify.android_tv_sony_tv_i_vardagsrummet
     data:
@@ -8368,7 +8513,18 @@
   mode: parallel
   triggers:
   - trigger: state
+    entity_id: binary_sensor.front_door_ding
+    to: 'on'
+    id: ding_mqtt
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  - trigger: state
     entity_id: event.front_door_ding
+    id: ding_event
     not_from:
     - unavailable
     - unknown
@@ -8378,9 +8534,14 @@
   conditions:
   - condition: template
     value_template: >
-      {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
-         and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
-         and trigger.to_state.state != trigger.from_state.state }}
+      {% if trigger.id == 'ding_event' %}
+        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.to_state.state != trigger.from_state.state }}
+      {% else %}
+        {{ trigger.to_state.state == 'on'
+           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+      {% endif %}
   - condition: template
     value_template: "{{ not is_state(\"input_select.house_time_modes\", \"Natt\")
       \n  and is_state(\"var.morgoninfo_koket_redan_upplast\", \"true\") }}\n"
