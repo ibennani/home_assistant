@@ -101,18 +101,42 @@
     - sensor.ilias_aktiv_zon
     - sensor.anna_aktiv_zon
     to: zone.home
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id:
     - sensor.ilias_aktiv_zon
     - sensor.anna_aktiv_zon
     from: zone.home
     for: 00:02:00
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id:
     - sensor.ilias_s23_ultra_charger_type
     - sensor.anna_s22_ultra_charger_type
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_boolean.vacation_mode
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: homeassistant
     event: start
   actions:
@@ -255,6 +279,12 @@
   - trigger: state
     entity_id: input_select.house_time_modes
     to: Morgon
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: script.turn_on
     target:
@@ -276,6 +306,12 @@
   - trigger: state
     entity_id: input_select.house_time_modes
     to: Dag
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: script.turn_on
     target:
@@ -301,6 +337,12 @@
   - trigger: state
     entity_id: input_select.house_time_modes
     to: Kväll
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: script.turn_on
     target:
@@ -322,6 +364,12 @@
   - trigger: state
     entity_id: input_select.house_time_modes
     to: Natt
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: script.turn_on
     target:
@@ -382,6 +430,12 @@
     - update.home_assistant_core_update
     - update.home_assistant_operating_system_update
     - update.home_assistant_supervisor_update
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: '{{ trigger.to_state.state == "on"  and trigger.from_state.state
@@ -402,6 +456,12 @@
   triggers:
   - trigger: state
     entity_id: sensor.blitzortung_lightning_counter
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: '{% set dist = states(''sensor.blitzortung_lightning_distance'')
@@ -444,6 +504,12 @@
   triggers:
   - trigger: state
     entity_id: sensor.blitzortung_lightning_distance
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: '{{ state_attr(''sensor.blitzortung_lightning_distance'', ''lat'')
@@ -470,11 +536,17 @@
     - sensor.skafferiet_temp
     - sensor.ilias_rum_temp
     to: unavailable
+    not_from:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id:
     - sensor.skafferiet_temp
     - sensor.ilias_rum_temp
     from: unavailable
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.mobile_app_ilias_s23_ultra
     data:
@@ -502,6 +574,12 @@
     - binary_sensor.eriks_fonster
     - binary_sensor.badrummet_fonster
     - binary_sensor.skafferidorren
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: "{{    not is_state(\"sensor.ilias_aktiv_zon\",\"zone.home\")\n
@@ -553,6 +631,12 @@
     entity_id: input_boolean.stadning_pagar
     from: 'on'
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: '{{ is_state("group.opened_doors_and_windows","on") and is_state("input_boolean.stadning_pagar","off")
@@ -729,6 +813,12 @@
   triggers:
   - trigger: state
     entity_id: binary_sensor.vibrationsensor_1
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: "{% if is_state(\"input_boolean.vibrationsensor_1_aktiverad\",\"on\")
       %} notify.mobile_app_ilias_s23_ultra {% else %} script.do_nothing {% endif %}
@@ -826,6 +916,12 @@
     from: closed
     to: open
     id: rullgardin_oppnas
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: '{{ states("sensor.utomhus_baksidan_ljusstyrka") | int(0) >= 2000
@@ -860,6 +956,12 @@
     entity_id:
     - sensor.utomhus_framsidan_ljusstyrka
     - sensor.utomhus_baksidan_ljusstyrka
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: homeassistant.update_entity
     entity_id:
@@ -965,8 +1067,20 @@
   triggers:
   - trigger: state
     entity_id: media_player.sony_tv_i_vardagsrummet
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_boolean.stadning_pagar
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: template
     value_template: "{{  ( states(\"input_select.sovrummet_belysning\") in [\"Släckt\",\"Mysigt\"]\n
       \   or states(\"input_select.annas_rum_belysning\") in [\"Släckt\",\"Mysigt\"]
@@ -1019,6 +1133,12 @@
   triggers:
   - trigger: state
     entity_id: light.koket_ingen_lampa_1
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - choose:
     - conditions:
@@ -1059,6 +1179,12 @@
     - trigger: state
       entity_id: event.front_door_motion
       id: rorelse
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
     - trigger: time_pattern
       minutes: "/1"
       id: kontroll
@@ -1068,6 +1194,12 @@
         - binary_sensor.altandorr_koket
       to: "off"
       id: dorr_stangs
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
   actions:
     - choose:
         - conditions:
@@ -1115,6 +1247,12 @@
   triggers:
     - trigger: state
       entity_id: event.front_door_motion
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
   conditions:
     - condition: state
       entity_id: input_select.house_time_modes
@@ -1146,11 +1284,22 @@
   triggers:
   - trigger: state
     entity_id: event.front_door_motion
-    from: null
     id: ring_motion_event
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: sensor.front_door_last_activity
     id: ring_last_activity_motion
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: >
@@ -1343,9 +1492,18 @@
     to: unavailable
     for:
       minutes: 2
+    not_from:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: sensor.front_door_last_activity
     id: stale_motion_event
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: time
     at: "04:00:00"
     id: daglig_reload
@@ -1375,11 +1533,22 @@
   triggers:
     - trigger: state
       entity_id: event.front_door_motion
-      from: null
       id: ring_motion_event
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
     - trigger: state
       entity_id: sensor.front_door_last_activity
       id: ring_last_activity_motion
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
   conditions:
     - condition: state
       entity_id: input_boolean.ring_blink_verifiering
@@ -1505,41 +1674,95 @@
     id: tand
     entity_id: binary_sensor.badrummet_rorelse
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: badrumsdorr_stangd
     entity_id: binary_sensor.badrumsdorren
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: slack
     entity_id: binary_sensor.badrummet_rorelse
     to: 'off'
     for: 00:02:30
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: duschdorr_oppnad
     entity_id: binary_sensor.duschdorren
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: duschdorr_stangd
     entity_id: binary_sensor.duschdorren
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: badrumsdorr_oppnad
     entity_id: binary_sensor.badrumsdorren
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: dusch_bekraftad
     entity_id: input_select.nagon_duschar
     to: Någon duschar
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: duschstatus_ingen
     entity_id: input_select.nagon_duschar
     to: Ingen duschar
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: homeassistant
     id: ha_start
     event: start
   - trigger: state
     id: stadning
     entity_id: input_boolean.stadning_pagar
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions: []
   actions:
   - choose:
@@ -1816,10 +2039,22 @@
     id: duschdorr_oppnad
     entity_id: binary_sensor.duschdorren
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: duschdorr_stangd
     entity_id: binary_sensor.duschdorren
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') }}"
@@ -1947,6 +2182,12 @@
   - trigger: state
     entity_id: binary_sensor.badrummet_rorelse
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: "{{ is_state('input_select.nagon_duschar', 'Någon duschar') and is_state('input_boolean.badrum_dusch_snapshot_finns', 'on') and is_state('input_boolean.badrum_dusch_ljus_last', 'off') }}"
@@ -1980,6 +2221,12 @@
   triggers:
   - trigger: state
     entity_id: binary_sensor.forradet_dorr
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - choose:
     - conditions:
@@ -2021,6 +2268,12 @@
   - trigger: state
     entity_id:
     - media_player.playstation_4
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: '{{ states("sensor.utomhus_framsidan_ljusstyrka") | int(default
@@ -2046,6 +2299,12 @@
     - binary_sensor.tradfri_rorelse_i_garderoben_3
     - binary_sensor.tradfri_rorelse_i_garderoben_4
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: light.turn_on
     entity_id: light.lamporna_i_garderoben
@@ -2081,6 +2340,12 @@
     entity_id: group.rorelse_i_garderoben
     from: 'on'
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: light.turn_off
     data:
@@ -2092,6 +2357,12 @@
   triggers:
   - trigger: state
     entity_id: light.lamporna_i_garderoben
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: "{% if is_state(\"light.lamporna_i_garderoben\",\"on\")\n    and state_attr(\"light.lamporna_i_garderoben\",\"brightness\")
       | int(default = 0) > 1 %} light.turn_on\n{% else %} light.turn_off {% endif
@@ -2157,6 +2428,12 @@
   - trigger: state
     id: ManuelltLäge
     entity_id: input_select.nedre_trappan_belysning
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: template
     id: SläcktLuxHög
     value_template: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) >=
@@ -2172,15 +2449,39 @@
   - trigger: state
     id: Städning
     entity_id: input_boolean.stadning_pagar
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: TändZone
     entity_id: zone.home
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: TändHusläge
     entity_id: input_select.house_time_modes
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: TändJul
     entity_id: input_boolean.julbelysning
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: template
     id: SläckAlbin
     value_template: "{{\n  states('input_select.eriks_rum_belysning') in ['Minimalt','Släckt']\n
@@ -2191,11 +2492,23 @@
     entity_id: binary_sensor.nedre_trappan_rorelse
     to: 'off'
     for: 00:05:00
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: Inaktiv30
     entity_id: binary_sensor.nedre_trappan_rorelse
     to: 'off'
     for: 00:30:00
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - choose:
     - conditions:
@@ -2230,8 +2543,20 @@
   triggers:
   - trigger: state
     entity_id: binary_sensor.skafferidorren
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_select.house_time_modes
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: template
     value_template: '{{ states("sensor.utomhus_framsidan_ljusstyrka") | float >= 2000
       }}
@@ -2244,6 +2569,12 @@
       '
   - trigger: state
     entity_id: zone.home
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   variables:
     ljusstyrka_morgon_oppet: 120
     ljusstyrka_morgon_stangt: 20
@@ -2291,6 +2622,12 @@
     from: 'on'
     to: 'off'
     id: dorren_stängs
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: '{{ is_state(''light.fasadbelysningen'', ''on'')  and states(''sensor.utomhus_framsidan_ljusstyrka'')
@@ -2334,17 +2671,47 @@
     - unknown
   - trigger: state
     entity_id: binary_sensor.ytterdorren
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.hallen_rorelse
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.hallen_rorelse
     to: 'off'
     for: 00:00:30
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: zone.home
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_boolean.stadning_pagar
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   variables:
     hallen_morgon: 50
     hallen_dag: 100
@@ -2395,10 +2762,19 @@
   - trigger: state
     entity_id: light.stjarnan_i_trappan
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: light.stjarnan_i_trappan
     from: unavailable
     to: 'on'
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: '{{ states("light.stjarnan_i_trappan") not in ["unavailable","unknown"]
@@ -2415,11 +2791,23 @@
     entity_id: binary_sensor.hallen_rorelse
     from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.hallen_rorelse
     from: 'on'
     to: 'off'
     for: 00:00:30
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: light.turn_on
     entity_id: light.hatthyllan
@@ -2437,6 +2825,12 @@
   - trigger: state
     entity_id: sensor.wc_lux_intervall
     id: lux
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: event
     event_type: deconz_event
     event_data:
@@ -2519,6 +2913,12 @@
   - trigger: state
     id: stadning
     entity_id: input_boolean.stadning_pagar
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions: []
   actions:
   - choose:
@@ -3303,6 +3703,12 @@
   - trigger: state
     entity_id: sensor.ljusstyrka_framsidan_sektioner
     id: ljusstyrka_sektion_andras
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - action: script.turn_on
     target:
@@ -3352,6 +3758,12 @@
     entity_id:
     - input_select.play_radiostation
     - input_select.play_radiostation_target
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - choose:
     - conditions:
@@ -3470,6 +3882,12 @@
   triggers:
   - trigger: state
     entity_id: input_select.play_radiostation
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: "{{ trigger.to_state.state | lower != 'tyst' \n   and is_state(\"input_select.play_radiostation_target\",
@@ -3536,6 +3954,12 @@
   - trigger: state
     entity_id: input_select.play_radiostation
     to: Tyst
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: media_player.turn_off
     target:
@@ -3547,6 +3971,12 @@
     entity_id: media_player.hogtalarna_i_koket
     to: 'off'
     for: 00:00:30
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: input_select.select_option
     target:
@@ -4271,6 +4701,12 @@
   - trigger: state
     entity_id: media_player.sony_tv_i_vardagsrummet
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: state
     entity_id: input_boolean.settings_stang_av_sony_tv
@@ -4424,6 +4860,9 @@
     entity_id: media_player.kd_65xd8505
     from: unavailable
     to: 'off'
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: '{{ is_state("media_player.sony_tv_i_vardagsrummet","playing")
@@ -4481,6 +4920,12 @@
   - trigger: state
     entity_id: input_select.ilias_rum_belysning
     id: apply_isabelle
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: event
     event_type: deconz_event
     event_data:
@@ -4509,6 +4954,12 @@
     - sensor.ilias_aktiv_zon
     - sensor.isabelle_aktiv_zon
     id: context_state_change
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: numeric_state
     entity_id: sensor.utomhus_framsidan_ljusstyrka
     below: 2000
@@ -4681,6 +5132,12 @@
   - trigger: state
     id: anna_state
     entity_id: sensor.anna_aktiv_zon
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: numeric_state
     id: lux_above_2000
     entity_id: sensor.utomhus_baksidan_ljusstyrka
@@ -4693,6 +5150,12 @@
     id: select_changed
     entity_id:
     - input_select.annas_rum_belysning
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - variables:
       lux: '{{ states(''sensor.utomhus_baksidan_ljusstyrka'') | int(0) }}'
@@ -4777,8 +5240,20 @@
   triggers:
   - trigger: state
     entity_id: sensor.anna_aktiv_zon
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_select.house_time_modes
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - delay: 00:00:05
   - action: input_select.select_option
@@ -4805,6 +5280,12 @@
   - trigger: state
     id: cover
     entity_id: cover.rullgardin_sovrummet
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - choose:
     - conditions:
@@ -4967,6 +5448,12 @@
   - trigger: state
     entity_id:
     - input_select.eriks_rum_belysning
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: state
     entity_id: input_boolean.eriks_rum_uppdaterar_lage
@@ -5114,6 +5601,12 @@
   - trigger: state
     entity_id:
     - input_select.eriks_rum_belysning
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: light.turn_on
     entity_id: light.eriks_garderob
@@ -5222,6 +5715,12 @@
     - sensor.anna_aktiv_zon
     - sensor.erik_aktiv_zon
     - sensor.isabelle_aktiv_zon
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: >
@@ -5449,6 +5948,12 @@
     - sensor.erik_aktiv_zon
     - sensor.isabelle_aktiv_zon
     - sensor.ilias_aktiv_zon
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: >
@@ -5490,6 +5995,12 @@
     entity_id: binary_sensor.rorelse_i_brevladan
     to: 'on'
     for: 00:00:05
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: "{% set last_triggered = state_attr(this.entity_id, 'last_triggered')
@@ -5847,6 +6358,9 @@
   - trigger: state
     entity_id: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
     to: unavailable
+    not_from:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: '{{ trigger.from_state is not none and trigger.from_state.state
@@ -5891,6 +6405,12 @@
     entity_id: binary_sensor.tvattmaskinen_aktiv
     from: 'on'
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: script.turn_on
     target:
@@ -5960,6 +6480,12 @@
     entity_id: binary_sensor.brandvarnare_ovre_trappan_roksensor
     from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.familjen
     data:
@@ -6002,6 +6528,12 @@
     entity_id: binary_sensor.sovrummet_rorelse
     from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: '{{ not is_state("sensor.anna_aktiv_zon", "zone.home") }}'
@@ -6050,10 +6582,22 @@
     entity_id: binary_sensor.skafferidorren
     from: open
     to: closed
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.skafferidorren
     from: closed
     to: open
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
   - condition: template
     value_template: '{{  is_state("input_boolean.stadning_pagar","off")   and not
@@ -6374,12 +6918,30 @@
     entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
     from: 'on'
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
     from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_select.house_time_modes
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: template
     value_template: '{{ states(''zone.home'')|int > 0 }}'
   - trigger: template
@@ -6387,6 +6949,12 @@
   - trigger: state
     entity_id: var.morgoninfo_koket_redan_upplast
     to: 'true'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: homeassistant
     event: start
   actions:
@@ -6427,12 +6995,30 @@
   - trigger: state
     entity_id: zone.home
     id: sovrum_narvaro_andrad
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
     id: sovrum_solskydd_baksida_andrad
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_select.house_time_modes
     id: sovrum_huslage_andrat
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: homeassistant
     event: start
     id: sovrum_ha_start
@@ -6593,12 +7179,30 @@
   - trigger: state
     entity_id: zone.home
     id: albin_narvaro_total_andrad_v2
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: sensor.erik_aktiv_zon
     id: albin_narvaro_erik_andrad_v2
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_boolean.gaster_hemma
     id: albin_gaster_andrad_v2
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: homeassistant
     event: start
     id: albin_ha_start_v2
@@ -6727,6 +7331,12 @@
   triggers:
   - trigger: state
     entity_id: input_select.koket_belysning
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - delay: 00:00:02
   - choose:
@@ -6751,6 +7361,12 @@
     - switch.433_fjarr_knapp_b
     - switch.433_fjarr_knapp_c
     - switch.433_fjarr_knapp_d
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: template
     value_template: '{{ states("sensor.433_fjarr_a_signalstyrka") | int(default =
       0) < -80 }}
@@ -6949,6 +7565,12 @@
   trigger:
   - trigger: state
     entity_id: binary_sensor.julbelysning
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - choose:
     - conditions:
@@ -7054,9 +7676,21 @@
   - trigger: state
     id: narvaro_andrad
     entity_id: zone.home
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: semesterlage_andrat
     entity_id: input_boolean.vacation_mode
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - variables:
       semester_aktiv: '{{ is_state(''input_boolean.vacation_mode'',''on'') }}'
@@ -7112,15 +7746,36 @@
   - trigger: state
     entity_id: zone.home
     from: '0'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: zone.home
     to: '0'
     for: 00:15:00
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: var.morgoninfo_koket_redan_upplast
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: climate.elementet_i_sovrummet
     from: unavailable
+    not_to:
+    - unavailable
+    - unknown
   conditions: []
   actions:
   - variables:
@@ -7316,6 +7971,12 @@
     entity_id:
     - sensor.utomhus_baksidan_ljusstyrka
     - sensor.utomhus_framsidan_ljusstyrka
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.send_message
     target:
@@ -7334,6 +7995,12 @@
   triggers:
   - trigger: state
     entity_id: sensor.diskmaskin_switch_power
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.send_message
     target:
@@ -7349,6 +8016,12 @@
   triggers:
   - trigger: state
     entity_id: sensor.tvattmaskinen_switch_power
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.send_message
     target:
@@ -7364,6 +8037,12 @@
   triggers:
   - trigger: state
     entity_id: sensor.luftavfuktare_switch_power
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.send_message
     target:
@@ -7384,6 +8063,12 @@
     - sensor.temperatur_inomhus_min
     - sensor.temperatur_inomhus
     - sensor.temperatur_inomhus_max
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.send_message
     target:
@@ -7400,6 +8085,12 @@
   triggers:
   - trigger: state
     entity_id: sensor.diskmaskin_idle
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
     action: tts.cloud_say
     entity_id: media_player.googlehome_ilias_rum
@@ -7413,6 +8104,12 @@
   triggers:
   - trigger: state
     entity_id: switch.ac_04bf352_13
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.mobile_app_ilias_s23_ultra
     data:
@@ -7427,6 +8124,12 @@
   triggers:
   - trigger: state
     entity_id: light.ac_23bc0cfe_5
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - action: notify.mobile_app_ilias_s23_ultra
     data:
@@ -7464,6 +8167,12 @@
   triggers:
   - trigger: state
     entity_id: sensor.ilias_aktiv_zon
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
     condition: template
     value_template: "{{    is_state(\"sensor.ilias_aktiv_zon\",\"zone.home\") \n
@@ -7520,6 +8229,12 @@
   triggers:
   - trigger: state
     entity_id: sensor.isabelle_aktiv_zon
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   condition:
     condition: template
     value_template: "{{    is_state(\"sensor.isabelle_aktiv_zon\",\"zone.home\") \n
@@ -7757,6 +8472,12 @@
     from: 'on'
     to: 'off'
     id: omstart
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - choose:
     - conditions:
@@ -7824,6 +8545,12 @@
     entity_id: binary_sensor.baksidan_rorelse_wc_fonster
     from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - sequence:
     - choose:
@@ -7872,6 +8599,12 @@
             to: 'off'
             for:
               seconds: 10
+            not_from:
+            - unavailable
+            - unknown
+            not_to:
+            - unavailable
+            - unknown
         - action: light.turn_off
           target:
             entity_id: light.lampan_baksidan
@@ -7884,10 +8617,22 @@
     entity_id: binary_sensor.grinden_baksidan
     from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.grinden_baksidan
     from: 'on'
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - parallel:
     - sequence:
@@ -7939,6 +8684,12 @@
               to: 'off'
               for:
                 seconds: 10
+              not_from:
+              - unavailable
+              - unknown
+              not_to:
+              - unavailable
+              - unknown
           - action: light.turn_off
             target:
               entity_id: light.lampan_baksidan
@@ -8297,21 +9048,51 @@
     entity_id: binary_sensor.duschdorren
     to: 'on'
     for: 00:00:03
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: duschdorr_stangd
     entity_id: binary_sensor.duschdorren
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: kandidat_rorelse_on
     entity_id: binary_sensor.badrummet_rorelse
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: fukt_andrad
     entity_id: sensor.badrummet_luftfuktighet
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     id: badrumsdorr_oppnad
     entity_id: binary_sensor.badrumsdorren
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: event
     id: badrum_dusch_120s_klar
     event_type: timer.finished
@@ -8827,6 +9608,12 @@
   - trigger: state
     entity_id:
     - input_select.ilias_rum_belysning
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - action: script.turn_on
     target:
@@ -9063,11 +9850,23 @@
     to: 'off'
     for: '00:15:00'
     id: inaktiv_15
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: group.rorelse_i_koket
     to: 'off'
     for: '00:30:00'
     id: inaktiv_30
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - variables:
       is_natt: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
@@ -9124,8 +9923,20 @@
   triggers:
   - trigger: state
     entity_id: zone.home
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_select.house_time_modes
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - choose:
     - conditions:
@@ -9203,6 +10014,12 @@
   triggers:
   - trigger: state
     entity_id: input_select.house_alarm_modes
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - choose:
     - conditions:
@@ -9345,6 +10162,12 @@
     entity_id: !include includes/skalskydd_sensors.yaml
     from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: state
     entity_id: input_select.house_alarm_modes
@@ -9433,6 +10256,12 @@
     - binary_sensor.tvattstugan_rorelse
     from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   action:
   - choose:
     - conditions:
@@ -9488,18 +10317,42 @@
     entity_id: light.led_ovanfor_lilla_arbetsbanken_master
     from: 'on'
     for: 00:05:00
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: light.led_ovanfor_stora_arbetsbanken_master
     from: 'on'
     for: 00:05:00
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: light.led_strippar_i_badrummet_master
     from: 'on'
     for: 00:05:00
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: light.wc_led_master
     from: 'on'
     for: 00:05:00
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions: []
   actions:
   - variables:
@@ -9600,6 +10453,12 @@
     entity_id: switch.vattenslang_framsidan
     from: 'on'
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: "{{\n  trigger.from_state is not none\n  and trigger.to_state
@@ -9735,6 +10594,12 @@
   triggers:
     - trigger: state
       entity_id: tag.badrummet_under_spegeln
+      not_from:
+      - unavailable
+      - unknown
+      not_to:
+      - unavailable
+      - unknown
   variables:
     device_map:
       "929526afaef9a2acb0e5becc290d7c34": Anna
@@ -9802,8 +10667,20 @@
     - input_number.badrum_editor_kommod_pct
     - input_number.badrum_editor_dusch_tak_pct
     - input_number.badrum_editor_dusch_strip_pct
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_boolean.badrum_editor_spegel
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: "{{ trigger.to_state.state != trigger.from_state.state }}"
