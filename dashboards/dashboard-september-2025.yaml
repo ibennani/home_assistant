@@ -859,6 +859,12 @@ views:
       entities:
       - entity: media_player.googlehome_sovrummet
         name: Pucken
+    - type: entities
+      title: Värme
+      icon: mdi:radiator
+      entities:
+      - entity: climate.elementet_i_sovrummet
+        name: Elementet
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
