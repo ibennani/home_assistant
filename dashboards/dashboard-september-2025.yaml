@@ -42,8 +42,6 @@ resources:
   type: module
 - url: /hacsfiles/lovelace-state-switch/state-switch.js
   type: module
-- url: /hacsfiles/lovelace-auto-entities/auto-entities.js
-  type: module
 - url: /hacsfiles/config-template-card/config-template-card.js
   type: module
 - url: /hacsfiles/uptime-card/uptime-card.js
@@ -3904,23 +3902,61 @@ views:
   - type: vertical-stack
     title: Blixtkartan
     cards:
-    - type: custom:auto-entities
-      card:
-        type: map
-        entities:
-        - zone.home
-        geo_location_sources:
-        - blitzortung
-        default_zoom: 11
-        dark_mode: true
-        hours_to_show: 24
-      card_param: entities
-      filter:
-        include:
-        - domain: zone
-        exclude:
-        - state: unavailable
-      show_empty: false
+    - type: map
+      show_zone_label: true
+      entities:
+      # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
+      - zone.adrian
+      - zone.albin
+      - zone.albins_mamma
+      - zone.annas_jobb
+      - zone.bengt
+      - zone.digg_sundsvall
+      - zone.eddie
+      - zone.eina
+      - zone.elins_jobb
+      - zone.ellio_i_norge
+      - zone.ellio_i_tanum
+      - zone.eriks_skola
+      - zone.farmor_och_farfar
+      - zone.farsta_centrum
+      - zone.farsta_strand_pendeltagstation
+      - zone.gjovik
+      - zone.goteborg_c
+      - zone.grasko
+      - zone.hemma_hos_rio
+      - zone.home
+      - zone.ik_sodra_skarpnack
+      - zone.ilias_jobb
+      - zone.isabelle
+      - zone.isabelles_jobb
+      - zone.isabelles_mormor
+      - zone.isabelles_moster_jenny
+      - zone.isabelles_skola
+      - zone.justus
+      - zone.knut
+      - zone.kth_campus
+      - zone.kth_flemmingsberg
+      - zone.maria
+      - zone.milo
+      - zone.molndahls_sjukhus
+      - zone.norge_2
+      - zone.oslo
+      - zone.ostra_sjukhuset
+      - zone.rodkinda_19
+      - zone.sahlgrenska_sjukhuset
+      - zone.sixten
+      - zone.solveig_och_lennart
+      - zone.stefan
+      - zone.stromstad
+      - zone.torvallahallen
+      - zone.zaki_och_hanna
+      # END map-zones
+      geo_location_sources:
+      - blitzortung
+      default_zoom: 11
+      dark_mode: true
+      hours_to_show: 24
   - type: vertical-stack
     title: Regnradar
     cards:
@@ -6235,74 +6271,229 @@ views:
           - device_tracker.anna_s22_ultra
           - device_tracker.annelies_iphone
           - device_tracker.erik_s23
-    - type: custom:auto-entities
-      card:
-        type: map
-        title: Ilias senaste 24 timmarna
-        entities:
-        - person.ilias_bennani
-        history: true
-        hours_to_show: 24
-      card_param: entities
-      filter:
-        include:
-        - domain: zone
-        exclude:
-        - state: unavailable
-      show_empty: false
-    - type: custom:auto-entities
-      card:
-        type: map
-        title: Anna senaste 24 timmarna
-        entities:
-        - person.anna_bennani
-        history: true
-        hours_to_show: 24
-      card_param: entities
-      filter:
-        include:
-        - domain: zone
-        exclude:
-        - state: unavailable
-      show_empty: false
-    - type: custom:auto-entities
-      card:
-        type: map
-        title: Isabelle senaste 24 timmarna
-        entities:
-        - person.isabelle_sovig
-        history: true
-        hours_to_show: 24
-      card_param: entities
-      filter:
-        include:
-        - domain: zone
-        exclude:
-        - state: unavailable
-      show_empty: false
-    - type: custom:auto-entities
-      card:
-        type: map
-        title: Erik senaste 24 timmarna
-        entities:
-        - person.erik_bennani
-        show_zone_label: true
-        marker-color:
-        - condition: '{{ (now - last_updated) <= (60*60) }}'
-          color: green
-        - condition: '{{ (now - last_updated) > (60*60) && (now - last_updated) <= (2*60*60) }}'
-          color: yellow
-        - condition: '{{ (now - last_updated) > (2*60*60) }}'
-          color: red
-        history: true
-        hours_to_show: 24
-      card_param: entities
-      filter:
-        include:
-        - domain: zone
-        exclude:
-        - state: unavailable
-      show_empty: false
+    - type: map
+      title: Ilias senaste 24 timmarna
+      entities:
+      - person.ilias_bennani
+      # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
+      - zone.adrian
+      - zone.albin
+      - zone.albins_mamma
+      - zone.annas_jobb
+      - zone.bengt
+      - zone.digg_sundsvall
+      - zone.eddie
+      - zone.eina
+      - zone.elins_jobb
+      - zone.ellio_i_norge
+      - zone.ellio_i_tanum
+      - zone.eriks_skola
+      - zone.farmor_och_farfar
+      - zone.farsta_centrum
+      - zone.farsta_strand_pendeltagstation
+      - zone.gjovik
+      - zone.goteborg_c
+      - zone.grasko
+      - zone.hemma_hos_rio
+      - zone.home
+      - zone.ik_sodra_skarpnack
+      - zone.ilias_jobb
+      - zone.isabelle
+      - zone.isabelles_jobb
+      - zone.isabelles_mormor
+      - zone.isabelles_moster_jenny
+      - zone.isabelles_skola
+      - zone.justus
+      - zone.knut
+      - zone.kth_campus
+      - zone.kth_flemmingsberg
+      - zone.maria
+      - zone.milo
+      - zone.molndahls_sjukhus
+      - zone.norge_2
+      - zone.oslo
+      - zone.ostra_sjukhuset
+      - zone.rodkinda_19
+      - zone.sahlgrenska_sjukhuset
+      - zone.sixten
+      - zone.solveig_och_lennart
+      - zone.stefan
+      - zone.stromstad
+      - zone.torvallahallen
+      - zone.zaki_och_hanna
+      # END map-zones
+      show_zone_label: true
+      history: true
+      hours_to_show: 24
+    - type: map
+      title: Anna senaste 24 timmarna
+      entities:
+      - person.anna_bennani
+      # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
+      - zone.adrian
+      - zone.albin
+      - zone.albins_mamma
+      - zone.annas_jobb
+      - zone.bengt
+      - zone.digg_sundsvall
+      - zone.eddie
+      - zone.eina
+      - zone.elins_jobb
+      - zone.ellio_i_norge
+      - zone.ellio_i_tanum
+      - zone.eriks_skola
+      - zone.farmor_och_farfar
+      - zone.farsta_centrum
+      - zone.farsta_strand_pendeltagstation
+      - zone.gjovik
+      - zone.goteborg_c
+      - zone.grasko
+      - zone.hemma_hos_rio
+      - zone.home
+      - zone.ik_sodra_skarpnack
+      - zone.ilias_jobb
+      - zone.isabelle
+      - zone.isabelles_jobb
+      - zone.isabelles_mormor
+      - zone.isabelles_moster_jenny
+      - zone.isabelles_skola
+      - zone.justus
+      - zone.knut
+      - zone.kth_campus
+      - zone.kth_flemmingsberg
+      - zone.maria
+      - zone.milo
+      - zone.molndahls_sjukhus
+      - zone.norge_2
+      - zone.oslo
+      - zone.ostra_sjukhuset
+      - zone.rodkinda_19
+      - zone.sahlgrenska_sjukhuset
+      - zone.sixten
+      - zone.solveig_och_lennart
+      - zone.stefan
+      - zone.stromstad
+      - zone.torvallahallen
+      - zone.zaki_och_hanna
+      # END map-zones
+      show_zone_label: true
+      history: true
+      hours_to_show: 24
+    - type: map
+      title: Isabelle senaste 24 timmarna
+      entities:
+      - person.isabelle_sovig
+      # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
+      - zone.adrian
+      - zone.albin
+      - zone.albins_mamma
+      - zone.annas_jobb
+      - zone.bengt
+      - zone.digg_sundsvall
+      - zone.eddie
+      - zone.eina
+      - zone.elins_jobb
+      - zone.ellio_i_norge
+      - zone.ellio_i_tanum
+      - zone.eriks_skola
+      - zone.farmor_och_farfar
+      - zone.farsta_centrum
+      - zone.farsta_strand_pendeltagstation
+      - zone.gjovik
+      - zone.goteborg_c
+      - zone.grasko
+      - zone.hemma_hos_rio
+      - zone.home
+      - zone.ik_sodra_skarpnack
+      - zone.ilias_jobb
+      - zone.isabelle
+      - zone.isabelles_jobb
+      - zone.isabelles_mormor
+      - zone.isabelles_moster_jenny
+      - zone.isabelles_skola
+      - zone.justus
+      - zone.knut
+      - zone.kth_campus
+      - zone.kth_flemmingsberg
+      - zone.maria
+      - zone.milo
+      - zone.molndahls_sjukhus
+      - zone.norge_2
+      - zone.oslo
+      - zone.ostra_sjukhuset
+      - zone.rodkinda_19
+      - zone.sahlgrenska_sjukhuset
+      - zone.sixten
+      - zone.solveig_och_lennart
+      - zone.stefan
+      - zone.stromstad
+      - zone.torvallahallen
+      - zone.zaki_och_hanna
+      # END map-zones
+      show_zone_label: true
+      history: true
+      hours_to_show: 24
+    - type: map
+      title: Erik senaste 24 timmarna
+      entities:
+      - person.erik_bennani
+      # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
+      - zone.adrian
+      - zone.albin
+      - zone.albins_mamma
+      - zone.annas_jobb
+      - zone.bengt
+      - zone.digg_sundsvall
+      - zone.eddie
+      - zone.eina
+      - zone.elins_jobb
+      - zone.ellio_i_norge
+      - zone.ellio_i_tanum
+      - zone.eriks_skola
+      - zone.farmor_och_farfar
+      - zone.farsta_centrum
+      - zone.farsta_strand_pendeltagstation
+      - zone.gjovik
+      - zone.goteborg_c
+      - zone.grasko
+      - zone.hemma_hos_rio
+      - zone.home
+      - zone.ik_sodra_skarpnack
+      - zone.ilias_jobb
+      - zone.isabelle
+      - zone.isabelles_jobb
+      - zone.isabelles_mormor
+      - zone.isabelles_moster_jenny
+      - zone.isabelles_skola
+      - zone.justus
+      - zone.knut
+      - zone.kth_campus
+      - zone.kth_flemmingsberg
+      - zone.maria
+      - zone.milo
+      - zone.molndahls_sjukhus
+      - zone.norge_2
+      - zone.oslo
+      - zone.ostra_sjukhuset
+      - zone.rodkinda_19
+      - zone.sahlgrenska_sjukhuset
+      - zone.sixten
+      - zone.solveig_och_lennart
+      - zone.stefan
+      - zone.stromstad
+      - zone.torvallahallen
+      - zone.zaki_och_hanna
+      # END map-zones
+      show_zone_label: true
+      marker-color:
+      - condition: '{{ (now - last_updated) <= (60*60) }}'
+        color: green
+      - condition: '{{ (now - last_updated) > (60*60) && (now - last_updated) <= (2*60*60) }}'
+        color: yellow
+      - condition: '{{ (now - last_updated) > (2*60*60) }}'
+        color: red
+      history: true
+      hours_to_show: 24
 - title: Start
   path: start
   icon: mdi:home-assistant
