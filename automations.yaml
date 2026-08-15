@@ -1135,11 +1135,18 @@
     - action: switch.turn_off
       target:
         entity_id: switch.vattenslang_framsidan
+# Ring-rörelse: event.front_door_motion uppdateras inte tillförlitligt — använd last_activity (category=motion).
 - id: '8348674'
   alias: 'Belysning: Blinka i WC och badrummet vid rörelse på framsidan'
   triggers:
   - trigger: state
-    entity_id: event.front_door_motion
+    entity_id: sensor.front_door_last_activity
+  conditions:
+  - condition: template
+    value_template: "{{ state_attr('sensor.front_door_last_activity', 'category') == 'motion' }}"
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+      and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}"
   actions:
   - alias: Spara nuvarande ljusläge
     action: scene.create
@@ -1237,11 +1244,13 @@
   mode: single
   triggers:
     - trigger: state
-      entity_id: event.front_door_motion
+      entity_id: sensor.front_door_last_activity
   conditions:
     - condition: state
       entity_id: input_boolean.ring_blink_verifiering
       state: "on"
+    - condition: template
+      value_template: "{{ state_attr('sensor.front_door_last_activity', 'category') == 'motion' }}"
     - condition: template
       value_template: >
         {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
