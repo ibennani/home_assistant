@@ -735,6 +735,41 @@ views:
         name: Apple TV:n
       - entity: media_player.playstation_4
         name: PlayStationen
+    - type: custom:mini-graph-card
+      name: Ljudnivå senaste 24 timmarna
+      icon: mdi:volume-high
+      entities:
+      - entity: sensor.netatmo_bennani_vs_inomhus_noise
+        name: ''
+        show_state: true
+        state_adaptive_color: true
+      align_icon: left
+      align_header: left
+      align_state: left
+      height: 150
+      line_width: 1
+      hour24: true
+      hours_to_show: 24
+      group_by: minute
+      points_per_hour: 60
+      aminate: true
+      decimals: 0
+      lower_bound: 33
+      upper_bound: 70
+      show:
+        fill: true
+        extrema: true
+        average: true
+        labels: true
+        graph: line
+      color_thresholds_transition: hard
+      color_thresholds:
+      - value: 33
+        color: '#4dff59'
+      - value: 40
+        color: '#fff426'
+      - value: 50
+        color: '#ff2626'
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
