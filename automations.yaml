@@ -1135,21 +1135,19 @@
     - action: switch.turn_off
       target:
         entity_id: switch.vattenslang_framsidan
-# Ring-rörelse via last_activity (category=motion). Direkt blink — ingen kamera-delay.
-# Inte dörrklocka — dörrklocka använder event.front_door_ding.
+# Ring-rörelse via event.front_door_motion (realtid). Inte last_activity (poll ~2–3 min).
+# Inte dörrklocka — använder event.front_door_ding.
 - id: '8348674'
   alias: 'Belysning: Blinka i WC och badrummet vid rörelse på framsidan'
   mode: queued
   max: 3
   triggers:
   - trigger: state
-    entity_id: sensor.front_door_last_activity
+    entity_id: event.front_door_motion
   conditions:
   - condition: template
     value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
       and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}"
-  - condition: template
-    value_template: "{{ trigger.to_state.attributes.get('category') == 'motion' }}"
   actions:
   - alias: Spara nuvarande ljusläge
     action: scene.create
@@ -1317,6 +1315,25 @@
               continue_on_error: true
               target:
                 entity_id: light.taklampa_wc
+- id: ring_reload_motion_event_8c5c
+  alias: 'Ring: Ladda om integration vid trasigt motion-event'
+  description: >
+    Ring push (port 5228) kan tystna efter nätverksavbrott eller för många
+    Authorized Client Devices. Återställer event.front_door_motion utan manuell omstart.
+  mode: single
+  triggers:
+  - trigger: state
+    entity_id: event.front_door_motion
+    to: unavailable
+    for:
+      minutes: 2
+  - trigger: time
+    at: "04:00:00"
+    id: daglig_reload
+  actions:
+  - action: homeassistant.reload_config_entry
+    data:
+      entry_id: '01K8XPBX3QCW9K57MHCF2T84MY'
 # Engångs: notis till mobil när nästa framsida-rörelse sker — blink-automationen fungerade eller inte.
 # Stängs av automatiskt efter notis (input_boolean.ring_blink_verifiering).
 - id: ring_blink_verifiering_8c5c
@@ -1324,13 +1341,11 @@
   mode: single
   triggers:
     - trigger: state
-      entity_id: sensor.front_door_last_activity
+      entity_id: event.front_door_motion
   conditions:
     - condition: state
       entity_id: input_boolean.ring_blink_verifiering
       state: "on"
-    - condition: template
-      value_template: "{{ trigger.to_state.attributes.get('category') == 'motion' }}"
     - condition: template
       value_template: >
         {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
