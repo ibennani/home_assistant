@@ -1135,8 +1135,9 @@
     - action: switch.turn_off
       target:
         entity_id: switch.vattenslang_framsidan
-# Ring-rörelse via event.front_door_motion (realtid). Inte last_activity (poll ~2–3 min).
-# Inte dörrklocka — använder event.front_door_ding.
+# Framsida-rörelse: event.front_door_motion (realtid om Ring push fungerar) +
+# sensor.front_door_last_activity med category motion (poll, ~2–3 min fördröjning).
+# Inte dörrklocka/live view — filtrera on_demand via category; ding via event.front_door_ding.
 - id: '8348674'
   alias: 'Belysning: Blinka i WC och badrummet vid rörelse på framsidan'
   mode: queued
@@ -1144,10 +1145,22 @@
   triggers:
   - trigger: state
     entity_id: event.front_door_motion
+    id: ring_motion_event
+  - trigger: state
+    entity_id: sensor.front_door_last_activity
+    id: ring_last_activity_motion
   conditions:
   - condition: template
-    value_template: "{{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
-      and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}"
+    value_template: >
+      {% if trigger.id == 'ring_motion_event' %}
+        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}
+      {% else %}
+        {{ trigger.to_state.attributes.get('category') == 'motion'
+           and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none', '']
+           and trigger.to_state.state != trigger.from_state.state }}
+      {% endif %}
   actions:
   - alias: Spara nuvarande ljusläge
     action: scene.create
@@ -1342,14 +1355,25 @@
   triggers:
     - trigger: state
       entity_id: event.front_door_motion
+      id: ring_motion_event
+    - trigger: state
+      entity_id: sensor.front_door_last_activity
+      id: ring_last_activity_motion
   conditions:
     - condition: state
       entity_id: input_boolean.ring_blink_verifiering
       state: "on"
     - condition: template
       value_template: >
-        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
-           and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}
+        {% if trigger.id == 'ring_motion_event' %}
+          {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+             and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}
+        {% else %}
+          {{ trigger.to_state.attributes.get('category') == 'motion'
+             and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
+             and trigger.from_state.state not in ['unavailable', 'unknown', 'none', '']
+             and trigger.to_state.state != trigger.from_state.state }}
+        {% endif %}
   actions:
     - variables:
         motion_at: "{{ trigger.to_state.last_changed }}"
