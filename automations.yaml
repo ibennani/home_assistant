@@ -8382,8 +8382,7 @@
 - alias: 'Bevattning: Vattna växter på framsidan'
   id: f7c5a4adbdb94384975b6a340a2355af
   mode: restart
-  description: Startar bevattning kl 01 och stoppar kl 03. Startar om vattenslangen efter
-    1 minut om den stängs av under bevattningsfönstret.
+  description: Startar bevattning kl 01 och stoppar kl 03.
   triggers:
   - trigger: template
     value_template: "{{ now().strftime('%H:%M') == '01:00' and\n  is_state('input_boolean.vattenspridaren_audostart',
@@ -8393,11 +8392,6 @@
     value_template: "{{ now().strftime('%H:%M') == '03:00' and\n  is_state('input_boolean.vattenspridaren_audostart',
       'on') }}"
     id: stoppa
-  - trigger: state
-    entity_id: switch.vattenslang_framsidan
-    from: 'on'
-    to: 'off'
-    id: omstart
   action:
   - choose:
     - conditions:
@@ -8433,30 +8427,6 @@
           data:
             ttl: 0
             priority: high
-    - conditions:
-      - condition: trigger
-        id: omstart
-      - condition: state
-        entity_id: input_boolean.vattenspridaren_audostart
-        state: 'on'
-      - condition: state
-        entity_id: input_boolean.bevattning_framsidan_pagar
-        state: 'on'
-      sequence:
-      - delay:
-          minutes: 1
-      - condition: state
-        entity_id: input_boolean.bevattning_framsidan_pagar
-        state: 'on'
-      - condition: state
-        entity_id: input_boolean.vattenspridaren_audostart
-        state: 'on'
-      - condition: state
-        entity_id: switch.vattenslang_framsidan
-        state: 'off'
-      - action: switch.turn_on
-        target:
-          entity_id: switch.vattenslang_framsidan
 - id: meddela_rorelse_baksidan
   alias: 'Mobilnotis: Rörelse på baksidan'
   description: 'Mobilnotis: Rörelse på baksidan'
