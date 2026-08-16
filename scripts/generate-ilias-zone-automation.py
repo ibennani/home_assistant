@@ -265,6 +265,8 @@ ZONE_MESSAGES = {
 
 TEMPLATE_BEGIN = "# BEGIN aktiv-zon-sensorer (generate-ilias-zone-automation.py)"
 TEMPLATE_END = "# END aktiv-zon-sensorer (generate-ilias-zone-automation.py)"
+BINARY_BEGIN = "# BEGIN hemma-borta-sensorer (generate-ilias-zone-automation.py)"
+BINARY_END = "# END hemma-borta-sensorer (generate-ilias-zone-automation.py)"
 AUTOMATION_ID = "7918348674111555999"
 ANNA_AUTOMATION_ID = "791834010101014158674"
 
@@ -340,7 +342,15 @@ def build_template_sensors() -> str:
         for line in state_tpl.splitlines():
             lines.append(f"        {line}")
         lines.append("")
-    lines.append("    # ---- Hemma / borta (giltig aktiv_zon, ignorerar unavailable) ----")
+    lines.append(TEMPLATE_END)
+    return "\n".join(lines)
+
+
+def build_hemma_binary_sensors() -> str:
+    lines = [
+        BINARY_BEGIN,
+        "    # ---- Hemma / borta (giltig aktiv_zon, ignorerar unavailable) ----",
+    ]
     for _tracker, display_name, slug in all_aktiv_zon_people():
         sensor = f"sensor.{slug}_aktiv_zon"
         hemma_tpl = hemma_binary_state_template(sensor)
@@ -359,7 +369,7 @@ def build_template_sensors() -> str:
         for line in borta_tpl.splitlines():
             lines.append(f"        {line}")
         lines.append("")
-    lines.append(TEMPLATE_END)
+    lines.append(BINARY_END)
     return "\n".join(lines)
 
 
@@ -538,6 +548,7 @@ def replace_anna_automation(content: str, new_automation: str) -> str:
 
 def patch_template_sensors() -> None:
     template_block = build_template_sensors()
+    binary_block = build_hemma_binary_sensors()
     template_content = TEMPLATE_FILE.read_text(encoding="utf-8")
     if TEMPLATE_BEGIN in template_content:
         template_content = replace_marked_block(
@@ -550,6 +561,19 @@ def patch_template_sensors() -> None:
         template_content = template_content.replace(
             marker,
             template_block + "\n\n" + marker,
+            1,
+        )
+    if BINARY_BEGIN in template_content:
+        template_content = replace_marked_block(
+            template_content, BINARY_BEGIN, BINARY_END, binary_block
+        )
+    else:
+        marker = "    - name: Eriks rum automation får styra lampor"
+        if marker not in template_content:
+            raise ValueError("Could not find binary_sensor insertion point in template.yaml")
+        template_content = template_content.replace(
+            marker,
+            binary_block + "\n\n" + marker,
             1,
         )
     TEMPLATE_FILE.write_text(template_content, encoding="utf-8")
