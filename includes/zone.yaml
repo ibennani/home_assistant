@@ -44,9 +44,3 @@
   radius: 39
   icon: mdi:human
 
-# Park på Kungsholmen
-- name: Rålambshovsparken
-  latitude: 59.32889
-  longitude: 18.02389
-  radius: 350
-  icon: mdi:tree
