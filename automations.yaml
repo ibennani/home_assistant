@@ -8306,34 +8306,74 @@
     value_template: "{{ not is_state(\"input_select.house_time_modes\", \"Natt\")
       \n  and is_state(\"var.morgoninfo_koket_redan_upplast\", \"true\") }}\n"
   action:
-  - action: script.tysta_kopplingspling_vid_casting
-    data:
-      hogtalare: media_player.googlehome_alla_puckar
-  - wait_template: '{{ is_state("media_player.googlehome_alla_puckar", "idle") }}'
+  - parallel:
+    - action: script.tysta_kopplingspling_vid_casting
+      data:
+        hogtalare: media_player.googlehome_ilias_rum
+    - action: script.tysta_kopplingspling_vid_casting
+      data:
+        hogtalare: media_player.googlehome_vardagsrummet
+    - action: script.tysta_kopplingspling_vid_casting
+      data:
+        hogtalare: media_player.googlehome_sovrummet
+    - action: script.tysta_kopplingspling_vid_casting
+      data:
+        hogtalare: media_player.googlehome_annas_rum
+    - action: script.tysta_kopplingspling_vid_casting
+      data:
+        hogtalare: media_player.googlehome_koket
+    - action: script.tysta_kopplingspling_vid_casting
+      data:
+        hogtalare: media_player.googlehome_eriks_rum
+  - wait_template: '{{  is_state("media_player.googlehome_ilias_rum","idle") and
+      is_state("media_player.googlehome_vardagsrummet","idle")  and is_state("media_player.googlehome_sovrummet","idle")  and
+      is_state("media_player.googlehome_annas_rum","idle")  and is_state("media_player.googlehome_koket","idle")  and
+      is_state("media_player.googlehome_eriks_rum","idle") }}
+
+      '
     timeout: 00:00:30
     continue_on_timeout: false
   - action: media_player.volume_set
-    target:
-      entity_id: media_player.alla_puckar
     data:
+      entity_id: media_player.alla_puckar
       volume_level: 0.6
   - action: media_player.play_media
     target:
-      entity_id: media_player.alla_puckar
+      entity_id:
+      - media_player.googlehome_ilias_rum
+      - media_player.googlehome_vardagsrummet
+      - media_player.googlehome_sovrummet
+      - media_player.googlehome_annas_rum
+      - media_player.googlehome_koket
+      - media_player.googlehome_eriks_rum
     data:
       media_content_id: /local/media/dingdong02.mp3
       media_content_type: audio/mpeg
-  - wait_template: '{{ is_state("media_player.alla_puckar", "playing") }}'
+  - wait_template: '{{  is_state("media_player.googlehome_ilias_rum","playing")
+      and is_state("media_player.googlehome_vardagsrummet","playing")  and is_state("media_player.googlehome_sovrummet","playing")  and
+      is_state("media_player.googlehome_annas_rum","playing")  and is_state("media_player.googlehome_koket","playing")  and
+      is_state("media_player.googlehome_eriks_rum","playing") }}
+
+      '
     timeout: 00:00:30
     continue_on_timeout: false
-  - wait_template: >
-      {{ is_state("media_player.alla_puckar", "idle")
-         or is_state("media_player.alla_puckar", "off") }}
+  - wait_template: '{{  is_state("media_player.googlehome_ilias_rum","idle") and
+      is_state("media_player.googlehome_vardagsrummet","idle")  and is_state("media_player.googlehome_sovrummet","idle")  and
+      is_state("media_player.googlehome_annas_rum","idle")  and is_state("media_player.googlehome_koket","idle")  and
+      is_state("media_player.googlehome_eriks_rum","idle") }}
+
+      '
     timeout: 00:00:30
     continue_on_timeout: false
-  - action: media_player.media_stop
+  - action: media_player.turn_off
     target:
-      entity_id: media_player.alla_puckar
+      entity_id:
+      - media_player.googlehome_ilias_rum
+      - media_player.googlehome_vardagsrummet
+      - media_player.googlehome_sovrummet
+      - media_player.googlehome_annas_rum
+      - media_player.googlehome_koket
+      - media_player.googlehome_eriks_rum
 - alias: 'Bevattning: Vattna växter på framsidan'
   id: f7c5a4adbdb94384975b6a340a2355af
   mode: restart
