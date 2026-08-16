@@ -7309,13 +7309,14 @@
           rapid_transition: 'on'
 - id: '790264970'
   alias: 'Belysning: 433-fjärrkontrollen styr belysningen i köket'
+  description: Reagerar på event-entiteter så varje knapptryck triggar även när switch-läget redan är satt.
   triggers:
   - trigger: state
     entity_id:
-    - switch.433_fjarr_knapp_a
-    - switch.433_fjarr_knapp_b
-    - switch.433_fjarr_knapp_c
-    - switch.433_fjarr_knapp_d
+    - event.433_fjarr_knapp_a
+    - event.433_fjarr_knapp_b
+    - event.433_fjarr_knapp_c
+    - event.433_fjarr_knapp_d
     not_from:
     - unavailable
     - unknown
@@ -7331,7 +7332,7 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id == "switch.433_fjarr_knapp_a" and trigger.to_state.state
+        value_template: '{{ trigger.entity_id == "event.433_fjarr_knapp_a" and trigger.to_state.attributes.event_type
           == "on" }}
 
           '
@@ -7362,7 +7363,7 @@
           entity_id: script.koksflakten_stang_av_och_sla_pa
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id == "switch.433_fjarr_knapp_a" and trigger.to_state.state
+        value_template: '{{ trigger.entity_id == "event.433_fjarr_knapp_a" and trigger.to_state.attributes.event_type
           == "off" }}
 
           '
@@ -7386,7 +7387,7 @@
           entity_id: script.koksflakten_stang_av_och_sla_pa
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id == "switch.433_fjarr_knapp_b" and trigger.to_state.state
+        value_template: '{{ trigger.entity_id == "event.433_fjarr_knapp_b" and trigger.to_state.attributes.event_type
           == "on" }}
 
           '
@@ -7410,7 +7411,7 @@
           entity_id: script.koksflakten_stang_av_och_sla_pa
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id == "switch.433_fjarr_knapp_b" and trigger.to_state.state
+        value_template: '{{ trigger.entity_id == "event.433_fjarr_knapp_b" and trigger.to_state.attributes.event_type
           == "off" }}
 
           '
@@ -7434,7 +7435,7 @@
           entity_id: script.koksflakten_stang_av_och_sla_pa
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id == "switch.433_fjarr_knapp_c" and trigger.to_state.state
+        value_template: '{{ trigger.entity_id == "event.433_fjarr_knapp_c" and trigger.to_state.attributes.event_type
           == "on" }}
 
           '
@@ -7452,7 +7453,7 @@
             rapid_transition: 'on'
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id == "switch.433_fjarr_knapp_c" and trigger.to_state.state
+        value_template: '{{ trigger.entity_id == "event.433_fjarr_knapp_c" and trigger.to_state.attributes.event_type
           == "off" }}
 
           '
@@ -7462,7 +7463,7 @@
           entity_id: script.do_nothing
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id == "switch.433_fjarr_knapp_d" and trigger.to_state.state
+        value_template: '{{ trigger.entity_id == "event.433_fjarr_knapp_d" and trigger.to_state.attributes.event_type
           == "on" }}
 
           '
@@ -7480,7 +7481,7 @@
             rapid_transition: 'on'
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id == "switch.433_fjarr_knapp_d" and trigger.to_state.state
+        value_template: '{{ trigger.entity_id == "event.433_fjarr_knapp_d" and trigger.to_state.attributes.event_type
           == "off" }}
 
           '
