@@ -6703,7 +6703,7 @@
     - unavailable
     - unknown
     - playing
-    - on
+    - 'on'
     - idle
     - paused
     not_to:
