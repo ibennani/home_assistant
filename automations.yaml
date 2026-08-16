@@ -1269,7 +1269,7 @@
         entity_id: switch.vattenslang_framsidan
 # Framsida-rörelse: primär ring-mqtt (binary_sensor.front_door_motion_2).
 # Backup: event.front_door_motion (Ring push) och sensor.front_door_last_activity (poll).
-# Inte dörrklocka/live view — filtrera on_demand; ding via binary_sensor.front_door_ding.
+# Inte dörrklocka/live view — filtrera on_demand; ding via binary_sensor.front_door_ding (lastDing).
 - id: '8348674'
   alias: 'Belysning: Blinka i WC och badrummet vid rörelse på framsidan'
   mode: queued
@@ -1623,7 +1623,7 @@
   triggers:
   - trigger: state
     entity_id: binary_sensor.front_door_ding
-    to: 'on'
+    attribute: lastDing
     id: door_ding_mqtt
     not_from:
     - unavailable
@@ -1645,8 +1645,8 @@
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.to_state.state != trigger.from_state.state }}
       {% else %}
-        {{ trigger.to_state.state == 'on'
-           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+        {{ trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
       {% endif %}
   - condition: template
     value_template: "{{ is_state('binary_sensor.erik_hemma', 'on')\n   and not is_state('input_select.house_time_modes',
@@ -2599,7 +2599,7 @@
   trigger:
   - trigger: state
     entity_id: binary_sensor.front_door_ding
-    to: 'on'
+    attribute: lastDing
     id: ring_pa_dorren_mqtt
     not_from:
     - unavailable
@@ -2631,8 +2631,8 @@
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.to_state.state != trigger.from_state.state }}
       {% elif trigger.id == 'ring_pa_dorren_mqtt' %}
-        {{ trigger.to_state.state == 'on'
-           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+        {{ trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
       {% else %}
         true
       {% endif %}
@@ -2665,7 +2665,7 @@
   triggers:
   - trigger: state
     entity_id: binary_sensor.front_door_ding
-    to: 'on'
+    attribute: lastDing
     id: ring_ding_mqtt
     not_from:
     - unavailable
@@ -2731,8 +2731,8 @@
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.to_state.state != trigger.from_state.state }}
       {% elif trigger.entity_id == 'binary_sensor.front_door_ding' %}
-        {{ trigger.to_state.state == 'on'
-           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+        {{ trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
       {% else %}
         true
       {% endif %}
@@ -8210,7 +8210,7 @@
   triggers:
   - trigger: state
     entity_id: binary_sensor.front_door_ding
-    to: 'on'
+    attribute: lastDing
     id: ding_mqtt
     not_from:
     - unavailable
@@ -8232,8 +8232,8 @@
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.to_state.state != trigger.from_state.state }}
       {% else %}
-        {{ trigger.to_state.state == 'on'
-           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+        {{ trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
       {% endif %}
   action:
   - action: notify.android_tv_sony_tv_i_vardagsrummet
