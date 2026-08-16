@@ -949,42 +949,32 @@ tysta_kopplingspling_vid_casting:
   description: Ta bort plinget som hörs i början när man castar till en Chromecast
     eller Google home nest
   sequence:
+  - variables:
+      cast_target: '{% if hogtalare == "media_player.googlehome_infopuckarna" %}media_player.googlehome_infopuckarna{%
+        elif hogtalare == "media_player.googlehome_alla_puckar" %}media_player.alla_puckar_ha_grupp{%
+        elif hogtalare == "media_player.alla_hogtalare" %}media_player.alla_hogtalare{%
+        elif hogtalare == "media_player.de_basta_hogtalarna" %}media_player.de_basta_hogtalarna{%
+        else %}{{ hogtalare }}{% endif %}'
   - action: media_player.volume_mute
     data:
       is_volume_muted: true
     target:
-      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.googlehome_infopuckarna
-        {% elif hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar_ha_grupp
-        {% elif hogtalare == "media_player.alla_hogtalare" %} media_player.alla_hogtalare
-        {% elif hogtalare == "media_player.de_basta_hogtalarna" %} media_player.de_basta_hogtalarna
-        {% else %} {{ hogtalare }} {% endif %}
-
-        '
+      entity_id: '{{ cast_target }}'
   - action: media_player.turn_on
     target:
-      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.googlehome_infopuckarna
-        {% elif hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar_ha_grupp
-        {% elif hogtalare == "media_player.alla_hogtalare" %} media_player.alla_hogtalare
-        {% elif hogtalare == "media_player.de_basta_hogtalarna" %} media_player.de_basta_hogtalarna
-        {% else %} {{ hogtalare }} {% endif %}
-
-        '
-  - wait_template: '{{ state_attr( hogtalare , ''is_volume_muted'' ) == true }}'
-  - wait_template: '{{ is_state( hogtalare , ''idle'') }}'
+      entity_id: '{{ cast_target }}'
+  - wait_template: '{{ state_attr(cast_target, ''is_volume_muted'') == true }}'
+    timeout: 00:00:15
+    continue_on_timeout: true
+  - wait_template: '{{ is_state(cast_target, ''idle'') or is_state(cast_target, ''off'') }}'
+    timeout: 00:00:30
+    continue_on_timeout: true
   - condition: template
-    value_template: '{{ is_state( hogtalare , ''idle'') }}
-
-      '
+    value_template: '{{ is_state(cast_target, ''idle'') or is_state(cast_target, ''off'') }}'
   - delay: '00:00:00.600'
   - action: media_player.volume_mute
     data:
-      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.googlehome_infopuckarna
-        {% elif hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar_ha_grupp
-        {% elif hogtalare == "media_player.alla_hogtalare" %} media_player.alla_hogtalare
-        {% elif hogtalare == "media_player.de_basta_hogtalarna" %} media_player.de_basta_hogtalarna
-        {% else %} {{ hogtalare }} {% endif %}
-
-        '
+      entity_id: '{{ cast_target }}'
       is_volume_muted: false
 stjarnan_i_trappan_loopa_farger:
   alias: Stjärnan i trappan loopa färger
