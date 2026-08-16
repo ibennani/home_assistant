@@ -5344,6 +5344,7 @@
           entity_id: script.eriks_rum_satt_lage
         data:
           variables:
+            force: true
             lage: "{% if current_mode != 'Släckt' %}\n  Släckt\n{% else %}\n  {% if
               house_mode == 'Morgon' %}\n    Taklamporna\n  {% elif house_mode == 'Dag'
               %}\n    {% if lux_back > 2000 %} Taklamporna {% else %} Tänt {% endif
@@ -5359,6 +5360,7 @@
           entity_id: script.eriks_rum_satt_lage
         data:
           variables:
+            force: true
             lage: "{% if current_mode == 'Mysigt' %}\n  {% if lux_back > 2000 %} Taklamporna
               {% else %} Tänt {% endif %}\n{% else %}\n  Mysigt\n{% endif %}"
     - conditions:
@@ -5389,6 +5391,7 @@
           entity_id: script.eriks_rum_satt_lage
         data:
           variables:
+            force: true
             lage: Läsning
     - conditions:
       - condition: template
@@ -5424,6 +5427,9 @@
   - action: script.turn_on
     target:
       entity_id: script.eriks_rum_stall_in_belysningen
+    data:
+      variables:
+        force: true
 - alias: 'Belysning: Synka läge i Eriks rum vid väggbrytare'
   id: eriks_rum_vaggbrytare_tant_20260726
   mode: queued
@@ -5541,6 +5547,7 @@
               entity_id: script.eriks_rum_satt_lage
             data:
               variables:
+                force: true
                 lage: Mysigt
 - alias: 'Belysning: Styr belysningen i garderoben i Eriks rum'
   id: dfgjsg1f8h1k81il8ö8br8yj018hf5
