@@ -3899,6 +3899,12 @@
         float(0) / 100 }}
 
         '
+      station: '{{ states("input_select.play_radiostation") }}'
+      station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n
+        \ \"Sveriges Radio P2\": \"library://radio/10\",\n  \"Sveriges Radio P3\":
+        \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n
+        \ \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio
+        Ekot Direkt\": \"library://radio/14\"\n} %}\n{{ streams.get(station) }}"
   - choose:
     - conditions:
       - condition: template
@@ -3928,11 +3934,13 @@
       sequence:
       - wait_for_trigger:
         - trigger: template
-          value_template: "{{ state_attr('media_player.hogtalarna_i_koket_mass', 'media_title')
-            is not none \n   and state_attr('media_player.hogtalarna_i_koket_mass',
-            'media_title') | trim != '' }}\n"
+          value_template: "{% set title = state_attr('media_player.hogtalarna_i_koket_mass',
+            'media_title') | default('', true) | trim %}\n{% set content_id = state_attr('media_player.hogtalarna_i_koket_mass',
+            'media_content_id') | default('', true) %}\n{{ station_url is not none\n
+            \  and station_url != ''\n   and content_id == station_url\n   and title
+            != '' }}\n"
         timeout:
-          seconds: 3
+          seconds: 15
       - action: script.turn_on
         target:
           entity_id: script.las_text_i_valfri_device
@@ -3940,10 +3948,10 @@
           variables:
             hogtalare: media_player.googlehome_koket
             meddelande: "{% set title = state_attr('media_player.hogtalarna_i_koket_mass',
-              'media_title') %} {% set station = states(\"input_select.play_radiostation\")
-              %} {% if title is not none and title | trim != '' %}\n  Nu spelas {{
-              title }} i {{ station }}\n{% else %}\n  Nu spelas {{ station }}\n{%
-              endif %}"
+              'media_title') | default('', true) | trim %}\n{% set content_id = state_attr('media_player.hogtalarna_i_koket_mass',
+              'media_content_id') | default('', true) %}\n{% if title != '' and content_id
+              == station_url %}\n  Nu spelas {{ title }} i {{ station }}\n{% else
+              %}\n  Nu spelas {{ station }}\n{% endif %}"
             volym: '{{ volym_niva }}'
             voice: MattiasNeural
   mode: restart
@@ -3957,6 +3965,10 @@
     - unavailable
     - unknown
   action:
+  - action: media_player.media_stop
+    continue_on_error: true
+    target:
+      entity_id: media_player.hogtalarna_i_koket_mass
   - action: media_player.turn_off
     target:
       entity_id: media_player.hogtalarna_i_koket
@@ -3971,6 +3983,10 @@
     - unavailable
     - unknown
   action:
+  - action: media_player.media_stop
+    continue_on_error: true
+    target:
+      entity_id: media_player.hogtalarna_i_koket_mass
   - action: input_select.select_option
     target:
       entity_id: input_select.play_radiostation
