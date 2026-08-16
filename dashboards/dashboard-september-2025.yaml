@@ -1983,6 +1983,41 @@ views:
               transform: translate(-50%, -50%)
               color: '#f44336'
               --mdc-icon-size: 28px
+    - type: custom:mini-graph-card
+      name: Framsidan
+      entities:
+      - entity: sensor.utomhus_framsidan_ljusstyrka
+        name: Framsidan ljusstyrka
+        show_state: true
+        state_adaptive_color: true
+      align_icon: left
+      align_header: left
+      align_state: left
+      height: 150
+      line_width: 1
+      hour24: true
+      hours_to_show: 24
+      hours24: true
+      points_per_hour: 60
+      aminate: true
+      decimals: 0
+      show:
+        fill: true
+        extrema: true
+        average: true
+        labels: false
+      color_thresholds_transition: hard
+      color_thresholds:
+      - value: 0
+        color: '#4d68ff'
+      - value: 300
+        color: '#66ffe6'
+      - value: 1000
+        color: '#74ff33'
+      - value: 2000
+        color: '#ffd633'
+      - value: 13000
+        color: '#ff704d'
   - type: custom:expander-card
     expanded: false
     title-card-clickable: true
@@ -2042,6 +2077,40 @@ views:
         name: Vid WC-fönstret
         state: '{% if is_state(''binary_sensor.baksidan_rorelse_wc_fonster'', ''on'') %}Rörelse{% else %}Ingen rörelse{% endif
           %}'
+    - type: custom:mini-graph-card
+      name: Baksidan
+      entities:
+      - entity: sensor.utomhus_baksidan_ljusstyrka
+        name: Baksidan ljusstyrka
+        show_state: true
+        state_adaptive_color: true
+      align_icon: left
+      align_header: left
+      align_state: left
+      height: 150
+      line_width: 1
+      hour24: true
+      hours_to_show: 24
+      points_per_hour: 60
+      aminate: true
+      decimals: 0
+      show:
+        fill: true
+        extrema: true
+        average: true
+        labels: false
+      color_thresholds_transition: hard
+      color_thresholds:
+      - value: 0
+        color: '#4d68ff'
+      - value: 300
+        color: '#66ffe6'
+      - value: 1000
+        color: '#74ff33'
+      - value: 2000
+        color: '#ffd633'
+      - value: 13000
+        color: '#ff704d'
 - title: Belysning
   icon: mdi:lightbulb
   path: belysning
