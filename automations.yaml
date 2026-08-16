@@ -8242,6 +8242,61 @@
       \n  and is_state(\"var.morgoninfo_koket_redan_upplast\", \"true\") }}\n"
   action:
   - action: script.spela_dingdong_i_alla_puckar
+- id: ring_knack_ilias_puck_motion_ecbb
+  alias: 'Media: Knack i Ilias puck vid rörelse på framsidan'
+  description: Spelar tre knack i Ilias rum när Ring dörrklockan detekterar rörelse. Inte när Isabelle är hemma.
+  mode: restart
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.front_door_motion_2
+    to: 'on'
+    id: ring_motion_mqtt
+    not_from:
+    - unavailable
+    - unknown
+  - trigger: state
+    entity_id: event.front_door_motion
+    id: ring_motion_event
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  - trigger: state
+    entity_id: sensor.front_door_last_activity
+    id: ring_last_activity_motion
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  conditions:
+  - condition: template
+    value_template: >
+      {% if trigger.id == 'ring_motion_mqtt' %}
+        {{ trigger.to_state.state == 'on'
+           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+      {% elif trigger.id == 'ring_motion_event' %}
+        {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}
+      {% else %}
+        {% set mqtt_ts = as_timestamp(states.binary_sensor.front_door_motion_2.last_changed) %}
+        {% set event_ts = as_timestamp(states.event.front_door_motion.state)
+           if states.event.front_door_motion.state not in ['unavailable', 'unknown', 'none', ''] else 0 %}
+        {% set latest = mqtt_ts if event_ts < mqtt_ts else event_ts %}
+        {{ trigger.to_state.attributes.get('category') == 'motion'
+           and trigger.to_state.state not in ['unavailable', 'unknown', 'none', '']
+           and trigger.from_state.state not in ['unavailable', 'unknown', 'none', '']
+           and trigger.to_state.state != trigger.from_state.state
+           and (as_timestamp(trigger.to_state.state) - latest) > 120 }}
+      {% endif %}
+  - condition: state
+    entity_id: binary_sensor.isabelle_hemma
+    state: 'off'
+  actions:
+  - action: script.spela_knack_i_ilias_puck
 - alias: 'Bevattning: Vattna växter på framsidan'
   id: f7c5a4adbdb94384975b6a340a2355af
   mode: restart
