@@ -4260,37 +4260,6 @@
           \n{% else %} media_player.googlehome_ilias_rum {% endif %}\n"
         volym: "{% set familj_hemma = [\n  is_state('sensor.ilias_aktiv_zon', 'zone.home'),\n  is_state('sensor.anna_aktiv_zon', 'zone.home'),\n  is_state('sensor.erik_aktiv_zon', 'zone.home'),\n  is_state('sensor.isabelle_aktiv_zon', 'zone.home')\n] | select('true') | list | count %}\n{% if familj_hemma == 1 and is_state('sensor.ilias_aktiv_zon', 'zone.home') %}\n  {% set vem_ar_hemma = \"ilias\" %}\n{% elif familj_hemma > 1 and is_state('sensor.ilias_aktiv_zon', 'zone.home') %}\n  {% set vem_ar_hemma = \"flera\" %}\n{% else %}\n  {% set vem_ar_hemma = \"ointressant\" %}\n{% endif %} {% if vem_ar_hemma == \"ilias\"
           %} 0.15 {% else %} 0.10 {% endif %}\n"
-- alias: 'Google home: Läs upp tiden på morgonen i alla högtalare om Erik är ensam
-    hemma.'
-  id: 6s561635sdf651fdagad60055g
-  mode: restart
-  triggers:
-  - trigger: template
-    value_template: "{{ now().strftime('%u') | int in [1, 2, 3, 4, 5]\n    and now().strftime(\"%R\")
-      in [\"06:45\",\n                                \"07:00\", \n                                \"07:15\",
-      \n                                \"07:30\", \n                                \"07:40\",
-      \n                                \"07:50\",\n                                \"08:00\",
-      \n                                \"08:10\", \n                                \"08:20\",
-      \n                                \"08:30\", \n                                \"08:40\",
-      \n                                \"08:50\", \n                                \"09:00\",
-      \n                                \"09:10\", \n                                \"09:20\",
-      \n                                \"09:30\"] \n    and is_state(\"sensor.erik_aktiv_zon\",\"zone.home\")\n
-      \   and not is_state(\"sensor.ilias_aktiv_zon\",\"zone.home\")\n    and not is_state(\"sensor.anna_aktiv_zon\",\"zone.home\")\n    and not is_state(\"sensor.isabelle_aktiv_zon\",\"zone.home\")\n    and is_state(\"input_boolean.gaster_hemma\",
-      \"off\")\n    and is_state(\"input_boolean.stadning_pagar\", \"off\")\n    and
-      not is_state(\"media_player.googlehome_eriks_rum\", \"playing\") }}\n"
-  action:
-  - action: script.turn_on
-    target:
-      entity_id: script.skapa_begriplig_tid
-  - action: script.turn_on
-    target:
-      entity_id: script.las_text_i_valfri_device
-    data:
-      variables:
-        hogtalare: media_player.googlehome_alla_puckar
-        volym: 0.5
-        voice: MattiasNeural
-        meddelande: "{{ states(\"input_text.aktuell_tid_begriplig\") }}  \n"
 - alias: 'HA: Alla har gått hemifrån'
   id: '7918348010559870850674'
   triggers:
