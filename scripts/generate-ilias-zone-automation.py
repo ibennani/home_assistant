@@ -281,9 +281,15 @@ def zone_list_jinja(indent: str = "          ") -> str:
 
 
 def aktiv_zon_state_template(tracker: str) -> str:
+    """Håll senaste zon vid tillfällig person-unavailable — undvik falska borta-triggers."""
     return textwrap.dedent(
         f"""\
         {{% set tracker = '{tracker}' %}}
+        {{% set bad = ['unavailable', 'unknown', 'none', ''] %}}
+        {{% if states(tracker) in bad %}}
+          {{% set prev = this.state | default('not_home', true) %}}
+          {{{{ prev if prev not in bad else 'not_home' }}}}
+        {{% else %}}
         {{% set zones = [
         {zone_list_jinja()}
         ] %}}
@@ -298,7 +304,25 @@ def aktiv_zon_state_template(tracker: str) -> str:
             {{% endif %}}
           {{% endfor %}}
         {{% endif %}}
-        {{{{ ns.best }}}}"""
+        {{{{ ns.best }}}}
+        {{% endif %}}"""
+    )
+
+
+def hemma_binary_state_template(sensor: str) -> str:
+    return textwrap.dedent(
+        f"""\
+        {{% set s = states('{sensor}') %}}
+        {{{{ s == 'zone.home' }}}}"""
+    )
+
+
+def borta_kand_binary_state_template(sensor: str) -> str:
+    return textwrap.dedent(
+        f"""\
+        {{% set s = states('{sensor}') %}}
+        {{% set bad = ['unknown', 'unavailable', 'none', ''] %}}
+        {{{{ s not in bad and s != 'zone.home' }}}}"""
     )
 
 
@@ -306,11 +330,33 @@ def build_template_sensors() -> str:
     lines = [TEMPLATE_BEGIN, "    # ---- Aktiv zon (mittpunkt i zon, en zon åt gången) ----"]
     for _tracker, display_name, slug in all_aktiv_zon_people():
         state_tpl = aktiv_zon_state_template(_tracker)
+        sensor = f"sensor.{slug}_aktiv_zon"
         lines.append(f"    - name: {display_name} aktiv zon")
         lines.append(f"      unique_id: {slug}_aktiv_zon")
         lines.append("      icon: mdi:map-marker-radius")
+        lines.append("      availability: >")
+        lines.append("        {{ true }}")
         lines.append("      state: >")
         for line in state_tpl.splitlines():
+            lines.append(f"        {line}")
+        lines.append("")
+    lines.append("    # ---- Hemma / borta (giltig aktiv_zon, ignorerar unavailable) ----")
+    for _tracker, display_name, slug in all_aktiv_zon_people():
+        sensor = f"sensor.{slug}_aktiv_zon"
+        hemma_tpl = hemma_binary_state_template(sensor)
+        borta_tpl = borta_kand_binary_state_template(sensor)
+        lines.append(f"    - name: {display_name} hemma")
+        lines.append(f"      unique_id: {slug}_hemma")
+        lines.append("      device_class: presence")
+        lines.append("      state: >")
+        for line in hemma_tpl.splitlines():
+            lines.append(f"        {line}")
+        lines.append("")
+        lines.append(f"    - name: {display_name} borta kand")
+        lines.append(f"      unique_id: {slug}_borta_kand")
+        lines.append("      device_class: presence")
+        lines.append("      state: >")
+        for line in borta_tpl.splitlines():
             lines.append(f"        {line}")
         lines.append("")
     lines.append(TEMPLATE_END)
@@ -541,7 +587,17 @@ def main() -> None:
         action="store_true",
         help="Uppdatera template-sensorer samt Ilias- och Anna-automationer",
     )
+    parser.add_argument(
+        "--patch-templates",
+        action="store_true",
+        help="Uppdatera endast aktiv_zon template-sensorer i includes/template.yaml",
+    )
     args = parser.parse_args()
+
+    if args.patch_templates:
+        patch_template_sensors()
+        print("Patched includes/template.yaml (aktiv_zon sensors)", file=sys.stderr)
+        return
 
     if args.patch_all:
         patch_template_sensors()

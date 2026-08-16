@@ -712,7 +712,7 @@ nattbelysning:
       entity_id: script.eriks_rum_satt_lage
     data:
       variables:
-        lage: "{% if is_state(\"sensor.erik_aktiv_zon\",\"zone.home\") and not is_state(\"input_select.eriks_rum_belysning\",\"Släckt\")
+        lage: "{% if is_state('binary_sensor.erik_hemma', 'on') and not is_state(\"input_select.eriks_rum_belysning\",\"Släckt\")
           %} Minimalt {% elif is_state(\"input_boolean.gaster_hemma\",\"on\") %} {{
           states(\"input_select.eriks_rum_belysning\") }} {% elif (is_state(\"binary_sensor.eriks_rum_rorelse\",\"off\")\n
           \     and (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())
