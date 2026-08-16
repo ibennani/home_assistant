@@ -6648,14 +6648,20 @@
 
       '
     for: '00:00:30'
-  - id: rullgardiner_ner_sol
-    trigger: template
-    value_template: '{% set tv_aktiv = states(''media_player.sony_tv_i_vardagsrummet'')
-      in [''playing'', ''on'', ''idle'', ''paused''] %} {% set sol_in = is_state(''binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan'',
-      ''on'') %} {% set vinterljus = is_state(''binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern'',
-      ''on'') %} {{ not tv_aktiv and (sol_in or vinterljus) }}
-
-      '
+  - id: rullgardiner_ner_sol_framsidan
+    trigger: state
+    entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+    to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+  - id: rullgardiner_ner_sol_vinter
+    trigger: state
+    entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+    to: 'on'
+    not_from:
+    - unavailable
+    - unknown
   - id: rullgardiner_upp_lux
     trigger: template
     value_template: '{% set lux = states(''sensor.utomhus_framsidan_ljusstyrka'')
@@ -6676,14 +6682,33 @@
       '
     for:
       minutes: 10
+  - id: rullgardiner_upp_sol_framsidan
+    trigger: state
+    entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+    to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+  - id: rullgardiner_upp_sol_vinter
+    trigger: state
+    entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+    to: 'off'
+    not_from:
+    - unavailable
+    - unknown
   - id: rullgardiner_upp_tv_av
-    trigger: template
-    value_template: '{% set tv_aktiv = states(''media_player.sony_tv_i_vardagsrummet'')
-      in [''playing'', ''on'', ''idle'', ''paused''] %} {% set sol_in = is_state(''binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan'',
-      ''on'') %} {% set vinterljus = is_state(''binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern'',
-      ''on'') %} {{ not tv_aktiv and not sol_in and not vinterljus }}
-
-      '
+    trigger: state
+    entity_id: media_player.sony_tv_i_vardagsrummet
+    not_from:
+    - unavailable
+    - unknown
+    - playing
+    - on
+    - idle
+    - paused
+    not_to:
+    - unavailable
+    - unknown
   - id: rullgardiner_upp_huslage
     trigger: state
     entity_id: input_select.house_time_modes
@@ -6691,43 +6716,100 @@
     - Kväll
     - Natt
   actions:
+  - variables:
+      tv_aktiv: "{{ states('media_player.sony_tv_i_vardagsrummet') in ['playing', 'on', 'idle', 'paused'] }}"
+      sol_framsidan: "{{ is_state('binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan', 'on') }}"
+      sol_vinter: "{{ is_state('binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern', 'on') }}"
+      solskydd: "{{ sol_framsidan or sol_vinter }}"
+      gardiner_att_stanga: >
+        {{ expand(['cover.rullgardin_vardagsrummet', 'cover.rullgardin_balkongdorren'])
+           | selectattr('state', 'ne', 'closed') | map(attribute='entity_id') | list }}
+      gardiner_att_opena: >
+        {{ expand(['cover.rullgardin_vardagsrummet', 'cover.rullgardin_balkongdorren'])
+           | selectattr('state', 'ne', 'open') | map(attribute='entity_id') | list }}
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id in [''rullgardiner_ner_tv'', ''rullgardiner_ner_sol''] }}'
+        value_template: >
+          {% if trigger.id == 'rullgardiner_ner_tv' %}
+            true
+          {% elif trigger.id in ['rullgardiner_ner_sol_framsidan', 'rullgardiner_ner_sol_vinter'] %}
+            {{ not tv_aktiv }}
+          {% else %}
+            false
+          {% endif %}
       sequence:
+      - condition: template
+        value_template: "{{ gardiner_att_stanga | length > 0 }}"
       - action: cover.close_cover
         target:
-          entity_id:
-          - cover.rullgardin_vardagsrummet
-          - cover.rullgardin_balkongdorren
+          entity_id: "{{ gardiner_att_stanga }}"
     - conditions:
       - condition: template
-        value_template: '{{ trigger.id in [''rullgardiner_upp_lux'', ''rullgardiner_upp_lux_tv'',
-          ''rullgardiner_upp_tv_av'', ''rullgardiner_upp_huslage''] }}'
+        value_template: >
+          {% if trigger.id in ['rullgardiner_upp_lux', 'rullgardiner_upp_lux_tv', 'rullgardiner_upp_huslage'] %}
+            true
+          {% elif trigger.id in ['rullgardiner_upp_sol_framsidan', 'rullgardiner_upp_sol_vinter', 'rullgardiner_upp_tv_av'] %}
+            {{ not tv_aktiv and not solskydd }}
+          {% else %}
+            false
+          {% endif %}
       sequence:
+      - condition: template
+        value_template: "{{ gardiner_att_opena | length > 0 }}"
       - action: cover.open_cover
         target:
-          entity_id:
-          - cover.rullgardin_vardagsrummet
-          - cover.rullgardin_balkongdorren
+          entity_id: "{{ gardiner_att_opena }}"
   mode: restart
 - id: styr_rullgardin_ilias_rum
   alias: 'Rullgardiner: Styr rullgardinen i Ilias rum'
   triggers:
-  - id: rullgardin_ner
-    trigger: template
-    value_template: "{% set tidslage = states('input_select.house_time_modes') %}\n{%
-      set ar_daglage = tidslage in ['Morgon', 'Dag'] %}\n{% set ljus_aktivt =\n  is_state('binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan',
-      'on')\n  or is_state('binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern', 'on')\n%}\n{{
-      ar_daglage and ljus_aktivt }}\n"
-  - id: rullgardin_upp
-    trigger: template
-    value_template: "{% set tidslage = states('input_select.house_time_modes') %}\n{%
-      set ar_daglage = tidslage in ['Morgon', 'Dag'] %}\n{% set ar_kvall_eller_natt
-      = tidslage in ['Kväll', 'Natt'] %}\n{% set ljus_inaktivt =\n  is_state('binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan',
-      'off')\n  and is_state('binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern',
-      'off')\n%}\n{{ ar_kvall_eller_natt or (ar_daglage and ljus_inaktivt) }}\n"
+  - id: rullgardin_ner_sol_framsidan
+    trigger: state
+    entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+    to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+  - id: rullgardin_ner_sol_vinter
+    trigger: state
+    entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+    to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+  - id: rullgardin_ner_huslage
+    trigger: state
+    entity_id: input_select.house_time_modes
+    to:
+    - Morgon
+    - Dag
+    not_from:
+    - unavailable
+    - unknown
+  - id: rullgardin_upp_sol_framsidan
+    trigger: state
+    entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan
+    to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+  - id: rullgardin_upp_sol_vinter
+    trigger: state
+    entity_id: binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern
+    to: 'off'
+    not_from:
+    - unavailable
+    - unknown
+  - id: rullgardin_upp_huslage
+    trigger: state
+    entity_id: input_select.house_time_modes
+    to:
+    - Kväll
+    - Natt
+    not_from:
+    - unavailable
+    - unknown
   - id: ha_start
     trigger: homeassistant
     event: start
@@ -6751,6 +6833,8 @@
     - conditions:
       - condition: template
         value_template: '{{ ska_rullgardin_ner }}'
+      - condition: template
+        value_template: "{{ not is_state('cover.rullgardin_ilias_rum', 'closed') }}"
       sequence:
       - action: cover.close_cover
         target:
@@ -6758,6 +6842,8 @@
     - conditions:
       - condition: template
         value_template: '{{ ska_rullgardin_upp }}'
+      - condition: template
+        value_template: "{{ not is_state('cover.rullgardin_ilias_rum', 'open') }}"
       sequence:
       - action: cover.open_cover
         target:
@@ -6799,6 +6885,8 @@
     - conditions:
       - condition: template
         value_template: '{{ is_evening }}'
+      - condition: template
+        value_template: "{{ not is_state('cover.rullgardin_annas_rum', 'open') }}"
       sequence:
       - action: cover.open_cover
         target:
@@ -6806,6 +6894,8 @@
     - conditions:
       - condition: template
         value_template: '{{ sun_protection and not is_evening}}'
+      - condition: template
+        value_template: "{{ not is_state('cover.rullgardin_annas_rum', 'closed') }}"
       sequence:
       - action: cover.close_cover
         target:
@@ -6813,6 +6903,8 @@
     - conditions:
       - condition: template
         value_template: '{{ not sun_protection and not is_evening}}'
+      - condition: template
+        value_template: "{{ not is_state('cover.rullgardin_annas_rum', 'open') }}"
       sequence:
       - action: cover.open_cover
         target:
@@ -6877,6 +6969,8 @@
                 entity_id: input_select.house_time_modes
                 state: Natt
               sequence:
+              - condition: template
+                value_template: "{{ not is_state('cover.rullgardin_sovrummet', 'closed') }}"
               - action: cover.close_cover
                 target:
                   entity_id: cover.rullgardin_sovrummet
@@ -6894,6 +6988,8 @@
                     entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
                     state: 'on'
                   sequence:
+                  - condition: template
+                    value_template: "{{ not is_state('cover.rullgardin_sovrummet', 'closed') }}"
                   - action: cover.close_cover
                     target:
                       entity_id: cover.rullgardin_sovrummet
@@ -6902,6 +6998,8 @@
                     entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
                     state: 'off'
                   sequence:
+                  - condition: template
+                    value_template: "{{ not is_state('cover.rullgardin_sovrummet', 'open') }}"
                   - action: cover.open_cover
                     target:
                       entity_id: cover.rullgardin_sovrummet
@@ -6912,6 +7010,8 @@
         value_template: '{{ trigger.from_state.state == ''0'' and trigger.to_state.state
           != ''0'' }}'
       sequence:
+      - condition: template
+        value_template: "{{ not is_state('cover.rullgardin_sovrummet', 'open') }}"
       - action: cover.open_cover
         target:
           entity_id: cover.rullgardin_sovrummet
@@ -6928,6 +7028,8 @@
             entity_id: input_select.house_time_modes
             state: Natt
           sequence:
+          - condition: template
+            value_template: "{{ not is_state('cover.rullgardin_sovrummet', 'closed') }}"
           - action: cover.close_cover
             target:
               entity_id: cover.rullgardin_sovrummet
@@ -6940,6 +7042,8 @@
             - Dag
             - Morgon
           sequence:
+          - condition: template
+            value_template: "{{ not is_state('cover.rullgardin_sovrummet', 'open') }}"
           - action: cover.open_cover
             target:
               entity_id: cover.rullgardin_sovrummet
@@ -6955,6 +7059,8 @@
                 entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
                 state: 'on'
               sequence:
+              - condition: template
+                value_template: "{{ not is_state('cover.rullgardin_sovrummet', 'closed') }}"
               - action: cover.close_cover
                 target:
                   entity_id: cover.rullgardin_sovrummet
@@ -6963,6 +7069,8 @@
                 entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
                 state: 'off'
               sequence:
+              - condition: template
+                value_template: "{{ not is_state('cover.rullgardin_sovrummet', 'open') }}"
               - action: cover.open_cover
                 target:
                   entity_id: cover.rullgardin_sovrummet
