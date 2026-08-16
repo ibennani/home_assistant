@@ -1837,6 +1837,9 @@ spela_knack_i_ilias_puck:
       target:
         entity_id: "{{ puck_cast }}"
       continue_on_error: true
+  - action: script.tysta_kopplingspling_vid_casting
+    data:
+      hogtalare: "{{ puck_cast }}"
   - action: media_player.volume_set
     target:
       entity_id: "{{ puck_cast }}"
