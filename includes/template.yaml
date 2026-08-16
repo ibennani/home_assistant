@@ -687,6 +687,13 @@
       delay_off: "00:02:00"
       state: "{{ states('sensor.tvattmaskinen_switch_power') | float(0) > 5 }}"
 
+    - name: Eriks rum automation får styra lampor
+      unique_id: eriks_rum_automation_far_styra_lampor
+      icon: mdi:ceiling-light
+      state: >-
+        {{ not is_state('sensor.erik_aktiv_zon', 'zone.home')
+           or is_state('cover.rullgardin_eriks_rum', 'open') }}
+
     - name: Badrum fullt upplyst manuellt
       unique_id: badrum_fullt_upplyst_manuellt
       icon: mdi:ceiling-light-multiple
