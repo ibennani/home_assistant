@@ -236,8 +236,15 @@
     - name: Anna aktiv zon
       unique_id: anna_aktiv_zon
       icon: mdi:map-marker-radius
+      availability: >
+        {{ true }}
       state: >
         {% set tracker = 'person.anna_bennani' %}
+        {% set bad = ['unavailable', 'unknown', 'none', ''] %}
+        {% if states(tracker) in bad %}
+          {% set prev = this.state | default('not_home', true) %}
+          {{ prev if prev not in bad else 'not_home' }}
+        {% else %}
         {% set zones = [
                   'zone.home',
           'zone.annas_jobb',
@@ -298,12 +305,20 @@
           {% endfor %}
         {% endif %}
         {{ ns.best }}
+        {% endif %}
 
     - name: Erik aktiv zon
       unique_id: erik_aktiv_zon
       icon: mdi:map-marker-radius
+      availability: >
+        {{ true }}
       state: >
         {% set tracker = 'person.erik_bennani' %}
+        {% set bad = ['unavailable', 'unknown', 'none', ''] %}
+        {% if states(tracker) in bad %}
+          {% set prev = this.state | default('not_home', true) %}
+          {{ prev if prev not in bad else 'not_home' }}
+        {% else %}
         {% set zones = [
                   'zone.home',
           'zone.annas_jobb',
@@ -364,12 +379,20 @@
           {% endfor %}
         {% endif %}
         {{ ns.best }}
+        {% endif %}
 
     - name: Isabelle aktiv zon
       unique_id: isabelle_aktiv_zon
       icon: mdi:map-marker-radius
+      availability: >
+        {{ true }}
       state: >
         {% set tracker = 'person.isabelle_sovig' %}
+        {% set bad = ['unavailable', 'unknown', 'none', ''] %}
+        {% if states(tracker) in bad %}
+          {% set prev = this.state | default('not_home', true) %}
+          {{ prev if prev not in bad else 'not_home' }}
+        {% else %}
         {% set zones = [
                   'zone.home',
           'zone.annas_jobb',
@@ -430,12 +453,20 @@
           {% endfor %}
         {% endif %}
         {{ ns.best }}
+        {% endif %}
 
     - name: Ilias aktiv zon
       unique_id: ilias_aktiv_zon
       icon: mdi:map-marker-radius
+      availability: >
+        {{ true }}
       state: >
         {% set tracker = 'person.ilias_bennani' %}
+        {% set bad = ['unavailable', 'unknown', 'none', ''] %}
+        {% if states(tracker) in bad %}
+          {% set prev = this.state | default('not_home', true) %}
+          {{ prev if prev not in bad else 'not_home' }}
+        {% else %}
         {% set zones = [
                   'zone.home',
           'zone.annas_jobb',
@@ -496,6 +527,68 @@
           {% endfor %}
         {% endif %}
         {{ ns.best }}
+        {% endif %}
+
+    # ---- Hemma / borta (giltig aktiv_zon, ignorerar unavailable) ----
+    - name: Anna hemma
+      unique_id: anna_hemma
+      device_class: presence
+      state: >
+        {% set s = states('sensor.anna_aktiv_zon') %}
+        {{ s == 'zone.home' }}
+
+    - name: Anna borta kand
+      unique_id: anna_borta_kand
+      device_class: presence
+      state: >
+        {% set s = states('sensor.anna_aktiv_zon') %}
+        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+        {{ s not in bad and s != 'zone.home' }}
+
+    - name: Erik hemma
+      unique_id: erik_hemma
+      device_class: presence
+      state: >
+        {% set s = states('sensor.erik_aktiv_zon') %}
+        {{ s == 'zone.home' }}
+
+    - name: Erik borta kand
+      unique_id: erik_borta_kand
+      device_class: presence
+      state: >
+        {% set s = states('sensor.erik_aktiv_zon') %}
+        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+        {{ s not in bad and s != 'zone.home' }}
+
+    - name: Isabelle hemma
+      unique_id: isabelle_hemma
+      device_class: presence
+      state: >
+        {% set s = states('sensor.isabelle_aktiv_zon') %}
+        {{ s == 'zone.home' }}
+
+    - name: Isabelle borta kand
+      unique_id: isabelle_borta_kand
+      device_class: presence
+      state: >
+        {% set s = states('sensor.isabelle_aktiv_zon') %}
+        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+        {{ s not in bad and s != 'zone.home' }}
+
+    - name: Ilias hemma
+      unique_id: ilias_hemma
+      device_class: presence
+      state: >
+        {% set s = states('sensor.ilias_aktiv_zon') %}
+        {{ s == 'zone.home' }}
+
+    - name: Ilias borta kand
+      unique_id: ilias_borta_kand
+      device_class: presence
+      state: >
+        {% set s = states('sensor.ilias_aktiv_zon') %}
+        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+        {{ s not in bad and s != 'zone.home' }}
 
 # END aktiv-zon-sensorer (generate-ilias-zone-automation.py)
 
@@ -691,7 +784,7 @@
       unique_id: eriks_rum_automation_far_styra_lampor
       icon: mdi:ceiling-light
       state: >-
-        {{ not is_state('sensor.erik_aktiv_zon', 'zone.home')
+        {{ is_state('binary_sensor.erik_borta_kand', 'on')
            or is_state('cover.rullgardin_eriks_rum', 'open') }}
 
     - name: Badrum fullt upplyst manuellt
