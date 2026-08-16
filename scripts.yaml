@@ -1787,6 +1787,29 @@ skriv_till_fil_2024_6:
       message: 'TId: {{ now().strftime(''%R'') }}: Test att skriva till fil.
 
         '
+spela_dingdong_i_alla_puckar:
+  alias: Spela dingdong synkat i alla puckar
+  mode: restart
+  description: Cast-gruppen ger samma volym och synkad uppspelning i alla puckar.
+  sequence:
+  - action: media_player.volume_set
+    target:
+      entity_id: media_player.googlehome_alla_puckar
+    data:
+      volume_level: 0.6
+  - action: media_player.turn_on
+    target:
+      entity_id: media_player.googlehome_alla_puckar
+  - action: media_player.play_media
+    target:
+      entity_id: media_player.googlehome_alla_puckar
+    data:
+      media_content_id: /local/media/dingdong02.mp3
+      media_content_type: audio/mpeg
+  - delay: 00:00:04
+  - action: media_player.media_stop
+    target:
+      entity_id: media_player.googlehome_alla_puckar
 ladda_ner_bild_fran_ring_doorbell:
   alias: Ladda ner bild från Ring doorbell
   sequence:

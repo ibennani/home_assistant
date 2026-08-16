@@ -8273,11 +8273,11 @@
           url: https://imgbin.com/png/902kPvyX/plex-media-server-computer-icons-media-player-png
 - alias: 'Media: Spela upp dingdong ljud i alla puckar när det ringer på ytterdörren'
   id: asdfa5011987001565550590sgsfa69404410555466
-  mode: parallel
+  mode: restart
   triggers:
   - trigger: state
     entity_id: binary_sensor.front_door_ding
-    to: 'on'
+    attribute: lastDing
     id: ding_mqtt
     not_from:
     - unavailable
@@ -8299,37 +8299,14 @@
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.to_state.state != trigger.from_state.state }}
       {% else %}
-        {{ trigger.to_state.state == 'on'
-           and trigger.from_state.state not in ['unavailable', 'unknown'] }}
+        {{ trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
       {% endif %}
   - condition: template
     value_template: "{{ not is_state(\"input_select.house_time_modes\", \"Natt\")
       \n  and is_state(\"var.morgoninfo_koket_redan_upplast\", \"true\") }}\n"
   action:
-  - action: media_player.volume_set
-    target:
-      entity_id: media_player.googlehome_alla_puckar
-    data:
-      volume_level: 0.6
-  - action: media_player.play_media
-    target:
-      entity_id: media_player.googlehome_alla_puckar
-    data:
-      media_content_id: /local/media/dingdong02.mp3
-      media_content_type: audio/mpeg
-  - wait_template: >
-      {{ is_state("media_player.googlehome_alla_puckar", "playing")
-         or is_state("media_player.googlehome_alla_puckar", "buffering") }}
-    timeout: 00:00:30
-    continue_on_timeout: false
-  - wait_template: >
-      {{ is_state("media_player.googlehome_alla_puckar", "idle")
-         or is_state("media_player.googlehome_alla_puckar", "off") }}
-    timeout: 00:00:30
-    continue_on_timeout: false
-  - action: media_player.media_stop
-    target:
-      entity_id: media_player.googlehome_alla_puckar
+  - action: script.spela_dingdong_i_alla_puckar
 - alias: 'Bevattning: Vattna växter på framsidan'
   id: f7c5a4adbdb94384975b6a340a2355af
   mode: restart
