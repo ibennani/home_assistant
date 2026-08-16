@@ -529,67 +529,6 @@
         {{ ns.best }}
         {% endif %}
 
-    # ---- Hemma / borta (giltig aktiv_zon, ignorerar unavailable) ----
-    - name: Anna hemma
-      unique_id: anna_hemma
-      device_class: presence
-      state: >
-        {% set s = states('sensor.anna_aktiv_zon') %}
-        {{ s == 'zone.home' }}
-
-    - name: Anna borta kand
-      unique_id: anna_borta_kand
-      device_class: presence
-      state: >
-        {% set s = states('sensor.anna_aktiv_zon') %}
-        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-        {{ s not in bad and s != 'zone.home' }}
-
-    - name: Erik hemma
-      unique_id: erik_hemma
-      device_class: presence
-      state: >
-        {% set s = states('sensor.erik_aktiv_zon') %}
-        {{ s == 'zone.home' }}
-
-    - name: Erik borta kand
-      unique_id: erik_borta_kand
-      device_class: presence
-      state: >
-        {% set s = states('sensor.erik_aktiv_zon') %}
-        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-        {{ s not in bad and s != 'zone.home' }}
-
-    - name: Isabelle hemma
-      unique_id: isabelle_hemma
-      device_class: presence
-      state: >
-        {% set s = states('sensor.isabelle_aktiv_zon') %}
-        {{ s == 'zone.home' }}
-
-    - name: Isabelle borta kand
-      unique_id: isabelle_borta_kand
-      device_class: presence
-      state: >
-        {% set s = states('sensor.isabelle_aktiv_zon') %}
-        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-        {{ s not in bad and s != 'zone.home' }}
-
-    - name: Ilias hemma
-      unique_id: ilias_hemma
-      device_class: presence
-      state: >
-        {% set s = states('sensor.ilias_aktiv_zon') %}
-        {{ s == 'zone.home' }}
-
-    - name: Ilias borta kand
-      unique_id: ilias_borta_kand
-      device_class: presence
-      state: >
-        {% set s = states('sensor.ilias_aktiv_zon') %}
-        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-        {{ s not in bad and s != 'zone.home' }}
-
 # END aktiv-zon-sensorer (generate-ilias-zone-automation.py)
 
     # ---- Personer / hemma ---------------------------------------------------
@@ -779,6 +718,70 @@
       delay_on: "00:03:00"
       delay_off: "00:02:00"
       state: "{{ states('sensor.tvattmaskinen_switch_power') | float(0) > 5 }}"
+
+# BEGIN hemma-borta-sensorer (generate-ilias-zone-automation.py)
+    # ---- Hemma / borta (giltig aktiv_zon, ignorerar unavailable) ----
+    - name: Anna hemma
+      unique_id: anna_hemma
+      device_class: presence
+      state: >
+        {% set s = states('sensor.anna_aktiv_zon') %}
+        {{ s == 'zone.home' }}
+
+    - name: Anna borta kand
+      unique_id: anna_borta_kand
+      device_class: presence
+      state: >
+        {% set s = states('sensor.anna_aktiv_zon') %}
+        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+        {{ s not in bad and s != 'zone.home' }}
+
+    - name: Erik hemma
+      unique_id: erik_hemma
+      device_class: presence
+      state: >
+        {% set s = states('sensor.erik_aktiv_zon') %}
+        {{ s == 'zone.home' }}
+
+    - name: Erik borta kand
+      unique_id: erik_borta_kand
+      device_class: presence
+      state: >
+        {% set s = states('sensor.erik_aktiv_zon') %}
+        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+        {{ s not in bad and s != 'zone.home' }}
+
+    - name: Isabelle hemma
+      unique_id: isabelle_hemma
+      device_class: presence
+      state: >
+        {% set s = states('sensor.isabelle_aktiv_zon') %}
+        {{ s == 'zone.home' }}
+
+    - name: Isabelle borta kand
+      unique_id: isabelle_borta_kand
+      device_class: presence
+      state: >
+        {% set s = states('sensor.isabelle_aktiv_zon') %}
+        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+        {{ s not in bad and s != 'zone.home' }}
+
+    - name: Ilias hemma
+      unique_id: ilias_hemma
+      device_class: presence
+      state: >
+        {% set s = states('sensor.ilias_aktiv_zon') %}
+        {{ s == 'zone.home' }}
+
+    - name: Ilias borta kand
+      unique_id: ilias_borta_kand
+      device_class: presence
+      state: >
+        {% set s = states('sensor.ilias_aktiv_zon') %}
+        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+        {{ s not in bad and s != 'zone.home' }}
+
+# END hemma-borta-sensorer (generate-ilias-zone-automation.py)
 
     - name: Eriks rum automation får styra lampor
       unique_id: eriks_rum_automation_far_styra_lampor
