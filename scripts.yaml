@@ -1816,41 +1816,59 @@ spela_knack_i_ilias_puck:
   mode: restart
   sequence:
   - variables:
-      puck: media_player.pucken_i_ilias_rum
-      sparad_volym: "{{ state_attr(puck, 'volume_level') | float(0.5) }}"
-      var_aktiv: "{{ states(puck) in ['playing', 'paused'] }}"
+      puck_cast: media_player.googlehome_ilias_rum
+      puck_ma: media_player.pucken_i_ilias_rum
+      sparad_volym: "{{ state_attr(puck_cast, 'volume_level') | float(0.5) }}"
+      var_ma_aktiv: "{{ states(puck_ma) in ['playing', 'paused'] }}"
+      var_cast_aktiv: "{{ states(puck_cast) in ['playing', 'paused'] }}"
   - if:
     - condition: template
-      value_template: "{{ var_aktiv }}"
+      value_template: "{{ var_ma_aktiv }}"
     then:
     - action: media_player.media_pause
       target:
-        entity_id: "{{ puck }}"
+        entity_id: "{{ puck_ma }}"
+      continue_on_error: true
+  - if:
+    - condition: template
+      value_template: "{{ var_cast_aktiv and not var_ma_aktiv }}"
+    then:
+    - action: media_player.media_pause
+      target:
+        entity_id: "{{ puck_cast }}"
       continue_on_error: true
   - action: media_player.volume_set
     target:
-      entity_id: "{{ puck }}"
+      entity_id: "{{ puck_cast }}"
     data:
       volume_level: 0.5
   - action: media_player.play_media
     target:
-      entity_id: "{{ puck }}"
+      entity_id: "{{ puck_cast }}"
     data:
       media_content_id: /local/media/knack_tre_ganger_trad.mp3
       media_content_type: audio/mpeg
   - delay: "00:00:02"
   - action: media_player.volume_set
     target:
-      entity_id: "{{ puck }}"
+      entity_id: "{{ puck_cast }}"
     data:
       volume_level: "{{ sparad_volym }}"
   - if:
     - condition: template
-      value_template: "{{ var_aktiv }}"
+      value_template: "{{ var_ma_aktiv }}"
     then:
     - action: media_player.media_play
       target:
-        entity_id: "{{ puck }}"
+        entity_id: "{{ puck_ma }}"
+      continue_on_error: true
+  - if:
+    - condition: template
+      value_template: "{{ var_cast_aktiv and not var_ma_aktiv }}"
+    then:
+    - action: media_player.media_play
+      target:
+        entity_id: "{{ puck_cast }}"
       continue_on_error: true
 ladda_ner_bild_fran_ring_doorbell:
   alias: Ladda ner bild från Ring doorbell
