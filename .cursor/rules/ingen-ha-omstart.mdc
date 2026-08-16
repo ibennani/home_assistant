@@ -1,0 +1,47 @@
+---
+description: Starta aldrig om Home Assistant om det går att undvika — använd reload i stället
+globs:
+alwaysApply: true
+---
+
+# Ingen HA-omstart utan absolut nödvändighet
+
+## Princip
+
+Starta **aldrig** om Home Assistant (`homeassistant.restart`, omstart av hela OS/add-on-containern eller motsvarande) om ändringen kan aktiveras på annat sätt.
+
+En full omstart ska vara **sista utvägen** — endast när det är **absolut nödvändigt** för att HA ska fungera eller för att en specifik integration uttryckligen kräver omstart.
+
+## Föredra reload
+
+Efter YAML-ändringar eller deploy: ladda om det som faktiskt ändrats, inte hela systemet.
+
+| Ändring | Reload / åtgärd |
+|---------|-----------------|
+| Automatiseringar | `automation.reload` |
+| Script | `script.reload` |
+| Mallar (template) | `template.reload` |
+| Grupper | `group.reload` |
+| `configuration.yaml` och inkluderade YAML | `homeassistant.reload_core_config` |
+| Flera YAML-typer efter git-synk | `script.git_synka_config` (standard efter push till `main`) |
+| Dashboard i git | Git-synk + hård refresh i webbläsaren |
+
+Via MCP: använd `ha_reload_core` med rätt `target` — **inte** omstart av hela HA.
+
+## När omstart kan vara motiverad
+
+Endast om reload inte räcker och det finns tydlig anledning, t.ex.:
+
+- Integration eller tillägg dokumenterar att omstart krävs
+- HA är i trasigt tillstånd och `config_check` / grundfunktioner fungerar inte efter reload
+- Användaren uttryckligen begär omstart
+
+Vid osäkerhet: prova reload först, verifiera, och dokumentera varför omstart ändå behövdes.
+
+## Förbjudet som standard
+
+- Lägg inte till `homeassistant.restart` i nya automatiseringar, script eller deploy-flöden
+- Anropa inte omstart via MCP "för säkerhets skull" efter vanliga config-ändringar
+- Ersätt inte `script.git_synka_config` eller riktad reload med full omstart
+
+Befintliga användarinitierade omstarter (t.ex. knapp i mobilnotis vid känt hårdvaruproblem) ska inte tas bort utan uttrycklig begäran — men nya liknande lösningar ska utvärdera reload först.
