@@ -1810,6 +1810,56 @@ spela_dingdong_i_alla_puckar:
   - action: media_player.media_stop
     target:
       entity_id: media_player.googlehome_alla_puckar
+spela_knack_i_ilias_puck:
+  alias: 'Media: Spela knack i Ilias puck'
+  description: Tre hårda knack på pucken i Ilias rum. Pausar befintlig uppspelning och återupptar efteråt.
+  mode: restart
+  sequence:
+  - variables:
+      puck: media_player.pucken_i_ilias_rum
+      sparad_volym: "{{ state_attr(puck, 'volume_level') | float(0.5) }}"
+      var_playing: "{{ is_state(puck, 'playing') }}"
+  - if:
+    - condition: template
+      value_template: "{{ var_playing }}"
+    then:
+    - action: media_player.media_pause
+      target:
+        entity_id: "{{ puck }}"
+      continue_on_error: true
+    else:
+    - action: script.tysta_kopplingspling_vid_casting
+      data:
+        hogtalare: "{{ puck }}"
+  - action: media_player.volume_set
+    target:
+      entity_id: "{{ puck }}"
+    data:
+      volume_level: 0.5
+  - action: media_player.turn_on
+    target:
+      entity_id: "{{ puck }}"
+    continue_on_error: true
+  - action: media_player.play_media
+    target:
+      entity_id: "{{ puck }}"
+    data:
+      media_content_id: /local/media/knack_tre_ganger_trad.mp3
+      media_content_type: audio/mpeg
+  - delay: "00:00:02"
+  - action: media_player.volume_set
+    target:
+      entity_id: "{{ puck }}"
+    data:
+      volume_level: "{{ sparad_volym }}"
+  - if:
+    - condition: template
+      value_template: "{{ var_playing }}"
+    then:
+    - action: media_player.media_play
+      target:
+        entity_id: "{{ puck }}"
+      continue_on_error: true
 ladda_ner_bild_fran_ring_doorbell:
   alias: Ladda ner bild från Ring doorbell
   sequence:
