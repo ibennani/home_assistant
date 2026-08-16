@@ -1818,28 +1818,20 @@ spela_knack_i_ilias_puck:
   - variables:
       puck: media_player.pucken_i_ilias_rum
       sparad_volym: "{{ state_attr(puck, 'volume_level') | float(0.5) }}"
-      var_playing: "{{ is_state(puck, 'playing') }}"
+      var_aktiv: "{{ states(puck) in ['playing', 'paused'] }}"
   - if:
     - condition: template
-      value_template: "{{ var_playing }}"
+      value_template: "{{ var_aktiv }}"
     then:
     - action: media_player.media_pause
       target:
         entity_id: "{{ puck }}"
       continue_on_error: true
-    else:
-    - action: script.tysta_kopplingspling_vid_casting
-      data:
-        hogtalare: "{{ puck }}"
   - action: media_player.volume_set
     target:
       entity_id: "{{ puck }}"
     data:
       volume_level: 0.5
-  - action: media_player.turn_on
-    target:
-      entity_id: "{{ puck }}"
-    continue_on_error: true
   - action: media_player.play_media
     target:
       entity_id: "{{ puck }}"
@@ -1854,7 +1846,7 @@ spela_knack_i_ilias_puck:
       volume_level: "{{ sparad_volym }}"
   - if:
     - condition: template
-      value_template: "{{ var_playing }}"
+      value_template: "{{ var_aktiv }}"
     then:
     - action: media_player.media_play
       target:
