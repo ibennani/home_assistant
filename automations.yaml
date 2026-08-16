@@ -875,16 +875,6 @@
         | int(default=0) in [1,2,3,4,5] \n  and states(\"sensor.utomhus_baksidan_ljusstyrka\")
         | int(default = 0) < 2000%} Tänt\n{% else %} {{ states('input_select.annas_rum_belysning')
         }} {% endif %}\n"
-  - action: input_select.select_option
-    target:
-      entity_id: input_select.eriks_rum_belysning
-    data:
-      option: "{% if (states(\"sensor.time\") == \"07:00\" \n  and now().strftime('%u')
-        | int | int(default = 0) in [1,2,3,4] ) %}\n  Mysigt\n{% elif (states(\"sensor.time\")
-        == \"08:00\" \n  and now().strftime('%u') | int | int(default = 0) in [5]
-        ) %}\n  Mysigt\n{% else %} {{ states(\"input_select.eriks_rum_belysning\")
-        }} {% endif %}\n"
-    enabled: false
   initial_state: true
 - id: lgksajgsgj324
   alias: 'Belysning: Släck i sovrummet när vi öppnar rullgardinen'
