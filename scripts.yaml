@@ -267,6 +267,81 @@ koket_stall_in_belysningen:
             {% endif %}
 
             '
+koket_styr_lage_efter_huslage:
+  alias: Köket - styr läge efter husläge
+  mode: restart
+  description: Väntar på återställt köksläge och applicerar belysning. Vid omstart ändras inte input_select.
+  fields:
+    bevara_kokslage:
+      name: Bevara köksläge
+      description: Ändra inte input_select (t.ex. vid HA-omstart)
+      default: false
+      selector:
+        boolean: {}
+    nattlage:
+      name: Nattläge
+      description: Använd nattlogik för köksläge (Släckt/Dämpat)
+      default: false
+      selector:
+        boolean: {}
+    rapid_transition:
+      name: Snabb övergång
+      default: false
+      selector:
+        boolean: {}
+  sequence:
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: input_select.koket_belysning
+      not_to:
+      - unavailable
+      - unknown
+    timeout: '00:00:15'
+    continue_on_timeout: true
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ bevara_kokslage | default(false) }}'
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.koket_stall_in_belysningen
+        data:
+          variables:
+            rapid_transition: "{% if rapid_transition | default(false) %}on{% else %}off{% endif %}"
+    - conditions:
+      - condition: template
+        value_template: '{{ nattlage | default(false) }}'
+      sequence:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.koket_belysning
+        data:
+          option: "{% if (is_state(\"group.rorelse_i_koket\",\"off\")\n  and (as_timestamp(now())
+            - as_timestamp(state_attr('group.rorelse_i_koket', 'last_changed') or now()) | int(default =
+            0) > 60 * 10)) %} Släckt\n{% else %} Dämpat {% endif %}\n"
+      - action: script.turn_on
+        target:
+          entity_id: script.koket_stall_in_belysningen
+        data:
+          variables:
+            rapid_transition: "{% if rapid_transition | default(false) %}on{% else %}off{% endif %}"
+    default:
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.koket_belysning
+      data:
+        option: "{% set nuvarande = states('input_select.koket_belysning') %}{% if is_state(\"var.morgoninfo_koket_redan_upplast\",\"false\")
+          and states('input_select.house_time_modes') == 'Morgon' %}Dämpat{% elif states('input_select.house_time_modes')
+          == 'Kväll' and (is_state(\"zone.home\",\"0\") or nuvarande == \"Släckt\") %}Mysigt{%
+          elif states('input_select.house_time_modes') == 'Natt' and is_state(\"group.rorelse_i_allmanna_utrymmen\",\"off\")
+          %}Släckt{% else %}{{ nuvarande }}{% endif %}"
+    - action: script.turn_on
+      target:
+        entity_id: script.koket_stall_in_belysningen
+      data:
+        variables:
+          rapid_transition: "{% if rapid_transition | default(false) %}on{% else %}off{% endif %}"
 starta_tv_i_vardagsrummet:
   alias: Starta TV i vardagsrummet
   mode: queued
@@ -375,6 +450,13 @@ morgonbelysning:
   alias: Morgonbelysning
   mode: restart
   description: Starta morgonbelysning
+  fields:
+    bevara_kokslage:
+      name: Bevara köksläge
+      description: Ändra inte köksläget (vid HA-omstart)
+      default: false
+      selector:
+        boolean: {}
   sequence:
   - action: script.turn_on
     target:
@@ -410,26 +492,12 @@ morgonbelysning:
   - action: script.turn_on
     target:
       entity_id: script.hallen_stall_in_belysningen
-  - action: input_select.select_option
-    target:
-      entity_id: input_select.koket_belysning
-    data:
-      option: "{% set uptime = as_timestamp(now()) - as_timestamp(states('sensor.time_online')
-        | default(now())) %} {% set nuvarande = states('input_select.koket_belysning')
-        %} {% if uptime < 30 or nuvarande in ['unknown', 'unavailable', 'none', '']
-        %}\n  {{ nuvarande if nuvarande not in ['unknown', 'unavailable', 'none',
-        ''] else 'Normalt' }}\n{% elif is_state(\"var.morgoninfo_koket_redan_upplast\",\"false\")
-        and states('input_select.house_time_modes') == 'Morgon' %}\n  Dämpat\n{% elif
-        states('input_select.house_time_modes') == 'Kväll' and (is_state(\"zone.home\",\"0\")
-        or nuvarande == \"Släckt\") %}\n  Mysigt\n{% elif states('input_select.house_time_modes')
-        == 'Natt' and is_state(\"group.rorelse_i_allmanna_utrymmen\",\"off\") %}\n
-        \ Släckt\n{% else %}\n  {{ nuvarande }}\n{% endif %}"
   - action: script.turn_on
     target:
-      entity_id: script.koket_stall_in_belysningen
+      entity_id: script.koket_styr_lage_efter_huslage
     data:
-      variables:
-        rapid_transition: 'on'
+      bevara_kokslage: '{{ bevara_kokslage | default(false) }}'
+      rapid_transition: true
   - action: input_select.select_option
     entity_id: input_select.nedre_trappan_belysning
     data:
@@ -438,6 +506,13 @@ dagsbelysning:
   alias: Dagsbelysning
   mode: restart
   description: Starta dagsbelysning
+  fields:
+    bevara_kokslage:
+      name: Bevara köksläge
+      description: Ändra inte köksläget (vid HA-omstart)
+      default: false
+      selector:
+        boolean: {}
   sequence:
   - action: script.turn_on
     target:
@@ -468,23 +543,11 @@ dagsbelysning:
   - action: script.turn_on
     target:
       entity_id: script.hallen_stall_in_belysningen
-  - action: input_select.select_option
-    target:
-      entity_id: input_select.koket_belysning
-    data:
-      option: "{% set uptime = as_timestamp(now()) - as_timestamp(states('sensor.time_online')
-        | default(now())) %} {% set nuvarande = states('input_select.koket_belysning')
-        %} {% if uptime < 30 or nuvarande in ['unknown', 'unavailable', 'none', '']
-        %}\n  {{ nuvarande if nuvarande not in ['unknown', 'unavailable', 'none',
-        ''] else 'Normalt' }}\n{% elif is_state(\"var.morgoninfo_koket_redan_upplast\",\"false\")
-        and states('input_select.house_time_modes') == 'Morgon' %}\n  Dämpat\n{% elif
-        states('input_select.house_time_modes') == 'Kväll' and (is_state(\"zone.home\",\"0\")
-        or nuvarande == \"Släckt\") %}\n  Mysigt\n{% elif states('input_select.house_time_modes')
-        == 'Natt' and is_state(\"group.rorelse_i_allmanna_utrymmen\",\"off\") %}\n
-        \ Släckt\n{% else %}\n  {{ nuvarande }}\n{% endif %}"
   - action: script.turn_on
     target:
-      entity_id: script.koket_stall_in_belysningen
+      entity_id: script.koket_styr_lage_efter_huslage
+    data:
+      bevara_kokslage: '{{ bevara_kokslage | default(false) }}'
   - action: script.turn_on
     target:
       entity_id: script.eriks_rum_satt_lage
@@ -508,6 +571,13 @@ kvallsbelysning:
   alias: Kvällsbelysning
   mode: restart
   description: Starta kvällsbelysning
+  fields:
+    bevara_kokslage:
+      name: Bevara köksläge
+      description: Ändra inte köksläget (vid HA-omstart)
+      default: false
+      selector:
+        boolean: {}
   sequence:
   - action: script.turn_on
     target:
@@ -553,26 +623,12 @@ kvallsbelysning:
   - action: script.turn_on
     target:
       entity_id: script.hallen_stall_in_belysningen
-  - action: input_select.select_option
-    target:
-      entity_id: input_select.koket_belysning
-    data:
-      option: "{% set uptime = as_timestamp(now()) - as_timestamp(states('sensor.time_online')
-        | default(now())) %} {% set nuvarande = states('input_select.koket_belysning')
-        %} {% if uptime < 30 or nuvarande in ['unknown', 'unavailable', 'none', '']
-        %}\n  {{ nuvarande if nuvarande not in ['unknown', 'unavailable', 'none',
-        ''] else 'Normalt' }}\n{% elif is_state(\"var.morgoninfo_koket_redan_upplast\",\"false\")
-        and states('input_select.house_time_modes') == 'Morgon' %}\n  Dämpat\n{% elif
-        states('input_select.house_time_modes') == 'Kväll' and (is_state(\"zone.home\",\"0\")
-        or nuvarande == \"Släckt\") %}\n  Mysigt\n{% elif states('input_select.house_time_modes')
-        == 'Natt' and is_state(\"group.rorelse_i_allmanna_utrymmen\",\"off\") %}\n
-        \ Släckt\n{% else %}\n  {{ nuvarande }}\n{% endif %}"
   - action: script.turn_on
     target:
-      entity_id: script.koket_stall_in_belysningen
+      entity_id: script.koket_styr_lage_efter_huslage
     data:
-      variables:
-        rapid_transition: 'on'
+      bevara_kokslage: '{{ bevara_kokslage | default(false) }}'
+      rapid_transition: true
   - action: script.turn_on
     target:
       entity_id: script.eriks_rum_satt_lage
@@ -601,6 +657,13 @@ nattbelysning:
   alias: Nattbelysning
   mode: restart
   description: Starta nattbelysning
+  fields:
+    bevara_kokslage:
+      name: Bevara köksläge
+      description: Ändra inte köksläget (vid HA-omstart)
+      default: false
+      selector:
+        boolean: {}
   sequence:
   - action: script.turn_on
     target:
@@ -639,19 +702,13 @@ nattbelysning:
   - action: script.turn_on
     target:
       entity_id: script.hallen_stall_in_belysningen
-  - action: input_select.select_option
-    target:
-      entity_id: input_select.koket_belysning
-    data:
-      option: "{% if (is_state(\"group.rorelse_i_koket\",\"off\")\n  and (as_timestamp(now())
-        - as_timestamp(state_attr('group.rorelse_i_koket', 'last_changed') or now()) | int(default =
-        0) > 60 * 10)) %} Släckt\n{% else %} Dämpat {% endif %}\n"
   - action: script.turn_on
     target:
-      entity_id: script.koket_stall_in_belysningen
+      entity_id: script.koket_styr_lage_efter_huslage
     data:
-      variables:
-        rapid_transition: 'on'
+      bevara_kokslage: '{{ bevara_kokslage | default(false) }}'
+      nattlage: '{{ not (bevara_kokslage | default(false)) }}'
+      rapid_transition: true
   - action: script.turn_on
     target:
       entity_id: script.eriks_rum_satt_lage
