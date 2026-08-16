@@ -5308,10 +5308,14 @@
             value_template: '{{ is_state(''cover.rullgardin_eriks_rum'', ''open'')
               }}'
           sequence:
+          - condition: template
+            value_template: "{{ not is_state('cover.rullgardin_eriks_rum', 'closed') }}"
           - action: cover.close_cover
             target:
               entity_id: cover.rullgardin_eriks_rum
         default:
+        - condition: template
+          value_template: "{{ not is_state('cover.rullgardin_eriks_rum', 'open') }}"
         - action: cover.open_cover
           target:
             entity_id: cover.rullgardin_eriks_rum
@@ -6715,6 +6719,9 @@
     to:
     - Kväll
     - Natt
+    not_from:
+    - unavailable
+    - unknown
   actions:
   - variables:
       tv_aktiv: "{{ states('media_player.sony_tv_i_vardagsrummet') in ['playing', 'on', 'idle', 'paused'] }}"
@@ -6854,12 +6861,16 @@
   triggers:
   - trigger: state
     entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
-    from: 'on'
     to: 'off'
+    not_from:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: binary_sensor.solen_lyser_in_genom_fonstren_pa_baksidan
-    from: 'off'
     to: 'on'
+    not_from:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: input_select.house_time_modes
     not_from:
@@ -6868,10 +6879,14 @@
     not_to:
     - unavailable
     - unknown
-  - trigger: template
-    value_template: '{{ states(''zone.home'')|int > 0 }}'
-  - trigger: template
-    value_template: '{{ states(''zone.home'')|int == 0 }}'
+  - trigger: state
+    entity_id: zone.home
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   - trigger: state
     entity_id: var.morgoninfo_koket_redan_upplast
     to: 'true'
@@ -7109,14 +7124,31 @@
 
       '
   action:
-  - action: '{% if trigger.event.data.event == 1002 %} cover.open_cover {% elif trigger.event.data.event
-      == 2002 %} cover.close_cover {% endif %}
-
-      '
-    target:
-      entity_id: '{{ cover_map[trigger.event.data.id] }}
-
-        '
+  - variables:
+      targets: '{{ cover_map[trigger.event.data.id] }}'
+      covers_att_aktivera: >
+        {% if trigger.event.data.event == 1002 %}
+          {{ expand(targets) | selectattr('state', 'ne', 'open') | map(attribute='entity_id') | list }}
+        {% else %}
+          {{ expand(targets) | selectattr('state', 'ne', 'closed') | map(attribute='entity_id') | list }}
+        {% endif %}
+  - condition: template
+    value_template: "{{ covers_att_aktivera | length > 0 }}"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.event == 1002 }}'
+      sequence:
+      - action: cover.open_cover
+        target:
+          entity_id: "{{ covers_att_aktivera }}"
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.event == 2002 }}'
+      sequence:
+      - action: cover.close_cover
+        target:
+          entity_id: "{{ covers_att_aktivera }}"
 - id: automation_eriks_rum_rullgardin_oppna_vid_fritt_fram
   alias: 'Rullgardiner: Styr rullgardinen i Eriks rum'
   mode: single
@@ -7162,6 +7194,8 @@
         entity_id: zone.home
         below: 1
       sequence:
+      - condition: template
+        value_template: "{{ not is_state('cover.rullgardin_eriks_rum', 'open') }}"
       - action: cover.open_cover
         target:
           entity_id: cover.rullgardin_eriks_rum
@@ -7169,6 +7203,8 @@
       - condition: template
         value_template: '{{ is_state("binary_sensor.erik_borta_kand", "on") }}'
       sequence:
+      - condition: template
+        value_template: "{{ not is_state('cover.rullgardin_eriks_rum', 'open') }}"
       - action: cover.open_cover
         target:
           entity_id: cover.rullgardin_eriks_rum
