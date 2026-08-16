@@ -5683,12 +5683,6 @@
     - sensor.anna_aktiv_zon
     - sensor.erik_aktiv_zon
     - sensor.isabelle_aktiv_zon
-    not_from:
-    - unavailable
-    - unknown
-    not_to:
-    - unavailable
-    - unknown
   conditions:
   - condition: template
     value_template: >
@@ -5799,8 +5793,6 @@
                   {{ person }} har lämnat Elins jobb
                 {%- elif to_slug == 'not_home' and from_slug == 'isabelle' -%}
                   {{ person }} {% if person == 'Isabelle' %}har åkt hemifrån sitt hem{% else %}har lämnat Isabelle{% endif %}
-                {%- elif to_slug == 'not_home' and from_slug == 'ralambshovsparken' -%}
-                  {{ person }} har lämnat Rålambshovsparken
                 {%- elif to_slug == 'home' -%}
                   {{ person }} är hemma
                 {%- elif to_slug == 'annas_jobb' -%}
@@ -5891,8 +5883,6 @@
                   {{ person }} är på Elins jobb
                 {%- elif to_slug == 'isabelle' -%}
                   {{ person }} {% if person == 'Isabelle' %}är hemma hos sig{% else %}är hos Isabelle{% endif %}
-                {%- elif to_slug == 'ralambshovsparken' -%}
-                  {{ person }} är i Rålambshovsparken
                 {%- else -%}
                   {{ person }} platsändring ({{ from_slug }} → {{ to_slug }})
                 {%- endif -%}
@@ -5916,12 +5906,6 @@
     - sensor.erik_aktiv_zon
     - sensor.isabelle_aktiv_zon
     - sensor.ilias_aktiv_zon
-    not_from:
-    - unavailable
-    - unknown
-    not_to:
-    - unavailable
-    - unknown
   conditions:
   - condition: template
     value_template: >

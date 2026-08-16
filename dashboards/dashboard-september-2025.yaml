@@ -4067,7 +4067,6 @@ views:
       - zone.norge_2
       - zone.oslo
       - zone.ostra_sjukhuset
-      - zone.ralambshovsparken
       - zone.rodkinda_19
       - zone.sahlgrenska_sjukhuset
       - zone.sixten
@@ -6438,7 +6437,6 @@ views:
       - zone.norge_2
       - zone.oslo
       - zone.ostra_sjukhuset
-      - zone.ralambshovsparken
       - zone.rodkinda_19
       - zone.sahlgrenska_sjukhuset
       - zone.sixten
@@ -6493,7 +6491,6 @@ views:
       - zone.norge_2
       - zone.oslo
       - zone.ostra_sjukhuset
-      - zone.ralambshovsparken
       - zone.rodkinda_19
       - zone.sahlgrenska_sjukhuset
       - zone.sixten
@@ -6548,7 +6545,6 @@ views:
       - zone.norge_2
       - zone.oslo
       - zone.ostra_sjukhuset
-      - zone.ralambshovsparken
       - zone.rodkinda_19
       - zone.sahlgrenska_sjukhuset
       - zone.sixten
@@ -6603,7 +6599,6 @@ views:
       - zone.norge_2
       - zone.oslo
       - zone.ostra_sjukhuset
-      - zone.ralambshovsparken
       - zone.rodkinda_19
       - zone.sahlgrenska_sjukhuset
       - zone.sixten
