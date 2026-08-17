@@ -3963,10 +3963,6 @@
     - action: script.turn_on
       target:
         entity_id: script.skapa_dagens_vaderprognos
-    - action: var.set
-      data:
-        entity_id: var.morgoninfo_koket_redan_upplast
-        value: 'true'
     - action: script.turn_on
       target:
         entity_id: script.ovre_trappan_stall_in_belysningen
@@ -4027,6 +4023,22 @@
         %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif
         t < '11:00:00' %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges Radio
         P4 Stockholm\n  {% endif %}\n{% endif %}\n"
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: media_player.hogtalarna_i_koket_mass
+      to: playing
+    - trigger: state
+      entity_id: media_player.hogtalarna_i_koket
+      to: playing
+    - trigger: state
+      entity_id: media_player.hogtalarna_i_koket_mass
+      to: buffering
+    timeout: '00:00:45'
+    continue_on_timeout: true
+  - action: var.set
+    data:
+      entity_id: var.morgoninfo_koket_redan_upplast
+      value: 'true'
   mode: queued
 - alias: 'Media: Sätt var.morgoninfo_koket_redan_upplast till true'
   id: 79183480484080dsfshr08888674

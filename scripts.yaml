@@ -2253,6 +2253,11 @@ media_koksradio_tyst_start:
     continue_on_error: true
     target:
       entity_id: '{{ chromecast_entity }}'
+  - wait_template: '{{ not is_state(chromecast_entity, ''off'') and not is_state(chromecast_entity,
+      ''unavailable'') }}'
+    timeout: '00:00:15'
+    continue_on_timeout: true
+  - delay: '00:00:02'
   - action: media_player.volume_set
     target:
       entity_id: '{{ chromecast_entity }}'
@@ -2272,8 +2277,68 @@ media_koksradio_tyst_start:
     - trigger: state
       entity_id: media_player.hogtalarna_i_koket
       to: playing
+    - trigger: state
+      entity_id: media_player.hogtalarna_i_koket_mass
+      to: buffering
     timeout:
-      seconds: 20
+      seconds: 30
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ is_state(group_entity, 'playing') or is_state(group_entity,
+          'buffering') or is_state(chromecast_entity, 'playing') }}"
+      sequence: []
+    default:
+    - action: media_player.media_play
+      continue_on_error: true
+      target:
+        entity_id: '{{ group_entity }}'
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: media_player.hogtalarna_i_koket_mass
+        to: playing
+      - trigger: state
+        entity_id: media_player.hogtalarna_i_koket
+        to: playing
+      - trigger: state
+        entity_id: media_player.hogtalarna_i_koket_mass
+        to: buffering
+      timeout:
+        seconds: 15
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: "{{ is_state(group_entity, 'playing') or is_state(group_entity,
+            'buffering') or is_state(chromecast_entity, 'playing') }}"
+        sequence: []
+      default:
+      - action: media_player.media_stop
+        continue_on_error: true
+        target:
+          entity_id: '{{ group_entity }}'
+      - delay: '00:00:01'
+      - action: media_player.play_media
+        target:
+          entity_id: '{{ group_entity }}'
+        data:
+          media_content_id: '{{ station_url }}'
+          media_content_type: music
+          metadata: {}
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: media_player.hogtalarna_i_koket_mass
+          to: playing
+        - trigger: state
+          entity_id: media_player.hogtalarna_i_koket
+          to: playing
+        - trigger: state
+          entity_id: media_player.hogtalarna_i_koket_mass
+          to: buffering
+        timeout:
+          seconds: 20
+  - condition: template
+    value_template: "{{ is_state(group_entity, 'playing') or is_state(group_entity,
+      'buffering') or is_state(chromecast_entity, 'playing') }}"
   - action: media_player.volume_set
     target:
       entity_id: '{{ chromecast_entity }}'
