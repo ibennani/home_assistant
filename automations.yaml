@@ -4035,10 +4035,18 @@
       to: buffering
     timeout: '00:00:45'
     continue_on_timeout: true
-  - action: var.set
-    data:
-      entity_id: var.morgoninfo_koket_redan_upplast
-      value: 'true'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ is_state('media_player.hogtalarna_i_koket_mass', 'playing')
+          or is_state('media_player.hogtalarna_i_koket_mass', 'buffering') or is_state('media_player.hogtalarna_i_koket',
+          'playing') }}"
+      sequence:
+      - action: var.set
+        data:
+          entity_id: var.morgoninfo_koket_redan_upplast
+          value: 'true'
+    default: []
   mode: queued
 - alias: 'Media: Sätt var.morgoninfo_koket_redan_upplast till true'
   id: 79183480484080dsfshr08888674
