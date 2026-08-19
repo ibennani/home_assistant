@@ -10535,6 +10535,44 @@
           ttl: 0
           priority: high
 
+# Automatisk Erik-detektering i badrummet via belysningsmönster (utan NFC)
+- alias: "Badrum: Erik detekterad via belysning"
+  id: badrum_erik_auto_detektering
+  description: >-
+    Sätter badrummet_vem till Erik när båda takspotts är släckta, handfat och kommod
+    är tända med rörelse i minst 20 sekunder. Skickar notis till Ilias.
+  mode: single
+  triggers:
+    - trigger: template
+      value_template: >-
+        {{ is_state('light.takspottar_badrummet', 'off')
+        and is_state('light.takspott_duschen', 'off')
+        and is_state('light.led_badrummet_handfatet', 'on')
+        and is_state('light.led_badrummet_kommoden', 'on')
+        and is_state('binary_sensor.badrummet_rorelse', 'on')
+        and is_state('input_select.badrummet_vem', 'Någon')
+        and not is_state('input_select.house_time_modes', 'Natt')
+        and is_state('input_boolean.stadning_pagar', 'off') }}
+      for:
+        seconds: 20
+  conditions: []
+  actions:
+    - action: input_select.select_option
+      target:
+        entity_id: input_select.badrummet_vem
+      data:
+        option: Erik
+    - action: notify.mobile_app_ilias_s23_ultra
+      data:
+        title: Badrummet
+        message: >-
+          HEMMET {{ now().strftime('%R') }}:
+
+          Erik detekterad automatiskt i badrummet (belysning, utan NFC-blipp).
+        data:
+          ttl: 0
+          priority: high
+
 - id: badrum_editor_styr_lampor
   alias: 'Badrum: editor styr lampor live'
   description: När sliders eller spegel-toggle ändras på inställningssidan uppdateras motsvarande lampa direkt.
