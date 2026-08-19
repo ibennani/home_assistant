@@ -889,10 +889,12 @@ las_text_i_valfri_device:
   mode: restart
   description: Läs upp i valfri puck, högtalare eller grupp av högtalare
   sequence:
-  - action: "{% if hogtalare in [\"media_player.googlehome_infopuckarna\",\n                    \"media_player.googlehome_alla_puckar\",\n
-      \                   \"media_player.alla_hogtalare\",\n                    \"media_player.de_basta_hogtalarna\"]
-      %} script.do_nothing\n{% else %} script.tysta_kopplingspling_vid_casting {%
-      endif %}\n"
+  - action: "{% if hogtalare in [\"media_player.alla_hogtalare\",
+                                 \"media_player.de_basta_hogtalarna\"]
+      %} script.do_nothing
+      {% else %} script.tysta_kopplingspling_vid_casting {%
+      endif %}
+"
     data:
       hogtalare: '{{ hogtalare }}'
   - action: media_player.volume_set
@@ -936,8 +938,8 @@ las_text_i_valfri_device:
     continue_on_timeout: false
   - action: media_player.volume_set
     data:
-      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.infopuckarna
-        {% elif hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar
+      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.infopuckarna_ha_grupp
+        {% elif hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar_ha_grupp
         {% else %} {{ hogtalare }} {% endif %}
 
         '
@@ -950,10 +952,10 @@ tysta_kopplingspling_vid_casting:
     eller Google home nest
   sequence:
   - variables:
-      cast_target: '{% if hogtalare == "media_player.googlehome_infopuckarna" %}media_player.googlehome_infopuckarna{%
+      cast_target: '{% if hogtalare == "media_player.googlehome_infopuckarna" %}media_player.infopuckarna_ha_grupp{%
         elif hogtalare == "media_player.googlehome_alla_puckar" %}media_player.alla_puckar_ha_grupp{%
-        elif hogtalare == "media_player.alla_hogtalare" %}media_player.alla_hogtalare{%
-        elif hogtalare == "media_player.de_basta_hogtalarna" %}media_player.de_basta_hogtalarna{%
+        elif hogtalare == "media_player.alla_hogtalare" %}media_player.alla_hogtalare_ha_grupp{%
+        elif hogtalare == "media_player.de_basta_hogtalarna" %}media_player.de_basta_hogtalarna_ha_grupp{%
         else %}{{ hogtalare }}{% endif %}'
   - action: media_player.volume_mute
     data:
