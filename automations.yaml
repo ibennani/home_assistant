@@ -53,8 +53,6 @@
         %}\n  script.kvallsbelysning\n{% elif is_state(\"input_select.house_time_modes\",\"Kväll\")
         %}\n  script.kvallsbelysning\n{% elif is_state(\"input_select.house_time_modes\",\"Natt\")
         %}\n  script.nattbelysning\n{% else %}\n  script.do_nothing\n{% endif %}\n"
-    data:
-      bevara_kokslage: true
 - id: '7918348695'
   alias: 'Huset: Styr huslägen (house_time_modes) - Triggerbaserad'
   description: Uppdaterar husets läge baserat på händelser istället för konstant skanning.
