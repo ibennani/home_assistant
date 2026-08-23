@@ -11,6 +11,19 @@
           - media_player.googlehome_vardagsrummet
           - media_player.googlehome_koket
         volume_level: "{{ volume_level }}"
+    volume_mute:
+      service: media_player.volume_mute
+      data_template:
+        entity_id:
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_koket
+        is_volume_muted: "{{ is_volume_muted }}"
+    turn_on:
+      service: media_player.turn_on
+      data_template:
+        entity_id:
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_koket
 
 - platform: universal
   name: alla_puckar_ha_grupp
@@ -33,6 +46,27 @@
           - media_player.googlehome_koket
           - media_player.googlehome_eriks_rum
         volume_level: "{{ volume_level }}"
+    volume_mute:
+      service: media_player.volume_mute
+      data_template:
+        entity_id:
+          - media_player.googlehome_ilias_rum
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_sovrummet
+          - media_player.googlehome_annas_rum
+          - media_player.googlehome_koket
+          - media_player.googlehome_eriks_rum
+        is_volume_muted: "{{ is_volume_muted }}"
+    turn_on:
+      service: media_player.turn_on
+      data_template:
+        entity_id:
+          - media_player.googlehome_ilias_rum
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_sovrummet
+          - media_player.googlehome_annas_rum
+          - media_player.googlehome_koket
+          - media_player.googlehome_eriks_rum
 
 - platform: universal
   name: alla_hogtalare_ha_grupp
@@ -63,6 +97,35 @@
           - media_player.hogtalarna_i_koket
           - media_player.eriks_stereo
         volume_level: "{{ volume_level }}"
+    volume_mute:
+      service: media_player.volume_mute
+      data_template:
+        entity_id:
+          - media_player.googlehome_ilias_rum
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_sovrummet
+          - media_player.googlehome_annas_rum
+          - media_player.googlehome_koket
+          - media_player.googlehome_eriks_rum
+          - media_player.stereon_i_vardagsrummet
+          - media_player.annas_stereo
+          - media_player.hogtalarna_i_koket
+          - media_player.eriks_stereo
+        is_volume_muted: "{{ is_volume_muted }}"
+    turn_on:
+      service: media_player.turn_on
+      data_template:
+        entity_id:
+          - media_player.googlehome_ilias_rum
+          - media_player.googlehome_vardagsrummet
+          - media_player.googlehome_sovrummet
+          - media_player.googlehome_annas_rum
+          - media_player.googlehome_koket
+          - media_player.googlehome_eriks_rum
+          - media_player.stereon_i_vardagsrummet
+          - media_player.annas_stereo
+          - media_player.hogtalarna_i_koket
+          - media_player.eriks_stereo
 
 - platform: universal
   name: de_basta_hogtalarna_ha_grupp
@@ -81,3 +144,20 @@
           - media_player.hogtalarna_i_koket
           - media_player.eriks_stereo
         volume_level: "{{ volume_level }}"
+    volume_mute:
+      service: media_player.volume_mute
+      data_template:
+        entity_id:
+          - media_player.stereon_i_vardagsrummet
+          - media_player.annas_stereo
+          - media_player.hogtalarna_i_koket
+          - media_player.eriks_stereo
+        is_volume_muted: "{{ is_volume_muted }}"
+    turn_on:
+      service: media_player.turn_on
+      data_template:
+        entity_id:
+          - media_player.stereon_i_vardagsrummet
+          - media_player.annas_stereo
+          - media_player.hogtalarna_i_koket
+          - media_player.eriks_stereo
