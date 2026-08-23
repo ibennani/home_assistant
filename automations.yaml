@@ -4685,6 +4685,13 @@
         value_template: "{{ trigger.event.data.event | int(default=0) == 1002\n   and
           not is_state('media_player.hogtalarna_i_koket','off') }}\n"
       sequence:
+      - action: media_player.media_stop
+        continue_on_error: true
+        target:
+          entity_id: media_player.hogtalarna_i_koket_mass
+      - action: media_player.turn_off
+        target:
+          entity_id: media_player.hogtalarna_i_koket
       - action: input_select.select_option
         target:
           entity_id: input_select.play_radiostation
@@ -4736,18 +4743,21 @@
           - action: media_player.media_previous_track
             target:
               entity_id: media_player.hogtalarna_i_koket
-  - action: media_player.volume_set
-    target:
-      entity_id: media_player.hogtalarna_i_koket
-    data:
-      volume_level: "{% if trigger.event.data.event | int(default=0) == 2002 %}\n
-        \ {{ (state_attr(\"media_player.hogtalarna_i_koket\",\"volume_level\") | float(default=0)
-        | round(2)) + 0.01 }}\n{% elif trigger.event.data.event | int(default=0) ==
-        3002 %}\n  {{ (state_attr(\"media_player.hogtalarna_i_koket\",\"volume_level\")
-        | float(default=0) | round(2)) - 0.01 }}\n{% elif trigger.event.data.event
-        | int(default=0) == 1002 and is_state(\"media_player.hogtalarna_i_koket\",\"on\")
-        %}\n  0.15\n{% else %}\n  {{ state_attr(\"media_player.hogtalarna_i_koket\",\"volume_level\")
-        | float(default=0.05) }}\n{% endif %}\n"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.event | int(default=0) in [2002, 3002]
+          }}'
+      sequence:
+      - action: media_player.volume_set
+        target:
+          entity_id: media_player.hogtalarna_i_koket
+        data:
+          volume_level: "{% if trigger.event.data.event | int(default=0) == 2002 %}\n
+            \ {{ (state_attr(\"media_player.hogtalarna_i_koket\",\"volume_level\") | float(default=0)
+            | round(2)) + 0.01 }}\n{% else %}\n  {{ (state_attr(\"media_player.hogtalarna_i_koket\",\"volume_level\")
+            | float(default=0) | round(2)) - 0.01 }}\n{% endif %}\n"
+    default: []
   mode: restart
 - alias: 'Media: Meddela när det åter går att casta till TV:n i vardagrsummet'
   id: 5sljsllsdfkj0249jäg3509ösdfj0924
