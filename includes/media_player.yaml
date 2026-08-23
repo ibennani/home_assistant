@@ -24,6 +24,9 @@
         entity_id:
           - media_player.googlehome_vardagsrummet
           - media_player.googlehome_koket
+  attributes:
+    state: media_player.googlehome_vardagsrummet
+    is_volume_muted: media_player.googlehome_vardagsrummet|is_volume_muted
 
 - platform: universal
   name: alla_puckar_ha_grupp
@@ -67,6 +70,9 @@
           - media_player.googlehome_annas_rum
           - media_player.googlehome_koket
           - media_player.googlehome_eriks_rum
+  attributes:
+    state: media_player.googlehome_ilias_rum
+    is_volume_muted: media_player.googlehome_ilias_rum|is_volume_muted
 
 - platform: universal
   name: alla_hogtalare_ha_grupp
@@ -126,9 +132,12 @@
           - media_player.annas_stereo
           - media_player.hogtalarna_i_koket
           - media_player.eriks_stereo
+  attributes:
+    state: media_player.googlehome_ilias_rum
+    is_volume_muted: media_player.googlehome_ilias_rum|is_volume_muted
 
 - platform: universal
-  name: de_basta_hogtalarna_ha_grupp
+  name: de_besta_hogtalarna_ha_grupp
   children:
     - media_player.stereon_i_vardagsrummet
     - media_player.annas_stereo
@@ -161,3 +170,6 @@
           - media_player.annas_stereo
           - media_player.hogtalarna_i_koket
           - media_player.eriks_stereo
+  attributes:
+    state: media_player.stereon_i_vardagsrummet
+    is_volume_muted: media_player.stereon_i_vardagsrummet|is_volume_muted
