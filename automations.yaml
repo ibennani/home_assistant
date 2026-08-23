@@ -2562,10 +2562,14 @@
       {% if trigger.id == 'ring_pa_dorren_event' %}
         {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
-           and trigger.to_state.state != trigger.from_state.state }}
+           and trigger.to_state.state != trigger.from_state.state
+           and (as_timestamp(now()) - as_timestamp(trigger.to_state.state)) < 60 }}
       {% elif trigger.id == 'ring_pa_dorren_mqtt' %}
-        {{ trigger.to_state.attributes.lastDing is defined
-           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
+        {{ trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing
+           and (as_timestamp(now()) - as_timestamp(trigger.to_state.attributes.lastDing)) < 60 }}
       {% else %}
         true
       {% endif %}
@@ -2662,10 +2666,14 @@
       {% if trigger.entity_id == 'event.front_door_ding' %}
         {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
-           and trigger.to_state.state != trigger.from_state.state }}
+           and trigger.to_state.state != trigger.from_state.state
+           and (as_timestamp(now()) - as_timestamp(trigger.to_state.state)) < 60 }}
       {% elif trigger.entity_id == 'binary_sensor.front_door_ding' %}
-        {{ trigger.to_state.attributes.lastDing is defined
-           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
+        {{ trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing
+           and (as_timestamp(now()) - as_timestamp(trigger.to_state.attributes.lastDing)) < 60 }}
       {% else %}
         true
       {% endif %}
@@ -8317,10 +8325,14 @@
       {% if trigger.id == 'ding_event' %}
         {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
-           and trigger.to_state.state != trigger.from_state.state }}
+           and trigger.to_state.state != trigger.from_state.state
+           and (as_timestamp(now()) - as_timestamp(trigger.to_state.state)) < 60 }}
       {% else %}
-        {{ trigger.to_state.attributes.lastDing is defined
-           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
+        {{ trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing
+           and (as_timestamp(now()) - as_timestamp(trigger.to_state.attributes.lastDing)) < 60 }}
       {% endif %}
   action:
   - action: notify.android_tv_sony_tv_i_vardagsrummet
@@ -8384,10 +8396,14 @@
       {% if trigger.id == 'ding_event' %}
         {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']
            and trigger.from_state.state not in ['unavailable', 'unknown', 'none']
-           and trigger.to_state.state != trigger.from_state.state }}
+           and trigger.to_state.state != trigger.from_state.state
+           and (as_timestamp(now()) - as_timestamp(trigger.to_state.state)) < 60 }}
       {% else %}
-        {{ trigger.to_state.attributes.lastDing is defined
-           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing }}
+        {{ trigger.from_state.state not in ['unavailable', 'unknown', 'none']
+           and trigger.from_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing is defined
+           and trigger.to_state.attributes.lastDing != trigger.from_state.attributes.lastDing
+           and (as_timestamp(now()) - as_timestamp(trigger.to_state.attributes.lastDing)) < 60 }}
       {% endif %}
   - condition: template
     value_template: "{{ not is_state(\"input_select.house_time_modes\", \"Natt\")
