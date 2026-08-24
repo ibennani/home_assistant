@@ -1759,7 +1759,7 @@
                 - light.led_badrummet_handfatet
                 - light.led_badrummet_kommoden
               data:
-                brightness_pct: 2
+                brightness_pct: 1
                 transition: 0
           default:
           - action: light.turn_on
