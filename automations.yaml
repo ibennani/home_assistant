@@ -1754,7 +1754,10 @@
             sequence:
             - action: light.turn_on
               target:
-                entity_id: light.led_badrummet_kommoden
+                entity_id:
+                - light.led_strip_i_duschen
+                - light.led_badrummet_handfatet
+                - light.led_badrummet_kommoden
               data:
                 brightness_pct: 2
                 transition: 0
