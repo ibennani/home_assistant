@@ -148,6 +148,11 @@
     name: Badrum dusch ljus låst
     icon: mdi:lock
     initial: off
+# Satt vid stängd duschdörr om mönster tyder på att någon klivit ur (fas 3 B+C)
+  badrum_klivit_ur_dusch:
+    name: Badrum troligen klivit ur duschen
+    icon: mdi:shower-head
+    initial: off
 
 # Badrumsprofiler sparade från dashboard (av = använd lux/natt-systemet)
   badrum_anna_besok_profil:

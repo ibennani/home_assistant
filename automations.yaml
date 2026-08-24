@@ -2012,9 +2012,10 @@
   mode: restart
 - id: badrum_dusch_fas3_dorr_cykel
   alias: 'Belysning: Duschsession dörrcykel (fas 3)'
-  description: 'Under bekräftad duschsession. Känd person (NFC): öppen dörr → besök/default;
-    stängd → 60 s utan rörelse → dusch/default. Okänd: snapshot och duschslackning som
-    tidigare. Separat automation så 60 s-fördröjning inte avbryts av rörelse.
+  description: 'Under bekräftad duschsession. Öppen duschdörr → besök/default. Stängd
+    → 60 s → släck utanför duschen om ingen närvaro-minne och inget klivit-ur-mönster.
+    Närvaro-minne (3 min) och klivit-ur (öppen ≥12 s med rörelse, eller ≥25 s) skyddar
+    efter avslutad dusch med stängd badrumsdörr.
 
     '
   triggers:
@@ -2043,7 +2044,9 @@
       sequence:
       - action: input_boolean.turn_off
         target:
-          entity_id: input_boolean.badrum_dusch_ljus_last
+          entity_id:
+          - input_boolean.badrum_dusch_ljus_last
+          - input_boolean.badrum_klivit_ur_dusch
       - choose:
         - conditions:
           - condition: template
@@ -2084,6 +2087,31 @@
         entity_id: input_boolean.badrum_dusch_ljus_last
         state: 'off'
       sequence:
+      - variables:
+          oppning_sek: >-
+            {% set raw = states('input_datetime.duschdorr_oppnad_ts') %}
+            {% set open_ts = as_timestamp(raw) if raw not in ['unknown','unavailable','none','None',''] else 0 %}
+            {% if open_ts > 0 %}{{ (as_timestamp(now()) - open_ts) | int }}{% else %}0{% endif %}
+          rorelse_efter_oppning: >-
+            {% set raw = states('input_datetime.duschdorr_oppnad_ts') %}
+            {% set open_ts = as_timestamp(raw) if raw not in ['unknown','unavailable','none','None',''] else 0 %}
+            {% if open_ts > 0 %}
+              {{ as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed) >= open_ts }}
+            {% else %}false{% endif %}
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: >-
+              {{ (oppning_sek | int >= 12 and rorelse_efter_oppning | bool)
+                 or oppning_sek | int >= 25 }}
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.badrum_klivit_ur_dusch
+        default:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.badrum_klivit_ur_dusch
       - delay: '00:01:00'
       - condition: state
         entity_id: input_select.nagon_duschar
@@ -2099,9 +2127,17 @@
         state: 'off'
       - choose:
         - conditions:
-          - condition: state
-            entity_id: binary_sensor.badrummet_rorelse
-            state: 'on'
+          - condition: or
+            conditions:
+            - condition: state
+              entity_id: binary_sensor.badrummet_rorelse
+              state: 'on'
+            - condition: state
+              entity_id: binary_sensor.badrum_narvaro_minne
+              state: 'on'
+            - condition: state
+              entity_id: input_boolean.badrum_klivit_ur_dusch
+              state: 'on'
           sequence:
           - choose:
             - conditions:
@@ -2189,6 +2225,28 @@
   - action: input_boolean.turn_on
     target:
       entity_id: input_boolean.badrum_dusch_ljus_last
+  mode: single
+- id: badrum_klivit_ur_dusch_reset
+  alias: 'Badrum: nollställ klivit ur dusch'
+  description: Nollställer klivit-ur-flaggan när badrumsdörren öppnas eller duschsessionen avslutas.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.badrumsdorren
+    to: 'on'
+    not_from:
+    - unavailable
+    - unknown
+  - trigger: state
+    entity_id: input_select.nagon_duschar
+    to: Ingen duschar
+    not_from:
+    - unavailable
+    - unknown
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.badrum_klivit_ur_dusch
   mode: single
 - id: sdfsksaqwecxzo419d6s068sg
   alias: 'Belysning: Styr belysningen i förrådet'

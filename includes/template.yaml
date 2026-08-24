@@ -786,6 +786,14 @@
         {{ is_state('binary_sensor.erik_borta_kand', 'on')
            or is_state('cover.rullgardin_eriks_rum', 'open') }}
 
+    - name: Badrum närvaro minne
+      unique_id: badrum_narvaro_minne
+      device_class: occupancy
+      icon: mdi:motion-sensor
+      state: "{{ is_state('binary_sensor.badrummet_rorelse', 'on') }}"
+      delay_off:
+        minutes: 3
+
     - name: Badrum fullt upplyst manuellt
       unique_id: badrum_fullt_upplyst_manuellt
       icon: mdi:ceiling-light-multiple
