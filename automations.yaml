@@ -277,6 +277,17 @@
     - unavailable
     - unknown
   action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ is_state(''var.morgoninfo_koket_redan_upplast'', ''false'')
+          }}'
+      sequence:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.koket_belysning
+        data:
+          option: Dämpat
   - action: script.turn_on
     target:
       entity_id: script.morgonbelysning
@@ -301,6 +312,17 @@
     - unavailable
     - unknown
   action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ is_state(''var.morgoninfo_koket_redan_upplast'', ''false'')
+          }}'
+      sequence:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.koket_belysning
+        data:
+          option: Dämpat
   - action: script.turn_on
     target:
       entity_id: "{% if states(\"sensor.utomhus_framsidan_ljusstyrka\") | int(default=0)
@@ -353,6 +375,18 @@
     - unavailable
     - unknown
   action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ is_state('group.rorelse_i_koket', 'on')\n  or (as_timestamp(now())
+          - as_timestamp(state_attr('group.rorelse_i_koket', 'last_changed') or now())
+          | int(0) <= 60 * 15) }}\n"
+      sequence:
+      - action: input_select.select_option
+        target:
+          entity_id: input_select.koket_belysning
+        data:
+          option: Dämpat
   - action: script.turn_on
     target:
       entity_id: script.nattbelysning
