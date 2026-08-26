@@ -66,7 +66,6 @@ ZONES = [
     ("zone.farsta_strand_pendeltagstation", "farsta_strand_pendeltagstation"),
     ("zone.ellio_i_norge", "ellio_i_norge"),
     ("zone.eina", "eina"),
-    ("zone.gjovik", "gjovik"),
     ("zone.norge_2", "norge_2"),
     ("zone.sahlgrenska_sjukhuset", "sahlgrenska_sjukhuset"),
     ("zone.molndahls_sjukhus", "molndahls_sjukhuset"),
@@ -227,10 +226,6 @@ ZONE_MESSAGES = {
     "eina": {
         "entered": "{{ person }} är i Eina",
         "left": "{{ person }} har lämnat Eina",
-    },
-    "gjovik": {
-        "entered": "{{ person }} är i Gjövik",
-        "left": "{{ person }} har lämnat Gjövik",
     },
     "norge_2": {
         "entered": "{{ person }} är i Norge 2",

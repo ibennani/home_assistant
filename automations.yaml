@@ -5829,8 +5829,6 @@
                   {{ person }} har lämnat Selma i Norge
                 {%- elif to_slug == 'not_home' and from_slug == 'eina' -%}
                   {{ person }} har lämnat Eina
-                {%- elif to_slug == 'not_home' and from_slug == 'gjovik' -%}
-                  {{ person }} har lämnat Gjövik
                 {%- elif to_slug == 'not_home' and from_slug == 'norge_2' -%}
                   {{ person }} har lämnat Norge 2
                 {%- elif to_slug == 'not_home' and from_slug == 'sahlgrenska_sjukhuset' -%}
@@ -5919,8 +5917,6 @@
                   {{ person }} är hos Selma i Norge
                 {%- elif to_slug == 'eina' -%}
                   {{ person }} är i Eina
-                {%- elif to_slug == 'gjovik' -%}
-                  {{ person }} är i Gjövik
                 {%- elif to_slug == 'norge_2' -%}
                   {{ person }} är i Norge 2
                 {%- elif to_slug == 'sahlgrenska_sjukhuset' -%}
