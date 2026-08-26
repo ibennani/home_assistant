@@ -71,7 +71,7 @@ ZONES = [
     ("zone.molndahls_sjukhus", "molndahls_sjukhuset"),
     ("zone.stefan", "stefan"),
     ("zone.elins_jobb", "elins_jobb"),
-    ("zone.isabelle", "isabelle"),
+    ("zone.isabelles_hem", "isabelles_hem"),
 ]
 
 ZONE_MESSAGES = {
@@ -247,9 +247,9 @@ ZONE_MESSAGES = {
         "entered": "{{ person }} är på Elins jobb",
         "left": "{{ person }} har lämnat Elins jobb",
     },
-    "isabelle": {
-        "entered": "{{ person }} {% if person == 'Isabelle' %}är hemma hos sig{% else %}är hos Isabelle{% endif %}",
-        "left": "{{ person }} {% if person == 'Isabelle' %}har åkt hemifrån sitt hem{% else %}har lämnat Isabelle{% endif %}",
+    "isabelles_hem": {
+        "entered": "{{ person }} {% if person == 'Isabelle' %}är hemma hos sig{% else %}är på Isabelles hem{% endif %}",
+        "left": "{{ person }} {% if person == 'Isabelle' %}har åkt hemifrån sitt hem{% else %}har lämnat Isabelles hem{% endif %}",
     },
 }
 

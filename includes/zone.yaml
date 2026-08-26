@@ -38,9 +38,9 @@
   icon: mdi:human
 
 # Isabelles hem (minsta omslutande cirkel, GPS 20–23 aug 2026, Erik + Isabelle)
-- name: Isabelle
+- name: Isabelles hem
   latitude: 60.797749
   longitude: 10.692576
   radius: 420
-  icon: mdi:human
+  icon: mdi:home
 
