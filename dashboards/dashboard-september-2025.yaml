@@ -4045,7 +4045,6 @@ views:
       - zone.farmor_och_farfar
       - zone.farsta_centrum
       - zone.farsta_strand_pendeltagstation
-      - zone.gjovik
       - zone.goteborg_c
       - zone.grasko
       - zone.hemma_hos_rio
@@ -6415,7 +6414,6 @@ views:
       - zone.farmor_och_farfar
       - zone.farsta_centrum
       - zone.farsta_strand_pendeltagstation
-      - zone.gjovik
       - zone.goteborg_c
       - zone.grasko
       - zone.hemma_hos_rio
@@ -6469,7 +6467,6 @@ views:
       - zone.farmor_och_farfar
       - zone.farsta_centrum
       - zone.farsta_strand_pendeltagstation
-      - zone.gjovik
       - zone.goteborg_c
       - zone.grasko
       - zone.hemma_hos_rio
@@ -6523,7 +6520,6 @@ views:
       - zone.farmor_och_farfar
       - zone.farsta_centrum
       - zone.farsta_strand_pendeltagstation
-      - zone.gjovik
       - zone.goteborg_c
       - zone.grasko
       - zone.hemma_hos_rio
@@ -6577,7 +6573,6 @@ views:
       - zone.farmor_och_farfar
       - zone.farsta_centrum
       - zone.farsta_strand_pendeltagstation
-      - zone.gjovik
       - zone.goteborg_c
       - zone.grasko
       - zone.hemma_hos_rio
