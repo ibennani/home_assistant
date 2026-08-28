@@ -1652,7 +1652,7 @@
         entity_id: input_boolean.ring_blink_verifiering
 - alias: 'Belysning: Lamporna ovanför Ilias säng blinkar till vid rörelse på balkongen'
   id: sdfsksdgsd56dgsd16sddga6s068sg
-  mode: restart
+  mode: single
   triggers:
   - trigger: template
     value_template: '{{ is_state("input_select.house_time_modes","Natt") and is_state("binary_sensor.balkongen_rorelse","on")
@@ -1661,10 +1661,19 @@
 
       '
   action:
-  - action: light.toggle
-    entity_id: light.lamporna_ovanfor_ilias_sang
-  - action: light.toggle
-    entity_id: light.lamporna_ovanfor_ilias_sang
+  - action: light.turn_on
+    target:
+      entity_id: light.lamporna_ovanfor_ilias_sang
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: light.lamporna_ovanfor_ilias_sang
+      to: 'on'
+      not_from:
+      - unavailable
+      - unknown
+  - action: light.turn_off
+    target:
+      entity_id: light.lamporna_ovanfor_ilias_sang
   - action: notify.mobile_app_ilias_s23_ultra
     data:
       message: "HEMMET {{ now().strftime('%R') }}: \nRörelse på balkongen\n"
