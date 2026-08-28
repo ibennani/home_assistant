@@ -2987,14 +2987,14 @@ views:
             \ | int % 60 %}\n  {{timmar}}:{{minuter| timestamp_custom(\"%S\", false)}}:{{sekunder| timestamp_custom(\"%S\"\
             , false)}}\n{% endif %}\n"
         - type: custom:template-entity-row
-          entity: binary_sensor.tradfri_rorelse_i_garderoben_2
+          entity: binary_sensor.garderoben_rorelse_2
           name: Garderoben 2
-          secondary: Senast {{ as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_2.last_changed) | timestamp_custom('%a
+          secondary: Senast {{ as_timestamp(states.binary_sensor.garderoben_rorelse_2.last_changed) | timestamp_custom('%a
             %Y-%m-%d kl %H:%M:%S') }}
-          state: "{% if is_state('binary_sensor.tradfri_rorelse_i_garderoben_2', 'on') %} Nu  {% else %} \n  {% set timmar\
-            \ = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_2.last_changed)) |\
-            \ int / (60*60)) |round(0, \"floor\") %}\n  {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_2.last_changed))\
-            \ | int / 60) |round(0, \"floor\") - (timmar * 60) %}\n  {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.tradfri_rorelse_i_garderoben_2.last_changed))\
+          state: "{% if is_state('binary_sensor.garderoben_rorelse_2', 'on') %} Nu  {% else %} \n  {% set timmar\
+            \ = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.garderoben_rorelse_2.last_changed)) |\
+            \ int / (60*60)) |round(0, \"floor\") %}\n  {% set minuter = ((as_timestamp(now()) - as_timestamp(states.binary_sensor.garderoben_rorelse_2.last_changed))\
+            \ | int / 60) |round(0, \"floor\") - (timmar * 60) %}\n  {% set sekunder = (as_timestamp(now()) - as_timestamp(states.binary_sensor.garderoben_rorelse_2.last_changed))\
             \ | int % 60 %}\n  {{timmar}}:{{minuter| timestamp_custom(\"%S\", false)}}:{{sekunder| timestamp_custom(\"%S\"\
             , false)}}\n{% endif %}\n"
         - type: custom:template-entity-row

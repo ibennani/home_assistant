@@ -46,7 +46,7 @@ rorelse_i_garderoben:
   icon: mdi:run
   entities:
     - binary_sensor.tradfri_rorelse_i_garderoben_1
-    - binary_sensor.tradfri_rorelse_i_garderoben_2
+    - binary_sensor.garderoben_rorelse_2
     - binary_sensor.tradfri_rorelse_i_garderoben_3
     - binary_sensor.tradfri_rorelse_i_garderoben_4
 
