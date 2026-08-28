@@ -10854,3 +10854,84 @@
       event: start
   actions:
     - action: script.badrum_synka_profil_flaggor
+
+- id: pendeltag_farsta_strand_morgon_forsening
+  alias: "Mobilnotis: Pendeltåg Farsta strand förseningar vardag morgon"
+  description: >
+    Vardagar kl 07:25 — notis om minst två norrgående pendeltåg har försening
+    på 2 minuter eller mer. Enstaka minutförseningar ignoreras.
+  mode: single
+  triggers:
+    - trigger: time
+      at: "07:25:00"
+  conditions:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: template
+      value_template: >
+        {% set deps = state_attr('sensor.farsta_strand_pendeltag_departures', 'departures') | default([], true) %}
+        {% set ns = namespace(late=0) %}
+        {% for d in deps %}
+          {% set sched = d.scheduled | default('') %}
+          {% set exp = d.expected | default(sched) %}
+          {% if sched and exp %}
+            {% set delay_min = ((as_timestamp(exp) - as_timestamp(sched)) / 60) | round(0) | int %}
+            {% if delay_min >= 2 %}
+              {% set ns.late = ns.late + 1 %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.late >= 2 }}
+  actions:
+    - variables:
+        pendeltag_deps: >
+          {{ state_attr('sensor.farsta_strand_pendeltag_departures', 'departures') | default([], true) }}
+    - variables:
+        pendeltag_late_count: >
+          {% set ns = namespace(n=0) %}
+          {% for d in pendeltag_deps %}
+            {% set sched = d.scheduled | default('') %}
+            {% set exp = d.expected | default(sched) %}
+            {% if sched and exp %}
+              {% set delay_min = ((as_timestamp(exp) - as_timestamp(sched)) / 60) | round(0) | int %}
+              {% if delay_min >= 2 %}
+                {% set ns.n = ns.n + 1 %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.n }}
+        pendeltag_total_count: "{{ pendeltag_deps | length }}"
+        pendeltag_reason: >
+          {% set ns = namespace(msgs=[]) %}
+          {% for d in pendeltag_deps %}
+            {% for dev in d.deviations | default([]) %}
+              {% set msg = dev.message | default('') | trim %}
+              {% if msg and msg not in ns.msgs %}
+                {% set ns.msgs = ns.msgs + [msg] %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+          {% for dev in state_attr('sensor.farsta_strand_pendeltag_departures', 'stop_deviations') | default([], true) %}
+            {% set msg = dev.message | default('') | trim %}
+            {% if msg and msg not in ns.msgs %}
+              {% set ns.msgs = ns.msgs + [msg] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.msgs[0] if ns.msgs else '' }}
+    - action: notify.mobile_app_ilias_s23_ultra
+      data:
+        title: "Pendeltåg Farsta strand"
+        message: >
+          {% if pendeltag_reason | trim %}
+            Flera förseningar mot Stockholm ({{ pendeltag_late_count }} av {{ pendeltag_total_count }} tåg). {{ pendeltag_reason }}
+          {% else %}
+            Flera förseningar mot Stockholm ({{ pendeltag_late_count }} av {{ pendeltag_total_count }} tåg i prognosen).
+          {% endif %}
+        data:
+          ttl: 0
+          priority: high
