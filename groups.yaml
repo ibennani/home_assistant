@@ -29,7 +29,7 @@ lights_mysbelysning:
     icon: mdi:lightbulb
     entities:
       - switch.lampor_vardagsrummet_soffan_switch
-      - switch.lampa_ilias_sang_switch
+      - switch.lampan_vid_ilias_sang
       - switch.lampa_annas_sang_switch
       - switch.lampor_koksfonster_switch
       - light.spottarna_bakom_spisen_level
@@ -78,7 +78,7 @@ rullgardiner_framsidan:
 lights_sanglamporna_sovrummet:
   name: "Sänglamporna i sovrummet"
   entities:
-    - switch.lampa_ilias_sang_switch
+    - switch.lampan_vid_ilias_sang
     - switch.lampa_annas_sang_switch
 
 
