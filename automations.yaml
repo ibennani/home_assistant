@@ -1818,7 +1818,24 @@
       - condition: template
         value_template: '{{ trigger.id == ''slack'' }}'
       - condition: template
-        value_template: "{{ is_state('input_boolean.stadning_pagar', 'off') and not is_state('timer.badrum_slackning_pagar', 'active') and is_state('binary_sensor.badrumsdorren', 'on') and is_state('input_select.nagon_duschar', 'Ingen duschar') }}"
+        value_template: >-
+          {% set lights = [
+            'light.takspottar_badrummet',
+            'light.led_badrummet_handfatet',
+            'light.led_badrummet_kommoden',
+            'light.takspott_duschen',
+            'light.led_strip_i_duschen'
+          ] %}
+          {% set ns = namespace(n=0) %}
+          {% for l in lights %}
+            {% if is_state(l, 'on') and (state_attr(l, 'brightness') | int(0)) >= 254 %}
+              {% set ns.n = ns.n + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ is_state('input_boolean.stadning_pagar', 'off')
+             and not is_state('timer.badrum_slackning_pagar', 'active')
+             and is_state('binary_sensor.badrumsdorren', 'on')
+             and ns.n < 2 }}
       sequence:
       - action: timer.start
         target:
@@ -10635,13 +10652,16 @@
       data:
         beskrivning: "{{ trigger.event.data.beskrivning }}"
 
-# NFC: notis när Anna, Erik eller Ilias blippar Badrummet under spegeln
+# NFC-blipp eller Eriks belysningsmönster → samma besökarlogik (senaste händelsen vinner)
 - alias: "Mobilnotis: NFC Badrummet under spegeln"
   id: nfc_badrum_blipp
-  description: Sätter badrummet_vem och tillämpar besöksprofil (ej dusch) vid NFC-blipp.
+  description: >-
+    Sätter badrummet_vem via NFC-blipp (Anna/Erik/Ilias) eller när Erik släcker takspotten
+    och bara LED-lampor är kvar. Senaste identifieringen gäller alltid.
   mode: single
   triggers:
     - trigger: state
+      id: nfc
       entity_id: tag.badrummet_under_spegeln
       not_from:
       - unavailable
@@ -10649,98 +10669,47 @@
       not_to:
       - unavailable
       - unknown
-  variables:
-    device_map:
-      "929526afaef9a2acb0e5becc290d7c34": Anna
-      "bf89f3a7b19d34ddd87e5cf49c752ca7": Erik
-      "e258bafb30239f66c247b133a4522e9f": Ilias
-    vem: "{{ device_map.get(trigger.to_state.attributes.last_scanned_by_device_id, 'Okänd') }}"
-    key: >-
-      {% set m = {'Anna': 'anna', 'Erik': 'erik', 'Ilias': 'ilias'} %}
-      {{ m.get(vem, 'invalid') }}
-    har_besok_profil: >-
-      {% if key == 'invalid' %}false
-      {% else %}
-      {% set nums = [
-        'input_number.badrum_' ~ key ~ '_besok_tak_pct',
-        'input_number.badrum_' ~ key ~ '_besok_handfat_pct',
-        'input_number.badrum_' ~ key ~ '_besok_kommod_pct',
-        'input_number.badrum_' ~ key ~ '_besok_spegel_pct',
-        'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct',
-        'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'
-      ] %}
-      {% set ns = namespace(v=false) %}
-      {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
-      {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') or ns.v }}
-      {% endif %}
-  actions:
-    - action: script.badrum_synka_profil_flaggor
-    - choose:
-      - conditions:
-        - condition: template
-          value_template: "{{ vem in ['Anna', 'Erik', 'Ilias'] }}"
-        sequence:
-        - action: input_select.select_option
-          target:
-            entity_id: input_select.badrummet_vem
-          data:
-            option: "{{ vem }}"
-        - choose:
-          - conditions:
-            - condition: template
-              value_template: "{{ har_besok_profil }}"
-            sequence:
-            - action: script.badrum_tillampa_profil
-              data:
-                lage: besok
-                utan_dusch_ljus: true
-                transition: 1
-                person: "{{ vem }}"
-    - action: notify.mobile_app_ilias_s23_ultra
-      data:
-        title: Badrummet under spegeln
-        message: "{{ vem }} blippade taggen {{ now().strftime('%H:%M:%S') }}"
-        data:
-          ttl: 0
-          priority: high
-
-# Automatisk Erik-detektering i badrummet via belysningsmönster (utan NFC)
-- alias: "Badrum: Erik detekterad via belysning"
-  id: badrum_erik_auto_detektering
-  description: >-
-    Sätter badrummet_vem till Erik när båda takspotts är släckta, handfat och kommod
-    är tända med rörelse i minst 20 sekunder. Skickar notis till Ilias.
-  mode: single
-  triggers:
     - trigger: template
+      id: erik_belysning
       value_template: >-
         {{ is_state('light.takspottar_badrummet', 'off')
         and is_state('light.takspott_duschen', 'off')
         and is_state('light.led_badrummet_handfatet', 'on')
         and is_state('light.led_badrummet_kommoden', 'on')
         and is_state('binary_sensor.badrummet_rorelse', 'on')
-        and is_state('input_select.badrummet_vem', 'Någon')
         and not is_state('input_select.house_time_modes', 'Natt')
         and is_state('input_boolean.stadning_pagar', 'off') }}
       for:
         seconds: 20
-  conditions: []
+  variables:
+    device_map:
+      "929526afaef9a2acb0e5becc290d7c34": Anna
+      "bf89f3a7b19d34ddd87e5cf49c752ca7": Erik
+      "e258bafb30239f66c247b133a4522e9f": Ilias
+    person: >-
+      {% if trigger.id == 'erik_belysning' %}Erik
+      {% else %}{{ device_map.get(trigger.to_state.attributes.last_scanned_by_device_id, 'Okänd') }}
+      {% endif %}
+    metod: >-
+      {% if trigger.id == 'erik_belysning' %}släck takspottar{% else %}NFC{% endif %}
   actions:
-    - action: input_select.select_option
-      target:
-        entity_id: input_select.badrummet_vem
-      data:
-        option: Erik
-    - action: notify.mobile_app_ilias_s23_ultra
-      data:
-        title: Badrummet
-        message: >-
-          HEMMET {{ now().strftime('%R') }}:
-
-          Erik detekterad automatiskt i badrummet (belysning, utan NFC-blipp).
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: "{{ person in ['Anna', 'Erik', 'Ilias'] }}"
+        sequence:
+        - action: script.badrum_satt_besokare
+          data:
+            person: "{{ person }}"
+            metod: "{{ metod }}"
+      default:
+      - action: notify.mobile_app_ilias_s23_ultra
         data:
-          ttl: 0
-          priority: high
+          title: Badrummet under spegeln
+          message: "{{ person }} blippade taggen {{ now().strftime('%H:%M:%S') }}"
+          data:
+            ttl: 0
+            priority: high
 
 - id: badrum_editor_styr_lampor
   alias: 'Badrum: editor styr lampor live'
