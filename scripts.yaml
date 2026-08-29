@@ -2333,6 +2333,22 @@ git_synka_config:
     - action: template.reload
     - action: group.reload
 
+skrivare_mobilnotis:
+  alias: 'Mobilnotis: HP-skrivaren'
+  description: Central avsändare för alla mobilnotiser från HP-skrivaren.
+  mode: restart
+  fields:
+    meddelande:
+      description: Meddelandetext efter HEMMET-raden
+      required: true
+      example: Utskriften är klar i HP-skrivaren.
+  sequence:
+  - action: notify.mobile_app_ilias_s23_ultra
+    data:
+      message: "HEMMET {{ now().strftime('%R') }}:\n{{ meddelande }}\n"
+      data:
+        ttl: 0
+        priority: high
 cursor_klar_notis:
   alias: "Cursor: Agent klar — mobilnotis"
   description: "Skickar klar-notis till Elias S23 Ultra. Anropas av Cursor-agenter via MCP."

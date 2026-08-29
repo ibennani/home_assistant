@@ -6505,14 +6505,59 @@
 
       '
   action:
-    action: notify.mobile_app_ilias_s23_ultra
+  - action: script.skrivare_mobilnotis
     data:
-      message: "HEMMET {{ now().strftime('%R') }}: \n{% if trigger.to_state.state
-        == 'home' %}\nHP-skrivaren är igång\n{% else %}\nHP-skrivaren är avstängd\n{%
-        endif %}\n"
-      data:
-        ttl: 0
-        priority: high
+      meddelande: "{% if trigger.to_state.state == 'home' %}\nHP-skrivaren är igång\n{% else %}\nHP-skrivaren är avstängd\n{% endif %}\n"
+- alias: 'Mobilnotis: HP-skrivaren låg toner'
+  id: '79183401650865'
+  mode: single
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.hp_color_laserjet_mfp_m277dw_black_cartridge_hp_cf400x
+    - sensor.hp_color_laserjet_mfp_m277dw_cyan_cartridge_hp_cf401x
+    - sensor.hp_color_laserjet_mfp_m277dw_magenta_cartridge_hp_cf403x
+    - sensor.hp_color_laserjet_mfp_m277dw_yellow_cartridge_hp_cf402x
+    below: 20
+  conditions:
+  - condition: template
+    value_template: '{{ trigger.from_state is not none and trigger.from_state.state
+      not in [''unknown'', ''unavailable'', ''none'', ''''] and trigger.from_state.state
+      | int(100) >= 20 }}
+
+      '
+  - condition: template
+    value_template: '{{ trigger.to_state.state | int(0) < 20 }}
+
+      '
+  action:
+  - variables:
+      toner_rader: "{% set toner = [\n  ('Svart', states('sensor.hp_color_laserjet_mfp_m277dw_black_cartridge_hp_cf400x')
+        | int(100)),\n  ('Cyan', states('sensor.hp_color_laserjet_mfp_m277dw_cyan_cartridge_hp_cf401x')
+        | int(100)),\n  ('Magenta', states('sensor.hp_color_laserjet_mfp_m277dw_magenta_cartridge_hp_cf403x')
+        | int(100)),\n  ('Gul', states('sensor.hp_color_laserjet_mfp_m277dw_yellow_cartridge_hp_cf402x')
+        | int(100))\n] %}\n{% set ns = namespace(rader=[]) %}\n{% for namn, niva
+        in toner %}\n{% if niva < 20 %}\n{% set ns.rader = ns.rader + [namn ~ ': '
+        ~ niva ~ ' %'] %}\n{% endif %}\n{% endfor %}\n{{ ns.rader | join('\\n') }}\n"
+  - action: script.skrivare_mobilnotis
+    data:
+      meddelande: "Låg toner i HP-skrivaren (under 20 %):\n{{ toner_rader }}\n"
+- alias: 'Mobilnotis: HP-skrivaren utskrift klar'
+  id: '79183401650866'
+  mode: single
+  triggers:
+  - trigger: state
+    entity_id: sensor.hp_color_laserjet_mfp_m277dw
+    from: printing
+    to: idle
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.ilias_borta_kand
+    state: 'on'
+  action:
+  - action: script.skrivare_mobilnotis
+    data:
+      meddelande: Utskriften är klar i HP-skrivaren.
 - alias: 'Mobilnotis: Någon smyger i sovrummet'
   id: '791834035000000680650008674'
   triggers:
