@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Synka zonlistor på alla map-kort i Översikt-dashboarden.
+"""Synka zonlistor på map-kort i Översikt-dashboarden (utom Blixtkartan).
 
 Hämtar alla zone.*-entiteter från Home Assistant och uppdaterar markerade
-block i dashboards/dashboard-september-2025.yaml.
+block i dashboards/dashboard-september-2025.yaml. Kort utan map-zones-markör
+(t.ex. Blixtkartan) påverkas inte.
 
 Kör: python3 scripts/sync-dashboard-map-zones.py --patch
 """
