@@ -4027,6 +4027,8 @@ views:
     title: Blixtkartan
     cards:
     - type: map
+      entities:
+      - zone.home
       geo_location_sources:
       - blitzortung
       default_zoom: 11
