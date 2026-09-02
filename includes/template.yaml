@@ -1474,7 +1474,7 @@
         site_id: 1923
 
 # Översikt — visa Farsta strand-avgångar (närhet, inte ledig, vardagsmorgon)
-- trigger:
+- triggers:
     - trigger: homeassistant
       event: start
     - trigger: state
