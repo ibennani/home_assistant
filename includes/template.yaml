@@ -282,6 +282,7 @@
           'zone.bengt',
           'zone.farsta_centrum',
           'zone.farsta_strand_pendeltagstation',
+          'zone.eksharadsgatans_busshallplats',
           'zone.ellio_i_norge',
           'zone.eina',
           'zone.norge_2',
@@ -354,6 +355,7 @@
           'zone.bengt',
           'zone.farsta_centrum',
           'zone.farsta_strand_pendeltagstation',
+          'zone.eksharadsgatans_busshallplats',
           'zone.ellio_i_norge',
           'zone.eina',
           'zone.norge_2',
@@ -426,6 +428,7 @@
           'zone.bengt',
           'zone.farsta_centrum',
           'zone.farsta_strand_pendeltagstation',
+          'zone.eksharadsgatans_busshallplats',
           'zone.ellio_i_norge',
           'zone.eina',
           'zone.norge_2',
@@ -498,6 +501,7 @@
           'zone.bengt',
           'zone.farsta_centrum',
           'zone.farsta_strand_pendeltagstation',
+          'zone.eksharadsgatans_busshallplats',
           'zone.ellio_i_norge',
           'zone.eina',
           'zone.norge_2',
@@ -772,23 +776,6 @@
         {% set s = states('sensor.ilias_aktiv_zon') %}
         {% set bad = ['unknown', 'unavailable', 'none', ''] %}
         {{ s not in bad and s != 'zone.home' }}
-
-    - name: Visa Farsta strand-avgångar översikt
-      unique_id: visa_farsta_strand_avgangar_oversikt
-      icon: mdi:train
-      state: >
-        {% set _tick = states('sensor.time') %}
-        {% set tracker = 'device_tracker.ilias_s23_ultra' %}
-        {% set zone = 'zone.farsta_strand_pendeltagstation' %}
-        {% set tracker_state = states(tracker) %}
-        {% set near = tracker_state not in ['unknown', 'unavailable', 'none', '']
-           and state_attr(tracker, 'latitude') is not none
-           and distance(tracker, zone) * 1000 <= 1500 %}
-        {% set not_ledig = is_state('input_boolean.vacation_mode', 'off') %}
-        {% set weekday = now().weekday() < 5 %}
-        {% set mins = now().hour * 60 + now().minute %}
-        {% set morning = mins >= 420 and mins < 540 %}
-        {{ near and not_ledig and weekday and morning }}
 
 # END hemma-borta-sensorer (generate-ilias-zone-automation.py)
 
