@@ -36,8 +36,8 @@ frontend:
     - /hacsfiles/custom-sidebar/custom-sidebar-plugin.js?v=16.1.0
     - /local/sl-departure-time.js?v=20260808e
     - /local/sl-departure-list-animation.js?v=20260808e
-    - /local/sl-stop-departures-card.js?v=20260729x
-    - /local/hasl4-departure-card.js?v=20260729l
+    - /local/sl-stop-departures-card.js?v=20260902a
+    - /local/hasl4-departure-card.js?v=20260902a
 group: !include groups.yaml
 history:
 input_boolean: !include input_boolean.yaml

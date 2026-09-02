@@ -1664,6 +1664,10 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         text-overflow: ellipsis;
     }
 
+    .departures {
+        font-size: 130%;
+    }
+
     .departures > :first-child {
         margin-top: 0;
     }
@@ -1750,18 +1754,38 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         margin-top: 8px;
     }
 
-    .departure-block .row.departure {
+    .departure-block .row.departure-line {
         margin-top: 0;
     }
 
-    .row.deviation-row {
-        margin-top: 2px;
+    .row.departure-line {
+        display: flex;
+        align-items: center;
+        gap: 4px;
     }
 
-    .row.deviation-row .deviation-messages {
+    .row.departure-time {
         display: flex;
-        flex-direction: column;
-        gap: 2px;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.35em 0.75em;
+        margin-top: 2px;
+        padding-left: 8px;
+    }
+
+    .departure-block.has-icon.has-line .row.departure-time {
+        padding-left: 80px;
+    }
+
+    .departure-block.has-line:not(.has-icon) .row.departure-time {
+        padding-left: 48px;
+    }
+
+    .row.departure-time .deviation-messages {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.35em 0.75em;
     }
 
     .deviation-item {
@@ -1825,8 +1849,6 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
     }
 
     .mr1 {
-        margin-right: 8px;
-    }
         margin-right: 8px;
     }
 
@@ -2220,12 +2242,6 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
             return (0, $l56HR.html)`
             <div class="departures departures-list">
                 ${isMany ? "" : renderEntityName()}
-                ${this.config.show_header ? (0, $l56HR.html)`
-                    <div class="row header">
-                        ${this.config?.show_icon ? (0, $l56HR.html)`<div class="col icon"></div>` : (0, $l56HR.nothing)}
-                        <div class="col main left">${_("line")}</div>
-                        <div class="col right">${_("departure")}</div>
-                    </div>` : (0, $l56HR.nothing)}
 
                 ${renderList.map((item)=>{
                 const dep = item.dep;
@@ -2262,15 +2278,21 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                     [(0, $829f1babd4ccc0b8$export$6d07abd9f0bba447).TAXI]: "mdi:taxi"
                 }[dep.line.transport_mode] || "mdi:train";
                 const lineIconClass = this.lineIconClass(dep.line.transport_mode, dep.line.designation, dep.line.group_of_lines);
-                // if destinationRegex is set, use it to extract the part of the destination to show
                 const destination = (()=>{
                     if (!destinationRegex) return dep.destination;
                     const { search: search, replace: replace } = destinationRegex;
                     return dep.destination.replace(search, replace);
                 })();
+                const blockClasses = [
+                    "departure-block",
+                    "fade-in",
+                    item.isExiting ? "departure-exiting" : "",
+                    this.config?.show_icon ? "has-icon" : "",
+                    this.config?.hide_line_number ? "" : "has-line"
+                ].filter(Boolean).join(" ");
                 return (0, $l56HR.html)`
-                    <div class="departure-block fade-in${item.isExiting ? " departure-exiting" : ""}" data-departure-key="${item.key}">
-                        <div class="row departure">
+                    <div class="${blockClasses}" data-departure-key="${item.key}">
+                        <div class="row departure-line">
                         ${this.config?.show_icon ? (0, $l56HR.html)`
                             <div class="col icon">
                                 <ha-icon class="transport-icon" icon="${icon}"/>
@@ -2284,20 +2306,15 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                         <div class="col main left">
                             ${destination}
                         </div>
-                        <div class="col right">
+                        </div>
+                        <div class="row departure-time">
                             <span class="leaves-in">${departureTime}</span>
-                        </div>
-                        </div>
-                        ${showDeviationRow ? (0, $l56HR.html)`
-                            <div class="row deviation-row">
-                                ${this.config?.show_icon ? (0, $l56HR.html)`<div class="col icon"></div>` : (0, $l56HR.nothing)}
-                                ${this.config?.hide_line_number ? (0, $l56HR.nothing) : (0, $l56HR.html)`<div class="col icon"></div>`}
-                                <div class="col main left deviation-messages">
+                            ${showDeviationRow ? (0, $l56HR.html)`
+                                <span class="deviation-messages">
                                     ${deviationItems.map((item)=>(0, $l56HR.html)`<span class="deviation-item ${item.className}">${item.text}</span>`)}
-                                </div>
-                                <div class="col right"></div>
-                            </div>
-                        ` : (0, $l56HR.nothing)}
+                                </span>
+                            ` : (0, $l56HR.nothing)}
+                        </div>
                     </div>`;
             })}
             </div>

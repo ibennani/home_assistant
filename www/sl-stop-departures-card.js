@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260729m";
+    return "20260902a";
   }
 
   static getStubConfig() {
@@ -867,21 +867,17 @@ class SlStopDeparturesCard extends HTMLElement {
       return "";
     }
     const self = this;
-    return (
-      '<div class="departure-meta">' +
-      detailItems
-        .map(function (item) {
-          return (
-            '<span class="detail-item ' +
-            item.className +
-            '">' +
-            self._escapeHtml(item.text) +
-            "</span>"
-          );
-        })
-        .join("") +
-      "</div>"
-    );
+    return detailItems
+      .map(function (item) {
+        return (
+          '<span class="detail-item ' +
+          item.className +
+          '">' +
+          self._escapeHtml(item.text) +
+          "</span>"
+        );
+      })
+      .join("");
   }
 
   _animScopeId() {
@@ -916,7 +912,7 @@ class SlStopDeparturesCard extends HTMLElement {
       (extraClass || "") +
       '" data-departure-key="' +
       self._escapeHtml(key) +
-      '"><div class="row departure">' +
+      '"><div class="row departure-line">' +
       '<div class="col icon"><ha-icon class="transport-icon" icon="' +
       icon +
       '"></ha-icon></div>' +
@@ -927,11 +923,11 @@ class SlStopDeparturesCard extends HTMLElement {
       "</span></div>" +
       '<div class="col main left">' +
       self._escapeHtml(dep.destination || "") +
-      '</div><div class="col right"><span class="leaves-in">' +
+      '</div></div><div class="row departure-time"><span class="leaves-in">' +
       departureTime +
-      "</span></div></div>" +
+      "</span>" +
       detailMeta +
-      "</div>"
+      "</div></div>"
     );
   }
 
@@ -1007,7 +1003,7 @@ class SlStopDeparturesCard extends HTMLElement {
 
     return (
       stopInfoBlock +
-      '<div class="departures departures-list"><div class="row header"><div class="col icon"></div><div class="col main left">Linje</div><div class="col right">Avgång</div></div>' +
+      '<div class="departures departures-list">' +
       rows +
       "</div>"
     );
@@ -1077,13 +1073,13 @@ class SlStopDeparturesCard extends HTMLElement {
       ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
       ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
       ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
+      ".departures{font-size:130%}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".departures-empty,.departures-error{padding:8px 16px 12px;color:var(--secondary-text-color)}",
       ".row{margin-top:8px;display:flex;justify-content:space-between}",
       ".col{display:flex;flex-direction:column;justify-content:center;position:relative}",
       ".col.icon{flex-basis:40px}",
-      ".row.header{height:40px;font-size:medium;font-weight:400;opacity:var(--dark-primary-opacity)}",
       ".main{flex:2}",
       ".transport-icon{width:40px;height:40px;display:inline-flex;justify-content:center;align-items:center}",
       ".line-icon{border-radius:3px;padding:3px 3px 0 3px;color:#fff;min-width:22px;height:22px;font-weight:500;display:inline-block;text-align:center;text-shadow:1px 1px 2px var(--outline-color)}",
@@ -1094,17 +1090,17 @@ class SlStopDeparturesCard extends HTMLElement {
       ".metro{background:#0061eb}",
       ".train{background:#ec619f}",
       ".tram{background:#985141}",
-      ".warning-message{color:var(--warning-color);font-size:smaller}",
+      ".warning-message{color:var(--warning-color)}",
       ".departure-block{margin-top:8px;padding:0 8px}",
-      ".departure-block .row.departure{margin-top:0}",
-      ".departure-meta{display:flex;flex-direction:column;gap:2px;padding:2px 0 0 80px;margin-bottom:2px}",
-      ".detail-item{font-size:smaller;line-height:1.35}",
+      ".row.departure-line{display:flex;align-items:center;gap:4px;margin-top:0}",
+      ".row.departure-time{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35em .75em;margin-top:2px;padding-left:80px}",
+      ".detail-item{line-height:1.35}",
       ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
       ".travel-time{color:#4caf50!important;font-weight:600}",
       ".stop-info{margin:0 8px 10px;padding:8px 12px 4px;font-size:smaller;line-height:1.4;color:#fad370!important}",
       ".stop-info-item{color:#fad370!important}",
       ".stop-info-item+.stop-info-item{margin-top:4px}",
-      ".short-train{color:#0abcfc;font-size:smaller;font-weight:600;text-transform:lowercase}",
+      ".short-train{color:#0abcfc;font-weight:600;text-transform:lowercase}",
       ".old-time{text-decoration:line-through;opacity:.65;margin-right:.35em}",
       ".new-time{color:#0abcfc;font-weight:600}",
       ".delay-min{color:#0abcfc;font-weight:600}",
