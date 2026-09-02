@@ -1744,9 +1744,13 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
         right: 0;
     }
 
+    .departures .warning-message,
+    .departures .deviation-item {
+        font-size: inherit;
+    }
+
     .warning-message {
         color: var(--warning-color);
-        font-size: smaller;
         text-decoration: unset;
     }
 
