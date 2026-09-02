@@ -5851,6 +5851,8 @@
                   {{ person }} har lämnat Farsta centrum
                 {%- elif to_slug == 'not_home' and from_slug == 'farsta_strand_pendeltagstation' -%}
                   {{ person }} har lämnat Farsta strand pendeltågstation
+                {%- elif to_slug == 'not_home' and from_slug == 'eksharadsgatans_busshallplats' -%}
+                  {{ person }} har lämnat Ekshäradsgatans busshållplats
                 {%- elif to_slug == 'not_home' and from_slug == 'ellio_i_norge' -%}
                   {{ person }} har lämnat Selma i Norge
                 {%- elif to_slug == 'not_home' and from_slug == 'eina' -%}
@@ -5939,6 +5941,8 @@
                   {{ person }} är i Farsta centrum
                 {%- elif to_slug == 'farsta_strand_pendeltagstation' -%}
                   {{ person }} är på Farsta strand pendeltågstation
+                {%- elif to_slug == 'eksharadsgatans_busshallplats' -%}
+                  {{ person }} är på Ekshäradsgatans busshållplats
                 {%- elif to_slug == 'ellio_i_norge' -%}
                   {{ person }} är hos Selma i Norge
                 {%- elif to_slug == 'eina' -%}

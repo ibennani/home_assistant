@@ -64,6 +64,7 @@ ZONES = [
     ("zone.bengt", "bengt"),
     ("zone.farsta_centrum", "farsta_centrum"),
     ("zone.farsta_strand_pendeltagstation", "farsta_strand_pendeltagstation"),
+    ("zone.eksharadsgatans_busshallplats", "eksharadsgatans_busshallplats"),
     ("zone.ellio_i_norge", "ellio_i_norge"),
     ("zone.eina", "eina"),
     ("zone.norge_2", "norge_2"),
@@ -218,6 +219,10 @@ ZONE_MESSAGES = {
     "farsta_strand_pendeltagstation": {
         "entered": "{{ person }} är på Farsta strand pendeltågstation",
         "left": "{{ person }} har lämnat Farsta strand pendeltågstation",
+    },
+    "eksharadsgatans_busshallplats": {
+        "entered": "{{ person }} är på Ekshäradsgatans busshållplats",
+        "left": "{{ person }} har lämnat Ekshäradsgatans busshållplats",
     },
     "ellio_i_norge": {
         "entered": "{{ person }} är hos Selma i Norge",
