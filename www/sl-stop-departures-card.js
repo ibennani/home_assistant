@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260902a";
+    return "20260902b";
   }
 
   static getStubConfig() {
@@ -880,6 +880,38 @@ class SlStopDeparturesCard extends HTMLElement {
       .join("");
   }
 
+  _renderDepartureDeviations(detailItems) {
+    const self = this;
+    const devItems = detailItems.filter(function (item) {
+      return item.className === "short-train" || item.className === "warning-message";
+    });
+    if (!devItems.length) {
+      return "";
+    }
+    return (
+      '<div class="row departure-deviations">' +
+      devItems
+        .map(function (item) {
+          return (
+            '<span class="detail-item ' +
+            item.className +
+            '">' +
+            self._escapeHtml(item.text) +
+            "</span>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  _renderDepartureMetaRow(detailItems) {
+    const metaItems = detailItems.filter(function (item) {
+      return item.className !== "short-train" && item.className !== "warning-message";
+    });
+    return this._renderDepartureMeta(metaItems);
+  }
+
   _animScopeId() {
     return "stop-" + String((this.config && this.config.site_id) || "main");
   }
@@ -905,7 +937,8 @@ class SlStopDeparturesCard extends HTMLElement {
       line.designation,
       line.group_of_lines,
     );
-    const detailMeta = self._renderDepartureMeta(detailItems);
+    const detailMeta = self._renderDepartureMetaRow(detailItems);
+    const detailDeviations = self._renderDepartureDeviations(detailItems);
 
     return (
       '<div class="departure-block' +
@@ -927,7 +960,9 @@ class SlStopDeparturesCard extends HTMLElement {
       departureTime +
       "</span>" +
       detailMeta +
-      "</div></div>"
+      "</div>" +
+      detailDeviations +
+      "</div>"
     );
   }
 
@@ -1073,7 +1108,7 @@ class SlStopDeparturesCard extends HTMLElement {
       ".mode-filters{display:flex;flex-wrap:wrap;gap:8px}",
       ".mode-filter{border:1px solid var(--divider-color,rgba(255,255,255,.2));background:transparent;color:var(--primary-text-color);border-radius:16px;padding:4px 12px;font-size:.8rem;cursor:pointer}",
       ".mode-filter.active{background:var(--primary-color);border-color:var(--primary-color);color:var(--text-primary-color,#fff)}",
-      ".departures{font-size:130%}",
+      ".departures{font-size:150%}",
       ".status-message{padding:16px;color:var(--secondary-text-color)}",
       ".status-message.error{color:var(--error-color)}",
       ".departures-empty,.departures-error{padding:8px 16px 12px;color:var(--secondary-text-color)}",
@@ -1093,7 +1128,9 @@ class SlStopDeparturesCard extends HTMLElement {
       ".warning-message{color:var(--warning-color)}",
       ".departure-block{margin-top:8px;padding:0 8px}",
       ".row.departure-line{display:flex;align-items:center;gap:4px;margin-top:0}",
-      ".row.departure-time{display:flex;flex-wrap:wrap;align-items:baseline;gap:.35em .75em;margin-top:2px;padding-left:80px}",
+      ".row.departure-time{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:flex-start;text-align:left;gap:.35em .75em;margin-top:2px;padding-left:80px}",
+      ".row.departure-deviations{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;margin-top:2px;padding-left:80px}",
+      ".row.departure-deviations .detail-item{display:block;line-height:1.35}",
       ".detail-item{line-height:1.35}",
       ".stop-point-label,.line-type-label{color:#fad370!important;font-weight:500}",
       ".travel-time{color:#4caf50!important;font-weight:600}",

@@ -10,9 +10,9 @@ resources:
     type: module
   - url: /local/sl-nearby-card.js?v=20260808f
     type: module
-  - url: /local/sl-stop-departures-card.js?v=20260902a
+  - url: /local/sl-stop-departures-card.js?v=20260902b
     type: module
-  - url: /local/hasl4-departure-card.js?v=20260902a
+  - url: /local/hasl4-departure-card.js?v=20260902b
     type: module
 dashboards:
   dashboard-september-2025:
