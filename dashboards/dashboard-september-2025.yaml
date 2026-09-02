@@ -111,21 +111,27 @@ views:
       grid_options:
         columns: 6
         rows: auto
-    - type: custom:hasl4-departure-card-sl
-      title: Farsta strand
-      entity: sensor.farsta_strand_pendeltag_departures
-      show_entity_name: false
-      show_header: false
-      show_icon: true
-      show_departures: true
-      show_time_always: true
-      max_departures: 6
-      direction: 2
-      hide_departed: true
-      show_updated: false
-      language: sv-SE
+    - type: conditional
+      conditions:
+      - condition: state
+        entity: binary_sensor.visa_farsta_strand_avgangar_oversikt
+        state: "on"
       visible:
       - user: 19d971cd430d457e90fe70b83c9d5df1
+      card:
+        type: custom:hasl4-departure-card-sl
+        title: Farsta strand
+        entity: sensor.farsta_strand_pendeltag_departures
+        show_entity_name: false
+        show_header: false
+        show_icon: true
+        show_departures: true
+        show_time_always: true
+        max_departures: 6
+        direction: 2
+        hide_departed: true
+        show_updated: false
+        language: sv-SE
       grid_options:
         columns: full
         rows: auto
