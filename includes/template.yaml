@@ -1505,36 +1505,3 @@
         {% set mins = now().hour * 60 + now().minute %}
         {% set morning = mins >= 420 and mins < 540 %}
         {{ near and not_ledig and weekday and morning }}
-
-# Översikt — visa Farsta strand-avgångar (närhet, inte ledig, vardagsmorgon)
-- trigger:
-    - trigger: homeassistant
-      event: start
-    - trigger: state
-      entity_id:
-        - device_tracker.ilias_s23_ultra
-        - person.ilias_bennani
-        - input_boolean.vacation_mode
-    - trigger: time
-      at: "07:00:00"
-    - trigger: time
-      at: "09:00:00"
-    - trigger: time_pattern
-      hours: "7-8"
-      minutes: "/1"
-  binary_sensor:
-    - name: Visa Farsta strand-avgångar översikt
-      unique_id: visa_farsta_strand_avgangar_oversikt
-      icon: mdi:train
-      state: >
-        {% set tracker = 'device_tracker.ilias_s23_ultra' %}
-        {% set zone = 'zone.farsta_strand_pendeltagstation' %}
-        {% set tracker_state = states(tracker) %}
-        {% set near = tracker_state not in ['unknown', 'unavailable', 'none', '']
-           and state_attr(tracker, 'latitude') is not none
-           and distance(tracker, zone) * 1000 <= 1500 %}
-        {% set not_ledig = is_state('input_boolean.vacation_mode', 'off') %}
-        {% set weekday = now().weekday() < 5 %}
-        {% set mins = now().hour * 60 + now().minute %}
-        {% set morning = mins >= 420 and mins < 540 %}
-        {{ near and not_ledig and weekday and morning }}
