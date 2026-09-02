@@ -1665,7 +1665,7 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
     }
 
     .departures {
-        font-size: 130%;
+        font-size: 150%;
     }
 
     .departures > :first-child {
@@ -1765,32 +1765,35 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
     }
 
     .row.departure-time {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 0.35em 0.75em;
+        display: block;
+        text-align: left;
         margin-top: 2px;
         padding-left: 8px;
     }
 
-    .departure-block.has-icon.has-line .row.departure-time {
+    .departure-block.has-icon.has-line .row.departure-time,
+    .departure-block.has-icon.has-line .row.departure-deviations {
         padding-left: 80px;
     }
 
-    .departure-block.has-line:not(.has-icon) .row.departure-time {
+    .departure-block.has-line:not(.has-icon) .row.departure-time,
+    .departure-block.has-line:not(.has-icon) .row.departure-deviations {
         padding-left: 48px;
     }
 
-    .row.departure-time .deviation-messages {
+    .row.departure-deviations {
         display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        gap: 0.35em 0.75em;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        gap: 2px;
+        margin-top: 2px;
+        padding-left: 8px;
     }
 
-    .deviation-item {
-        font-size: smaller;
-        line-height: 1.3;
+    .row.departure-deviations .deviation-item {
+        display: block;
+        line-height: 1.35;
     }
 
     .stop-info {
@@ -1812,9 +1815,7 @@ const $57faf62096e30446$var$departureEntityStyles = (0, $j8KxL.css)`
 
     .short-train {
         color: #0abcfc;
-        font-size: smaller;
         font-weight: 600;
-        margin-left: 0.35em;
         text-transform: lowercase;
     }
 
@@ -2309,12 +2310,12 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
                         </div>
                         <div class="row departure-time">
                             <span class="leaves-in">${departureTime}</span>
-                            ${showDeviationRow ? (0, $l56HR.html)`
-                                <span class="deviation-messages">
-                                    ${deviationItems.map((item)=>(0, $l56HR.html)`<span class="deviation-item ${item.className}">${item.text}</span>`)}
-                                </span>
-                            ` : (0, $l56HR.nothing)}
                         </div>
+                        ${showDeviationRow ? (0, $l56HR.html)`
+                            <div class="row departure-deviations">
+                                ${deviationItems.map((item)=>(0, $l56HR.html)`<span class="deviation-item ${item.className}">${item.text}</span>`)}
+                            </div>
+                        ` : (0, $l56HR.nothing)}
                     </div>`;
             })}
             </div>
