@@ -52,7 +52,7 @@ resources:
   type: module
 - url: /local/center-clock-card.js?v=20260729j
   type: module
-- url: /local/hasl4-departure-card.js?v=20260902b
+- url: /local/hasl4-departure-card.js?v=20260902c
   type: module
 - url: /local/sl-departure-time.js?v=20260808e
   type: module
