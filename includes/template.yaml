@@ -1491,7 +1491,10 @@
     - trigger: time
       at: "09:00:00"
     - trigger: time_pattern
-      hours: "7-8"
+      hours: "7"
+      minutes: "/1"
+    - trigger: time_pattern
+      hours: "8"
       minutes: "/1"
   binary_sensor:
     - name: Visa Farsta strand-avgångar översikt
