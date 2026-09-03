@@ -127,7 +127,7 @@ views:
         show_icon: true
         show_departures: true
         show_time_always: true
-        max_departures: 6
+        max_departures: 8
         direction: 2
         hide_departed: true
         show_updated: false
@@ -6758,7 +6758,7 @@ views:
         show_icon: true
         show_departures: true
         show_time_always: true
-        max_departures: 6
+        max_departures: 8
         direction: 2
         hide_departed: true
         show_updated: false
