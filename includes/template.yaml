@@ -1357,12 +1357,12 @@
             {{ raw }}
           {% endif %}
 
-# Kollektivtrafik — pendeltåg från Farsta strand (SL Transport API, linje 4x riktning 2)
+# Kollektivtrafik — pendeltåg från Farsta strand (HASL avgångar, SL-avvikelser, linje 4x riktning 2)
 - trigger:
     - trigger: homeassistant
       event: start
     - trigger: state
-      entity_id: sensor.farsta_strand_sl_pendeltag
+      entity_id: sensor.departure_sensor_farsta_strand_station_departures
       attribute: departures
     - trigger: state
       entity_id: sensor.farsta_strand_sl_pendeltag
@@ -1371,7 +1371,7 @@
     - name: Farsta strand pendeltåg departures
       unique_id: farsta_strand_pendeltag_departures
       state: >
-        {% set raw = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') %}
+        {% set raw = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') %}
         {% set prev = this.attributes.departures | default([], true) %}
         {% if raw is none or (raw | length == 0 and prev | length > 0) %}
           {{ this.state | default(0) }}
@@ -1387,7 +1387,7 @@
         {% endif %}
       attributes:
         departures: >
-          {% set raw = state_attr('sensor.farsta_strand_sl_pendeltag', 'departures') %}
+          {% set raw = state_attr('sensor.departure_sensor_farsta_strand_station_departures', 'departures') %}
           {% set prev = this.attributes.departures | default([], true) %}
           {% if raw is none or (raw | length == 0 and prev | length > 0) %}
             {{ prev }}
@@ -1408,7 +1408,7 @@
                 {% set item = {
                   'destination': dest,
                   'direction': d.direction,
-                  'direction_code': d.direction_code,
+                  'direction_code': d.direction_code | int(0),
                   'state': d.state,
                   'display': d.display,
                   'stop_point': d.stop_point,
