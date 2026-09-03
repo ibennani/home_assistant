@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260902b";
+    return "20260903a";
   }
 
   static getStubConfig() {
@@ -54,7 +54,7 @@ class SlStopDeparturesCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     this._ensureBusLineTerminusLabels();
-    this._updateView();
+    // Avgångar hämtas via REST — rita inte om vid varje global hass-uppdatering.
     this._syncRefreshTimer();
   }
 

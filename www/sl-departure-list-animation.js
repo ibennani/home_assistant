@@ -195,10 +195,6 @@
         }
       }, EXIT_MS);
     });
-
-    if (remaining === 0 && typeof onComplete === "function") {
-      onComplete();
-    }
   };
 
   Manager.prototype.isAnimating = function (scopeId) {
