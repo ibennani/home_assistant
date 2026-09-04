@@ -73,6 +73,7 @@ utility_meter: !include includes/utility_meter.yaml
 intent_script: !include includes/intent_script.yaml
 template: !include includes/template.yaml
 rest_command: !include includes/rest_command.yaml
+zone: !include includes/zone.yaml
 
 #######################################################
 # Spara bara x antal dagar i databasen (så den inte blir gigantisk)
