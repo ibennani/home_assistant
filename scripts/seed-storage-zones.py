@@ -70,6 +70,14 @@ ZONES = [
         "radius": 420,
         "icon": "mdi:home",
     },
+    {
+        "name": "Albins jobb",
+        "previous_names": ["Albins mamma"],
+        "latitude": 59.3606569,
+        "longitude": 17.9743128,
+        "radius": 100,
+        "icon": "mdi:briefcase",
+    },
 ]
 
 
@@ -126,6 +134,20 @@ def upsert_zone(ha_url: str, ha_token: str, zone: dict, existing_by_name: dict[s
             {"id": zone_id, **zone},
         )
         return f"uppdaterad: {name} ({zone_id})"
+
+    # Flyttad/omdöpt zon (t.ex. Albins mamma → Albins jobb)
+    for previous_name in zone.get("previous_names", []):
+        if previous_name in existing_by_name:
+            zone_id = existing_by_name[previous_name]["id"]
+            payload = {k: v for k, v in zone.items() if k != "previous_names"}
+            ha_request(
+                ha_url,
+                ha_token,
+                "POST",
+                "/api/config/zone_registry/update",
+                {"id": zone_id, **payload},
+            )
+            return f"omdöpt/uppdaterad: {previous_name} → {name} ({zone_id})"
 
     created = ha_request(
         ha_url,
