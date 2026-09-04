@@ -1946,34 +1946,6 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
             ...config
         };
     }
-    shouldUpdate(changedProperties) {
-        if (changedProperties.has("config")) {
-            return true;
-        }
-        if (changedProperties.size === 0) {
-            return true;
-        }
-        if (!changedProperties.has("hass")) {
-            return false;
-        }
-        const oldHass = changedProperties.get("hass");
-        if (!oldHass || !this.hass) {
-            return true;
-        }
-        const entityIds = this.config?.entities?.length ? this.config.entities : this.config?.entity ? [
-            this.config.entity
-        ] : [];
-        for(let i = 0; i < entityIds.length; i++){
-            const entityId = entityIds[i];
-            if (!entityId) {
-                continue;
-            }
-            if (oldHass.states[entityId] !== this.hass.states[entityId]) {
-                return true;
-            }
-        }
-        return false;
-    }
     getCardSize() {
         const singleEntitityExtras = (this.isManyEntitiesSet() ? ()=>0 : ()=>{
             const [_, attrs] = this.getFirstEntity();
@@ -2177,10 +2149,9 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
         super.updated(changedProperties);
         const list = this.renderRoot?.querySelector(".departures-list");
         const anim = window.SlDepartureListAnim;
-        const scopeId = this._getAnimScopeId();
-        if (list && anim && anim.manager.hasPendingExit(scopeId)) {
+        if (list && anim) {
             const self = this;
-            anim.manager.afterRender(scopeId, list, function () {
+            anim.manager.afterRender(this._getAnimScopeId(), list, function () {
                 self.requestUpdate();
             });
         }
