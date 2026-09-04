@@ -101,8 +101,8 @@ ZONE_MESSAGES = {
         "left": "{{ person }} har lämnat Youssef och Emma",
     },
     "albins_mamma": {
-        "entered": "{{ person }} är hos Albins mamma",
-        "left": "{{ person }} har åkt ifrån Albins mamma",
+        "entered": "{{ person }} {% if person == 'Albin' %}är på jobbet {% else %}är på Albins jobb{% endif %}",
+        "left": "{{ person }} {% if person == 'Albin' %}har lämnat jobbet {% else %}har lämnat Albins jobb{% endif %}",
     },
     "isabelles_jobb": {
         "entered": "{{ person }} {% if person == 'Isabelle' %}är på jobbet {% else %}är på Isabelles jobb{% endif %}",
