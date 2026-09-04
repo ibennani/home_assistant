@@ -71,8 +71,14 @@ ZONES = [
         "icon": "mdi:home",
     },
     {
+        "name": "Albins mamma",
+        "latitude": 59.26659341390379,
+        "longitude": 17.95103788375855,
+        "radius": 130,
+        "icon": "mdi:home",
+    },
+    {
         "name": "Albins jobb",
-        "previous_names": ["Albins mamma"],
         "latitude": 59.3606569,
         "longitude": 17.9743128,
         "radius": 100,

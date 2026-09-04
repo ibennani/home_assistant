@@ -5792,6 +5792,8 @@
                 {%- elif to_slug == 'not_home' and from_slug == 'kth_flemmingsberg' -%}
                   {{ person }} har lämnat Youssef och Emma
                 {%- elif to_slug == 'not_home' and from_slug == 'albins_mamma' -%}
+                  {{ person }} har åkt ifrån Albins mamma
+                {%- elif to_slug == 'not_home' and from_slug == 'albins_jobb' -%}
                   {{ person }} {% if person == 'Albin' %}har lämnat jobbet {% else %}har lämnat Albins jobb{% endif %}
                 {%- elif to_slug == 'not_home' and from_slug == 'isabelles_jobb' -%}
                   {{ person }} {% if person == 'Isabelle' %}har lämnat jobbet {% else %}har lämnat Isabelles jobb{% endif %}
@@ -5882,6 +5884,8 @@
                 {%- elif to_slug == 'kth_flemmingsberg' -%}
                   {{ person }} är på Youssef och Emma
                 {%- elif to_slug == 'albins_mamma' -%}
+                  {{ person }} är hos Albins mamma
+                {%- elif to_slug == 'albins_jobb' -%}
                   {{ person }} {% if person == 'Albin' %}är på jobbet {% else %}är på Albins jobb{% endif %}
                 {%- elif to_slug == 'isabelles_jobb' -%}
                   {{ person }} {% if person == 'Isabelle' %}är på jobbet {% else %}är på Isabelles jobb{% endif %}
