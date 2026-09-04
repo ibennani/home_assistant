@@ -12,7 +12,7 @@ resources:
     type: module
   - url: /local/sl-stop-departures-card.js?v=20260904b
     type: module
-  - url: /local/hasl4-departure-card.js?v=20260904b
+  - url: /local/hasl4-departure-card.js?v=20260904c
     type: module
 dashboards:
   dashboard-september-2025:

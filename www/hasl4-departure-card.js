@@ -1946,6 +1946,42 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
             ...config
         };
     }
+    shouldUpdate(changedProperties) {
+        if (changedProperties.has("config")) {
+            return true;
+        }
+        if (!changedProperties.has("hass")) {
+            return changedProperties.size === 0;
+        }
+        const oldHass = changedProperties.get("hass");
+        if (!oldHass || !this.hass) {
+            return true;
+        }
+        const entityIds = this.config?.entities?.length ? this.config.entities : this.config?.entity ? [
+            this.config.entity
+        ] : [];
+        for(let i = 0; i < entityIds.length; i++){
+            const entityId = entityIds[i];
+            if (!entityId) {
+                continue;
+            }
+            const oldState = oldHass.states[entityId];
+            const newState = this.hass.states[entityId];
+            if (!oldState && !newState) {
+                continue;
+            }
+            if (!oldState || !newState) {
+                return true;
+            }
+            if (oldState.state !== newState.state) {
+                return true;
+            }
+            if (oldState.last_updated !== newState.last_updated) {
+                return true;
+            }
+        }
+        return false;
+    }
     getCardSize() {
         const singleEntitityExtras = (this.isManyEntitiesSet() ? ()=>0 : ()=>{
             const [_, attrs] = this.getFirstEntity();
