@@ -195,10 +195,20 @@
         }
       }, EXIT_MS);
     });
+  };
 
-    if (remaining === 0 && typeof onComplete === "function") {
-      onComplete();
+  Manager.prototype.hasPendingExit = function (scopeId) {
+    var scope = this._scopes.get(scopeId);
+    if (!scope) {
+      return false;
     }
+    var pending = false;
+    scope.exiting.forEach(function (entry) {
+      if (entry.phase === "pending-exit") {
+        pending = true;
+      }
+    });
+    return pending;
   };
 
   Manager.prototype.isAnimating = function (scopeId) {

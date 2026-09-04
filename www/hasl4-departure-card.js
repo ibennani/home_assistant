@@ -2149,9 +2149,10 @@ class $66d5822390d71e6e$export$7ded24e6705f9c64 extends (0, $eGUNk.LitElement) {
         super.updated(changedProperties);
         const list = this.renderRoot?.querySelector(".departures-list");
         const anim = window.SlDepartureListAnim;
-        if (list && anim) {
+        const scopeId = this._getAnimScopeId();
+        if (list && anim && anim.manager.hasPendingExit(scopeId)) {
             const self = this;
-            anim.manager.afterRender(this._getAnimScopeId(), list, function () {
+            anim.manager.afterRender(scopeId, list, function () {
                 self.requestUpdate();
             });
         }
