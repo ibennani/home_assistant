@@ -46,6 +46,7 @@
     if (!this._scopes.has(scopeId)) {
       this._scopes.set(scopeId, {
         exiting: new Map(),
+        completedExits: new Set(),
         lastVisibleKeys: null,
         lastDepsByKey: new Map(),
         timers: [],
@@ -70,6 +71,7 @@
     }
     scope.timers = [];
     scope.exiting.clear();
+    scope.completedExits = new Set();
     scope.lastVisibleKeys = null;
     scope.lastDepsByKey.clear();
   };
@@ -112,11 +114,17 @@
       }
       activeKeySet.add(key);
       activeItems.push({ dep: dep, key: key, isExiting: false });
+      if (scope.completedExits) {
+        scope.completedExits.delete(key);
+      }
     }
 
     if (scope.lastVisibleKeys) {
       scope.lastVisibleKeys.forEach(function (prevKey) {
         if (activeKeySet.has(prevKey) || scope.exiting.has(prevKey)) {
+          return;
+        }
+        if (scope.completedExits && scope.completedExits.has(prevKey)) {
           return;
         }
         var dep = allMap.get(prevKey) || scope.lastDepsByKey.get(prevKey);
@@ -189,6 +197,10 @@
       });
       self._schedule(scope, function () {
         scope.exiting.delete(key);
+        if (!scope.completedExits) {
+          scope.completedExits = new Set();
+        }
+        scope.completedExits.add(key);
         remaining--;
         if (remaining === 0 && typeof onComplete === "function") {
           onComplete();

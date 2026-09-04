@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260808f";
+    return "20260904d";
   }
 
   static getStubConfig() {
@@ -17,7 +17,7 @@ class SlNearbyCard extends HTMLElement {
       language: "sv-SE",
       refresh_seconds: 15,
       location_refresh_seconds: 15,
-      sites_cache_version: "20260808f",
+      sites_cache_version: "20260904d",
     };
   }
 
@@ -66,7 +66,11 @@ class SlNearbyCard extends HTMLElement {
       this._visibleStopCount = Number(this.config && this.config.max_stops) || 20;
     }
     this._ensureBusLineTerminusLabels();
-    this._updateView();
+    if (prevLocationKey !== undefined && prevLocationKey !== nextLocationKey) {
+      this._updateView();
+    } else {
+      this._updateGpsStatusDisplay();
+    }
     this._syncRefreshTimer();
     this._syncLocationRefreshTimer();
   }
@@ -210,7 +214,8 @@ class SlNearbyCard extends HTMLElement {
       clearInterval(this._departureClockTimer);
       this._departureClockTimer = undefined;
     }
-    if (!this._openSiteId) {
+    const activeSiteId = this._modalDeparturesSiteId || this._openSiteId;
+    if (!activeSiteId) {
       return;
     }
     const clock = this._ensureDepartureClock();
@@ -1342,21 +1347,31 @@ class SlNearbyCard extends HTMLElement {
   }
 
   _updateDeparturePanel(siteId) {
-    const panel = this.querySelector('.stop-accordion[data-site-id="' + siteId + '"] .stop-body');
-    if (!panel) {
-      return;
-    }
     const scopeId = String(siteId);
-    const anim = window.SlDepartureListAnim;
-    if (anim && anim.manager.isAnimating(scopeId)) {
-      this._pendingDeparturePanelSiteId = siteId;
+    if (this._departurePanelUpdateSiteId === scopeId) {
       return;
     }
-    this._pendingDeparturePanelSiteId = null;
-    panel.innerHTML = this._renderDepartures(siteId);
-    this._runDepartureListAnimation(siteId, panel);
-    if (this._departureClock) {
-      this._departureClock.reschedule();
+    this._departurePanelUpdateSiteId = scopeId;
+    try {
+      const panel = this.querySelector('.stop-accordion[data-site-id="' + siteId + '"] .stop-body');
+      if (!panel) {
+        return;
+      }
+      const anim = window.SlDepartureListAnim;
+      if (anim && anim.manager.isAnimating(scopeId)) {
+        this._pendingDeparturePanelSiteId = siteId;
+        return;
+      }
+      this._pendingDeparturePanelSiteId = null;
+      panel.innerHTML = this._renderDepartures(siteId);
+      this._runDepartureListAnimation(siteId, panel);
+      if (this._departureClock) {
+        this._departureClock.reschedule();
+      }
+    } finally {
+      if (this._departurePanelUpdateSiteId === scopeId) {
+        this._departurePanelUpdateSiteId = null;
+      }
     }
   }
 
@@ -2127,6 +2142,10 @@ class SlNearbyCard extends HTMLElement {
         cache.stop_deviations || [],
       ),
     );
+    const modalWrap = this.querySelector(".modal-departures-wrap");
+    if (modalWrap) {
+      this._runDepartureListAnimation(ctx.siteId, modalWrap);
+    }
     if (this._departureClock) {
       this._departureClock.reschedule();
     }
@@ -2406,6 +2425,9 @@ class SlNearbyCard extends HTMLElement {
       return;
     }
     this._openSiteId = siteId;
+    if (window.SlDepartureListAnim) {
+      window.SlDepartureListAnim.manager.resetScope(String(siteId));
+    }
     this._syncRefreshTimer();
     this._syncDepartureClock();
     this._loadDepartures(siteId, true);
@@ -2576,9 +2598,6 @@ class SlNearbyCard extends HTMLElement {
         root.insertAdjacentHTML("beforeend", this._renderShowMoreButton(allStops));
       } else if (!shouldShowMore && showMoreBtn) {
         showMoreBtn.remove();
-      }
-      if (this._openSiteId) {
-        this._updateDeparturePanel(this._openSiteId);
       }
       return;
     }
