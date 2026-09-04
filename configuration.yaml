@@ -67,7 +67,6 @@ light: !include includes/light.yaml
 media_player: !include includes/media_player.yaml
 notify: !include includes/notify.yaml
 tts: !include includes/tts.yaml
-zone: !include includes/zone.yaml
 timer: !include includes/timer.yaml
 var: !include includes/var.yaml
 utility_meter: !include includes/utility_meter.yaml
