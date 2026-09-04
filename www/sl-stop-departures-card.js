@@ -1,6 +1,6 @@
 class SlStopDeparturesCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260904a";
+    return "20260902b";
   }
 
   static getStubConfig() {
@@ -54,7 +54,7 @@ class SlStopDeparturesCard extends HTMLElement {
   set hass(hass) {
     this._hass = hass;
     this._ensureBusLineTerminusLabels();
-    // Avgångar hämtas via REST — rita inte om vid varje global hass-uppdatering.
+    this._updateView();
     this._syncRefreshTimer();
   }
 
@@ -999,17 +999,13 @@ class SlStopDeparturesCard extends HTMLElement {
     if (!anim || !root) {
       return;
     }
-    const scopeId = this._animScopeId();
-    if (!anim.manager.hasPendingExit(scopeId)) {
-      return;
-    }
     const listEl = root.querySelector(".departures-list");
     if (!listEl) {
       return;
     }
     const self = this;
-    anim.manager.afterRender(scopeId, listEl, function () {
-      self._updateView({ clockOnly: true });
+    anim.manager.afterRender(self._animScopeId(), listEl, function () {
+      self._updateView();
     });
   }
 
