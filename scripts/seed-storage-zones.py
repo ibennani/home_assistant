@@ -18,7 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# Tidigare includes/zone.yaml — behålls som källa vid migration/återställning.
+# Zondefinitioner som tidigare låg i includes/zone.yaml.
+# Används av scripts/seed-storage-zones.py vid migration till storage.
 ZONES = [
     {
         "name": "Home",
