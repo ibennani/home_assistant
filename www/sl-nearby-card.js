@@ -1,6 +1,6 @@
 class SlNearbyCard extends HTMLElement {
   static get CARD_VERSION() {
-    return "20260808f";
+    return "20260904a";
   }
 
   static getStubConfig() {
@@ -66,7 +66,9 @@ class SlNearbyCard extends HTMLElement {
       this._visibleStopCount = Number(this.config && this.config.max_stops) || 20;
     }
     this._ensureBusLineTerminusLabels();
-    this._updateView();
+    if (prevLocationKey !== undefined && prevLocationKey !== nextLocationKey) {
+      this._updateView();
+    }
     this._syncRefreshTimer();
     this._syncLocationRefreshTimer();
   }
@@ -1275,12 +1277,16 @@ class SlNearbyCard extends HTMLElement {
     if (!anim || !panel) {
       return;
     }
+    const scopeId = String(siteId);
+    if (!anim.manager.hasPendingExit(scopeId)) {
+      return;
+    }
     const listEl = panel.querySelector(".departures-list");
     if (!listEl) {
       return;
     }
     const self = this;
-    anim.manager.afterRender(String(siteId), listEl, function () {
+    anim.manager.afterRender(scopeId, listEl, function () {
       self._updateDeparturePanel(siteId);
     });
   }

@@ -35,9 +35,10 @@ frontend:
   extra_module_url:
     - /hacsfiles/custom-sidebar/custom-sidebar-plugin.js?v=16.1.0
     - /local/sl-departure-time.js?v=20260808e
-    - /local/sl-departure-list-animation.js?v=20260903a
-    - /local/sl-stop-departures-card.js?v=20260903a
-    - /local/hasl4-departure-card.js?v=20260902c
+    - /local/sl-departure-list-animation.js?v=20260904a
+    - /local/sl-stop-departures-card.js?v=20260904a
+    - /local/hasl4-departure-card.js?v=20260904a
+    - /local/hasl4-departure-card.js?v=20260904a
 group: !include groups.yaml
 history:
 input_boolean: !include input_boolean.yaml
