@@ -20,9 +20,9 @@
 
 # Personzoner (radie = stationär GPS i zonen, utan ankomst/transit)
 - name: Justus
-  latitude: 59.233031
-  longitude: 18.069983
-  radius: 130
+  latitude: 59.23149
+  longitude: 18.073242
+  radius: 20
   icon: mdi:human
 
 - name: Rödkinda 19
