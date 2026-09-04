@@ -24,8 +24,8 @@ DASHBOARD_FILE = ROOT / "dashboards" / "dashboard-september-2025.yaml"
 MAP_ZONES_BEGIN = "# BEGIN map-zones (scripts/sync-dashboard-map-zones.py)"
 MAP_ZONES_END = "# END map-zones"
 
-# UI-dubbletter som inte ska med på kartorna
-EXCLUDE_ZONES = frozenset({"zone.justus_2", "zone.rodkinda_19_2"})
+# UI-dubbletter som inte ska med på kartorna (historiska _2-kopior)
+EXCLUDE_ZONES = frozenset({"zone.rodkinda_19_2"})
 
 
 def load_ha_env() -> tuple[str, str]:
