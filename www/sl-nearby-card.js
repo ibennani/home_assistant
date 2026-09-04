@@ -1275,12 +1275,16 @@ class SlNearbyCard extends HTMLElement {
     if (!anim || !panel) {
       return;
     }
+    const scopeId = String(siteId);
+    if (!anim.manager.hasPendingExit(scopeId)) {
+      return;
+    }
     const listEl = panel.querySelector(".departures-list");
     if (!listEl) {
       return;
     }
     const self = this;
-    anim.manager.afterRender(String(siteId), listEl, function () {
+    anim.manager.afterRender(scopeId, listEl, function () {
       self._updateDeparturePanel(siteId);
     });
   }
