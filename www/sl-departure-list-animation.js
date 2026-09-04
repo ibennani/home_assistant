@@ -199,7 +199,30 @@
 
   Manager.prototype.isAnimating = function (scopeId) {
     var scope = this._scopes.get(scopeId);
-    return !!(scope && scope.exiting.size > 0);
+    if (!scope) {
+      return false;
+    }
+    var animating = false;
+    scope.exiting.forEach(function (entry) {
+      if (entry.phase === "exit") {
+        animating = true;
+      }
+    });
+    return animating;
+  };
+
+  Manager.prototype.hasPendingExit = function (scopeId) {
+    var scope = this._scopes.get(scopeId);
+    if (!scope) {
+      return false;
+    }
+    var pending = false;
+    scope.exiting.forEach(function (entry) {
+      if (entry.phase === "pending-exit") {
+        pending = true;
+      }
+    });
+    return pending;
   };
 
   function cssEscape(value) {
