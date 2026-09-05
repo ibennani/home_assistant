@@ -4830,6 +4830,41 @@
   - choose:
     - conditions:
       - condition: template
+        value_template: "{% set mp = states('media_player.hogtalarna_i_koket') %}\n{% set
+          active = mp in ['playing', 'paused', 'buffering', 'on'] %}\n{% set content
+          = state_attr('media_player.hogtalarna_i_koket_mass', 'media_content_id')
+          | default('', true) | string %}\n{% set mass_active = states('media_player.hogtalarna_i_koket_mass')
+          in ['playing', 'paused', 'buffering'] %}\n{% set cast_app = state_attr('media_player.hogtalarna_i_koket',
+          'app_name') | default('', true) | string | lower %}\n{% set streaming_apps
+          = ['spotify', 'plex', 'youtube', 'youtube music', 'tunein', 'deezer', 'podcasts',
+          'storytel', 'audible'] %}\n{% set is_ma_radio = content.startswith('library://radio/')
+          and mass_active %}\n{% set is_streaming_app = cast_app in streaming_apps
+          or (mass_active and not is_ma_radio) %}\n{{ active and is_streaming_app
+          }}\n"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.event | int(default=0) == 5002
+              }}'
+          sequence:
+          - action: media_player.media_next_track
+            target:
+              entity_id: "{% if states('media_player.hogtalarna_i_koket_mass') in ['playing',
+                'paused', 'buffering'] %}\n  media_player.hogtalarna_i_koket_mass\n{%
+                else %}\n  media_player.hogtalarna_i_koket\n{% endif %}\n"
+        - conditions:
+          - condition: template
+            value_template: '{{ trigger.event.data.event | int(default=0) == 4002
+              }}'
+          sequence:
+          - action: media_player.media_previous_track
+            target:
+              entity_id: "{% if states('media_player.hogtalarna_i_koket_mass') in ['playing',
+                'paused', 'buffering'] %}\n  media_player.hogtalarna_i_koket_mass\n{%
+                else %}\n  media_player.hogtalarna_i_koket\n{% endif %}\n"
+    - conditions:
+      - condition: template
         value_template: '{{ not is_state(''input_select.play_radiostation'', ''Tyst'')
           }}'
       sequence:
