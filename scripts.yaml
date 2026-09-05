@@ -3077,7 +3077,7 @@ badrum_satt_besokare:
             - Erik
             - Ilias
     metod:
-      description: Hur personen identifierades (t.ex. NFC eller släck takspottar)
+      description: Hur personen identifierades (t.ex. NFC eller identifierad via belysning)
       required: true
       selector:
         text:
