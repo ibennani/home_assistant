@@ -10665,7 +10665,8 @@
   id: nfc_badrum_blipp
   description: >-
     Sätter badrummet_vem via NFC-blipp (Anna/Erik/Ilias) eller när Erik släcker takspotten
-    och bara LED-lampor är kvar. Senaste identifieringen gäller alltid.
+    (on→off) med LED-lampor tända och rörelse. Kräver Erik hemma och att ingen redan är
+    identifierad. Senaste identifieringen gäller alltid.
   mode: single
   triggers:
     - trigger: state
@@ -10677,18 +10678,46 @@
       not_to:
       - unavailable
       - unknown
-    - trigger: template
+    - trigger: state
       id: erik_belysning
-      value_template: >-
-        {{ is_state('light.takspottar_badrummet', 'off')
-        and is_state('light.takspott_duschen', 'off')
-        and is_state('light.led_badrummet_handfatet', 'on')
-        and is_state('light.led_badrummet_kommoden', 'on')
-        and is_state('binary_sensor.badrummet_rorelse', 'on')
-        and not is_state('input_select.house_time_modes', 'Natt')
-        and is_state('input_boolean.stadning_pagar', 'off') }}
-      for:
-        seconds: 20
+      entity_id: light.takspottar_badrummet
+      from: 'on'
+      to: 'off'
+      not_from:
+      - unavailable
+      - unknown
+  conditions:
+    - condition: or
+      conditions:
+        - condition: trigger
+          id: nfc
+        - condition: and
+          conditions:
+            - condition: trigger
+              id: erik_belysning
+            - condition: state
+              entity_id: input_select.badrummet_vem
+              state: Någon
+            - condition: state
+              entity_id: binary_sensor.erik_hemma
+              state: 'on'
+            - condition: state
+              entity_id: light.takspott_duschen
+              state: 'off'
+            - condition: state
+              entity_id: light.led_badrummet_handfatet
+              state: 'on'
+            - condition: state
+              entity_id: light.led_badrummet_kommoden
+              state: 'on'
+            - condition: state
+              entity_id: binary_sensor.badrummet_rorelse
+              state: 'on'
+            - condition: template
+              value_template: "{{ not is_state('input_select.house_time_modes', 'Natt') }}"
+            - condition: state
+              entity_id: input_boolean.stadning_pagar
+              state: 'off'
   variables:
     device_map:
       "929526afaef9a2acb0e5becc290d7c34": Anna
@@ -10699,7 +10728,7 @@
       {% else %}{{ device_map.get(trigger.to_state.attributes.last_scanned_by_device_id, 'Okänd') }}
       {% endif %}
     metod: >-
-      {% if trigger.id == 'erik_belysning' %}släck takspottar{% else %}NFC{% endif %}
+      {% if trigger.id == 'erik_belysning' %}identifierad via belysning{% else %}NFC{% endif %}
   actions:
     - choose:
       - conditions:
