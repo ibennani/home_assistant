@@ -4853,7 +4853,11 @@
     - conditions:
       - condition: state
         entity_id: media_player.hogtalarna_i_koket
-        state: 'on'
+        state:
+        - playing
+        - paused
+        - on
+        - buffering
       sequence:
       - choose:
         - conditions:
@@ -4863,7 +4867,9 @@
           sequence:
           - action: media_player.media_next_track
             target:
-              entity_id: media_player.hogtalarna_i_koket
+              entity_id: "{% if states('media_player.hogtalarna_i_koket_mass') in ['playing',
+                'paused', 'buffering'] %}\n  media_player.hogtalarna_i_koket_mass\n{%
+                else %}\n  media_player.hogtalarna_i_koket\n{% endif %}\n"
         - conditions:
           - condition: template
             value_template: '{{ trigger.event.data.event | int(default=0) == 4002
@@ -4871,7 +4877,9 @@
           sequence:
           - action: media_player.media_previous_track
             target:
-              entity_id: media_player.hogtalarna_i_koket
+              entity_id: "{% if states('media_player.hogtalarna_i_koket_mass') in ['playing',
+                'paused', 'buffering'] %}\n  media_player.hogtalarna_i_koket_mass\n{%
+                else %}\n  media_player.hogtalarna_i_koket\n{% endif %}\n"
   - choose:
     - conditions:
       - condition: template
