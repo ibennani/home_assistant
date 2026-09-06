@@ -2133,14 +2133,14 @@ media_lyssna_pa_radio:
         P4 Stockholm\n  {% endif %}\n{% endif %}\n"
 media_koksradio_tyst_start:
   alias: 'Media: Kökradio med tyst start'
-  description: Väcker kökschromecast, castar till hogtalarna_i_koket_mass och sätter volym på enheten från noll.
+  description: Castar SR till hogtalarna_i_koket_mass. Varmt kanalbyte behåller volym; kallstart sätter volym från noll till slutvolym.
   mode: restart
   fields:
     station:
       description: Stationsnamn (som i input_select.play_radiostation). Använder aktuellt val om utelämnat.
       example: Sveriges Radio P1
     volym:
-      description: Slutvolym (0.0–1.0) på kökschromecast efter tyst start.
+      description: Slutvolym (0.0–1.0) på kökschromecast efter kallstart (tyst start).
       example: 0.09
   sequence:
   - variables:
@@ -2149,6 +2149,30 @@ media_koksradio_tyst_start:
       selected_station: "{% if station is defined and station %}{{ station }}{% else %}{{ states('input_select.play_radiostation') }}{% endif %}"
       station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n  \"Sveriges Radio P2\": \"library://radio/10\",\n  \"Sveriges Radio P3\": \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n  \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio Ekot Direkt\": \"library://radio/14\"\n} %}\n{{ streams.get(selected_station) }}"
       slutvolym: '{{ volym | default(0.09) | float }}'
+      is_hot_swap: "{% set cc_state = states(chromecast_entity) %}\n{% set mass_state = states(group_entity) %}\n{% set mass_content = state_attr(group_entity, 'media_content_id') | default('', true) | string %}\n{% set cc_content = state_attr(chromecast_entity, 'media_content_id') | default('', true) | string %}\n{{ cc_state not in ['off', 'unavailable', 'unknown']\n   and mass_state in ['playing', 'paused', 'buffering']\n   and (mass_content.startswith('library://radio/') or cc_content.startswith('library://radio/')) }}\n"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ is_hot_swap and station_url is not none and station_url != '''' }}'
+      sequence:
+      - action: media_player.play_media
+        target:
+          entity_id: '{{ group_entity }}'
+        data:
+          media_content_id: '{{ station_url }}'
+          media_content_type: music
+          metadata: {}
+      - wait_for_trigger:
+        - trigger: template
+          value_template: "{% set content = state_attr(group_entity, 'media_content_id') | default('', true) %}\n{{ content == station_url\n   and (is_state(group_entity, 'playing') or is_state(group_entity, 'buffering')) }}\n"
+        timeout:
+          seconds: 15
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{% set content = state_attr(group_entity, 'media_content_id') | default('', true) %}\n{{ content == station_url\n   and (is_state(group_entity, 'playing') or is_state(group_entity, 'buffering')) }}\n"
+          sequence:
+          - stop: Varmt kanalbyte — volym oförändrad
   - action: media_player.media_stop
     continue_on_error: true
     target:
