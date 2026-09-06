@@ -5669,6 +5669,7 @@
                 lage: Mysigt
 - alias: 'Belysning: Styr belysningen i garderoben i Eriks rum'
   id: dfgjsg1f8h1k81il8ö8br8yj018hf5
+  initial_state: false
   mode: restart
   triggers:
   - trigger: template
