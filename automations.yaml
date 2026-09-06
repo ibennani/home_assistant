@@ -4808,7 +4808,7 @@
         data:
           variables:
             speaker_option: Högtalarna i köket
-            volym: 0.1
+            volym: 0.09
     - conditions:
       - condition: template
         value_template: "{{ trigger.event.data.event | int(default=0) == 1002\n   and

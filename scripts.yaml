@@ -2141,14 +2141,14 @@ media_koksradio_tyst_start:
       example: Sveriges Radio P1
     volym:
       description: Slutvolym (0.0–1.0) på kökschromecast efter tyst start.
-      example: 0.15
+      example: 0.09
   sequence:
   - variables:
       group_entity: media_player.hogtalarna_i_koket_mass
       chromecast_entity: media_player.hogtalarna_i_koket
       selected_station: "{% if station is defined and station %}{{ station }}{% else %}{{ states('input_select.play_radiostation') }}{% endif %}"
       station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n  \"Sveriges Radio P2\": \"library://radio/10\",\n  \"Sveriges Radio P3\": \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n  \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio Ekot Direkt\": \"library://radio/14\"\n} %}\n{{ streams.get(selected_station) }}"
-      slutvolym: '{{ volym | default(0.15) | float }}'
+      slutvolym: '{{ volym | default(0.09) | float }}'
   - action: media_player.media_stop
     continue_on_error: true
     target:
