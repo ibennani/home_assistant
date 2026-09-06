@@ -1473,7 +1473,7 @@ skapa_dagens_vaderprognos:
   sequence:
   - action: input_text.set_value
     target:
-      entity_id: input_text.aktuellt_vader_begriplig
+      entity_id: input_text.dagens_vader_begriplig
     data:
       value: '***'
   - variables:
