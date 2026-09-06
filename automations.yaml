@@ -5499,6 +5499,9 @@
 - alias: 'Belysning: Synka läge i Eriks rum vid väggbrytare'
   id: eriks_rum_vaggbrytare_tant_20260726
   mode: queued
+  description: 'Väggknappar: tänd tak → Tänt (ej natt, force). Båda släckta → återställ sparat
+    läge (natt: Släckt). Dubbeltryck → 100 % på aktuell lampa. Debounce 800 ms mot snabba
+    tryck.'
   triggers:
   - trigger: event
     event_type: zwave_js_value_notification
@@ -5557,64 +5560,13 @@
       value: KeyPressed2x
     id: sang_s2_dubbel
   actions:
-  - variables:
-      lampa: "{% if trigger.id.startswith('fonster') %}\n  light.taklampan_eriks_fonster_level\n{%
-        else %}\n  light.taklampan_eriks_sang_level\n{% endif %}\n"
-      bada_tak_slackta: '{{ is_state(''light.taklampan_eriks_fonster_level'', ''off'')
-        and is_state(''light.taklampan_eriks_sang_level'', ''off'') }}'
-      ovrig_alla_slackta: '{{ not (
-        is_state(''light.eriks_myslampa'', ''on'')
-        or is_state(''light.eriks_jordglob'', ''on'')
-        or is_state(''light.led_strip_ovanfor_fotoljen'', ''on'')
-        or is_state(''light.led_under_eriks_byra'', ''on'')
-        ) }}'
-      nuvarande_lage: '{{ states(''input_select.eriks_rum_belysning'') }}'
-  - delay: '00:00:00.300'
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ is_state(lampa, ''on'') }}'
-      - condition: template
-        value_template: '{{ nuvarande_lage != ''Tänt'' }}'
-      sequence:
-      - action: script.turn_on
-        target:
-          entity_id: script.eriks_rum_satt_lage_ui
-        data:
-          variables:
-            lage: Tänt
-    - conditions:
-      - condition: template
-        value_template: '{{ bada_tak_slackta }}'
-      sequence:
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ ovrig_alla_slackta }}'
-          - condition: template
-            value_template: '{{ nuvarande_lage != ''Släckt'' }}'
-          sequence:
-          - action: script.turn_on
-            target:
-              entity_id: script.eriks_rum_satt_lage_ui
-            data:
-              variables:
-                lage: Släckt
-        - conditions:
-          - condition: template
-            value_template: '{{ not ovrig_alla_slackta }}'
-          - condition: template
-            value_template: '{{ nuvarande_lage in [''Tänt'', ''Taklamporna''] }}'
-          - condition: template
-            value_template: '{{ nuvarande_lage != ''Mysigt'' }}'
-          sequence:
-          - action: script.turn_on
-            target:
-              entity_id: script.eriks_rum_satt_lage
-            data:
-              variables:
-                force: true
-                lage: Mysigt
+  - action: script.turn_on
+    target:
+      entity_id: script.eriks_rum_vaggbrytare
+    data:
+      variables:
+        knapp_id: '{{ trigger.id }}'
+        dubbeltryck: '{{ trigger.id.endswith(''_dubbel'') }}'
 - alias: 'Belysning: Styr belysningen i garderoben i Eriks rum'
   id: dfgjsg1f8h1k81il8ö8br8yj018hf5
   initial_state: false

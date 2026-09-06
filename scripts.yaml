@@ -1300,10 +1300,132 @@ eriks_rum_satt_lage:
     data:
       variables:
         force: '{{ force | default(false) }}'
+eriks_rum_vaggbrytare:
+  alias: Väggbrytare taklampor i Eriks rum
+  mode: queued
+  description: >-
+    Tänt vid tänd taklampa (ej natt). Båda taklampor släckta återställer föregående läge,
+    natten Släckt. Debounce mot snabba tryck. Dubbeltryck sätter aktuell lampa på 100 %.
+  fields:
+    knapp_id:
+      description: trigger.id från väggbrytarautomationen
+      example: fonster_s1
+    dubbeltryck:
+      description: Sant vid KeyPressed2x
+      default: false
+      selector:
+        boolean: {}
+  sequence:
+  - variables:
+      lampa: "{% if knapp_id.startswith('fonster') %}\n  light.taklampan_eriks_fonster_level\n{%
+        elif knapp_id.startswith('sang') %}\n  light.taklampan_eriks_sang_level\n{% else %}\n
+        \ none\n{% endif %}\n"
+      is_natt: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ dubbeltryck | default(false) | bool }}'
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.eriks_rum_vagg_blockera_enkeltryck
+      - action: light.turn_on
+        target:
+          entity_id: '{{ lampa }}'
+        data:
+          brightness_pct: 100
+          transition: 0
+      - delay: '00:00:01'
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.eriks_rum_vagg_blockera_enkeltryck
+    default:
+    - condition: state
+      entity_id: input_boolean.eriks_rum_vagg_blockera_enkeltryck
+      state: 'off'
+    - variables:
+        snapshot_fonster: '{{ states(''light.taklampan_eriks_fonster_level'') }}'
+        snapshot_sang: '{{ states(''light.taklampan_eriks_sang_level'') }}'
+    - delay: '00:00:00.800'
+    - variables:
+        bada_tak_slackta: '{{ is_state(''light.taklampan_eriks_fonster_level'', ''off'')
+          and is_state(''light.taklampan_eriks_sang_level'', ''off'') }}'
+        nagon_tak_tand: '{{ not bada_tak_slackta }}'
+        oforandrad: '{{ states(''light.taklampan_eriks_fonster_level'') == snapshot_fonster
+          and states(''light.taklampan_eriks_sang_level'') == snapshot_sang }}'
+        nuvarande_lage: '{{ states(''input_select.eriks_rum_belysning'') }}'
+        vagg_session: '{{ is_state(''input_boolean.eriks_rum_vagg_tak_pagar'', ''on'')
+          }}'
+        aterstall_lage: "{% set giltiga = ['Tänt', 'Taklamporna', 'Läsning', 'Mysigt',
+          'Minimalt', 'Städning', 'Släckt'] %}\n{% set sparat = states('input_text.eriks_rum_vagg_forra_lage')
+          %}\n{% if sparat in giltiga %}\n  {{ sparat }}\n{% else %}\n  Släckt\n{% endif
+          %}\n"
+    - choose:
+      - conditions:
+        - condition: template
+          value_template: '{{ oforandrad }}'
+        sequence:
+        - stop: Ingen nettoändring av taklampor efter debounce
+      - conditions:
+        - condition: template
+          value_template: '{{ bada_tak_slackta and vagg_session }}'
+        sequence:
+        - choose:
+          - conditions:
+            - condition: template
+              value_template: '{{ is_natt }}'
+            sequence:
+            - action: script.turn_on
+              target:
+                entity_id: script.eriks_rum_satt_lage
+              data:
+                variables:
+                  force: true
+                  lage: Släckt
+          default:
+          - action: script.turn_on
+            target:
+              entity_id: script.eriks_rum_satt_lage
+            data:
+              variables:
+                force: true
+                lage: '{{ aterstall_lage }}'
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.eriks_rum_vagg_tak_pagar
+      - conditions:
+        - condition: template
+          value_template: '{{ nagon_tak_tand }}'
+        sequence:
+        - choose:
+          - conditions:
+            - condition: template
+              value_template: '{{ not vagg_session }}'
+            sequence:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.eriks_rum_vagg_forra_lage
+              data:
+                value: '{{ nuvarande_lage }}'
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.eriks_rum_vagg_tak_pagar
+        - choose:
+          - conditions:
+            - condition: template
+              value_template: '{{ not is_natt }}'
+            sequence:
+            - action: script.turn_on
+              target:
+                entity_id: script.eriks_rum_satt_lage
+              data:
+                variables:
+                  force: true
+                  lage: Tänt
 eriks_rum_satt_lage_ui:
   alias: Uppdatera bara belysningsläge i Eriks rum
   mode: queued
-  description: Sätter input_select utan att styra lamporna (används vid väggbrytare)
+  description: Sätter input_select utan att styra lamporna (reserv för manuell synk)
   fields:
     lage:
       description: Belysningsläge i Eriks rum
