@@ -227,7 +227,7 @@
       - Släck
       - Dämpat
       - Behåll
-    initial: Släck
+    initial: Behåll
     icon: mdi:shower-head
   badrum_ilias_dusch_utanfor:
     name: "Badrum Ilias dusch utanför"
@@ -235,7 +235,7 @@
       - Släck
       - Dämpat
       - Behåll
-    initial: Släck
+    initial: Behåll
     icon: mdi:shower-head
   badrum_erik_dusch_utanfor:
     name: "Badrum Erik dusch utanför"
@@ -243,6 +243,6 @@
       - Släck
       - Dämpat
       - Behåll
-    initial: Släck
+    initial: Behåll
     icon: mdi:shower-head
 

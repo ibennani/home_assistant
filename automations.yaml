@@ -1926,16 +1926,8 @@
               sequence:
               - action: script.badrum_dusch_eller_default
                 data:
-                  transition: 5
+                  transition: 0
         default:
-        - action: scene.create
-          data:
-            scene_id: badrum_fore_duschslackning
-            snapshot_entities:
-            - light.takspottar_badrummet
-            - light.spegeln_badrummet
-            - light.led_badrummet_handfatet
-            - light.led_badrummet_kommoden
         - action: input_boolean.turn_on
           target:
             entity_id: input_boolean.badrum_dusch_snapshot_finns
@@ -1947,7 +1939,7 @@
             sequence:
             - action: script.badrum_default_dusch
               data:
-                transition: 5
+                transition: 0
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''duschstatus_ingen'' }}'
@@ -1991,22 +1983,6 @@
       - choose:
         - conditions:
           - condition: template
-            value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'') and is_state(''input_boolean.duschslackning_aktiv'', ''on'') and is_state(''input_boolean.badrum_dusch_profil_session'', ''off'') }}'
-          - condition: state
-            entity_id: binary_sensor.duschdorren
-            state: 'off'
-          sequence:
-          - action: light.turn_off
-            target:
-              entity_id:
-              - light.spegeln_badrummet
-              - light.takspottar_badrummet
-              - light.led_badrummet_handfatet
-              - light.led_badrummet_kommoden
-            data:
-              transition: 5
-        - conditions:
-          - condition: template
             value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'') and is_state(''input_boolean.badrum_dusch_profil_session'', ''on'') }}'
           - condition: state
             entity_id: binary_sensor.duschdorren
@@ -2014,10 +1990,7 @@
           sequence:
           - action: script.badrum_dusch_eller_default
             data:
-              transition: 5
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.duschslackning_aktiv
+              transition: 0
         - conditions:
           - condition: template
             value_template: >-
@@ -2039,7 +2012,7 @@
 - id: badrum_dusch_fas3_dorr_cykel
   alias: 'Belysning: Duschsession dörrcykel (fas 3)'
   description: 'Under bekräftad duschsession. Öppen duschdörr → besök/default. Stängd
-    → 60 s → släck utanför duschen om ingen närvaro-minne och inget klivit-ur-mönster.
+    → 60 s → duschlampor om ingen närvaro-minne och inget klivit-ur-mönster.
     Närvaro-minne (3 min) och klivit-ur (öppen ≥12 s med rörelse, eller ≥25 s) skyddar
     efter avslutad dusch med stängd badrumsdörr.
 
@@ -2085,11 +2058,6 @@
             data:
               transition: 0
         default:
-        - action: scene.turn_on
-          target:
-            entity_id: scene.badrum_fore_duschslackning
-          data:
-            transition: 0
         - action: input_boolean.turn_off
           target:
             entity_id: input_boolean.duschslackning_aktiv
@@ -2173,12 +2141,6 @@
               - action: script.badrum_besok_eller_default
                 data:
                   transition: 0
-            default:
-            - action: scene.turn_on
-              target:
-                entity_id: scene.badrum_fore_duschslackning
-              data:
-                transition: 0
           - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.duschslackning_aktiv
@@ -2193,27 +2155,15 @@
             sequence:
             - action: script.badrum_dusch_eller_default
               data:
-                transition: 5
-            - action: input_boolean.turn_on
-              target:
-                entity_id: input_boolean.duschslackning_aktiv
+                transition: 0
           default:
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.duschslackning_aktiv
-          - action: light.turn_off
-            target:
-              entity_id:
-              - light.spegeln_badrummet
-              - light.takspottar_badrummet
-              - light.led_badrummet_handfatet
-              - light.led_badrummet_kommoden
+          - action: script.badrum_default_dusch
             data:
-              transition: 5
+              transition: 0
   mode: restart
 - id: badrum_dusch_fas3_rorelse
   alias: 'Belysning: Duschsession rörelse utanför dusch (fas 3)'
-  description: 'Under bekräftad duschsession: rörelse när duschsläckning är aktiv → besök/default
+  description: 'Under bekräftad duschsession: rörelse när duschsläckning var aktiv → besök/default
     eller snapshot. Separat från dörrcykeln så 60 s-fördröjning inte avbryts.
 
     '
@@ -2240,9 +2190,7 @@
         data:
           transition: 0
     default:
-    - action: scene.turn_on
-      target:
-        entity_id: scene.badrum_fore_duschslackning
+    - action: script.badrum_besok_eller_default
       data:
         transition: 0
   - action: input_boolean.turn_off
