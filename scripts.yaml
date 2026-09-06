@@ -2780,7 +2780,7 @@ badrum_tillampa_profil:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ not bara_dusch }}"
+        value_template: "{{ not bara_dusch and lage != 'dusch' }}"
       sequence:
       - choose:
         - conditions:
@@ -2931,9 +2931,7 @@ badrum_default_besok:
           sequence:
           - action: light.turn_on
             target:
-              entity_id:
-              - light.takspott_duschen
-              - light.led_strip_i_duschen
+              entity_id: light.led_strip_i_duschen
             data:
               brightness_pct: '{{ dusch_brightness }}'
               transition: "{{ fade }}"
@@ -2973,13 +2971,13 @@ badrum_default_besok:
             brightness_pct: '{{ dusch_brightness }}'
             transition: "{{ fade }}"
 badrum_default_dusch:
-  alias: Badrum default duschläge (duschslackning)
-  description: Släcker badrumslampor utanför duschen; duschlampor oförändrade.
+  alias: Badrum default duschläge
+  description: Tänder dusch-LED-list; lampor utanför duschen lämnas oförändrade.
   mode: single
   fields:
     transition:
       required: false
-      default: 5
+      default: 0
       selector:
         number:
           min: 0
@@ -2987,18 +2985,22 @@ badrum_default_dusch:
           step: 1
   sequence:
   - variables:
-      fade: "{{ transition | default(5) | int }}"
-  - action: input_boolean.turn_on
+      fade: "{{ transition | default(0) | int }}"
+      lux: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) }}"
+      dusch_brightness: '{{ 20 if (lux | int(0)) < 2000 else 30 }}'
+  - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.duschslackning_aktiv
   - action: light.turn_off
     target:
-      entity_id:
-      - light.spegeln_badrummet
-      - light.takspottar_badrummet
-      - light.led_badrummet_handfatet
-      - light.led_badrummet_kommoden
+      entity_id: light.takspott_duschen
     data:
+      transition: "{{ fade }}"
+  - action: light.turn_on
+    target:
+      entity_id: light.led_strip_i_duschen
+    data:
+      brightness_pct: '{{ dusch_brightness }}'
       transition: "{{ fade }}"
 badrum_besok_eller_default:
   alias: Badrum besök — profil eller default
@@ -3058,12 +3060,12 @@ badrum_besok_eller_default:
         transition: "{{ transition | default(0) | int }}"
 badrum_dusch_eller_default:
   alias: Badrum dusch — profil eller default
-  description: Sparad duschprofil om den finns, annars duschslackning.
+  description: Sparad duschprofil (endast duschlampor) om den finns, annars default duschläge.
   mode: single
   fields:
     transition:
       required: false
-      default: 5
+      default: 0
       selector:
         number:
           min: 0
@@ -3089,6 +3091,9 @@ badrum_dusch_eller_default:
         {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
         {{ is_state('input_boolean.badrum_' ~ person_key ~ '_dusch_profil', 'on') or ns.v }}
         {% endif %}
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.duschslackning_aktiv
   - choose:
     - conditions:
       - condition: template
@@ -3097,11 +3102,11 @@ badrum_dusch_eller_default:
       - action: script.badrum_tillampa_profil
         data:
           lage: dusch
-          transition: "{{ transition | default(5) | int }}"
+          transition: "{{ transition | default(0) | int }}"
     default:
     - action: script.badrum_default_dusch
       data:
-        transition: "{{ transition | default(5) | int }}"
+        transition: "{{ transition | default(0) | int }}"
 badrum_satt_besokare:
   alias: Badrum sätt besökare (NFC eller belysning)
   description: Sätter badrummet_vem, tillämpar besöksprofil om den finns och skickar notis.
