@@ -25,20 +25,6 @@ class Issue:
         return f"{self.file}:{self.line}: [{self.check}] {self.message}"
 
 
-def _ha_tag(loader, tag_suffix, node):
-    if isinstance(node, yaml.ScalarNode):
-        return loader.construct_scalar(node)
-    if isinstance(node, yaml.SequenceNode):
-        return loader.construct_sequence(node)
-    if isinstance(node, yaml.MappingNode):
-        return loader.construct_mapping(node)
-    return None
-
-
-if yaml is not None:
-    yaml.SafeLoader.add_multi_constructor("!", _ha_tag)
-
-
 def is_state_trigger_line(line: str) -> bool:
     stripped = line.lstrip()
     return stripped.startswith("- trigger: state") or stripped.startswith("- platform: state")

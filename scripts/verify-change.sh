@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Samlad verifiering före deploy / innan uppgiften markeras som klar.
-# Kör: bash scripts/verify-change.sh [--staged]
+# Kör: bash scripts/verify-change.sh [--staged] [--post-deploy]
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -8,8 +8,12 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 STAGED_ONLY=0
+POST_DEPLOY=0
 if [[ "${1:-}" == "--staged" ]]; then
     STAGED_ONLY=1
+fi
+if [[ "${1:-}" == "--post-deploy" ]] || [[ "${2:-}" == "--post-deploy" ]]; then
+    POST_DEPLOY=1
 fi
 
 PASS=0
@@ -144,6 +148,15 @@ if [[ -n "${HA_URL:-}" && -n "${HA_TOKEN:-}" ]]; then
   fi
 else
   echo "[SKIP] HA config_check (HA_URL/HA_TOKEN saknas — använd MCP ha_get_system_health efter deploy)"
+fi
+
+# 5. Post-deploy (valfritt: bash scripts/verify-change.sh --post-deploy)
+if [[ "${POST_DEPLOY:-0}" -eq 1 ]]; then
+  if python3 "$SCRIPT_DIR/check-ha-live.py"; then
+    check_ok "HA post-deploy (live)"
+  else
+    check_fail "HA post-deploy (live)" "kör: python3 scripts/check-ha-live.py"
+  fi
 fi
 
 echo

@@ -10,12 +10,17 @@ alwaysApply: false
 
 ## Obligatoriskt före commit/deploy
 
-Kör efter ändringar i `automations.yaml` eller `scripts.yaml`:
+```bash
+python3 scripts/check-ha-yaml.py          # blockerar vid fel
+python3 scripts/audit-ha-yaml.py          # bred granskning (valfritt)
+bash scripts/verify-change.sh
+```
+
+Efter git-synk till live HA:
 
 ```bash
-python3 scripts/check-ha-yaml.py
-# eller
-bash scripts/verify-change.sh
+bash scripts/verify-change.sh --post-deploy   # unavailable automationer + repairs
+# eller: python3 scripts/check-ha-live.py
 ```
 
 ## State-triggers — förbjudna kombinationer
