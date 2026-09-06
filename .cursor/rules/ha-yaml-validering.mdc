@@ -1,0 +1,49 @@
+---
+description: Statisk HA YAML-validering — state-triggers och liknande fel före deploy
+globs:
+  - automations.yaml
+  - scripts.yaml
+alwaysApply: false
+---
+
+# HA YAML-validering
+
+## Obligatoriskt före commit/deploy
+
+Kör efter ändringar i `automations.yaml` eller `scripts.yaml`:
+
+```bash
+python3 scripts/check-ha-yaml.py
+# eller
+bash scripts/verify-change.sh
+```
+
+## State-triggers — förbjudna kombinationer
+
+Home Assistant tillåter **inte** i samma state-trigger:
+
+| Kombination | Istället |
+|-------------|----------|
+| `from` + `not_from` | Behåll `from`/`to` — de utesluter redan `unavailable`/`unknown` |
+| `to` + `not_to` | Behåll `to`, eller bara `not_to` utan `to` |
+
+**Tillåtet:** endast `not_from`/`not_to` (utan `from`/`to`) för att ignorera `unavailable`/`unknown`.
+
+**Tillåtet:** `from` + `not_to` eller `to` + `not_from` (motsatta par).
+
+Använd `trigger: state` i triggers-listan — inte `platform: state`.
+
+## Auto-fix vid konflikt
+
+```bash
+python3 scripts/fix-state-trigger-unavailable-guard.py automations.yaml
+python3 scripts/check-ha-yaml.py   # verifiera
+```
+
+## Varför config_check inte räcker
+
+`config_check` kan returnera `valid` även när enskilda automationer har ogiltiga triggers (Repairs: `validation_failed_triggers`). Statisk lint fångar detta **innan** deploy.
+
+## Utöka kontrollerna
+
+Nya offline-regler läggs i `scripts/lib/ha_yaml_checks.py` (register `CHECKS`) och körs via `scripts/check-ha-yaml.py`.

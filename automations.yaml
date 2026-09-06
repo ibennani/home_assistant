@@ -10726,9 +10726,6 @@
       entity_id: light.takspottar_badrummet
       from: 'on'
       to: 'off'
-      not_from:
-      - unavailable
-      - unknown
   conditions:
     - condition: or
       conditions:

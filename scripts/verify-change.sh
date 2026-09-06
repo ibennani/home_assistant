@@ -109,7 +109,29 @@ PY
   fi
 fi
 
-# 3. config_check mot live HA (valfritt)
+# 3. HA YAML-validering (state-triggers, duplicerade id, …)
+ha_yaml_files=()
+if [[ "$STAGED_ONLY" -eq 1 ]]; then
+  for f in "${yaml_files[@]}"; do
+    case "$f" in
+      automations.yaml|scripts.yaml|*/automations.yaml|*/scripts.yaml)
+        ha_yaml_files+=("$f")
+        ;;
+    esac
+  done
+else
+  ha_yaml_files=("automations.yaml" "scripts.yaml")
+fi
+
+if [[ ${#ha_yaml_files[@]} -eq 0 ]]; then
+  echo "[SKIP] HA YAML-validering (inga automations/scripts i kontrollen)"
+elif python3 "$SCRIPT_DIR/check-ha-yaml.py" "${ha_yaml_files[@]}"; then
+  check_ok "HA YAML-validering (${#ha_yaml_files[@]} filer)"
+else
+  check_fail "HA YAML-validering" "kör: python3 scripts/check-ha-yaml.py"
+fi
+
+# 4. config_check mot live HA (valfritt)
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib/ha_api.sh" 2>/dev/null || true
 
