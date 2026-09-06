@@ -98,8 +98,10 @@ Agenten ska alltid avsluta med en kort rapport (se `.cursor/rules/verifiera-fore
 
 | Skript | Syfte |
 |--------|--------|
-| `scripts/check-ha-yaml.py` | State-trigger-konflikter, duplicerade id (offline) |
-| `scripts/verify-change.sh` | Samlad kontroll före deploy |
+| `scripts/check-ha-yaml.py` | State-trigger-konflikter, duplicerade id (offline, blockerar) |
+| `scripts/audit-ha-yaml.py` | Bredare granskning — rapporterar utan att ändra |
+| `scripts/check-ha-live.py` | Post-deploy: unavailable automationer + repairs (REST/WS) |
+| `scripts/verify-change.sh` | Samlad kontroll före deploy (`--post-deploy` efter synk) |
 | `scripts/pre-commit-check.sh` | Blockera känsliga filer i git |
 | `scripts/check-template-states.py` | Template-entiteter inte `unavailable` |
 | `scripts/compare-automations.py` | Diff mellan två automations.yaml |
@@ -111,8 +113,10 @@ Agenten ska alltid avsluta med en kort rapport (se `.cursor/rules/verifiera-fore
 |-------|-----|--------|--------|
 | **YAML-syntax** | Offline, pre-deploy | Ogiltig YAML | Semantiska HA-fel |
 | **check-ha-yaml.py** | Offline, pre-deploy | `from`+`not_from`, duplicerade id, legacy trigger-syntax | Template-logik, saknade entiteter |
+| **audit-ha-yaml.py** | Offline, granskning | choose-as-condition, entity_id script.*, mixed action/keys | Service-anrop, runtime |
 | **config_check** | Live, post-deploy | Kärnkonfig, integrationer | Enskilda automationer med ogiltiga triggers |
-| **repairs** | Live, post-deploy | `validation_failed_triggers`, trasiga integrationer | Fel som inte registreras som repair |
+| **check-ha-live.py** | Live, post-deploy | `unavailable` automationer, repairs (error+) | Template-fel, beteende |
+| **repairs** (MCP) | Live, post-deploy | Samma som check-ha-live repairs | Fel som inte registreras som repair |
 | **Beteendetest** | Live | Faktiskt flöde (trace) | Edge cases utan testtrigger |
 
 Utöka `scripts/lib/ha_yaml_checks.py` (`CHECKS`) när samma typ av fel återkommer — mönster: strukturell regel som HA dokumenterar men som syntaxkontroll inte ser.
