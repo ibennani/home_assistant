@@ -10,7 +10,7 @@ Home Assistant-konfiguration är ofta *nästan* rätt: YAML laddar, automationen
 
 | Nivå | Vad | Hur |
 |------|-----|-----|
-| **Statisk** | YAML-syntax, inga hemligheter i git | `scripts/verify-change.sh`, `scripts/pre-commit-check.sh` |
+| **Statisk** | YAML-syntax, inga hemligheter i git, HA YAML-regler | `scripts/verify-change.sh`, `scripts/check-ha-yaml.py`, `scripts/pre-commit-check.sh` |
 | **Config** | Hela konfigurationen är giltig | `ha_get_system_health(include="config_check")` via MCP, eller REST `POST /api/config/core/check_config` |
 | **Innehåll** | Rätt automation/script finns live | `ha_config_get_automation`, `ha_config_get_script`, `ha_search` |
 | **Template** | Uttryck ger rätt värde med nuvarande state | `ha_eval_template` |
@@ -54,7 +54,7 @@ Skriv 1–3 meningar om förväntat beteende *innan* eller direkt efter ändring
 bash scripts/verify-change.sh
 ```
 
-Kör YAML-syntax, säkerhetskontroll och (om `.env` finns) `config_check` mot live HA.
+Kör YAML-syntax, HA YAML-validering (`check-ha-yaml.py`), säkerhetskontroll och (om `.env` finns) `config_check` mot live HA.
 
 ### 3. Deploy
 
@@ -98,11 +98,24 @@ Agenten ska alltid avsluta med en kort rapport (se `.cursor/rules/verifiera-fore
 
 | Skript | Syfte |
 |--------|--------|
+| `scripts/check-ha-yaml.py` | State-trigger-konflikter, duplicerade id (offline) |
 | `scripts/verify-change.sh` | Samlad kontroll före deploy |
 | `scripts/pre-commit-check.sh` | Blockera känsliga filer i git |
 | `scripts/check-template-states.py` | Template-entiteter inte `unavailable` |
 | `scripts/compare-automations.py` | Diff mellan två automations.yaml |
 | `scripts/verify-ha-mcp.sh` | MCP/REST-anslutning fungerar |
+
+## Valideringslager (vad fångar vad)
+
+| Lager | När | Fångar | Missar |
+|-------|-----|--------|--------|
+| **YAML-syntax** | Offline, pre-deploy | Ogiltig YAML | Semantiska HA-fel |
+| **check-ha-yaml.py** | Offline, pre-deploy | `from`+`not_from`, duplicerade id, legacy trigger-syntax | Template-logik, saknade entiteter |
+| **config_check** | Live, post-deploy | Kärnkonfig, integrationer | Enskilda automationer med ogiltiga triggers |
+| **repairs** | Live, post-deploy | `validation_failed_triggers`, trasiga integrationer | Fel som inte registreras som repair |
+| **Beteendetest** | Live | Faktiskt flöde (trace) | Edge cases utan testtrigger |
+
+Utöka `scripts/lib/ha_yaml_checks.py` (`CHECKS`) när samma typ av fel återkommer — mönster: strukturell regel som HA dokumenterar men som syntaxkontroll inte ser.
 
 ## Cursor-regel
 

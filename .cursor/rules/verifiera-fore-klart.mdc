@@ -25,7 +25,7 @@ Om användaren inte specificerat beteende, föreslå kriterierna kort och forts�
 
 | Ändring | Obligatoriska kontroller |
 |---------|-------------------------|
-| **YAML** (automations, scripts, config) | `bash scripts/verify-change.sh` → merga PR till `main` → git-synk (`cursor_git_synk`) → `ha_get_system_health(include="config_check")` |
+| **YAML** (automations, scripts, config) | `bash scripts/verify-change.sh` (inkl. `check-ha-yaml.py`) → merga PR till `main` → git-synk (`cursor_git_synk`) → `ha_get_system_health(include="config_check,repairs")` |
 | **Automatisering** | Synka/deploy → `ha_config_get_automation` (rätt innehåll) → trigga test → `ha_get_automation_traces` (villkor + åtgärder) |
 | **Script** | `ha_config_get_script` → kör `script.<id>` → kontrollera trace och/eller entitetsläge efteråt |
 | **Template** | `ha_eval_template` för varje uttryck → `python3 scripts/check-template-states.py` om entiteter skapats |
