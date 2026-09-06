@@ -10634,6 +10634,7 @@
     - trigger: persistent_notification
       update_type:
         - added
+        - updated
       id: hk_notice
   actions:
     - choose:
