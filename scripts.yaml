@@ -29,6 +29,32 @@ koksflakten_stang_av_och_sla_pa:
   - action: switch.turn_on
     target:
       entity_id: switch.koksflakten
+hallen_stall_in_belysningen:
+  alias: Ställ in belysningen i hallen
+  mode: queued
+  description: Justera hallens takspottsljus efter husläge, rörelse och städning
+  sequence:
+  - variables:
+      hallen_morgon: 50
+      hallen_dag: 100
+      hallen_kvall: 50
+      hallen_natt: 0
+      dag_lux_grans: 2000
+  - action: light.turn_on
+    target:
+      entity_id: light.takspottarna_hallen_level
+    data:
+      brightness_pct: "{% set städning = is_state('input_boolean.stadning_pagar', 'on')
+        %} {% set tid = states('input_select.house_time_modes') %} {% set utelux =
+        states('sensor.utomhus_framsidan_ljusstyrka') | int(default=0) %} {% set rorelse
+        = is_state('binary_sensor.hallen_rorelse', 'on') %} {% set ingen_hemma = is_state('zone.home',
+        '0') %} {% if städning %}\n  100\n{% elif ingen_hemma %}\n  0\n{% elif rorelse
+        %}\n  {% if tid == \"Morgon\" %}\n    {{ hallen_morgon }}\n  {% elif tid ==
+        \"Dag\" %}\n    {% if utelux >= dag_lux_grans %}\n      {{ hallen_dag }}\n
+        \   {% else %}\n      {{ hallen_kvall }}\n    {% endif %}\n  {% elif tid ==
+        \"Kväll\" %}\n    {{ hallen_kvall }}\n  {% else %}\n    {{ hallen_natt }}\n
+        \ {% endif %}\n{% else %}\n  {% if 50 < utelux < 10000 %}5{% else %}0{% endif
+        %}\n{% endif %}\n"
 koket_stall_in_belysningen:
   alias: Ställ in belysningen i köket
   mode: restart
@@ -534,15 +560,6 @@ kvallsbelysning:
           %} \n  {{ states(\"input_select.eriks_rum_belysning\") }}\n{% elif states(\"input_select.eriks_rum_belysning\")
           in [\"Tänt\",\"Taklamporna\"] %} Tänt  {% elif states(\"input_select.eriks_rum_belysning\")
           in [\"Mysigt\",\"Släckt\"] %} Mysigt  {% else %} Mysigt  {% endif %}\n"
-  - action: light.turn_on
-    entity_id:
-    - light.takspottarna_hallen_level
-    data:
-      brightness_pct: '{% if is_state("binary_sensor.hallen_rorelse","on") %} {{ (state_attr("light.takspottarna_hallen_level","brightness")
-        | float(default = 0) / 2.55 ) | int(default = 0)  }}  {% else %} 5 {% endif
-        %}
-
-        '
   - action: input_select.select_option
     entity_id: input_select.nedre_trappan_belysning
     data:
@@ -1279,7 +1296,7 @@ eriks_rum_satt_lage:
       option: '{{ effective_lage }}'
   - action: script.turn_on
     target:
-      entity_id: script.eriks_rum_stall_in_belysningen
+      entity_id: script.albins_rum_stall_in_belysningen
     data:
       variables:
         force: '{{ force | default(false) }}'
