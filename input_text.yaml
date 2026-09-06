@@ -95,3 +95,9 @@
   # När tryckte någon på lampknapparna i badrummet senast?
     wc_last_button_press:
       name: Senaste WC-knapptryck
+
+  # Belysningsläge i Eriks rum innan väggbrytare tände taklamporna (återställs vid släck)
+    eriks_rum_vagg_forra_lage:
+      name: Eriks rum vägg — föregående läge
+      initial: Släckt
+      max: 20

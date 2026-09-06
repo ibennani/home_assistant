@@ -109,6 +109,12 @@
     name: WC S2 blockera enkeltryck efter håll
   eriks_rum_uppdaterar_lage:
     name: Eriks rum uppdaterar läge (blockerar lampstyrning)
+  eriks_rum_vagg_tak_pagar:
+    name: Eriks rum vägg — taklampa-session aktiv
+    initial: off
+  eriks_rum_vagg_blockera_enkeltryck:
+    name: Eriks rum vägg — blockera enkeltryck efter dubbeltryck
+    initial: off
 
 
 # Toggle som avgör om vattenspridaren ska stara automatiskt
