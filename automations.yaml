@@ -5544,7 +5544,7 @@
   action:
   - action: script.turn_on
     target:
-      entity_id: script.eriks_rum_stall_in_belysningen
+      entity_id: script.albins_rum_stall_in_belysningen
     data:
       variables:
         force: true
