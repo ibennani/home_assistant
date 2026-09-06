@@ -1296,7 +1296,7 @@ eriks_rum_satt_lage:
       option: '{{ effective_lage }}'
   - action: script.turn_on
     target:
-      entity_id: script.albins_rum_stall_in_belysningen
+      entity_id: script.eriks_rum_stall_in_belysningen
     data:
       variables:
         force: '{{ force | default(false) }}'
@@ -1321,8 +1321,7 @@ eriks_rum_satt_lage_ui:
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.eriks_rum_uppdaterar_lage
-# YAML-nyckel måste matcha unique_id i entitetsregistret (albins → eriks rename).
-albins_rum_stall_in_belysningen:
+eriks_rum_stall_in_belysningen:
   alias: Ställ in belysningen i Eriks rum
   mode: restart
   fields:
