@@ -2306,7 +2306,7 @@ git_synka_config:
   - action: group.reload
 mobilnotis:
   alias: Mobilnotis
-  description: Central avsändare för alla mobilnotiser via Companion-appen.
+  description: "Central avsändare för alla mobilnotiser via Companion-appen. Android: notification_icon + color till vänster (inte icon_url)."
   mode: parallel
   max: 50
   fields:
@@ -2366,15 +2366,9 @@ mobilnotis:
   - variables:
       meddelande_text: '{% if prefix_hemmet %} HEMMET {{ now().strftime(''%R'') }}: {{ meddelande }} {% else %} {{ meddelande
         }} {% endif %}'
-      ikon_sokvag: "{% if mottagare != 'mobile_app_ilias_s23_ultra' or ikon == 'standard' %} {% else %} {% set icons = {\n\
-        \  'huslage_morgon': '/local/notis/huslage-morgon.png',\n  'huslage_dag': '/local/notis/huslage-dag.png',\n  'huslage_kvall':\
-        \ '/local/notis/huslage-kvall.png',\n  'huslage_natt': '/local/notis/huslage-natt.png',\n  'vitvaror': '/local/notis/vitvaror.png',\n\
-        \  'cursor': '/local/notis/cursor.png',\n  'zon': '/local/notis/zon.png'\n} %} {{ icons.get(ikon, '') }} {% endif\
-        \ %}"
-      notify_payload: '{% set d = {''ttl'': 0, ''priority'': ''high''} %} {% if ikon_sokvag %}{% set d = d | combine({''icon_url'':
-        ikon_sokvag}) %}{% endif %} {% if tag %}{% set d = d | combine({''tag'': tag}) %}{% endif %} {% if vibration %}{%
-        set d = d | combine({''vibration'': vibration}) %}{% endif %} {% if notis_data %}{% set d = d | combine(notis_data)
-        %}{% endif %} {{ d }}'
+      notification_icon_mdi: "{% if mottagare != 'mobile_app_ilias_s23_ultra' or ikon == 'standard' %}{% else %}{% set icons = {\n  'huslage_morgon': 'mdi:weather-sunset-up',\n  'huslage_dag': 'mdi:weather-sunny',\n  'huslage_kvall': 'mdi:weather-sunset',\n  'huslage_natt': 'mdi:weather-night',\n  'vitvaror': 'mdi:dishwasher',\n  'cursor': 'mdi:robot-happy',\n  'zon': 'mdi:incognito'\n} %}{{ icons.get(ikon, '') }}{% endif %}"
+      notification_color: "{% if mottagare != 'mobile_app_ilias_s23_ultra' or ikon == 'standard' %}{% else %}{% set colors = {\n  'huslage_morgon': '#FFB300',\n  'huslage_dag': '#FF8C00',\n  'huslage_kvall': '#FF6B35',\n  'huslage_natt': '#3F51B5',\n  'vitvaror': '#00BCD4',\n  'cursor': '#7C3AED',\n  'zon': '#455A64'\n} %}{{ colors.get(ikon, '') }}{% endif %}"
+      notify_payload: '{% set d = {''ttl'': 0, ''priority'': ''high''} %}{% if notification_icon_mdi %}{% set d = d | combine({''notification_icon'': notification_icon_mdi}) %}{% endif %}{% if notification_color %}{% set d = d | combine({''color'': notification_color}) %}{% endif %}{% if tag %}{% set d = d | combine({''tag'': tag}) %}{% endif %}{% if vibration %}{% set d = d | combine({''vibration'': vibration}) %}{% endif %}{% if notis_data %}{% set d = d | combine(notis_data) %}{% endif %}{{ d }}'
   - action: notify.{{ mottagare }}
     data:
       title: '{{ title }}'
