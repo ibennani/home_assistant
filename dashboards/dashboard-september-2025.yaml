@@ -6353,12 +6353,10 @@ views:
             service: browser_mod.sequence
             data:
               sequence:
-              - service: notify.mobile_app_ilias_s23_ultra
+              - service: script.mobilnotis
                 data:
-                  message: request_location_update
-                  data:
-                    priority: high
-                    ttl: 0
+                  mottagare: mobile_app_ilias_s23_ultra
+                  meddelande: request_location_update
               - service: browser_mod.notification
                 data:
                   message: Uppdaterar positioner
