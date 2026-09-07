@@ -2053,6 +2053,7 @@
           - action: script.badrum_besok_eller_default
             data:
               transition: 0
+              transition_dusch: 1
         default:
         - action: input_boolean.turn_off
           target:
@@ -2139,6 +2140,7 @@
             - action: script.badrum_dusch_eller_default
               data:
                 transition: 5
+                transition_dusch: 5
             - action: input_boolean.turn_on
               target:
                 entity_id: input_boolean.duschslackning_aktiv
@@ -2171,6 +2173,7 @@
       - action: script.badrum_besok_eller_default
         data:
           transition: 0
+          transition_dusch: 1
     default:
     - action: scene.turn_on
       target:
