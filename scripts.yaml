@@ -44,58 +44,47 @@ hallen_stall_in_belysningen:
     target:
       entity_id: light.takspottarna_hallen_level
     data:
-      brightness_pct: "{% set städning = is_state('input_boolean.stadning_pagar', 'on')
-        %} {% set tid = states('input_select.house_time_modes') %} {% set utelux =
-        states('sensor.utomhus_framsidan_ljusstyrka') | int(default=0) %} {% set rorelse
-        = is_state('binary_sensor.hallen_rorelse', 'on') %} {% set ingen_hemma = is_state('zone.home',
-        '0') %} {% if städning %}\n  100\n{% elif ingen_hemma %}\n  0\n{% elif rorelse
-        %}\n  {% if tid == \"Morgon\" %}\n    {{ hallen_morgon }}\n  {% elif tid ==
-        \"Dag\" %}\n    {% if utelux >= dag_lux_grans %}\n      {{ hallen_dag }}\n
-        \   {% else %}\n      {{ hallen_kvall }}\n    {% endif %}\n  {% elif tid ==
-        \"Kväll\" %}\n    {{ hallen_kvall }}\n  {% else %}\n    {{ hallen_natt }}\n
-        \ {% endif %}\n{% else %}\n  {% if 50 < utelux < 10000 %}5{% else %}0{% endif
-        %}\n{% endif %}\n"
+      brightness_pct: "{% set städning = is_state('input_boolean.stadning_pagar', 'on') %} {% set tid = states('input_select.house_time_modes')\
+        \ %} {% set utelux = states('sensor.utomhus_framsidan_ljusstyrka') | int(default=0) %} {% set rorelse = is_state('binary_sensor.hallen_rorelse',\
+        \ 'on') %} {% set ingen_hemma = is_state('zone.home', '0') %} {% if städning %}\n  100\n{% elif ingen_hemma %}\n \
+        \ 0\n{% elif rorelse %}\n  {% if tid == \"Morgon\" %}\n    {{ hallen_morgon }}\n  {% elif tid == \"Dag\" %}\n    {%\
+        \ if utelux >= dag_lux_grans %}\n      {{ hallen_dag }}\n    {% else %}\n      {{ hallen_kvall }}\n    {% endif %}\n\
+        \  {% elif tid == \"Kväll\" %}\n    {{ hallen_kvall }}\n  {% else %}\n    {{ hallen_natt }}\n  {% endif %}\n{% else\
+        \ %}\n  {% if 50 < utelux < 10000 %}5{% else %}0{% endif %}\n{% endif %}\n"
 koket_stall_in_belysningen:
   alias: Ställ in belysningen i köket
   mode: restart
   description: Ställ in belysningen i köket
   sequence:
   - variables:
-      front_section: '{{ states(''sensor.ljusstyrka_framsidan_sektioner'') | int(0)
-        }}'
+      front_section: '{{ states(''sensor.ljusstyrka_framsidan_sektioner'') | int(0) }}'
       house_mode: '{{ states(''input_select.house_time_modes'') }}'
       scene: '{{ states(''input_select.koket_belysning'') }}'
       stadning: '{{ is_state(''input_boolean.stadning_pagar'', ''on'') }}'
       jul: '{{ is_state(''input_boolean.julbelysning'', ''on'') }}'
       someone_home: '{{ (states(''zone.home'') | int(0)) > 0 }}'
-      transition_seconds: '{{ 1 if (rapid_transition | default(''off'')) == ''on''
-        else 15 }}'
+      transition_seconds: '{{ 1 if (rapid_transition | default(''off'')) == ''on'' else 15 }}'
   - action: light.turn_on
     target:
       entity_id:
       - light.led_lister_ovanfor_arbetsbankarna
     data:
-      brightness_pct: "{% if stadning %} 100 {% elif house_mode in [\"Morgon\",\"Dag\",\"Kväll\"]
-        %}\n  {% if scene == \"Normalt\" %}\n    {% if front_section <= 2 %} 75\n
-        \   {% elif front_section == 3 %} 85\n    {% elif front_section == 4 %} 100\n
-        \   {% else %} 100\n    {% endif %}\n  {% elif scene == \"Måltid\" %} 0\n
-        \ {% elif scene == \"Buffé\" %} 10\n  {% elif scene == \"Maxbelysning\" %}
-        100\n  {% elif scene == \"Spelkväll\" %} 0\n  {% elif scene == \"Mysigt\"
-        %} 0\n  {% elif scene == \"Morgon\" %}\n    {% if front_section == 0 %} 30\n
-        \   {% elif front_section <= 2 %} 40\n    {% elif front_section == 3 %} 60\n
-        \   {% elif front_section == 4 %} 70\n    {% else %} 100\n    {% endif %}\n
-        \ {% elif scene == \"Släckt\" %} 0\n  {% elif scene == \"Dämpat\" %} 0\n  {%
-        elif scene == \"---\" %}\n    {{ (state_attr(\"light.led_lister_ovanfor_arbetsbankarna\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% else %} 0\n  {% endif %}\n{% elif house_mode
-        == \"Natt\" %} 0 {% else %} 0 {% endif %}\n"
+      brightness_pct: "{% if stadning %} 100 {% elif house_mode in [\"Morgon\",\"Dag\",\"Kväll\"] %}\n  {% if scene == \"\
+        Normalt\" %}\n    {% if front_section <= 2 %} 75\n    {% elif front_section == 3 %} 85\n    {% elif front_section\
+        \ == 4 %} 100\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Måltid\" %} 0\n  {% elif scene == \"Buffé\"\
+        \ %} 10\n  {% elif scene == \"Maxbelysning\" %} 100\n  {% elif scene == \"Spelkväll\" %} 0\n  {% elif scene == \"\
+        Mysigt\" %} 0\n  {% elif scene == \"Morgon\" %}\n    {% if front_section == 0 %} 30\n    {% elif front_section <=\
+        \ 2 %} 40\n    {% elif front_section == 3 %} 60\n    {% elif front_section == 4 %} 70\n    {% else %} 100\n    {%\
+        \ endif %}\n  {% elif scene == \"Släckt\" %} 0\n  {% elif scene == \"Dämpat\" %} 0\n  {% elif scene == \"---\" %}\n\
+        \    {{ (state_attr(\"light.led_lister_ovanfor_arbetsbankarna\",\"brightness\") | float(0) / 2.55) | int(0) }}\n \
+        \ {% else %} 0\n  {% endif %}\n{% elif house_mode == \"Natt\" %} 0 {% else %} 0 {% endif %}\n"
       transition: '{{ transition_seconds }}'
   - action: light.turn_on
     target:
       entity_id:
       - light.stjarnan_i_trappan
     data:
-      brightness_pct: '{% if is_state("light.koksbelysningen","on") %} 100 {% else
-        %} 0 {% endif %}
+      brightness_pct: '{% if is_state("light.koksbelysningen","on") %} 100 {% else %} 0 {% endif %}
 
         '
   - action: light.turn_on
@@ -103,87 +92,66 @@ koket_stall_in_belysningen:
       entity_id:
       - light.koksfonstret
     data:
-      brightness_pct: "{% if scene == \"Normalt\" %}\n  {% if front_section <= 4 %}
-        20\n  {% else %} 0\n  {% endif %}\n{% elif scene in [\"Måltid\",\"Buffé\"]
-        %}\n  {% if front_section <= 3 %} 15\n  {% elif front_section <= 4 %} 20\n
-        \ {% else %} 0\n  {% endif %}\n{% elif scene in [\"Maxbelysning\",\"Spelkväll\"]
-        %}\n  {% if front_section <= 4 %} 20\n  {% else %} 0\n  {% endif %}\n{% elif
-        scene == \"Mysigt\" %}\n  {% if front_section <= 1 %} 10\n  {% elif front_section
-        == 2 %} 15\n  {% elif front_section <= 4 %} 20\n  {% else %} 0\n  {% endif
-        %}\n{% elif scene == \"Morgon\" %}\n  {% if front_section <= 4 %} 20\n  {%
-        else %} 0\n  {% endif %}\n{% elif scene == \"Släckt\" %} 0\n{% elif scene
-        == \"Dämpat\" %} 0\n{% elif scene == \"---\" %}\n  {{ (state_attr(\"light.koksfonstret\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n{% else %} 0\n{% endif %}\n"
+      brightness_pct: "{% if scene == \"Normalt\" %}\n  {% if front_section <= 4 %} 20\n  {% else %} 0\n  {% endif %}\n{%\
+        \ elif scene in [\"Måltid\",\"Buffé\"] %}\n  {% if front_section <= 3 %} 15\n  {% elif front_section <= 4 %} 20\n\
+        \  {% else %} 0\n  {% endif %}\n{% elif scene in [\"Maxbelysning\",\"Spelkväll\"] %}\n  {% if front_section <= 4 %}\
+        \ 20\n  {% else %} 0\n  {% endif %}\n{% elif scene == \"Mysigt\" %}\n  {% if front_section <= 1 %} 10\n  {% elif front_section\
+        \ == 2 %} 15\n  {% elif front_section <= 4 %} 20\n  {% else %} 0\n  {% endif %}\n{% elif scene == \"Morgon\" %}\n\
+        \  {% if front_section <= 4 %} 20\n  {% else %} 0\n  {% endif %}\n{% elif scene == \"Släckt\" %} 0\n{% elif scene\
+        \ == \"Dämpat\" %} 0\n{% elif scene == \"---\" %}\n  {{ (state_attr(\"light.koksfonstret\",\"brightness\") | float(0)\
+        \ / 2.55) | int(0) }}\n{% else %} 0\n{% endif %}\n"
       transition: '{{ transition_seconds }}'
   - action: light.turn_on
     target:
       entity_id:
       - light.koksbelysningen
     data:
-      brightness_pct: "{% if stadning %} 100 {% elif house_mode == \"Morgon\" %}\n
-        \ {% if scene == \"Normalt\" %}\n    {% if front_section <= 1 %} 50\n    {%
-        elif front_section == 2 %} 55\n    {% elif front_section == 3 %} 60\n    {%
-        elif front_section == 4 %} 65\n    {% else %} 100\n    {% endif %}\n  {% elif
-        scene in [\"Måltid\",\"Buffé\"] %}\n    {% if front_section <= 1 %} 10\n    {%
-        elif front_section == 2 %} 15\n    {% elif front_section == 3 %} 20\n    {%
-        elif front_section == 4 %} 30\n    {% elif front_section == 5 %} 35\n    {%
-        elif front_section == 6 %} 40\n    {% elif front_section <= 9 %} 50\n    {%
-        else %} 100\n    {% endif %}\n  {% elif scene == \"Spelkväll\" %} 0\n  {%
-        elif scene == \"Maxbelysning\" %}\n    {% if front_section <= 2 %} 65\n    {%
-        elif front_section <= 4 %} 75\n    {% elif front_section == 5 %} 85\n    {%
-        else %} 100\n    {% endif %}\n  {% elif scene == \"Mysigt\" %}\n    {% if
-        front_section <= 4 %} 9\n    {% else %} 0\n    {% endif %}\n  {% elif scene
-        == \"Morgon\" %}\n    {% if front_section <= 2 %} 9\n    {% elif front_section
-        == 3 %} 20\n    {% elif front_section == 4 %} 25\n    {% elif front_section
-        == 5 %} 50\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Släckt\"
-        %} 0\n  {% elif scene == \"Dämpat\" %} 9\n  {% elif scene == \"---\" %}\n
-        \   {{ (state_attr(\"light.koksbelysningen\",\"brightness\") | float(0) /
-        2.55) | int(0) }}\n  {% else %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% endif %}\n{% elif house_mode in [\"Dag\",\"Kväll\"]
-        %}\n  {% if scene == \"Normalt\" %}\n    {% if front_section <= 2 %} 65\n
-        \   {% elif front_section == 3 %} 70\n    {% elif front_section == 4 %} 80\n
-        \   {% else %} 100\n    {% endif %}\n  {% elif scene in [\"Måltid\",\"Buffé\"]
-        %}\n    {% if front_section == 0 %} 9\n    {% elif front_section == 1 %} 10\n
-        \   {% elif front_section == 2 %} 15\n    {% elif front_section == 3 %} 20\n
-        \   {% elif front_section == 4 %} 30\n    {% elif front_section == 5 %} 35\n
-        \   {% elif front_section == 6 %} 40\n    {% elif front_section <= 9 %} 45\n
-        \   {% else %} 0\n    {% endif %}\n  {% elif scene == \"Spelkväll\" %} 0\n
-        \ {% elif scene == \"Maxbelysning\" %}\n    {% if front_section <= 2 %} 60\n
-        \   {% elif front_section <= 4 %} 75\n    {% elif front_section == 5 %} 85\n
-        \   {% else %} 100\n    {% endif %}\n  {% elif scene == \"Mysigt\" %}\n    {%
-        if front_section <= 4 %} 9\n    {% else %} 0\n    {% endif %}\n  {% elif scene
-        == \"Morgon\" %}\n    {% if front_section <= 2 %} 25\n    {% elif front_section
-        == 3 %} 40\n    {% elif front_section == 4 %} 55\n    {% elif front_section
-        == 5 %} 65\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Släckt\"
-        %} 0\n  {% elif scene == \"Dämpat\" %} 9\n  {% elif scene == \"---\" %}\n
-        \   {{ (state_attr(\"light.koksbelysningen\",\"brightness\") | float(0) /
-        2.55) | int(0) }}\n  {% else %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% endif %}\n{% elif house_mode == \"Natt\"
-        %}\n  {% if scene == \"Normalt\" %} 60\n  {% elif scene in [\"Måltid\",\"Buffé\"]
-        %} 9\n  {% elif scene == \"Mysigt\" %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% elif scene == \"Maxbelysning\" %} 65\n
-        \ {% elif scene == \"Släckt\" %} 0\n  {% elif scene == \"Dämpat\" %} 9\n  {%
-        elif scene == \"---\" %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% else %} 0\n  {% endif %}\n{% else %}
-        0 {% endif %}\n"
+      brightness_pct: "{% if stadning %} 100 {% elif house_mode == \"Morgon\" %}\n  {% if scene == \"Normalt\" %}\n    {%\
+        \ if front_section <= 1 %} 50\n    {% elif front_section == 2 %} 55\n    {% elif front_section == 3 %} 60\n    {%\
+        \ elif front_section == 4 %} 65\n    {% else %} 100\n    {% endif %}\n  {% elif scene in [\"Måltid\",\"Buffé\"] %}\n\
+        \    {% if front_section <= 1 %} 10\n    {% elif front_section == 2 %} 15\n    {% elif front_section == 3 %} 20\n\
+        \    {% elif front_section == 4 %} 30\n    {% elif front_section == 5 %} 35\n    {% elif front_section == 6 %} 40\n\
+        \    {% elif front_section <= 9 %} 50\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Spelkväll\" %} 0\n\
+        \  {% elif scene == \"Maxbelysning\" %}\n    {% if front_section <= 2 %} 65\n    {% elif front_section <= 4 %} 75\n\
+        \    {% elif front_section == 5 %} 85\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Mysigt\" %}\n   \
+        \ {% if front_section <= 4 %} 9\n    {% else %} 0\n    {% endif %}\n  {% elif scene == \"Morgon\" %}\n    {% if front_section\
+        \ <= 2 %} 9\n    {% elif front_section == 3 %} 20\n    {% elif front_section == 4 %} 25\n    {% elif front_section\
+        \ == 5 %} 50\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Släckt\" %} 0\n  {% elif scene == \"Dämpat\"\
+        \ %} 9\n  {% elif scene == \"---\" %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\") | float(0) / 2.55)\
+        \ | int(0) }}\n  {% else %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\") | float(0) / 2.55) | int(0)\
+        \ }}\n  {% endif %}\n{% elif house_mode in [\"Dag\",\"Kväll\"] %}\n  {% if scene == \"Normalt\" %}\n    {% if front_section\
+        \ <= 2 %} 65\n    {% elif front_section == 3 %} 70\n    {% elif front_section == 4 %} 80\n    {% else %} 100\n   \
+        \ {% endif %}\n  {% elif scene in [\"Måltid\",\"Buffé\"] %}\n    {% if front_section == 0 %} 9\n    {% elif front_section\
+        \ == 1 %} 10\n    {% elif front_section == 2 %} 15\n    {% elif front_section == 3 %} 20\n    {% elif front_section\
+        \ == 4 %} 30\n    {% elif front_section == 5 %} 35\n    {% elif front_section == 6 %} 40\n    {% elif front_section\
+        \ <= 9 %} 45\n    {% else %} 0\n    {% endif %}\n  {% elif scene == \"Spelkväll\" %} 0\n  {% elif scene == \"Maxbelysning\"\
+        \ %}\n    {% if front_section <= 2 %} 60\n    {% elif front_section <= 4 %} 75\n    {% elif front_section == 5 %}\
+        \ 85\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Mysigt\" %}\n    {% if front_section <= 4 %} 9\n \
+        \   {% else %} 0\n    {% endif %}\n  {% elif scene == \"Morgon\" %}\n    {% if front_section <= 2 %} 25\n    {% elif\
+        \ front_section == 3 %} 40\n    {% elif front_section == 4 %} 55\n    {% elif front_section == 5 %} 65\n    {% else\
+        \ %} 100\n    {% endif %}\n  {% elif scene == \"Släckt\" %} 0\n  {% elif scene == \"Dämpat\" %} 9\n  {% elif scene\
+        \ == \"---\" %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\") | float(0) / 2.55) | int(0) }}\n  {%\
+        \ else %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\") | float(0) / 2.55) | int(0) }}\n  {% endif\
+        \ %}\n{% elif house_mode == \"Natt\" %}\n  {% if scene == \"Normalt\" %} 60\n  {% elif scene in [\"Måltid\",\"Buffé\"\
+        ] %} 9\n  {% elif scene == \"Mysigt\" %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\") | float(0)\
+        \ / 2.55) | int(0) }}\n  {% elif scene == \"Maxbelysning\" %} 65\n  {% elif scene == \"Släckt\" %} 0\n  {% elif scene\
+        \ == \"Dämpat\" %} 9\n  {% elif scene == \"---\" %}\n    {{ (state_attr(\"light.koksbelysningen\",\"brightness\")\
+        \ | float(0) / 2.55) | int(0) }}\n  {% else %} 0\n  {% endif %}\n{% else %} 0 {% endif %}\n"
       transition: '{{ transition_seconds }}'
-  - action: "{% if house_mode in [\"Morgon\",\"Dag\",\"Kväll\"] %}\n  {% if scene
-      == \"Släckt\" %}\n    light.turn_off\n  {% elif jul and someone_home %}\n    light.turn_on\n
-      \ {% elif front_section <= 4 and scene in [\"Normalt\",\"Morgon\",\"Måltid\",\"Buffé\",\"Mysigt\",\"Maxbelysning\",\"Spelkväll\"]
-      %}\n    light.turn_on\n  {% else %}\n    light.turn_off\n  {% endif %}\n{% elif
-      house_mode == \"Natt\" %}\n  {% if scene == \"Normalt\" %}\n    light.turn_on\n
-      \ {% elif scene in [\"Måltid\",\"Buffé\"] %}\n    light.turn_on\n  {% elif scene
-      == \"Mysigt\" %}\n    light.turn_off\n  {% elif scene in [\"Maxbelysning\",\"Spelkväll\"]
-      %}\n    light.turn_on\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %}\n    light.turn_off\n
-      \ {% else %}\n    script.do_nothing\n  {% endif %}\n{% else %}\n  script.do_nothing\n{%
-      endif %}\n"
+  - action: "{% if house_mode in [\"Morgon\",\"Dag\",\"Kväll\"] %}\n  {% if scene == \"Släckt\" %}\n    light.turn_off\n \
+      \ {% elif jul and someone_home %}\n    light.turn_on\n  {% elif front_section <= 4 and scene in [\"Normalt\",\"Morgon\"\
+      ,\"Måltid\",\"Buffé\",\"Mysigt\",\"Maxbelysning\",\"Spelkväll\"] %}\n    light.turn_on\n  {% else %}\n    light.turn_off\n\
+      \  {% endif %}\n{% elif house_mode == \"Natt\" %}\n  {% if scene == \"Normalt\" %}\n    light.turn_on\n  {% elif scene\
+      \ in [\"Måltid\",\"Buffé\"] %}\n    light.turn_on\n  {% elif scene == \"Mysigt\" %}\n    light.turn_off\n  {% elif scene\
+      \ in [\"Maxbelysning\",\"Spelkväll\"] %}\n    light.turn_on\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %}\n    light.turn_off\n\
+      \  {% else %}\n    script.do_nothing\n  {% endif %}\n{% else %}\n  script.do_nothing\n{% endif %}\n"
     target:
       entity_id:
       - light.lampan_vid_fotoljen
       - light.elljusstaken_i_koksfonstret
-  - action: "{% if front_section <= 5 and scene in [\"Normalt\",\"Måltid\",\"Buffé\",\"Maxbelysning\",\"Spelkväll\",\"Mysigt\"]
-      %}\n  light.turn_on\n{% elif scene in [\"Släckt\",\"Dämpat\"] %}\n  light.turn_off\n{%
-      else %}\n  script.do_nothing\n{% endif %}\n"
+  - action: "{% if front_section <= 5 and scene in [\"Normalt\",\"Måltid\",\"Buffé\",\"Maxbelysning\",\"Spelkväll\",\"Mysigt\"\
+      ] %}\n  light.turn_on\n{% elif scene in [\"Släckt\",\"Dämpat\"] %}\n  light.turn_off\n{% else %}\n  script.do_nothing\n\
+      {% endif %}\n"
     target:
       entity_id:
       - light.hoga_skapet_i_koket
@@ -192,86 +160,64 @@ koket_stall_in_belysningen:
       entity_id:
       - light.takspottarna_kokstaket_level
     data:
-      brightness_pct: "{% if stadning %} 100 {% elif house_mode in [\"Morgon\",\"Kväll\"]
-        %}\n  {% if scene == \"Normalt\" %} 20\n  {% elif scene in [\"Måltid\",\"Buffé\"]
-        %}\n    {% if front_section == 0 %} 10\n    {% elif front_section == 1 %}
-        10\n    {% elif front_section == 2 %} 12\n    {% elif front_section == 3 %}
-        15\n    {% elif front_section == 4 %} 25\n    {% else %} 30\n    {% endif
-        %}\n  {% elif scene in [\"Maxbelysning\",\"Spelkväll\"] %}\n    {% if front_section
-        <= 2 %} 50\n    {% elif front_section == 3 %} 60\n    {% elif front_section
-        <= 4 %} 75\n    {% elif front_section == 5 %} 85\n    {% else %} 100\n    {%
-        endif %}\n  {% elif scene == \"Mysigt\" %} 0\n  {% elif scene == \"Morgon\"
-        %}\n    {% if front_section == 0 %} 10\n    {% elif front_section <= 1 %}
-        15\n    {% elif front_section == 2 %} 20\n    {% elif front_section == 3 %}
-        25\n    {% elif front_section == 4 %} 30\n    {% elif front_section == 5 %}
-        35\n    {% else %} 40\n    {% endif %}\n  {% elif scene in [\"Släckt\",\"Dämpat\"]
-        %} 0\n  {% else %} 0\n  {% endif %}\n{% elif house_mode == \"Dag\" %}\n  {%
-        if scene == \"Normalt\" %} 0\n  {% elif scene in [\"Maxbelysning\",\"Spelkväll\"]
-        %}\n    {% if front_section <= 2 %} 50\n    {% elif front_section == 3 %}
-        60\n    {% elif front_section <= 4 %} 75\n    {% elif front_section == 5 %}
-        85\n    {% else %} 100\n    {% endif %}\n  {% elif scene in [\"Måltid\",\"Buffé\"]
-        %}\n    {% if front_section == 0 %} 15\n    {% elif front_section == 1 %}
-        15\n    {% elif front_section == 2 %} 15\n    {% elif front_section == 3 %}
-        20\n    {% elif front_section == 4 %} 25\n    {% elif front_section == 5 %}
-        30\n    {% elif front_section >= 6 %} 40\n    {% else %} 40\n    {% endif
-        %}\n  {% elif scene == \"Mysigt\" %} 0\n  {% elif scene == \"Morgon\" %}\n
-        \   {{ (state_attr(\"light.takspottarna_kokstaket_level\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% elif scene in [\"Släckt\",\"Dämpat\"]
-        %} 0\n  {% elif scene == \"---\" %}\n    {{ (state_attr(\"light.takspottarna_kokstaket_level\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% else %} 0\n  {% endif %}\n{% elif house_mode
-        == \"Natt\" %}\n  {% if scene == \"Normalt\" %} 10\n  {% elif scene in [\"Måltid\",\"Buffé\"]
-        %} 10\n  {% elif scene == \"Mysigt\" %} 0\n  {% elif scene in [\"Maxbelysning\",\"Spelkväll\"]
-        %} 60\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %} 0\n  {% elif scene ==
-        \"---\" %}\n    {{ (state_attr(\"light.takspottarna_kokstaket_level\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% else %} 0\n  {% endif %}\n{% else %}
-        0 {% endif %}\n"
+      brightness_pct: "{% if stadning %} 100 {% elif house_mode in [\"Morgon\",\"Kväll\"] %}\n  {% if scene == \"Normalt\"\
+        \ %} 20\n  {% elif scene in [\"Måltid\",\"Buffé\"] %}\n    {% if front_section == 0 %} 10\n    {% elif front_section\
+        \ == 1 %} 10\n    {% elif front_section == 2 %} 12\n    {% elif front_section == 3 %} 15\n    {% elif front_section\
+        \ == 4 %} 25\n    {% else %} 30\n    {% endif %}\n  {% elif scene in [\"Maxbelysning\",\"Spelkväll\"] %}\n    {% if\
+        \ front_section <= 2 %} 50\n    {% elif front_section == 3 %} 60\n    {% elif front_section <= 4 %} 75\n    {% elif\
+        \ front_section == 5 %} 85\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Mysigt\" %} 0\n  {% elif scene\
+        \ == \"Morgon\" %}\n    {% if front_section == 0 %} 10\n    {% elif front_section <= 1 %} 15\n    {% elif front_section\
+        \ == 2 %} 20\n    {% elif front_section == 3 %} 25\n    {% elif front_section == 4 %} 30\n    {% elif front_section\
+        \ == 5 %} 35\n    {% else %} 40\n    {% endif %}\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %} 0\n  {% else %} 0\n\
+        \  {% endif %}\n{% elif house_mode == \"Dag\" %}\n  {% if scene == \"Normalt\" %} 0\n  {% elif scene in [\"Maxbelysning\"\
+        ,\"Spelkväll\"] %}\n    {% if front_section <= 2 %} 50\n    {% elif front_section == 3 %} 60\n    {% elif front_section\
+        \ <= 4 %} 75\n    {% elif front_section == 5 %} 85\n    {% else %} 100\n    {% endif %}\n  {% elif scene in [\"Måltid\"\
+        ,\"Buffé\"] %}\n    {% if front_section == 0 %} 15\n    {% elif front_section == 1 %} 15\n    {% elif front_section\
+        \ == 2 %} 15\n    {% elif front_section == 3 %} 20\n    {% elif front_section == 4 %} 25\n    {% elif front_section\
+        \ == 5 %} 30\n    {% elif front_section >= 6 %} 40\n    {% else %} 40\n    {% endif %}\n  {% elif scene == \"Mysigt\"\
+        \ %} 0\n  {% elif scene == \"Morgon\" %}\n    {{ (state_attr(\"light.takspottarna_kokstaket_level\",\"brightness\"\
+        ) | float(0) / 2.55) | int(0) }}\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %} 0\n  {% elif scene == \"---\" %}\n\
+        \    {{ (state_attr(\"light.takspottarna_kokstaket_level\",\"brightness\") | float(0) / 2.55) | int(0) }}\n  {% else\
+        \ %} 0\n  {% endif %}\n{% elif house_mode == \"Natt\" %}\n  {% if scene == \"Normalt\" %} 10\n  {% elif scene in [\"\
+        Måltid\",\"Buffé\"] %} 10\n  {% elif scene == \"Mysigt\" %} 0\n  {% elif scene in [\"Maxbelysning\",\"Spelkväll\"\
+        ] %} 60\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %} 0\n  {% elif scene == \"---\" %}\n    {{ (state_attr(\"light.takspottarna_kokstaket_level\"\
+        ,\"brightness\") | float(0) / 2.55) | int(0) }}\n  {% else %} 0\n  {% endif %}\n{% else %} 0 {% endif %}\n"
       transition: '{{ transition_seconds }}'
   - action: light.turn_on
     target:
       entity_id:
       - light.koket_arbetsbanken
     data:
-      brightness_pct: "{% if stadning %} 100 {% elif house_mode in [\"Morgon\",\"Dag\",\"Kväll\"]
-        %}\n  {% if scene == \"Normalt\" %}\n    {% if front_section <= 2 %} 40\n
-        \   {% elif front_section == 3 %} 50\n    {% elif front_section == 4 %} 70\n
-        \   {% elif front_section == 5 %} 80\n    {% else %} 100\n    {% endif %}\n
-        \ {% elif scene == \"Måltid\" %}\n    {% if front_section <= 2 %} 0\n    {%
-        elif front_section <= 4 %}\n      {% if jul %} 0 {% else %} 15 {% endif %}\n
-        \   {% else %} 25\n    {% endif %}\n  {% elif scene == \"Buffé\" %}\n    {%
-        if front_section >= 3 %} 25 {% else %} 15 {% endif %}\n  {% elif scene ==
-        \"Spelkväll\" %} 0\n  {% elif scene == \"Maxbelysning\" %}\n    {% if front_section
-        <= 2 %} 50\n    {% elif front_section == 3 %} 60\n    {% elif front_section
-        <= 4 %} 75\n    {% elif front_section == 5 %} 85\n    {% else %} 100\n    {%
-        endif %}\n  {% elif scene == \"Mysigt\" %} 0\n  {% elif scene == \"Morgon\"
-        %}\n    {% if front_section <= 2 %} 25\n    {% elif front_section == 3 %}
-        40\n    {% elif front_section == 4 %} 55\n    {% elif front_section == 5 %}
-        65\n    {% elif front_section == 6 %} 75\n    {% else %} 100\n    {% endif
-        %}\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %} 0\n  {% elif scene == \"---\"
-        %}\n    {{ (state_attr(\"light.koket_arbetsbanken\",\"brightness\") | float(0)
-        / 2.55) | int(0) }}\n  {% else %}\n    {{ (state_attr(\"light.koket_arbetsbanken\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% endif %}\n{% elif house_mode == \"Natt\"
-        %}\n  {% if scene == \"Normalt\" %} 30\n  {% elif scene == \"Måltid\" %}\n
-        \   {% if front_section >= 3 %} 25 {% else %} 0 {% endif %}\n  {% elif scene
-        == \"Buffé\" %}\n    {% if front_section >= 3 %} 25 {% else %} 15 {% endif
-        %}\n  {% elif scene == \"Mysigt\" %} 0\n  {% elif scene == \"Maxbelysning\"
-        %} 40\n  {% elif scene == \"Spelkväll\" %} 0\n  {% elif scene in [\"Släckt\",\"Dämpat\"]
-        %} 0\n  {% elif scene == \"---\" %}\n    {{ (state_attr(\"light.koket_arbetsbanken\",\"brightness\")
-        | float(0) / 2.55) | int(0) }}\n  {% else %} 0\n  {% endif %}\n{% else %}
-        0 {% endif %}\n"
+      brightness_pct: "{% if stadning %} 100 {% elif house_mode in [\"Morgon\",\"Dag\",\"Kväll\"] %}\n  {% if scene == \"\
+        Normalt\" %}\n    {% if front_section <= 2 %} 40\n    {% elif front_section == 3 %} 50\n    {% elif front_section\
+        \ == 4 %} 70\n    {% elif front_section == 5 %} 80\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Måltid\"\
+        \ %}\n    {% if front_section <= 2 %} 0\n    {% elif front_section <= 4 %}\n      {% if jul %} 0 {% else %} 15 {%\
+        \ endif %}\n    {% else %} 25\n    {% endif %}\n  {% elif scene == \"Buffé\" %}\n    {% if front_section >= 3 %} 25\
+        \ {% else %} 15 {% endif %}\n  {% elif scene == \"Spelkväll\" %} 0\n  {% elif scene == \"Maxbelysning\" %}\n    {%\
+        \ if front_section <= 2 %} 50\n    {% elif front_section == 3 %} 60\n    {% elif front_section <= 4 %} 75\n    {%\
+        \ elif front_section == 5 %} 85\n    {% else %} 100\n    {% endif %}\n  {% elif scene == \"Mysigt\" %} 0\n  {% elif\
+        \ scene == \"Morgon\" %}\n    {% if front_section <= 2 %} 25\n    {% elif front_section == 3 %} 40\n    {% elif front_section\
+        \ == 4 %} 55\n    {% elif front_section == 5 %} 65\n    {% elif front_section == 6 %} 75\n    {% else %} 100\n   \
+        \ {% endif %}\n  {% elif scene in [\"Släckt\",\"Dämpat\"] %} 0\n  {% elif scene == \"---\" %}\n    {{ (state_attr(\"\
+        light.koket_arbetsbanken\",\"brightness\") | float(0) / 2.55) | int(0) }}\n  {% else %}\n    {{ (state_attr(\"light.koket_arbetsbanken\"\
+        ,\"brightness\") | float(0) / 2.55) | int(0) }}\n  {% endif %}\n{% elif house_mode == \"Natt\" %}\n  {% if scene ==\
+        \ \"Normalt\" %} 30\n  {% elif scene == \"Måltid\" %}\n    {% if front_section >= 3 %} 25 {% else %} 0 {% endif %}\n\
+        \  {% elif scene == \"Buffé\" %}\n    {% if front_section >= 3 %} 25 {% else %} 15 {% endif %}\n  {% elif scene ==\
+        \ \"Mysigt\" %} 0\n  {% elif scene == \"Maxbelysning\" %} 40\n  {% elif scene == \"Spelkväll\" %} 0\n  {% elif scene\
+        \ in [\"Släckt\",\"Dämpat\"] %} 0\n  {% elif scene == \"---\" %}\n    {{ (state_attr(\"light.koket_arbetsbanken\"\
+        ,\"brightness\") | float(0) / 2.55) | int(0) }}\n  {% else %} 0\n  {% endif %}\n{% else %} 0 {% endif %}\n"
       transition: '{{ transition_seconds }}'
   - delay: 00:00:02
-  - action: "{% if house_mode == \"Natt\"\n  and scene == \"Dämpat\"\n  and is_state(\"light.koksbelysningen\",\"off\")
-      %} light.turn_on\n{% else %} script.do_nothing {% endif %}\n"
+  - action: "{% if house_mode == \"Natt\"\n  and scene == \"Dämpat\"\n  and is_state(\"light.koksbelysningen\",\"off\") %}\
+      \ light.turn_on\n{% else %} script.do_nothing {% endif %}\n"
     target:
       entity_id:
       - light.takspottarna_trappan_level
       - light.spottarna_bakom_spisen_level
     data:
-      brightness_pct: "{% if is_state(\"group.rorelse_i_allmanna_utrymmen\",\"off\")\n
-        \ and (as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_allmanna_utrymmen', 'last_changed') or now()))
-        | int(0) > (60 * 15) %} 0\n{% else %} 9 {% endif %}\n"
-  - action: '{% if scene == "Dämpat" %} light.turn_off {% else %} script.do_nothing
-      {% endif %}
+      brightness_pct: "{% if is_state(\"group.rorelse_i_allmanna_utrymmen\",\"off\")\n  and (as_timestamp(now()) - as_timestamp(state_attr('group.rorelse_i_allmanna_utrymmen',\
+        \ 'last_changed') or now())) | int(0) > (60 * 15) %} 0\n{% else %} 9 {% endif %}\n"
+  - action: '{% if scene == "Dämpat" %} light.turn_off {% else %} script.do_nothing {% endif %}
 
       '
     target:
@@ -288,9 +234,8 @@ koket_stall_in_belysningen:
         target:
           entity_id: '{{ repeat.item }}'
         data:
-          brightness_pct: '{% set pct = ((state_attr(repeat.item, "brightness") |
-            float(0)) / 2.55) | int(0) %} {% if pct == 9 %} 1 {% else %} {{ pct }}
-            {% endif %}
+          brightness_pct: '{% set pct = ((state_attr(repeat.item, "brightness") | float(0)) / 2.55) | int(0) %} {% if pct
+            == 9 %} 1 {% else %} {{ pct }} {% endif %}
 
             '
 starta_tv_i_vardagsrummet:
@@ -321,9 +266,8 @@ styr_belysningen_nar_alla_gatt_hemifran:
     target:
       entity_id: input_select.ilias_rum_belysning
     data:
-      option: '{% if   is_state("input_boolean.stastadning_pagar","on") %} Städning
-        {% elif states("input_select.house_time_modes") in ["Morgon","Dag","Natt"]
-        %} Släckt {% else %} Tänt {% endif %}
+      option: '{% if   is_state("input_boolean.stastadning_pagar","on") %} Städning {% elif states("input_select.house_time_modes")
+        in ["Morgon","Dag","Natt"] %} Släckt {% else %} Tänt {% endif %}
 
         '
   - action: script.turn_on
@@ -333,9 +277,8 @@ styr_belysningen_nar_alla_gatt_hemifran:
     target:
       entity_id: input_select.vardagsrummet_belysning
     data:
-      option: "{% if   is_state(\"input_boolean.stastadning_pagar\",\"on\") %} Städning
-        {% elif states(\"input_select.house_time_modes\") in [\"Morgon\",\"Dag\",\"Natt\"]
-        %} Släckt {% else %} Tänt {% endif %}        \n"
+      option: "{% if   is_state(\"input_boolean.stastadning_pagar\",\"on\") %} Städning {% elif states(\"input_select.house_time_modes\"\
+        ) in [\"Morgon\",\"Dag\",\"Natt\"] %} Släckt {% else %} Tänt {% endif %}        \n"
   - action: script.turn_on
     target:
       entity_id: script.vardagsrummet_stall_in_belysningen
@@ -343,8 +286,8 @@ styr_belysningen_nar_alla_gatt_hemifran:
     target:
       entity_id: input_select.sovrummet_belysning
     data:
-      option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag","Natt"]
-        %} Släckt {% else %} Tänt {% endif %}
+      option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag","Natt"] %} Släckt {% else %} Tänt {% endif
+        %}
 
         '
   - action: script.turn_on
@@ -354,8 +297,8 @@ styr_belysningen_nar_alla_gatt_hemifran:
     target:
       entity_id: input_select.annas_rum_belysning
     data:
-      option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag","Natt"]
-        %} Släckt {% else %} Tänt {% endif %}
+      option: '{% if states("input_select.house_time_modes") in ["Morgon","Dag","Natt"] %} Släckt {% else %} Tänt {% endif
+        %}
 
         '
   - action: script.turn_on
@@ -368,8 +311,8 @@ styr_belysningen_nar_alla_gatt_hemifran:
     target:
       entity_id: input_select.koket_belysning
     data:
-      option: "{% if states(\"input_select.house_time_modes\") in [\"Morgon\",\"Dag\",\"Natt\"]
-        %} Släckt {% else %} Mysigt {% endif %}          \n"
+      option: "{% if states(\"input_select.house_time_modes\") in [\"Morgon\",\"Dag\",\"Natt\"] %} Släckt {% else %} Mysigt\
+        \ {% endif %}          \n"
   - action: script.turn_on
     target:
       entity_id: script.koket_stall_in_belysningen
@@ -381,8 +324,8 @@ styr_belysningen_nar_alla_gatt_hemifran:
       entity_id: script.eriks_rum_satt_lage
     data:
       variables:
-        lage: '{% if states("input_select.house_time_modes") in ["Morgon","Dag","Natt"]
-          %} Släckt {% else %} Mysigt {% endif %}
+        lage: '{% if states("input_select.house_time_modes") in ["Morgon","Dag","Natt"] %} Släckt {% else %} Mysigt {% endif
+          %}
 
           '
   - action: script.turn_on
@@ -412,10 +355,9 @@ morgonbelysning:
     target:
       entity_id: input_select.vardagsrummet_belysning
     data:
-      option: "{% if is_state(\"input_boolean.vacation_mode\",\"on\")\n  or now().strftime('%w')
-        | int(default = 0) in [6,7]\n  or is_state(\"calendar.helgdagar\",\"0\") %}
-        {{ states(\"input_select.vardagsrummet_belysning\") }}\n{% else %} Tänt {%
-        endif %}\n"
+      option: "{% if is_state(\"input_boolean.vacation_mode\",\"on\")\n  or now().strftime('%w') | int(default = 0) in [6,7]\n\
+        \  or is_state(\"calendar.helgdagar\",\"0\") %} {{ states(\"input_select.vardagsrummet_belysning\") }}\n{% else %}\
+        \ Tänt {% endif %}\n"
   - action: input_select.select_option
     target:
       entity_id: input_select.sovrummet_belysning
@@ -468,9 +410,8 @@ dagsbelysning:
     target:
       entity_id: input_select.annas_rum_belysning
     data:
-      option: "{% if is_state(\"device_tracker.anna_s22_ultra\",\"home\") \n  and
-        is_state(\"var.morgoninfo_koket_redan_upplast\",\"true\") %} Trådkorgarna
-        normalbelysning\n{% else %} Släckt {% endif %}\n"
+      option: "{% if is_state(\"device_tracker.anna_s22_ultra\",\"home\") \n  and is_state(\"var.morgoninfo_koket_redan_upplast\"\
+        ,\"true\") %} Trådkorgarna normalbelysning\n{% else %} Släckt {% endif %}\n"
   - action: script.turn_on
     target:
       entity_id: script.ovre_trappan_stall_in_belysningen
@@ -485,15 +426,13 @@ dagsbelysning:
       entity_id: script.eriks_rum_satt_lage
     data:
       variables:
-        lage: "{% if is_state(\"input_boolean.gaster_hemma\",\"on\") %} {{ states(\"input_select.eriks_rum_belysning\")
-          }} {% elif is_state(\"input_boolean.stadning_pagar\",\"on\") %} {{ states(\"input_select.eriks_rum_belysning\")
-          }} {% elif (is_state(\"binary_sensor.eriks_rum_rorelse\",\"off\")\n      and
-          (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())
-          | int(default = 0) > 60 * 3)) %} Släckt\n{% else %}\n  {% if states(\"sensor.utomhus_framsidan_ljusstyrka\")
-          | int(default = 0) < 2000 %} \n    {% if states(\"input_select.eriks_rum_belysning\")
-          in [\"Tänt\",\"Taklamporna\"] %} Tänt\n    {% elif states(\"input_select.eriks_rum_belysning\")
-          in [\"Mysigt\",\"Släckt\"] %} Mysigt\n    {% else %} Mysigt\n    {% endif
-          %}\n  {% else %} Släckt\n  {% endif %}\n{% endif %}\n"
+        lage: "{% if is_state(\"input_boolean.gaster_hemma\",\"on\") %} {{ states(\"input_select.eriks_rum_belysning\") }}\
+          \ {% elif is_state(\"input_boolean.stadning_pagar\",\"on\") %} {{ states(\"input_select.eriks_rum_belysning\") }}\
+          \ {% elif (is_state(\"binary_sensor.eriks_rum_rorelse\",\"off\")\n      and (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse',\
+          \ 'last_changed') or now()) | int(default = 0) > 60 * 3)) %} Släckt\n{% else %}\n  {% if states(\"sensor.utomhus_framsidan_ljusstyrka\"\
+          ) | int(default = 0) < 2000 %} \n    {% if states(\"input_select.eriks_rum_belysning\") in [\"Tänt\",\"Taklamporna\"\
+          ] %} Tänt\n    {% elif states(\"input_select.eriks_rum_belysning\") in [\"Mysigt\",\"Släckt\"] %} Mysigt\n    {%\
+          \ else %} Mysigt\n    {% endif %}\n  {% else %} Släckt\n  {% endif %}\n{% endif %}\n"
   - action: input_select.select_option
     entity_id: input_select.nedre_trappan_belysning
     data:
@@ -513,34 +452,29 @@ kvallsbelysning:
     target:
       entity_id: input_select.vardagsrummet_belysning
     data:
-      option: '{% if states("input_select.vardagsrummet_belysning") in ["Dämpat","Träning","Städning","PS4","TV"]
-        %} {{ states("input_select.vardagsrummet_belysning") }} {% else %} Tänt {%
-        endif %}
+      option: '{% if states("input_select.vardagsrummet_belysning") in ["Dämpat","Träning","Städning","PS4","TV"] %} {{ states("input_select.vardagsrummet_belysning")
+        }} {% else %} Tänt {% endif %}
 
         '
   - action: input_select.select_option
     target:
       entity_id: input_select.sovrummet_belysning
     data:
-      option: "{% if is_state(\"zone.home\",\"0\") %} Tänt {% else %}\n  {% if not
-        is_state(\"cover.rullgardin_sovrummet\",\"closed\") \n    and is_state(\"var.morgoninfo_koket_redan_upplast\",\"true\")
-        %} Tänt\n  {% else %} {{ states(\"input_select.sovrummet_belysning\") }}\n
-        \ {% endif %}\n{% endif %}\n"
+      option: "{% if is_state(\"zone.home\",\"0\") %} Tänt {% else %}\n  {% if not is_state(\"cover.rullgardin_sovrummet\"\
+        ,\"closed\") \n    and is_state(\"var.morgoninfo_koket_redan_upplast\",\"true\") %} Tänt\n  {% else %} {{ states(\"\
+        input_select.sovrummet_belysning\") }}\n  {% endif %}\n{% endif %}\n"
   - action: input_select.select_option
     target:
       entity_id: input_select.annas_rum_belysning
     data:
-      option: "{% if is_state(\"input_boolean.stadning_pagar\",\"true\") %} Tänt {%
-        elif is_state(\"var.morgoninfo_koket_redan_upplast\",\"true\") \n  and now().strftime('%R')
-        > \"07:15\" %} \n  {% if states(\"input_select.house_time_modes\") in [\"Dag\"]
-        %}\n    {% if not states(\"input_select.annas_rum_belysning\") in [\"Städning\",\"Trådkorgarna
-        maxbelysning\"] %} Tänt\n    {% else %} {{ states(\"input_select.annas_rum_belysning\")
-        }}\n    {% endif %}        \n  {% elif states(\"input_select.house_time_modes\")
-        in [\"Kväll\"] %}\n    {% if not states(\"input_select.annas_rum_belysning\")
-        in [\"Städning\",\"Trådkorgarna maxbelysning\"] %} Tänt\n    {% else %} {{
-        states(\"input_select.annas_rum_belysning\") }}\n    {% endif %} \n  {% else
-        %} {{ states(\"input_select.annas_rum_belysning\") }}\n  {% endif %}\n{% else
-        %} {{ states(\"input_select.annas_rum_belysning\") }} {% endif %}\n"
+      option: "{% if is_state(\"input_boolean.stadning_pagar\",\"true\") %} Tänt {% elif is_state(\"var.morgoninfo_koket_redan_upplast\"\
+        ,\"true\") \n  and now().strftime('%R') > \"07:15\" %} \n  {% if states(\"input_select.house_time_modes\") in [\"\
+        Dag\"] %}\n    {% if not states(\"input_select.annas_rum_belysning\") in [\"Städning\",\"Trådkorgarna maxbelysning\"\
+        ] %} Tänt\n    {% else %} {{ states(\"input_select.annas_rum_belysning\") }}\n    {% endif %}        \n  {% elif states(\"\
+        input_select.house_time_modes\") in [\"Kväll\"] %}\n    {% if not states(\"input_select.annas_rum_belysning\") in\
+        \ [\"Städning\",\"Trådkorgarna maxbelysning\"] %} Tänt\n    {% else %} {{ states(\"input_select.annas_rum_belysning\"\
+        ) }}\n    {% endif %} \n  {% else %} {{ states(\"input_select.annas_rum_belysning\") }}\n  {% endif %}\n{% else %}\
+        \ {{ states(\"input_select.annas_rum_belysning\") }} {% endif %}\n"
   - action: script.turn_on
     target:
       entity_id: script.ovre_trappan_stall_in_belysningen
@@ -555,11 +489,11 @@ kvallsbelysning:
       entity_id: script.eriks_rum_satt_lage
     data:
       variables:
-        lage: "{% if is_state(\"zone.home\",\"0\") %} Släckt  {% elif is_state(\"input_boolean.gaster_hemma\",\"on\")
-          \n    or is_state(\"input_boolean.stadning_pagar\",\"on\")\n    or is_state(\"var.morgoninfo_koket_redan_upplast\",\"false\")
-          %} \n  {{ states(\"input_select.eriks_rum_belysning\") }}\n{% elif states(\"input_select.eriks_rum_belysning\")
-          in [\"Tänt\",\"Taklamporna\"] %} Tänt  {% elif states(\"input_select.eriks_rum_belysning\")
-          in [\"Mysigt\",\"Släckt\"] %} Mysigt  {% else %} Mysigt  {% endif %}\n"
+        lage: "{% if is_state(\"zone.home\",\"0\") %} Släckt  {% elif is_state(\"input_boolean.gaster_hemma\",\"on\") \n \
+          \   or is_state(\"input_boolean.stadning_pagar\",\"on\")\n    or is_state(\"var.morgoninfo_koket_redan_upplast\"\
+          ,\"false\") %} \n  {{ states(\"input_select.eriks_rum_belysning\") }}\n{% elif states(\"input_select.eriks_rum_belysning\"\
+          ) in [\"Tänt\",\"Taklamporna\"] %} Tänt  {% elif states(\"input_select.eriks_rum_belysning\") in [\"Mysigt\",\"\
+          Släckt\"] %} Mysigt  {% else %} Mysigt  {% endif %}\n"
   - action: input_select.select_option
     entity_id: input_select.nedre_trappan_belysning
     data:
@@ -578,26 +512,23 @@ nattbelysning:
   - action: input_select.select_option
     data:
       entity_id: input_select.vardagsrummet_belysning
-      option: "{% if is_state('media_player.denon_avr_x2800h', 'off') %}\n  {% if
-        is_state('input_select.vardagsrummet_belysning', 'Släckt') %}\n    Släckt\n
-        \ {% else %}\n    {% set last_motion = as_timestamp(state_attr('group.rorelse_i_vardagsrummet', 'last_changed') or now())
-        %}\n    {% set now = as_timestamp(now()) %}\n    {% if (now - last_motion)
-        > (60 * 10) %}\n      Släckt\n    {% else %}\n      Dämpat\n    {% endif %}\n
-        \ {% endif %}\n{% else %}\n  {{ states('input_select.vardagsrummet_belysning')
-        }}\n{% endif %}\n"
+      option: "{% if is_state('media_player.denon_avr_x2800h', 'off') %}\n  {% if is_state('input_select.vardagsrummet_belysning',\
+        \ 'Släckt') %}\n    Släckt\n  {% else %}\n    {% set last_motion = as_timestamp(state_attr('group.rorelse_i_vardagsrummet',\
+        \ 'last_changed') or now()) %}\n    {% set now = as_timestamp(now()) %}\n    {% if (now - last_motion) > (60 * 10)\
+        \ %}\n      Släckt\n    {% else %}\n      Dämpat\n    {% endif %}\n  {% endif %}\n{% else %}\n  {{ states('input_select.vardagsrummet_belysning')\
+        \ }}\n{% endif %}\n"
   - action: input_select.select_option
     target:
       entity_id: input_select.sovrummet_belysning
     data:
-      option: "{% if  is_state(\"device_tracker.ilias_s23_ultra\",\"home\")\n    or
-        is_state(\"device_tracker.anna_s22_ultra\",\"home\") %} {{ states(\"input_select.sovrummet_belysning\")
-        }}\n{% else %} Släckt {% endif %}\n"
+      option: "{% if  is_state(\"device_tracker.ilias_s23_ultra\",\"home\")\n    or is_state(\"device_tracker.anna_s22_ultra\"\
+        ,\"home\") %} {{ states(\"input_select.sovrummet_belysning\") }}\n{% else %} Släckt {% endif %}\n"
   - action: input_select.select_option
     target:
       entity_id: input_select.annas_rum_belysning
     data:
-      option: '{% if is_state("zone.home","0") %} Släckt {% elif is_state("input_select.annas_rum_belysning","Släckt")
-        %} Släckt {% else %} Släckt {% endif %}
+      option: '{% if is_state("zone.home","0") %} Släckt {% elif is_state("input_select.annas_rum_belysning","Släckt") %}
+        Släckt {% else %} Släckt {% endif %}
 
         '
   - action: script.turn_on
@@ -614,11 +545,10 @@ nattbelysning:
       entity_id: script.eriks_rum_satt_lage
     data:
       variables:
-        lage: "{% if is_state('binary_sensor.erik_hemma', 'on') and not is_state(\"input_select.eriks_rum_belysning\",\"Släckt\")
-          %} Minimalt {% elif is_state(\"input_boolean.gaster_hemma\",\"on\") %} {{
-          states(\"input_select.eriks_rum_belysning\") }} {% elif (is_state(\"binary_sensor.eriks_rum_rorelse\",\"off\")\n
-          \     and (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now())
-          | int(default = 0) > 60 * 3)) %} Släckt\n{% else %} Släckt {% endif %}\n"
+        lage: "{% if is_state('binary_sensor.erik_hemma', 'on') and not is_state(\"input_select.eriks_rum_belysning\",\"Släckt\"\
+          ) %} Minimalt {% elif is_state(\"input_boolean.gaster_hemma\",\"on\") %} {{ states(\"input_select.eriks_rum_belysning\"\
+          ) }} {% elif (is_state(\"binary_sensor.eriks_rum_rorelse\",\"off\")\n      and (as_timestamp(now()) - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse',\
+          \ 'last_changed') or now()) | int(default = 0) > 60 * 3)) %} Släckt\n{% else %} Släckt {% endif %}\n"
   - action: input_select.select_option
     entity_id: input_select.nedre_trappan_belysning
     data:
@@ -791,20 +721,15 @@ las_text_i_valfri_device:
   mode: restart
   description: Läs upp i valfri puck, högtalare eller grupp av högtalare
   sequence:
-  - action: "{% if hogtalare in [\"media_player.alla_hogtalare\",
-                                 \"media_player.de_basta_hogtalarna\"]
-      %} script.do_nothing
-      {% else %} script.tysta_kopplingspling_vid_casting {%
-      endif %}
-"
+  - action: '{% if hogtalare in ["media_player.alla_hogtalare", "media_player.de_basta_hogtalarna"] %} script.do_nothing {%
+      else %} script.tysta_kopplingspling_vid_casting {% endif %} '
     data:
       hogtalare: '{{ hogtalare }}'
   - action: media_player.volume_set
     data:
-      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.infopuckarna_ha_grupp
-        {% elif hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar_ha_grupp
-        {% elif hogtalare == "media_player.alla_hogtalare" %} media_player.alla_hogtalare_ha_grupp
-        {% elif hogtalare == "media_player.de_basta_hogtalarna" %} media_player.de_basta_hogtalarna_ha_grupp
+      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.infopuckarna_ha_grupp {% elif
+        hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar_ha_grupp {% elif hogtalare == "media_player.alla_hogtalare"
+        %} media_player.alla_hogtalare_ha_grupp {% elif hogtalare == "media_player.de_basta_hogtalarna" %} media_player.de_basta_hogtalarna_ha_grupp
         {% else %} {{ hogtalare }} {% endif %}
 
         '
@@ -832,52 +757,35 @@ las_text_i_valfri_device:
       '
     timeout: 00:00:30
     continue_on_timeout: false
-  - wait_template: '{{ is_state('''' ~ hogtalare ~ '''', ''idle'') and not is_state(''''
-      ~ hogtalare ~ '''', ''playing'') }}
+  - wait_template: '{{ is_state('''' ~ hogtalare ~ '''', ''idle'') and not is_state('''' ~ hogtalare ~ '''', ''playing'')
+      }}
 
       '
     timeout: 00:00:30
     continue_on_timeout: false
   - action: media_player.volume_set
     data:
-      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.infopuckarna_ha_grupp
-        {% elif hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar_ha_grupp
-        {% else %} {{ hogtalare }} {% endif %}
+      entity_id: '{% if hogtalare == "media_player.googlehome_infopuckarna" %} media_player.infopuckarna_ha_grupp {% elif
+        hogtalare == "media_player.googlehome_alla_puckar" %} media_player.alla_puckar_ha_grupp {% else %} {{ hogtalare }}
+        {% endif %}
 
         '
-      volume_level: '{{ (states("input_number.google_home_volume_setting_notiser")
-        | float(default = 0) / 100) }}'
+      volume_level: '{{ (states("input_number.google_home_volume_setting_notiser") | float(default = 0) / 100) }}'
 tysta_kopplingspling_vid_casting:
   alias: Tysta kopplingspling vid casting
   mode: parallel
-  description: Ta bort plinget som hörs i början när man castar till en Chromecast
-    eller Google home nest
+  description: Ta bort plinget som hörs i början när man castar till en Chromecast eller Google home nest
   sequence:
   - variables:
-      mute_targets: >
-        {% if hogtalare == "media_player.googlehome_infopuckarna" %}
-          media_player.googlehome_vardagsrummet,media_player.googlehome_koket
-        {% elif hogtalare == "media_player.googlehome_alla_puckar" %}
-          media_player.googlehome_ilias_rum,media_player.googlehome_vardagsrummet,media_player.googlehome_sovrummet,media_player.googlehome_annas_rum,media_player.googlehome_koket,media_player.googlehome_eriks_rum
-        {% elif hogtalare == "media_player.alla_hogtalare" %}
-          media_player.googlehome_ilias_rum,media_player.googlehome_vardagsrummet,media_player.googlehome_sovrummet,media_player.googlehome_annas_rum,media_player.googlehome_koket,media_player.googlehome_eriks_rum,media_player.stereon_i_vardagsrummet,media_player.annas_stereo,media_player.hogtalarna_i_koket,media_player.eriks_stereo
-        {% elif hogtalare == "media_player.de_besta_hogtalarna" %}
-          media_player.stereon_i_vardagsrummet,media_player.annas_stereo,media_player.hogtalarna_i_koket,media_player.eriks_stereo
-        {% else %}
-          {{ hogtalare }}
-        {% endif %}
-      mute_check_entity: >
-        {% if hogtalare == "media_player.googlehome_infopuckarna" %}
-          media_player.googlehome_vardagsrummet
-        {% elif hogtalare == "media_player.googlehome_alla_puckar" %}
-          media_player.googlehome_ilias_rum
-        {% elif hogtalare == "media_player.alla_hogtalare" %}
-          media_player.googlehome_ilias_rum
-        {% elif hogtalare == "media_player.de_besta_hogtalarna" %}
-          media_player.stereon_i_vardagsrummet
-        {% else %}
-          {{ hogtalare }}
-        {% endif %}
+      mute_targets: "{% if hogtalare == \"media_player.googlehome_infopuckarna\" %}\n  media_player.googlehome_vardagsrummet,media_player.googlehome_koket\n\
+        {% elif hogtalare == \"media_player.googlehome_alla_puckar\" %}\n  media_player.googlehome_ilias_rum,media_player.googlehome_vardagsrummet,media_player.googlehome_sovrummet,media_player.googlehome_annas_rum,media_player.googlehome_koket,media_player.googlehome_eriks_rum\n\
+        {% elif hogtalare == \"media_player.alla_hogtalare\" %}\n  media_player.googlehome_ilias_rum,media_player.googlehome_vardagsrummet,media_player.googlehome_sovrummet,media_player.googlehome_annas_rum,media_player.googlehome_koket,media_player.googlehome_eriks_rum,media_player.stereon_i_vardagsrummet,media_player.annas_stereo,media_player.hogtalarna_i_koket,media_player.eriks_stereo\n\
+        {% elif hogtalare == \"media_player.de_besta_hogtalarna\" %}\n  media_player.stereon_i_vardagsrummet,media_player.annas_stereo,media_player.hogtalarna_i_koket,media_player.eriks_stereo\n\
+        {% else %}\n  {{ hogtalare }}\n{% endif %}\n"
+      mute_check_entity: "{% if hogtalare == \"media_player.googlehome_infopuckarna\" %}\n  media_player.googlehome_vardagsrummet\n\
+        {% elif hogtalare == \"media_player.googlehome_alla_puckar\" %}\n  media_player.googlehome_ilias_rum\n{% elif hogtalare\
+        \ == \"media_player.alla_hogtalare\" %}\n  media_player.googlehome_ilias_rum\n{% elif hogtalare == \"media_player.de_besta_hogtalarna\"\
+        \ %}\n  media_player.stereon_i_vardagsrummet\n{% else %}\n  {{ hogtalare }}\n{% endif %}\n"
   - action: media_player.volume_mute
     data:
       is_volume_muted: true
@@ -914,59 +822,60 @@ stjarnan_i_trappan_loopa_farger:
         target:
           entity_id: light.stjarnan_i_trappan
         data:
-          rgb_color: "{% set colors_old = ['red','orange', 'blue', 'green', 'violet']
-            %} {% set colors = ['255, 164, 74','255, 218, 110','255, 190, 45','255, 43,
-            0'] %} {{ colors|random }}        \n"
+          rgb_color: "{% set colors_old = ['red','orange', 'blue', 'green', 'violet'] %} {% set colors = ['255, 164, 74','255,\
+            \ 218, 110','255, 190, 45','255, 43, 0'] %} {{ colors|random }}        \n"
           transition: 2
-          brightness_pct: "{% if is_state(\"light.koksbelysningen\",\"off\") %} 0 {% elif
-            is_state(\"zone.home\",\"0\") %} 0 {% elif is_state(\"input_select.house_time_modes\",\"Morgon\")
-            %} \n  {% if state_attr(\"light.takspottarna_koksluckorna_level\",\"brightness\")
-            | int(default = 0) < 1 %} 0\n  {% else %} 100\n  {% endif %}           \n{%
-            elif is_state(\"input_select.house_time_modes\",\"Dag\") %} \n  {% if states(\"sensor.utomhus_framsidan_ljusstyrka\")
-            | int(default = 0) < 1 %} 0\n  {% else %} 100\n  {% endif %} \n{% elif is_state(\"input_select.house_time_modes\",\"Kväll\")
-            %} \n  {% if state_attr(\"light.takspottarna_koksluckorna_level\",\"brightness\")
-            | int(default = 0)  < 1 %} 0\n  {% else %} 100\n  {% endif %} \n{% elif is_state(\"input_select.house_time_modes\",\"Natt\")
-            %} 0 {% else %} 0 {% endif %}        \n"
+          brightness_pct: "{% if is_state(\"light.koksbelysningen\",\"off\") %} 0 {% elif is_state(\"zone.home\",\"0\") %}\
+            \ 0 {% elif is_state(\"input_select.house_time_modes\",\"Morgon\") %} \n  {% if state_attr(\"light.takspottarna_koksluckorna_level\"\
+            ,\"brightness\") | int(default = 0) < 1 %} 0\n  {% else %} 100\n  {% endif %}           \n{% elif is_state(\"\
+            input_select.house_time_modes\",\"Dag\") %} \n  {% if states(\"sensor.utomhus_framsidan_ljusstyrka\") | int(default\
+            \ = 0) < 1 %} 0\n  {% else %} 100\n  {% endif %} \n{% elif is_state(\"input_select.house_time_modes\",\"Kväll\"\
+            ) %} \n  {% if state_attr(\"light.takspottarna_koksluckorna_level\",\"brightness\") | int(default = 0)  < 1 %}\
+            \ 0\n  {% else %} 100\n  {% endif %} \n{% elif is_state(\"input_select.house_time_modes\",\"Natt\") %} 0 {% else\
+            \ %} 0 {% endif %}        \n"
       - delay:
           seconds: 3
 vardagsrummet_stall_in_belysningen:
   alias: Ställ in belysningen i vardagsrummet
   mode: restart
   sequence:
-  - action: '{% if   states("input_select.vardagsrummet_belysning") in ["Dämpat","Släckt"]
-      %} light.turn_off {% elif states("input_select.vardagsrummet_belysning") in
-      ["Städning","PS4","TV"] %} script.do_nothing {% else %} light.turn_on {% endif
-      %}
+  - action: '{% if   states("input_select.vardagsrummet_belysning") in ["Dämpat","Släckt"] %} light.turn_off {% elif states("input_select.vardagsrummet_belysning")
+      in ["Städning","PS4","TV"] %} script.do_nothing {% else %} light.turn_on {% endif %}
 
       '
     entity_id:
     - light.lamporna_bakom_soffan
     - light.julgranen
-  - action: '{% if   states("input_select.vardagsrummet_belysning") in ["Dämpat","Släckt","TV"]
-      %} light.turn_off {% elif states("input_select.vardagsrummet_belysning") in
-      ["Städning","PS4"] %} script.do_nothing {% else %} light.turn_on {% endif %}
+  - action: '{% if   states("input_select.vardagsrummet_belysning") in ["Dämpat","Släckt","TV"] %} light.turn_off {% elif
+      states("input_select.vardagsrummet_belysning") in ["Städning","PS4"] %} script.do_nothing {% else %} light.turn_on {%
+      endif %}
 
       '
     entity_id:
     - light.lampan_bakom_tv
-  - action: '{% if   is_state("input_select.vardagsrummet_belysning","Släckt") %}
-      light.turn_off {% elif states("input_select.vardagsrummet_belysning") in ["Städning","PS4","TV"]
-      %} script.do_nothing {% else %} light.turn_on {% endif %}
+  - action: '{% if   is_state("input_select.vardagsrummet_belysning","Släckt") %} light.turn_off {% elif states("input_select.vardagsrummet_belysning")
+      in ["Städning","PS4","TV"] %} script.do_nothing {% else %} light.turn_on {% endif %}
 
       '
     entity_id:
     - light.karvarna_i_vardagsrummet
-  - action: "{% if states(\"input_select.vardagsrummet_belysning\") in [\"Tänt\"]
-      %} light.turn_on {% elif states(\"input_select.vardagsrummet_belysning\") in
-      [\"Städning\",\"TV\",\"PS4\"] %} {{ states(\"light.lampan_vid_balkongdorren\")
-      }} {% else %} light.turn_off {% endif %} \n"
+  - action: "{% if states(\"input_select.vardagsrummet_belysning\") in [\"Tänt\"] %} light.turn_on {% elif states(\"input_select.vardagsrummet_belysning\"\
+      ) in [\"Städning\",\"TV\",\"PS4\"] %} {{ states(\"light.lampan_vid_balkongdorren\") }} {% else %} light.turn_off {%\
+      \ endif %} \n"
     entity_id:
     - light.lampan_vid_balkongdorren
   - action: light.turn_on
     entity_id:
     - light.taklampa_vardagsrummet
     data:
-      brightness_pct: "{% if is_state(\"input_boolean.stadning_pagar\", \"on\") or states(\"input_select.vardagsrummet_belysning\") == \"Städning\" %} 100\n{% elif states(\"input_select.vardagsrummet_belysning\") == \"PS4\" %} 5\n{% else %} 0 {% endif %}\n"
+      brightness_pct: '{% if is_state("input_boolean.stadning_pagar", "on") or states("input_select.vardagsrummet_belysning")
+        == "Städning" %} 100
+
+        {% elif states("input_select.vardagsrummet_belysning") == "PS4" %} 5
+
+        {% else %} 0 {% endif %}
+
+        '
 ovre_trappan_stall_in_belysningen:
   alias: Ställ in belysningen i övre trappan
   mode: restart
@@ -974,25 +883,19 @@ ovre_trappan_stall_in_belysningen:
   - action: light.turn_on
     entity_id: light.taklampan_ovre_trappan_level
     data:
-      brightness_pct: "{% if is_state(\"input_boolean.stadning_pagar\", \"on\") %}\n
-        \ 100\n{% elif states(\"input_select.house_time_modes\") in [\"Morgon\", \"Dag\"]
-        and is_state(\"zone.home\", \"0\") %}\n  0\n{% elif (\n    states(\"input_select.sovrummet_belysning\")
-        in [\"Släckt\", \"Mysigt\"] or\n    states(\"input_select.annas_rum_belysning\")
-        in [\"Släckt\", \"Mysigt\"]\n  ) and (\n    now().strftime('%R') >= \"21:00\"
-        or now().strftime('%R') < \"06:00\"\n  ) %}\n  0\n{% elif states(\"input_select.vardagsrummet_belysning\")
-        == \"TV\" %}\n  {% set ljusstyrka = states(\"sensor.utomhus_framsidan_ljusstyrka\")
-        | int(default=0) %}\n  {% if ljusstyrka > 300 %}\n    {% if is_state(\"input_boolean.julbelysning\",
-        \"on\") %}\n      5\n    {% else %}\n      0\n    {% endif %}\n  {% else %}\n
-        \   5\n  {% endif %}\n{% elif states(\"input_select.house_time_modes\") in
-        [\"Morgon\", \"Dag\", \"Kväll\"] and is_state(\"var.morgoninfo_koket_redan_upplast\",
-        \"true\") %}\n  {% set ljusstyrka = states(\"sensor.utomhus_framsidan_ljusstyrka\")
-        | int(default=0) %}\n  {% if ljusstyrka > 2000 %}\n    {% if is_state(\"input_boolean.julbelysning\",
-        \"on\") %}\n      30\n    {% else %}\n      0\n    {% endif %}\n  {% elif
-        ljusstyrka > 1000 %}\n    {% if is_state(\"input_boolean.julbelysning\", \"on\")
-        %}\n      30\n    {% else %}\n      0\n    {% endif %}\n  {% elif ljusstyrka
-        > 300 %}\n    25\n  {% elif ljusstyrka > 100 %}\n    20\n  {% elif ljusstyrka
-        > 10 %}\n    15\n  {% else %}\n    10\n  {% endif %}\n{% else %}\n  0\n{%
-        endif %}\n"
+      brightness_pct: "{% if is_state(\"input_boolean.stadning_pagar\", \"on\") %}\n  100\n{% elif states(\"input_select.house_time_modes\"\
+        ) in [\"Morgon\", \"Dag\"] and is_state(\"zone.home\", \"0\") %}\n  0\n{% elif (\n    states(\"input_select.sovrummet_belysning\"\
+        ) in [\"Släckt\", \"Mysigt\"] or\n    states(\"input_select.annas_rum_belysning\") in [\"Släckt\", \"Mysigt\"]\n \
+        \ ) and (\n    now().strftime('%R') >= \"21:00\" or now().strftime('%R') < \"06:00\"\n  ) %}\n  0\n{% elif states(\"\
+        input_select.vardagsrummet_belysning\") == \"TV\" %}\n  {% set ljusstyrka = states(\"sensor.utomhus_framsidan_ljusstyrka\"\
+        ) | int(default=0) %}\n  {% if ljusstyrka > 300 %}\n    {% if is_state(\"input_boolean.julbelysning\", \"on\") %}\n\
+        \      5\n    {% else %}\n      0\n    {% endif %}\n  {% else %}\n    5\n  {% endif %}\n{% elif states(\"input_select.house_time_modes\"\
+        ) in [\"Morgon\", \"Dag\", \"Kväll\"] and is_state(\"var.morgoninfo_koket_redan_upplast\", \"true\") %}\n  {% set\
+        \ ljusstyrka = states(\"sensor.utomhus_framsidan_ljusstyrka\") | int(default=0) %}\n  {% if ljusstyrka > 2000 %}\n\
+        \    {% if is_state(\"input_boolean.julbelysning\", \"on\") %}\n      30\n    {% else %}\n      0\n    {% endif %}\n\
+        \  {% elif ljusstyrka > 1000 %}\n    {% if is_state(\"input_boolean.julbelysning\", \"on\") %}\n      30\n    {% else\
+        \ %}\n      0\n    {% endif %}\n  {% elif ljusstyrka > 300 %}\n    25\n  {% elif ljusstyrka > 100 %}\n    20\n  {%\
+        \ elif ljusstyrka > 10 %}\n    15\n  {% else %}\n    10\n  {% endif %}\n{% else %}\n  0\n{% endif %}\n"
       transition: 3
 sovrummet_stall_in_belysningen:
   alias: Ställ in belysningen i sovrummet
@@ -1001,38 +904,29 @@ sovrummet_stall_in_belysningen:
   - action: light.turn_on
     entity_id: light.taklampa_sovrummet_level
     data:
-      brightness: "{% set current_brightness = state_attr(\"light.taklampa_sovrummet_level\",
-        \"brightness\") | float(default=0.0) / 2.55 %} {% set mode = states(\"input_select.sovrummet_belysning\")
-        %} {% if mode == \"Städning\" or is_state(\"input_boolean.stadning_pagar\", \"on\") %}\n  255\n{% elif mode in [\"Mysigt\", \"Släckt\"]
-        %}\n  0\n{% else %}\n  {{ current_brightness | int }}\n{% endif %}\n"
-  - action: "{% set mode = states(\"input_select.sovrummet_belysning\") %} {% set
-      time_mode = states(\"input_select.house_time_modes\") %} {% if mode == \"Släckt\"
-      %}\n  light.turn_off\n{% elif mode == \"Städning\" %}\n  light.turn_on\n{% elif
-      time_mode in [\"Morgon\", \"Dag\", \"Kväll\"] %}\n  {% if mode in [\"Tänt\",
-      \"Sänglamporna\"] %}\n    light.turn_on\n  {% else %}\n    light.turn_off\n
-      \ {% endif %}\n{% elif time_mode == \"Natt\" %}\n  {% if mode in [\"Tänt\",
-      \"Sänglamporna\"] and not is_state(\"device_tracker.ilias_s23_ultra\", \"home\")
-      %}\n    light.turn_off\n  {% elif mode == \"Mysigt\" %}\n    light.turn_off\n
-      \ {% else %}\n    light.turn_on\n  {% endif %}\n{% else %}\n  light.turn_off\n{%
-      endif %}\n"
+      brightness: "{% set current_brightness = state_attr(\"light.taklampa_sovrummet_level\", \"brightness\") | float(default=0.0)\
+        \ / 2.55 %} {% set mode = states(\"input_select.sovrummet_belysning\") %} {% if mode == \"Städning\" or is_state(\"\
+        input_boolean.stadning_pagar\", \"on\") %}\n  255\n{% elif mode in [\"Mysigt\", \"Släckt\"] %}\n  0\n{% else %}\n\
+        \  {{ current_brightness | int }}\n{% endif %}\n"
+  - action: "{% set mode = states(\"input_select.sovrummet_belysning\") %} {% set time_mode = states(\"input_select.house_time_modes\"\
+      ) %} {% if mode == \"Släckt\" %}\n  light.turn_off\n{% elif mode == \"Städning\" %}\n  light.turn_on\n{% elif time_mode\
+      \ in [\"Morgon\", \"Dag\", \"Kväll\"] %}\n  {% if mode in [\"Tänt\", \"Sänglamporna\"] %}\n    light.turn_on\n  {% else\
+      \ %}\n    light.turn_off\n  {% endif %}\n{% elif time_mode == \"Natt\" %}\n  {% if mode in [\"Tänt\", \"Sänglamporna\"\
+      ] and not is_state(\"device_tracker.ilias_s23_ultra\", \"home\") %}\n    light.turn_off\n  {% elif mode == \"Mysigt\"\
+      \ %}\n    light.turn_off\n  {% else %}\n    light.turn_on\n  {% endif %}\n{% else %}\n  light.turn_off\n{% endif %}\n"
     entity_id: light.lampan_vid_ilias_sang
-  - action: "{% set mode = states(\"input_select.sovrummet_belysning\") %} {% set
-      time_mode = states(\"input_select.house_time_modes\") %} {% if mode == \"Släckt\"
-      %}\n  light.turn_off\n{% elif mode == \"Städning\" %}\n  light.turn_on\n{% elif
-      time_mode in [\"Morgon\", \"Dag\", \"Kväll\"] %}\n  {% if mode in [\"Tänt\",
-      \"Sänglamporna\"] %}\n    light.turn_on\n  {% else %}\n    light.turn_off\n
-      \ {% endif %}\n{% elif time_mode == \"Natt\" %}\n  {% if mode in [\"Tänt\",
-      \"Sänglamporna\"] and not is_state(\"device_tracker.anna_s22_ultra\", \"home\")
-      %}\n    light.turn_off\n  {% elif mode == \"Mysigt\" %}\n    light.turn_off\n
-      \ {% else %}\n    light.turn_on\n  {% endif %}\n{% else %}\n  light.turn_off\n{%
-      endif %}\n"
+  - action: "{% set mode = states(\"input_select.sovrummet_belysning\") %} {% set time_mode = states(\"input_select.house_time_modes\"\
+      ) %} {% if mode == \"Släckt\" %}\n  light.turn_off\n{% elif mode == \"Städning\" %}\n  light.turn_on\n{% elif time_mode\
+      \ in [\"Morgon\", \"Dag\", \"Kväll\"] %}\n  {% if mode in [\"Tänt\", \"Sänglamporna\"] %}\n    light.turn_on\n  {% else\
+      \ %}\n    light.turn_off\n  {% endif %}\n{% elif time_mode == \"Natt\" %}\n  {% if mode in [\"Tänt\", \"Sänglamporna\"\
+      ] and not is_state(\"device_tracker.anna_s22_ultra\", \"home\") %}\n    light.turn_off\n  {% elif mode == \"Mysigt\"\
+      \ %}\n    light.turn_off\n  {% else %}\n    light.turn_on\n  {% endif %}\n{% else %}\n  light.turn_off\n{% endif %}\n"
     entity_id: light.lampan_vid_annas_sang
-  - action: "{% if states(\"input_select.sovrummet_belysning\") in [\"Tänt\", \"Mysigt\",
-      \"Städning\"] %}\n  light.turn_on\n{% else %}\n  light.turn_off\n{% endif %}\n"
+  - action: "{% if states(\"input_select.sovrummet_belysning\") in [\"Tänt\", \"Mysigt\", \"Städning\"] %}\n  light.turn_on\n\
+      {% else %}\n  light.turn_off\n{% endif %}\n"
     entity_id: light.lampan_i_sovrumsfonstret
-  - action: "{% if is_state(\"input_select.sovrummet_belysning\", \"Släckt\") and
-      not is_state(\"input_select.house_time_modes\", \"Dag\") %}\n  light.turn_off\n{%
-      else %}\n  script.do_nothing\n{% endif %}\n"
+  - action: "{% if is_state(\"input_select.sovrummet_belysning\", \"Släckt\") and not is_state(\"input_select.house_time_modes\"\
+      , \"Dag\") %}\n  light.turn_off\n{% else %}\n  script.do_nothing\n{% endif %}\n"
     entity_id:
     - light.lamporna_i_garderoben
     - light.smyckeskapet
@@ -1040,13 +934,12 @@ annas_rum_stall_in_belysningen:
   alias: Ställ in belysningen i Annas rum
   mode: restart
   sequence:
-  - action: "{% if states(\"input_select.annas_rum_belysning\") in [\"Släckt\",\"Mysigt\"]
-      %} light.turn_off {% elif states(\"input_select.annas_rum_belysning\") in [\"Trådkorgarna
-      normalbelysning\",\"Trådkorgarna maxbelysning\"] %}\n  {% if states(\"input_select.house_time_modes\")
-      in [\"Morgon\",\"Kväll\"] %} light.turn_on\n  {% elif is_state(\"input_select.house_time_modes\",\"Dag\")
-      %}\n    {% if states(\"sensor.utomhus_baksidan_ljusstyrka\") | int(default=0)
-      >= 2000 %} light.turn_off\n    {% else %} light.turn_on\n    {% endif %}\n  {%
-      else %} light.turn_off\n  {% endif %}\n{% else %} light.turn_on {% endif %}\n"
+  - action: "{% if states(\"input_select.annas_rum_belysning\") in [\"Släckt\",\"Mysigt\"] %} light.turn_off {% elif states(\"\
+      input_select.annas_rum_belysning\") in [\"Trådkorgarna normalbelysning\",\"Trådkorgarna maxbelysning\"] %}\n  {% if\
+      \ states(\"input_select.house_time_modes\") in [\"Morgon\",\"Kväll\"] %} light.turn_on\n  {% elif is_state(\"input_select.house_time_modes\"\
+      ,\"Dag\") %}\n    {% if states(\"sensor.utomhus_baksidan_ljusstyrka\") | int(default=0) >= 2000 %} light.turn_off\n\
+      \    {% else %} light.turn_on\n    {% endif %}\n  {% else %} light.turn_off\n  {% endif %}\n{% else %} light.turn_on\
+      \ {% endif %}\n"
     entity_id:
     - light.lampan_i_annas_fonster
     - light.klotlampan_pa_hyllan
@@ -1054,16 +947,15 @@ annas_rum_stall_in_belysningen:
     entity_id:
     - light.taklampan_annas_rum_level
     data:
-      brightness_pct: "{% set oforandrat_ljus = (state_attr(\"light.taklampan_annas_rum_level\",\"brightness\")
-        | float(default = 0.0) / 2.55 ) | float(default = 0.0) %} {% if   states(\"input_select.annas_rum_belysning\")
-        in [\"Städning\"] or is_state(\"input_boolean.stadning_pagar\", \"on\") %} 100  {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Släckt\"] %} 0 {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Mysigt\"] %} 0 {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Tänt\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Trådkorgarna normalbelysning\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Trådkorgarna maxbelysning\"] %} {{ oforandrat_ljus }} {% elif is_state(\"zone.home\",\"0\")
-        \n    and is_state(\"input_select.house_time_modes\",\"Kväll\")\n    and states(\"input_select.annas_rum_belysning\")
-        in [\"Tänt\"]  %} 10\n{% else %} {{ oforandrat_ljus }} {% endif %}\n"
+      brightness_pct: "{% set oforandrat_ljus = (state_attr(\"light.taklampan_annas_rum_level\",\"brightness\") | float(default\
+        \ = 0.0) / 2.55 ) | float(default = 0.0) %} {% if   states(\"input_select.annas_rum_belysning\") in [\"Städning\"\
+        ] or is_state(\"input_boolean.stadning_pagar\", \"on\") %} 100  {% elif states(\"input_select.annas_rum_belysning\"\
+        ) in [\"Släckt\"] %} 0 {% elif states(\"input_select.annas_rum_belysning\") in [\"Mysigt\"] %} 0 {% elif states(\"\
+        input_select.annas_rum_belysning\") in [\"Tänt\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.annas_rum_belysning\"\
+        ) in [\"Trådkorgarna normalbelysning\"] %} {{ oforandrat_ljus }} {% elif states(\"input_select.annas_rum_belysning\"\
+        ) in [\"Trådkorgarna maxbelysning\"] %} {{ oforandrat_ljus }} {% elif is_state(\"zone.home\",\"0\") \n    and is_state(\"\
+        input_select.house_time_modes\",\"Kväll\")\n    and states(\"input_select.annas_rum_belysning\") in [\"Tänt\"]  %}\
+        \ 10\n{% else %} {{ oforandrat_ljus }} {% endif %}\n"
   - action: script.turn_on
     target:
       entity_id: script.stall_in_ljuset_i_annas_myshorna
@@ -1071,24 +963,19 @@ annas_rum_stall_in_belysningen:
     entity_id:
     - light.led_bakom_meshkorgarna
     data:
-      brightness_pct: '{% if is_state("input_boolean.stadning_pagar","on") %} 100   {%
-        elif states("input_select.annas_rum_belysning") in ["Städning"] %} 100  {%
-        elif states("input_select.annas_rum_belysning") in ["Tänt"] %} 1  {% elif
-        states("input_select.annas_rum_belysning") in ["Trådkorgarna normalbelysning"]
-        %} 1  {% elif states("input_select.annas_rum_belysning") in ["Trådkorgarna
-        maxbelysning"] %} 20   {% elif states("input_select.annas_rum_belysning")
-        in ["Mysigt"] %} 0  {% elif states("input_select.annas_rum_belysning") in
-        ["Släckt"] %} 0  {% endif %}
+      brightness_pct: '{% if is_state("input_boolean.stadning_pagar","on") %} 100   {% elif states("input_select.annas_rum_belysning")
+        in ["Städning"] %} 100  {% elif states("input_select.annas_rum_belysning") in ["Tänt"] %} 1  {% elif states("input_select.annas_rum_belysning")
+        in ["Trådkorgarna normalbelysning"] %} 1  {% elif states("input_select.annas_rum_belysning") in ["Trådkorgarna maxbelysning"]
+        %} 20   {% elif states("input_select.annas_rum_belysning") in ["Mysigt"] %} 0  {% elif states("input_select.annas_rum_belysning")
+        in ["Släckt"] %} 0  {% endif %}
 
         '
-      rgbw_color: "{% if is_state(\"input_boolean.stadning_pagar\",\"on\") %} [0,
-        0, 0, 255]  {% elif states(\"input_select.annas_rum_belysning\") in [\"Städning\"]
-        %} [0, 0, 0, 255]  {% elif states(\"input_select.annas_rum_belysning\") in
-        [\"Tänt\"] %} [0, 0, 0, 150]  {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Trådkorgarna normalbelysning\"] %} [0, 0, 0, 150]  {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Trådkorgarna maxbelysning\"] %} [0, 0, 0, 255]  {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Mysigt\"] %} [0, 0, 0, 100]  {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Släckt\"] %} [0, 0, 0, 100]  {% endif %} \n"
+      rgbw_color: "{% if is_state(\"input_boolean.stadning_pagar\",\"on\") %} [0, 0, 0, 255]  {% elif states(\"input_select.annas_rum_belysning\"\
+        ) in [\"Städning\"] %} [0, 0, 0, 255]  {% elif states(\"input_select.annas_rum_belysning\") in [\"Tänt\"] %} [0, 0,\
+        \ 0, 150]  {% elif states(\"input_select.annas_rum_belysning\") in [\"Trådkorgarna normalbelysning\"] %} [0, 0, 0,\
+        \ 150]  {% elif states(\"input_select.annas_rum_belysning\") in [\"Trådkorgarna maxbelysning\"] %} [0, 0, 0, 255]\
+        \  {% elif states(\"input_select.annas_rum_belysning\") in [\"Mysigt\"] %} [0, 0, 0, 100]  {% elif states(\"input_select.annas_rum_belysning\"\
+        ) in [\"Släckt\"] %} [0, 0, 0, 100]  {% endif %} \n"
       transition: 2
 stall_in_ljuset_i_annas_myshorna:
   alias: Ställ in ljuset i Annas myshörna
@@ -1098,21 +985,16 @@ stall_in_ljuset_i_annas_myshorna:
     entity_id:
     - light.annas_myshorna
     data:
-      brightness_pct: "{% if states(\"input_select.annas_rum_belysning\") in [\"Städning\"]
-        %} 100  {% elif is_state(\"input_select.annas_rum_belysning\",\"Trådkorgarna
-        maxbelysning\") %} 100  {% elif states(\"input_select.annas_rum_belysning\")
-        in [\"Tänt\",\"Trådkorgarna normalbelysning\"] %}\n  {% set ljus_baksidan
-        = states(\"sensor.utomhus_baksidan_ljusstyrka\") | int(default=0) %}\n  {%
-        if ljus_baksidan >= 2000 %} 50\n  {% elif ljus_baksidan >= 1000 and ljus_baksidan
-        < 2000 %} 25\n  {% elif ljus_baksidan < 1000 %} 15\n  {% else %} 0\n  {% endif
-        %}\n{% elif is_state(\"input_select.annas_rum_belysning\",\"Mysigt\") %} 15
-        \ {% else %} 0  {% endif %}\n"
-      color_temp_kelvin: '{% if states("input_select.annas_rum_belysning") in ["Städning"]
-        %} 3900  {% elif is_state("input_select.annas_rum_belysning","Trådkorgarna
-        normalbelysning") %} 2000  {% elif is_state("input_select.annas_rum_belysning","Trådkorgarna
-        maxbelysning") %} 3900  {% elif is_state("input_select.annas_rum_belysning","Tänt")
-        %} 2000  {% elif is_state("input_select.annas_rum_belysning","Mysigt") %}
-        2000  {% else %} 2000 {% endif %}
+      brightness_pct: "{% if states(\"input_select.annas_rum_belysning\") in [\"Städning\"] %} 100  {% elif is_state(\"input_select.annas_rum_belysning\"\
+        ,\"Trådkorgarna maxbelysning\") %} 100  {% elif states(\"input_select.annas_rum_belysning\") in [\"Tänt\",\"Trådkorgarna\
+        \ normalbelysning\"] %}\n  {% set ljus_baksidan = states(\"sensor.utomhus_baksidan_ljusstyrka\") | int(default=0)\
+        \ %}\n  {% if ljus_baksidan >= 2000 %} 50\n  {% elif ljus_baksidan >= 1000 and ljus_baksidan < 2000 %} 25\n  {% elif\
+        \ ljus_baksidan < 1000 %} 15\n  {% else %} 0\n  {% endif %}\n{% elif is_state(\"input_select.annas_rum_belysning\"\
+        ,\"Mysigt\") %} 15  {% else %} 0  {% endif %}\n"
+      color_temp_kelvin: '{% if states("input_select.annas_rum_belysning") in ["Städning"] %} 3900  {% elif is_state("input_select.annas_rum_belysning","Trådkorgarna
+        normalbelysning") %} 2000  {% elif is_state("input_select.annas_rum_belysning","Trådkorgarna maxbelysning") %} 3900  {%
+        elif is_state("input_select.annas_rum_belysning","Tänt") %} 2000  {% elif is_state("input_select.annas_rum_belysning","Mysigt")
+        %} 2000  {% else %} 2000 {% endif %}
 
         '
       transition: 1
@@ -1126,9 +1008,8 @@ nedre_trappan_stall_in_belysningen:
       eriks_rum: '{{ states(''input_select.eriks_rum_belysning'') }}'
       jul: '{{ is_state(''input_boolean.julbelysning'',''on'') }}'
       lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
-      ingen_rorelse_5min: '{{ is_state(''binary_sensor.nedre_trappan_rorelse'',''off'')
-        and ((now() - (state_attr(''binary_sensor.nedre_trappan_rorelse'', ''last_changed'') or now())).total_seconds()
-        > 5 * 60) }}'
+      ingen_rorelse_5min: '{{ is_state(''binary_sensor.nedre_trappan_rorelse'',''off'') and ((now() - (state_attr(''binary_sensor.nedre_trappan_rorelse'',
+        ''last_changed'') or now())).total_seconds() > 5 * 60) }}'
   - choose:
     - conditions:
       - condition: template
@@ -1188,8 +1069,7 @@ nedre_trappan_stall_in_belysningen:
               - light.lampan_brudkistan
         - conditions:
           - condition: template
-            value_template: '{{ jul and huslage in [''Morgon'',''Dag'',''Kväll'']
-              }}'
+            value_template: '{{ jul and huslage in [''Morgon'',''Dag'',''Kväll''] }}'
           sequence:
           - action: light.turn_off
             target:
@@ -1232,8 +1112,7 @@ nedre_trappan_stall_in_belysningen:
               entity_id: light.lampan_brudkistan
         - conditions:
           - condition: template
-            value_template: '{{ huslage == ''Kväll'' and eriks_rum in [''Minimalt'',''Släckt'']
-              }}'
+            value_template: '{{ huslage == ''Kväll'' and eriks_rum in [''Minimalt'',''Släckt''] }}'
           sequence:
           - action: light.turn_off
             target:
@@ -1280,15 +1159,10 @@ eriks_rum_satt_lage:
         boolean: {}
   sequence:
   - variables:
-      far_styra_lampor: >-
-        {{ (force | default(false) | bool)
-           or is_state('binary_sensor.eriks_rum_automation_far_styra_lampor', 'on') }}
-      effective_lage: >-
-        {% if far_styra_lampor %}
-          {{ lage }}
-        {% else %}
-          {{ states('input_select.eriks_rum_belysning') }}
-        {% endif %}
+      far_styra_lampor: "{{ (force | default(false) | bool)\n   or is_state('binary_sensor.eriks_rum_automation_far_styra_lampor',\
+        \ 'on') }}"
+      effective_lage: "{% if far_styra_lampor %}\n  {{ lage }}\n{% else %}\n  {{ states('input_select.eriks_rum_belysning')\
+        \ }}\n{% endif %}"
   - action: input_select.select_option
     target:
       entity_id: input_select.eriks_rum_belysning
@@ -1303,9 +1177,8 @@ eriks_rum_satt_lage:
 eriks_rum_vaggbrytare:
   alias: Väggbrytare taklampor i Eriks rum
   mode: queued
-  description: >-
-    Tänt vid tänd taklampa (ej natt). Båda taklampor släckta återställer föregående läge,
-    natten Släckt. Debounce mot snabba tryck. Dubbeltryck sätter aktuell lampa på 100 %.
+  description: Tänt vid tänd taklampa (ej natt). Båda taklampor släckta återställer föregående läge, natten Släckt. Debounce
+    mot snabba tryck. Dubbeltryck sätter aktuell lampa på 100 %.
   fields:
     knapp_id:
       description: trigger.id från väggbrytarautomationen
@@ -1317,9 +1190,8 @@ eriks_rum_vaggbrytare:
         boolean: {}
   sequence:
   - variables:
-      lampa: "{% if knapp_id.startswith('fonster') %}\n  light.taklampan_eriks_fonster_level\n{%
-        elif knapp_id.startswith('sang') %}\n  light.taklampan_eriks_sang_level\n{% else %}\n
-        \ none\n{% endif %}\n"
+      lampa: "{% if knapp_id.startswith('fonster') %}\n  light.taklampan_eriks_fonster_level\n{% elif knapp_id.startswith('sang')\
+        \ %}\n  light.taklampan_eriks_sang_level\n{% else %}\n  none\n{% endif %}\n"
       is_natt: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
   - choose:
     - conditions:
@@ -1335,7 +1207,7 @@ eriks_rum_vaggbrytare:
         data:
           brightness_pct: 100
           transition: 0
-      - delay: '00:00:01'
+      - delay: 00:00:01
       - action: input_boolean.turn_off
         target:
           entity_id: input_boolean.eriks_rum_vagg_blockera_enkeltryck
@@ -1348,18 +1220,16 @@ eriks_rum_vaggbrytare:
         snapshot_sang: '{{ states(''light.taklampan_eriks_sang_level'') }}'
     - delay: '00:00:00.800'
     - variables:
-        bada_tak_slackta: '{{ is_state(''light.taklampan_eriks_fonster_level'', ''off'')
-          and is_state(''light.taklampan_eriks_sang_level'', ''off'') }}'
+        bada_tak_slackta: '{{ is_state(''light.taklampan_eriks_fonster_level'', ''off'') and is_state(''light.taklampan_eriks_sang_level'',
+          ''off'') }}'
         nagon_tak_tand: '{{ not bada_tak_slackta }}'
-        oforandrad: '{{ states(''light.taklampan_eriks_fonster_level'') == snapshot_fonster
-          and states(''light.taklampan_eriks_sang_level'') == snapshot_sang }}'
+        oforandrad: '{{ states(''light.taklampan_eriks_fonster_level'') == snapshot_fonster and states(''light.taklampan_eriks_sang_level'')
+          == snapshot_sang }}'
         nuvarande_lage: '{{ states(''input_select.eriks_rum_belysning'') }}'
-        vagg_session: '{{ is_state(''input_boolean.eriks_rum_vagg_tak_pagar'', ''on'')
-          }}'
-        aterstall_lage: "{% set giltiga = ['Tänt', 'Taklamporna', 'Läsning', 'Mysigt',
-          'Minimalt', 'Städning', 'Släckt'] %}\n{% set sparat = states('input_text.eriks_rum_vagg_forra_lage')
-          %}\n{% if sparat in giltiga %}\n  {{ sparat }}\n{% else %}\n  Släckt\n{% endif
-          %}\n"
+        vagg_session: '{{ is_state(''input_boolean.eriks_rum_vagg_tak_pagar'', ''on'') }}'
+        aterstall_lage: "{% set giltiga = ['Tänt', 'Taklamporna', 'Läsning', 'Mysigt', 'Minimalt', 'Städning', 'Släckt'] %}\n\
+          {% set sparat = states('input_text.eriks_rum_vagg_forra_lage') %}\n{% if sparat in giltiga %}\n  {{ sparat }}\n\
+          {% else %}\n  Släckt\n{% endif %}\n"
     - choose:
       - conditions:
         - condition: template
@@ -1439,7 +1309,7 @@ eriks_rum_satt_lage_ui:
       entity_id: input_select.eriks_rum_belysning
     data:
       option: '{{ lage }}'
-  - delay: '00:00:02'
+  - delay: 00:00:02
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.eriks_rum_uppdaterar_lage
@@ -1457,15 +1327,14 @@ eriks_rum_stall_in_belysningen:
   - choose:
     - conditions:
       - condition: template
-        value_template: >-
-          {{ (force | default(false) | bool)
-             or is_state('binary_sensor.eriks_rum_automation_far_styra_lampor', 'on') }}
+        value_template: "{{ (force | default(false) | bool)\n   or is_state('binary_sensor.eriks_rum_automation_far_styra_lampor',\
+          \ 'on') }}"
       sequence:
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt',
-              'Mysigt', 'Läsning', 'Städning'] }}\n"
+            value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt', 'Mysigt', 'Läsning', 'Städning']\
+              \ }}\n"
           sequence:
           - action: light.turn_on
             target:
@@ -1479,8 +1348,8 @@ eriks_rum_stall_in_belysningen:
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt',
-              'Mysigt', 'Läsning', 'Minimalt', 'Städning'] }}\n"
+            value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt', 'Mysigt', 'Läsning', 'Minimalt',\
+              \ 'Städning'] }}\n"
           sequence:
           - action: light.turn_on
             target:
@@ -1494,8 +1363,7 @@ eriks_rum_stall_in_belysningen:
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt',
-              'Taklamporna', 'Städning'] }}\n"
+            value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt', 'Taklamporna', 'Städning'] }}\n"
           sequence:
           - action: light.turn_on
             target:
@@ -1513,8 +1381,8 @@ eriks_rum_stall_in_belysningen:
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt',
-              'Läsning', 'Mysigt', 'Städning'] }}\n"
+            value_template: "{{ states('input_select.eriks_rum_belysning') in\n   ['Tänt', 'Läsning', 'Mysigt', 'Städning']\
+              \ }}\n"
           sequence:
           - action: light.turn_on
             target:
@@ -1522,10 +1390,9 @@ eriks_rum_stall_in_belysningen:
               - light.led_strip_ovanfor_fotoljen
               - light.led_under_eriks_byra
             data:
-              brightness_pct: "{% set lage = states('input_select.eriks_rum_belysning')
-                %} {% if lage == 'Tänt' %}\n  50\n{% elif lage == 'Läsning' %}\n  100\n{%
-                elif lage == 'Mysigt' %}\n  1\n{% elif lage == 'Städning' %}\n  100\n{%
-                else %}\n  50\n{% endif %}\n"
+              brightness_pct: "{% set lage = states('input_select.eriks_rum_belysning') %} {% if lage == 'Tänt' %}\n  50\n\
+                {% elif lage == 'Läsning' %}\n  100\n{% elif lage == 'Mysigt' %}\n  1\n{% elif lage == 'Städning' %}\n  100\n\
+                {% else %}\n  50\n{% endif %}\n"
               color_temp_kelvin: 1500
               transition: 1
         default:
@@ -1539,8 +1406,8 @@ eriks_rum_stall_in_belysningen:
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ states('input_select.eriks_rum_belysning') == 'Släckt'\n
-              \  and now() >= today_at('21:30') }}\n"
+            value_template: "{{ states('input_select.eriks_rum_belysning') == 'Släckt'\n   and now() >= today_at('21:30')\
+              \ }}\n"
           sequence:
           - action: light.turn_off
             target:
@@ -1565,30 +1432,22 @@ skapa_begriplig_tid:
   - action: input_text.set_value
     data:
       entity_id: input_text.aktuell_tid_begriplig
-      value: "Klockan är {{- \" \" -}}  {%- set timme = now().strftime(\"%H\") | int(default
-        = 0)  -%}  {%- set minut = now().strftime(\"%M\") | int(default = 0)  -%}
-        \n  \n{%- if (timme == 0 ) -%} \n  {%- if minut < 25 -%} {%- set timme_text
-        = 12 | int(default = 0)  -%}\n  {%- else -%} {%- set timme_text = 1 | int(default
-        = 0)   -%}\n  {%- endif -%}\n{%- elif timme < 12 -%} \n  {%- if minut < 25
-        -%} {%- set timme_text = timme -%}\n  {%- else -%} {%- set timme_text = (timme
-        + 1) -%}\n  {%- endif -%}\n{%- elif timme == 12 -%} \n  {%- if minut < 25
-        -%} {%- set timme_text = timme -%}\n  {%- else -%} {%- set timme_text = (timme
-        - 11) -%}\n  {%- endif -%}\n{%- else -%}\n  {%- if minut < 25 -%} {%- set
-        timme_text = (timme - 12) -%}\n  {%- else -%} {%- set timme_text = (timme
-        - 11) -%}\n  {%- endif -%}\n{%- endif -%}\n{%- if   minut == 00 -%} {{- timme_text
-        -}} {%- elif minut == 5  -%} fem över {{- \" \" -}}  {{- timme_text -}} {%-
-        elif minut == 10 -%} tio över {{- \" \" -}}  {{- timme_text -}} {%- elif minut
-        == 15 -%} kvart över {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 20
-        -%} tjugo över {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 25 -%}
-        fem i halv {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 30 -%} halv
-        {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 35 -%} fem över halv {{-
-        \" \" -}}  {{- timme_text -}} {%- elif minut == 40 -%} tjugo i {{- \" \" -}}
-        \ {{- timme_text -}} {%- elif minut == 45 -%} kvart i {{- \" \" -}}  {{- timme_text
-        -}} {%- elif minut == 50 -%} tio i {{- \" \" -}}  {{- timme_text -}} {%- elif
-        minut == 55 -%} fem i {{- \" \" -}}  {{- timme_text -}} {%- else -%}\n  {%-
-        if minut > 9 -%} {{- timme | string + \" \" -}} och {{ minut }}\n  {%- else
-        -%} {{- timme | string + \" \" -}} 0{{ minut }}\n  {%- endif -%}\n{%- endif
-        -%} {{- \" \" }}"
+      value: "Klockan är {{- \" \" -}}  {%- set timme = now().strftime(\"%H\") | int(default = 0)  -%}  {%- set minut = now().strftime(\"\
+        %M\") | int(default = 0)  -%} \n  \n{%- if (timme == 0 ) -%} \n  {%- if minut < 25 -%} {%- set timme_text = 12 | int(default\
+        \ = 0)  -%}\n  {%- else -%} {%- set timme_text = 1 | int(default = 0)   -%}\n  {%- endif -%}\n{%- elif timme < 12\
+        \ -%} \n  {%- if minut < 25 -%} {%- set timme_text = timme -%}\n  {%- else -%} {%- set timme_text = (timme + 1) -%}\n\
+        \  {%- endif -%}\n{%- elif timme == 12 -%} \n  {%- if minut < 25 -%} {%- set timme_text = timme -%}\n  {%- else -%}\
+        \ {%- set timme_text = (timme - 11) -%}\n  {%- endif -%}\n{%- else -%}\n  {%- if minut < 25 -%} {%- set timme_text\
+        \ = (timme - 12) -%}\n  {%- else -%} {%- set timme_text = (timme - 11) -%}\n  {%- endif -%}\n{%- endif -%}\n{%- if\
+        \   minut == 00 -%} {{- timme_text -}} {%- elif minut == 5  -%} fem över {{- \" \" -}}  {{- timme_text -}} {%- elif\
+        \ minut == 10 -%} tio över {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 15 -%} kvart över {{- \" \" -}}  {{-\
+        \ timme_text -}} {%- elif minut == 20 -%} tjugo över {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 25 -%} fem\
+        \ i halv {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 30 -%} halv {{- \" \" -}}  {{- timme_text -}} {%- elif\
+        \ minut == 35 -%} fem över halv {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 40 -%} tjugo i {{- \" \" -}} \
+        \ {{- timme_text -}} {%- elif minut == 45 -%} kvart i {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 50 -%} tio\
+        \ i {{- \" \" -}}  {{- timme_text -}} {%- elif minut == 55 -%} fem i {{- \" \" -}}  {{- timme_text -}} {%- else -%}\n\
+        \  {%- if minut > 9 -%} {{- timme | string + \" \" -}} och {{ minut }}\n  {%- else -%} {{- timme | string + \" \"\
+        \ -}} 0{{ minut }}\n  {%- endif -%}\n{%- endif -%} {{- \" \" }}"
 skapa_dagens_vaderprognos:
   alias: Skapa dagens väderprognos
   mode: queued
@@ -1599,7 +1458,7 @@ skapa_dagens_vaderprognos:
     data:
       value: '***'
   - variables:
-      i:
+      i: null
       vaderdata: {}
   - action: weather.get_forecasts
     target:
@@ -1608,47 +1467,38 @@ skapa_dagens_vaderprognos:
       type: daily
     response_variable: vaderprognos
   - variables:
-      i: '{% set given_date = vaderprognos[''weather.smhi_farsta''].forecast[0].datetime.split(''T'')[0]
-        %} {% set today_date = now().date() | string %} {% if given_date == today_date
-        %} {{ 0 | int }} {% else %} {{ 1 | int }} {% endif %}
+      i: '{% set given_date = vaderprognos[''weather.smhi_farsta''].forecast[0].datetime.split(''T'')[0] %} {% set today_date
+        = now().date() | string %} {% if given_date == today_date %} {{ 0 | int }} {% else %} {{ 1 | int }} {% endif %}
 
         '
   - variables:
       vaderdata:
-        condition: '{% set condition = vaderprognos[''weather.smhi_farsta''].forecast[i].condition
-          %} {% if condition == ''clear-night'' %} klar natt {% elif condition ==
-          ''cloudy'' %} mulet {% elif condition == ''fog'' %} dimma {% elif condition
-          == ''hail'' %} hagel {% elif condition == ''lightning'' %} åska {% elif
-          condition == ''lightning-rainy'' %} åska och regn {% elif condition == ''partlycloudy''
-          %} halvklart {% elif condition == ''pouring'' %} ösregn {% elif condition
-          == ''rainy'' %} regnigt {% elif condition == ''snowy'' %} snöfall {% elif
-          condition == ''snowy-rainy'' %} snöblandat regn {% elif condition == ''sunny''
-          %} soligt {% elif condition == ''windy'' %} blåsigt {% elif condition ==
-          ''windy-variant'' %} varierande vind {% elif condition == ''exceptional''
-          %} exceptionellt väder {% else %} okänt väder {% endif %}
+        condition: '{% set condition = vaderprognos[''weather.smhi_farsta''].forecast[i].condition %} {% if condition == ''clear-night''
+          %} klar natt {% elif condition == ''cloudy'' %} mulet {% elif condition == ''fog'' %} dimma {% elif condition ==
+          ''hail'' %} hagel {% elif condition == ''lightning'' %} åska {% elif condition == ''lightning-rainy'' %} åska och
+          regn {% elif condition == ''partlycloudy'' %} halvklart {% elif condition == ''pouring'' %} ösregn {% elif condition
+          == ''rainy'' %} regnigt {% elif condition == ''snowy'' %} snöfall {% elif condition == ''snowy-rainy'' %} snöblandat
+          regn {% elif condition == ''sunny'' %} soligt {% elif condition == ''windy'' %} blåsigt {% elif condition == ''windy-variant''
+          %} varierande vind {% elif condition == ''exceptional'' %} exceptionellt väder {% else %} okänt väder {% endif %}
 
           '
-        templow: '{{ vaderprognos[''weather.smhi_farsta''].forecast[i].templow | int(default=0)
-          }}'
-        temphigh: '{{ vaderprognos[''weather.smhi_farsta''].forecast[i].temperature
-          | int(default=0) }}'
-        precipitation: '{{ vaderprognos[''weather.smhi_farsta''].forecast[i].precipitation
-          | int(default=0) }}'
+        templow: '{{ vaderprognos[''weather.smhi_farsta''].forecast[i].templow | int(default=0) }}'
+        temphigh: '{{ vaderprognos[''weather.smhi_farsta''].forecast[i].temperature | int(default=0) }}'
+        precipitation: '{{ vaderprognos[''weather.smhi_farsta''].forecast[i].precipitation | int(default=0) }}'
   - action: input_text.set_value
     target:
       entity_id: input_text.dagens_vader_begriplig
     data:
-      value: Idag kommer det bli {{ vaderdata.condition }} och temperaturen varierar
-        mellan {{ vaderdata.templow }} och {{ vaderdata.temphigh }} grader
-  - action: '{% if vaderdata.precipitation > 0 %} input_text.set_value {% else %}
-      script.do_nothing {% endif %}
+      value: Idag kommer det bli {{ vaderdata.condition }} och temperaturen varierar mellan {{ vaderdata.templow }} och {{
+        vaderdata.temphigh }} grader
+  - action: '{% if vaderdata.precipitation > 0 %} input_text.set_value {% else %} script.do_nothing {% endif %}
 
       '
     target:
       entity_id: input_text.dagens_vader_begriplig
     data:
-      value: '{{ states(''input_text.dagens_vader_begriplig'') }}, och det kan komma
-        {{ vaderdata.precipitation }} milimeter regn'
+      value: '{{ states(''input_text.dagens_vader_begriplig'') }}, och det kan komma {{ vaderdata.precipitation }} milimeter
+        regn'
 spela_svt1_vardagsrummet:
   alias: Spela SVT1 på TV i vardagrsummet
   mode: restart
@@ -1673,13 +1523,10 @@ pushnotis_ilias_mobil:
   alias: Pushtnotis till en moibl
   mode: restart
   sequence:
-  - action: notify.foraldrar
+  - action: script.mobilnotis
     data:
-      message: "HEMMET {{ now().strftime('%R') }}:\nVi testar om det här når fram
-        till föräldrarnas mobiler. \n"
-      data:
-        ttl: 0
-        priority: high
+      meddelande: "HEMMET {{ now().strftime('%R') }}:\nVi testar om det här når fram till föräldrarnas mobiler. \n"
+      mottagare: foraldrar
 las_ytterdorren:
   alias: Lås ytterdörren
   mode: restart
@@ -1700,22 +1547,21 @@ interaktiv_mobilnotis:
   alias: Interaktiv mobilnotis
   mode: restart
   sequence:
-  - action: notify.mobile_app_ilias_s23_ultra
+  - action: script.mobilnotis
     data:
-      message: 'HEMMET {{ now().strftime(''%R'') }}:
+      meddelande: 'HEMMET {{ now().strftime(''%R'') }}:
 
         Gör ett val!
 
         '
-      data:
-        tag: testnotis_script
+      mottagare: mobile_app_ilias_s23_ultra
+      tag: testnotis_script
+      notis_data:
         actions:
         - action: DO_1
           title: Alternativ 1
         - action: DO_2
           title: Alternativ 2
-        ttl: 0
-        priority: high
 stang_av_ps4_efter_forvarning:
   alias: Stäng av PS4 efter förvarning
   mode: restart
@@ -1725,9 +1571,8 @@ stang_av_ps4_efter_forvarning:
 
       '
   - condition: template
-    value_template: "{{ not states(\"media_player.playstation_4\") in [\"standby\",
-      \"unavailable\", \"unknown\"]\n  and not states(\"media_player.sony_tv_i_vardagsrummet\")
-      in [\"off\", \"unavailable\"] }}\n"
+    value_template: "{{ not states(\"media_player.playstation_4\") in [\"standby\", \"unavailable\", \"unknown\"]\n  and not\
+      \ states(\"media_player.sony_tv_i_vardagsrummet\") in [\"off\", \"unavailable\"] }}\n"
   - variables:
       tider:
       - 120
@@ -1750,10 +1595,8 @@ stang_av_ps4_efter_forvarning:
   - action: script.las_text_i_valfri_device
     data:
       hogtalare: media_player.googlehome_vardagsrummet
-      meddelande: 'Hallå där uppe i vardagsrummet. {{ message_text }}. Det har blivit
-        dags att avsluta spelet. '
-      volym: '{{ states(''input_number.google_home_volume_setting_notiser'') | int(default=0)
-        / 100 }}'
+      meddelande: 'Hallå där uppe i vardagsrummet. {{ message_text }}. Det har blivit dags att avsluta spelet. '
+      volym: '{{ states(''input_number.google_home_volume_setting_notiser'') | int(default=0) / 100 }}'
       voice: MattiasNeural
   - delay: 00:00:01
   - repeat:
@@ -1767,17 +1610,14 @@ stang_av_ps4_efter_forvarning:
         data:
           hogtalare: media_player.googlehome_vardagsrummet
           meddelande: '{{ texter[repeat.index] }}'
-          volym: '{{ states(''input_number.google_home_volume_setting_notiser'') |
-            int(default=0) / 100 }}'
+          volym: '{{ states(''input_number.google_home_volume_setting_notiser'') | int(default=0) / 100 }}'
           voice: MattiasNeural
-      - delay: '{{ (tider[repeat.index] - tider[repeat.index + 1]) if repeat.index
-          + 1 < tider | length else 0 }}
+      - delay: '{{ (tider[repeat.index] - tider[repeat.index + 1]) if repeat.index + 1 < tider | length else 0 }}
 
           '
   - condition: template
-    value_template: "{{ not states(\"media_player.playstation_4\") in [\"standby\",
-      \"unavailable\", \"unknown\"]\n  and states(\"input_select.koket_belysning\")
-      == \"Måltid\" }}\n"
+    value_template: "{{ not states(\"media_player.playstation_4\") in [\"standby\", \"unavailable\", \"unknown\"]\n  and states(\"\
+      input_select.koket_belysning\") == \"Måltid\" }}\n"
   - action: media_player.turn_off
     target:
       entity_id: media_player.playstation_4
@@ -1863,60 +1703,60 @@ spela_knack_i_ilias_puck:
   - variables:
       puck_cast: media_player.googlehome_ilias_rum
       puck_ma: media_player.pucken_i_ilias_rum
-      sparad_volym: "{{ state_attr(puck_cast, 'volume_level') | float(0.5) }}"
-      var_ma_aktiv: "{{ states(puck_ma) in ['playing', 'paused'] }}"
-      var_cast_aktiv: "{{ states(puck_cast) in ['playing', 'paused'] }}"
+      sparad_volym: '{{ state_attr(puck_cast, ''volume_level'') | float(0.5) }}'
+      var_ma_aktiv: '{{ states(puck_ma) in [''playing'', ''paused''] }}'
+      var_cast_aktiv: '{{ states(puck_cast) in [''playing'', ''paused''] }}'
   - if:
     - condition: template
-      value_template: "{{ var_ma_aktiv }}"
+      value_template: '{{ var_ma_aktiv }}'
     then:
     - action: media_player.media_pause
       target:
-        entity_id: "{{ puck_ma }}"
+        entity_id: '{{ puck_ma }}'
       continue_on_error: true
   - if:
     - condition: template
-      value_template: "{{ var_cast_aktiv and not var_ma_aktiv }}"
+      value_template: '{{ var_cast_aktiv and not var_ma_aktiv }}'
     then:
     - action: media_player.media_pause
       target:
-        entity_id: "{{ puck_cast }}"
+        entity_id: '{{ puck_cast }}'
       continue_on_error: true
   - action: script.tysta_kopplingspling_vid_casting
     data:
-      hogtalare: "{{ puck_cast }}"
+      hogtalare: '{{ puck_cast }}'
   - action: media_player.volume_set
     target:
-      entity_id: "{{ puck_cast }}"
+      entity_id: '{{ puck_cast }}'
     data:
       volume_level: 0.5
   - action: media_player.play_media
     target:
-      entity_id: "{{ puck_cast }}"
+      entity_id: '{{ puck_cast }}'
     data:
       media_content_id: /local/media/knack_tre_ganger_trad.mp3
       media_content_type: audio/mpeg
-  - delay: "00:00:02"
+  - delay: 00:00:02
   - action: media_player.volume_set
     target:
-      entity_id: "{{ puck_cast }}"
+      entity_id: '{{ puck_cast }}'
     data:
-      volume_level: "{{ sparad_volym }}"
+      volume_level: '{{ sparad_volym }}'
   - if:
     - condition: template
-      value_template: "{{ var_ma_aktiv }}"
+      value_template: '{{ var_ma_aktiv }}'
     then:
     - action: media_player.media_play
       target:
-        entity_id: "{{ puck_ma }}"
+        entity_id: '{{ puck_ma }}'
       continue_on_error: true
   - if:
     - condition: template
-      value_template: "{{ var_cast_aktiv and not var_ma_aktiv }}"
+      value_template: '{{ var_cast_aktiv and not var_ma_aktiv }}'
     then:
     - action: media_player.media_play
       target:
-        entity_id: "{{ puck_cast }}"
+        entity_id: '{{ puck_cast }}'
       continue_on_error: true
 ladda_ner_bild_fran_ring_doorbell:
   alias: Ladda ner bild från Ring doorbell
@@ -1933,34 +1773,24 @@ om_huslarmet_triggas:
   - action: switch.turn_on
     entity_id:
     - siren.brandvarnare_ovre_trappan
-  - action: notify.foraldrar
+  - action: script.mobilnotis
     data:
-      message: "HEMMET {{ now().strftime('%R') }}:\n*** HUSLARM ***   {%- set ns =
-        namespace(triggered_sensors_str='', triggered_count=1) %} {%- for entity_id
-        in \n  [\n    'binary_sensor.balkongdorren',\n    'binary_sensor.altandorr_baksidan',\n
-        \   'binary_sensor.altandorr_koket',\n    'binary_sensor.ytterdorren',\n    'binary_sensor.ilias_fonster',\n
-        \   'binary_sensor.vardagsrummet_fonster',\n    'binary_sensor.wc_fonster',\n
-        \   'binary_sensor.annas_fonster',\n    'binary_sensor.eriks_fonster',\n
-        \   'binary_sensor.badrummet_fonster',\n    'binary_sensor.ilias_rum_rorelse',\n
-        \   'binary_sensor.ilias_skrivbord_rorelse',\n    'binary_sensor.vardagsrummet_rorelse',\n
-        \   'binary_sensor.vardagsrummet_soffan_rorelse',\n    'binary_sensor.ovre_trappan_rorelse',\n
-        \   'binary_sensor.sovrummet_rorelse',\n    'binary_sensor.wc_rorelse',\n
-        \   'binary_sensor.annas_rum_rorelse',\n    'binary_sensor.koket_rorelse',\n
-        \   'binary_sensor.koket_arbetsbanken_rorelse',\n    'binary_sensor.koksbordet_rorelse',\n
-        \   'binary_sensor.hallen_rorelse',\n    'binary_sensor.nedre_trappan_rorelse',\n
-        \   'binary_sensor.eriks_rum_rorelse',\n    'binary_sensor.tvattstugan_rorelse'\n
-        \ ]\n%}\n  {%- set sensor = states[entity_id] %}\n  {%- if sensor.state ==
-        'on' %}\n    {%- set friendly_name = sensor.attributes.friendly_name %}\n
-        \   {%- if ns.triggered_sensors_str != '' %}\n      {%- set ns.triggered_sensors_str
-        = ns.triggered_sensors_str + ',\\n' + friendly_name %}\n      {%- set ns.triggered_count
-        = ns.triggered_count + 1 %}\n    {%- else %}\n      {%- set ns.triggered_sensors_str
-        = friendly_name %}\n    {%- endif %}\n  {%- endif %}\n{%- endfor %}\n{% if
-        ns.triggered_count == 1 -%} {{- ns.triggered_count }} sensor har triggats:
-        {% else %} {{- ns.triggered_count }} sensorer har triggats: {% endif %} {{-
-        ns.triggered_sensors_str }}"
-      data:
-        ttl: 0
-        priority: high
+      meddelande: "HEMMET {{ now().strftime('%R') }}:\n*** HUSLARM ***   {%- set ns = namespace(triggered_sensors_str='',\
+        \ triggered_count=1) %} {%- for entity_id in \n  [\n    'binary_sensor.balkongdorren',\n    'binary_sensor.altandorr_baksidan',\n\
+        \    'binary_sensor.altandorr_koket',\n    'binary_sensor.ytterdorren',\n    'binary_sensor.ilias_fonster',\n    'binary_sensor.vardagsrummet_fonster',\n\
+        \    'binary_sensor.wc_fonster',\n    'binary_sensor.annas_fonster',\n    'binary_sensor.eriks_fonster',\n    'binary_sensor.badrummet_fonster',\n\
+        \    'binary_sensor.ilias_rum_rorelse',\n    'binary_sensor.ilias_skrivbord_rorelse',\n    'binary_sensor.vardagsrummet_rorelse',\n\
+        \    'binary_sensor.vardagsrummet_soffan_rorelse',\n    'binary_sensor.ovre_trappan_rorelse',\n    'binary_sensor.sovrummet_rorelse',\n\
+        \    'binary_sensor.wc_rorelse',\n    'binary_sensor.annas_rum_rorelse',\n    'binary_sensor.koket_rorelse',\n   \
+        \ 'binary_sensor.koket_arbetsbanken_rorelse',\n    'binary_sensor.koksbordet_rorelse',\n    'binary_sensor.hallen_rorelse',\n\
+        \    'binary_sensor.nedre_trappan_rorelse',\n    'binary_sensor.eriks_rum_rorelse',\n    'binary_sensor.tvattstugan_rorelse'\n\
+        \  ]\n%}\n  {%- set sensor = states[entity_id] %}\n  {%- if sensor.state == 'on' %}\n    {%- set friendly_name = sensor.attributes.friendly_name\
+        \ %}\n    {%- if ns.triggered_sensors_str != '' %}\n      {%- set ns.triggered_sensors_str = ns.triggered_sensors_str\
+        \ + ',\\n' + friendly_name %}\n      {%- set ns.triggered_count = ns.triggered_count + 1 %}\n    {%- else %}\n   \
+        \   {%- set ns.triggered_sensors_str = friendly_name %}\n    {%- endif %}\n  {%- endif %}\n{%- endfor %}\n{% if ns.triggered_count\
+        \ == 1 -%} {{- ns.triggered_count }} sensor har triggats: {% else %} {{- ns.triggered_count }} sensorer har triggats:\
+        \ {% endif %} {{- ns.triggered_sensors_str }}"
+      mottagare: foraldrar
 spela_tv_stream_pa_appletv:
   alias: Spela upp TF1 på Apple TV i VLC
   mode: single
@@ -1991,18 +1821,20 @@ spela_tv_stream_pa_appletv:
 test_fraga_om_att_tanda_en_lampa:
   alias: Fråga om att tända en lampa
   sequence:
-  - action: notify.mobile_app_ilias_s23_ultra
+  - action: script.mobilnotis
     data:
-      message: Vill du att jag tänder lampan i ditt rum?
-      data:
+      meddelande: Vill du att jag tänder lampan i ditt rum?
+      mottagare: mobile_app_ilias_s23_ultra
+      notis_data:
         tts_text: Vill du att jag tänder lampan i ditt rum?
         channel: voice
   - delay:
       seconds: 2
-  - action: notify.mobile_app_ilias_s23_ultra
+  - action: script.mobilnotis
     data:
-      message: command_activity
-      data:
+      meddelande: command_activity
+      mottagare: mobile_app_ilias_s23_ultra
+      notis_data:
         intent_action: android.intent.action.ASSIST
         intent_package_name: io.homeassistant.companion.android
         channel: voice
@@ -2012,28 +1844,24 @@ ilias_rum_stall_in_belysningen:
   mode: restart
   sequence:
   - condition: template
-    value_template: '{{ states(''input_select.ilias_rum_belysning'') not in [''unknown'',
-      ''unavailable'', ''none'', ''''] }}'
+    value_template: '{{ states(''input_select.ilias_rum_belysning'') not in [''unknown'', ''unavailable'', ''none'', '''']
+      }}'
   - variables:
-      ilias_mode: '{{ states(''input_select.ilias_rum_belysning'') | trim
-        }}'
+      ilias_mode: '{{ states(''input_select.ilias_rum_belysning'') | trim }}'
       light_tak: light.taklampan_ilias_rum_level
       light_fonster: light.lamporna_i_ilias_fonster
       light_sang: light.lamporna_ovanfor_ilias_sang
       light_mys: light.ilias_myslampa
       tak_available: '{{ states(light_tak) not in [''unavailable'', ''unknown''] }}'
-      fonster_available: '{{ states(light_fonster) not in [''unavailable'', ''unknown'']
-        }}'
-      sang_available: '{{ states(light_sang) not in [''unavailable'', ''unknown'']
-        }}'
+      fonster_available: '{{ states(light_fonster) not in [''unavailable'', ''unknown''] }}'
+      sang_available: '{{ states(light_sang) not in [''unavailable'', ''unknown''] }}'
       mys_available: '{{ states(light_mys) not in [''unavailable'', ''unknown''] }}'
   - choose:
     - conditions:
       - condition: template
         value_template: '{{ ilias_mode == ''Städning'' }}'
       sequence:
-      - action: '{% if tak_available %} light.turn_on {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if tak_available %} light.turn_on {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.taklampan_ilias_rum_level
         data:
@@ -2042,97 +1870,77 @@ ilias_rum_stall_in_belysningen:
       - condition: template
         value_template: '{{ ilias_mode == ''Tänt'' }}'
       sequence:
-      - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.taklampan_ilias_rum_level
-      - action: '{% if fonster_available %} light.turn_on {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if fonster_available %} light.turn_on {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.lamporna_i_ilias_fonster
-      - action: '{% if sang_available %} light.turn_on {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if sang_available %} light.turn_on {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.lamporna_ovanfor_ilias_sang
-      - action: '{% if mys_available %} light.turn_on {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if mys_available %} light.turn_on {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.ilias_myslampa
     - conditions:
       - condition: template
         value_template: '{{ ilias_mode == ''Lamporna i fönstret'' }}'
       sequence:
-      - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.taklampan_ilias_rum_level
-      - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.lamporna_ovanfor_ilias_sang
-      - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.ilias_myslampa
-      - action: '{% if fonster_available %} light.turn_on {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if fonster_available %} light.turn_on {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.lamporna_i_ilias_fonster
     - conditions:
       - condition: template
         value_template: '{{ ilias_mode == ''Sängen'' }}'
       sequence:
-      - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.taklampan_ilias_rum_level
-      - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.lamporna_i_ilias_fonster
-      - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.ilias_myslampa
-      - action: '{% if sang_available %} light.turn_on {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if sang_available %} light.turn_on {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.lamporna_ovanfor_ilias_sang
     - conditions:
       - condition: template
         value_template: '{{ ilias_mode == ''Myslampan'' }}'
       sequence:
-      - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.taklampan_ilias_rum_level
-      - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.lamporna_i_ilias_fonster
-      - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.lamporna_ovanfor_ilias_sang
-      - action: '{% if mys_available %} light.turn_on {% else %} script.do_nothing
-          {% endif %}'
+      - action: '{% if mys_available %} light.turn_on {% else %} script.do_nothing {% endif %}'
         target:
           entity_id: light.ilias_myslampa
     default:
-    - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing
-        {% endif %}'
+    - action: '{% if tak_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
       target:
         entity_id: light.taklampan_ilias_rum_level
-    - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing
-        {% endif %}'
+    - action: '{% if fonster_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
       target:
         entity_id: light.lamporna_i_ilias_fonster
-    - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing
-        {% endif %}'
+    - action: '{% if sang_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
       target:
         entity_id: light.lamporna_ovanfor_ilias_sang
-    - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing
-        {% endif %}'
+    - action: '{% if mys_available %} light.turn_off {% else %} script.do_nothing {% endif %}'
       target:
         entity_id: light.ilias_myslampa
 media_morgonradio_tyst_start:
@@ -2146,12 +1954,16 @@ media_morgonradio_tyst_start:
   sequence:
   - variables:
       group_entity: media_player.morgonhogtalarna_mass
-      selected_station: "{% if station is defined and station %}{{ station }}{% else %}{% set day = now().weekday() + 1 %}{% set t = now().strftime('%H:%M:%S') %}{% if day in range(1, 6) %}{% if t < '06:00:00' %}Sveriges Radio P4 Stockholm{% elif t < '11:00:00' %}Sveriges Radio P1{% elif t < '16:00:00' %}Sveriges Radio P4 Stockholm{% elif t < '18:15:00' %}Sveriges Radio P1{% else %}Sveriges Radio P4 Stockholm{% endif %}{% elif day == 6 %}Sveriges Radio P4 Stockholm{% else %}{% if t < '08:00:00' %}Sveriges Radio P4 Stockholm{% elif t < '11:00:00' %}Sveriges Radio P1{% else %}Sveriges Radio P4 Stockholm{% endif %}{% endif %}{% endif %}"
-      station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n
-        \ \"Sveriges Radio P2\": \"library://radio/10\",\n  \"Sveriges Radio P3\":
-        \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n
-        \ \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio
-        Ekot Direkt\": \"library://radio/14\"\n} %}\n{{ streams.get(selected_station) }}"
+      selected_station: '{% if station is defined and station %}{{ station }}{% else %}{% set day = now().weekday() + 1 %}{%
+        set t = now().strftime(''%H:%M:%S'') %}{% if day in range(1, 6) %}{% if t < ''06:00:00'' %}Sveriges Radio P4 Stockholm{%
+        elif t < ''11:00:00'' %}Sveriges Radio P1{% elif t < ''16:00:00'' %}Sveriges Radio P4 Stockholm{% elif t < ''18:15:00''
+        %}Sveriges Radio P1{% else %}Sveriges Radio P4 Stockholm{% endif %}{% elif day == 6 %}Sveriges Radio P4 Stockholm{%
+        else %}{% if t < ''08:00:00'' %}Sveriges Radio P4 Stockholm{% elif t < ''11:00:00'' %}Sveriges Radio P1{% else %}Sveriges
+        Radio P4 Stockholm{% endif %}{% endif %}{% endif %}'
+      station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n  \"Sveriges Radio P2\": \"library://radio/10\"\
+        ,\n  \"Sveriges Radio P3\": \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n\
+        \  \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio Ekot Direkt\": \"library://radio/14\"\n\
+        } %}\n{{ streams.get(selected_station) }}"
   - action: media_player.media_stop
     continue_on_error: true
     target:
@@ -2220,7 +2032,7 @@ media_lyssna_pa_radio:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ speaker_option == 'Morgonhögtalarna' }}"
+        value_template: '{{ speaker_option == ''Morgonhögtalarna'' }}'
       sequence:
       - action: input_select.select_option
         target:
@@ -2231,21 +2043,17 @@ media_lyssna_pa_radio:
         target:
           entity_id: input_select.play_radiostation
         data:
-          option: "{% set day = now().weekday() + 1 %} {% set t = now().strftime('%H:%M:%S')
-            %}\n{% if day in range(1, 6) %}\n  {% if t < '06:00:00' %}\n    Sveriges
-            Radio P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges Radio P1\n
-            \ {% elif t < '16:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif
-            t < '18:15:00' %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges
-            Radio P4 Stockholm\n  {% endif %}\n{% elif day == 6 %}\n  Sveriges Radio
-            P4 Stockholm\n{% else %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio
-            P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges Radio P1\n  {%
-            else %}\n    Sveriges Radio P4 Stockholm\n  {% endif %}\n{% endif %}\n"
+          option: "{% set day = now().weekday() + 1 %} {% set t = now().strftime('%H:%M:%S') %}\n{% if day in range(1, 6)\
+            \ %}\n  {% if t < '06:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges Radio\
+            \ P1\n  {% elif t < '16:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif t < '18:15:00' %}\n    Sveriges\
+            \ Radio P1\n  {% else %}\n    Sveriges Radio P4 Stockholm\n  {% endif %}\n{% elif day == 6 %}\n  Sveriges Radio\
+            \ P4 Stockholm\n{% else %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif t < '11:00:00'\
+            \ %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges Radio P4 Stockholm\n  {% endif %}\n{% endif %}\n"
       - stop: ''
   - variables:
-      speaker_entity: "{% if speaker_option == 'Högtalarna i köket' %}\n  media_player.hogtalarna_i_koket\n{%
-        elif speaker_option == 'Morgonhögtalarna' %}\n  media_player.morgonhogtalarna\n{%
-        elif speaker_option == 'Pucken i Ilias rum' %}\n  media_player.googlehome_ilias_rum\n{%
-        else %}\n  {{ none }}\n{% endif %}\n"
+      speaker_entity: "{% if speaker_option == 'Högtalarna i köket' %}\n  media_player.hogtalarna_i_koket\n{% elif speaker_option\
+        \ == 'Morgonhögtalarna' %}\n  media_player.morgonhogtalarna\n{% elif speaker_option == 'Pucken i Ilias rum' %}\n \
+        \ media_player.googlehome_ilias_rum\n{% else %}\n  {{ none }}\n{% endif %}\n"
   - action: input_select.select_option
     target:
       entity_id: input_select.play_radiostation_target
@@ -2260,18 +2068,16 @@ media_lyssna_pa_radio:
     target:
       entity_id: input_select.play_radiostation
     data:
-      option: "{% set day = now().weekday() + 1 %} {% set t = now().strftime('%H:%M:%S')
-        %}\n{% if day in range(1, 6) %}\n  {% if t < '06:00:00' %}\n    Sveriges Radio
-        P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges Radio P1\n  {% elif
-        t < '16:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif t < '18:15:00'
-        %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges Radio P4 Stockholm\n
-        \ {% endif %}\n{% elif day == 6 %}\n  Sveriges Radio P4 Stockholm\n{% else
-        %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif
-        t < '11:00:00' %}\n    Sveriges Radio P1\n  {% else %}\n    Sveriges Radio
-        P4 Stockholm\n  {% endif %}\n{% endif %}\n"
+      option: "{% set day = now().weekday() + 1 %} {% set t = now().strftime('%H:%M:%S') %}\n{% if day in range(1, 6) %}\n\
+        \  {% if t < '06:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges Radio P1\n\
+        \  {% elif t < '16:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif t < '18:15:00' %}\n    Sveriges Radio P1\n\
+        \  {% else %}\n    Sveriges Radio P4 Stockholm\n  {% endif %}\n{% elif day == 6 %}\n  Sveriges Radio P4 Stockholm\n\
+        {% else %}\n  {% if t < '08:00:00' %}\n    Sveriges Radio P4 Stockholm\n  {% elif t < '11:00:00' %}\n    Sveriges\
+        \ Radio P1\n  {% else %}\n    Sveriges Radio P4 Stockholm\n  {% endif %}\n{% endif %}\n"
 media_koksradio_tyst_start:
   alias: 'Media: Kökradio med tyst start'
-  description: Castar SR till hogtalarna_i_koket_mass. Varmt kanalbyte behåller volym; kallstart sätter volym från noll till slutvolym.
+  description: Castar SR till hogtalarna_i_koket_mass. Varmt kanalbyte behåller volym; kallstart sätter volym från noll till
+    slutvolym.
   mode: restart
   fields:
     station:
@@ -2284,10 +2090,18 @@ media_koksradio_tyst_start:
   - variables:
       group_entity: media_player.hogtalarna_i_koket_mass
       chromecast_entity: media_player.hogtalarna_i_koket
-      selected_station: "{% if station is defined and station %}{{ station }}{% else %}{{ states('input_select.play_radiostation') }}{% endif %}"
-      station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n  \"Sveriges Radio P2\": \"library://radio/10\",\n  \"Sveriges Radio P3\": \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n  \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio Ekot Direkt\": \"library://radio/14\"\n} %}\n{{ streams.get(selected_station) }}"
+      selected_station: '{% if station is defined and station %}{{ station }}{% else %}{{ states(''input_select.play_radiostation'')
+        }}{% endif %}'
+      station_url: "{% set streams = {\n  \"Sveriges Radio P1\": \"library://radio/9\",\n  \"Sveriges Radio P2\": \"library://radio/10\"\
+        ,\n  \"Sveriges Radio P3\": \"library://radio/11\",\n  \"Sveriges Radio P4 Stockholm\": \"library://radio/12\",\n\
+        \  \"Sveriges Radio P4 PLUS\": \"library://radio/13\",\n  \"Sveriges Radio Ekot Direkt\": \"library://radio/14\"\n\
+        } %}\n{{ streams.get(selected_station) }}"
       slutvolym: '{{ volym | default(0.09) | float }}'
-      is_hot_swap: "{% set cc_state = states(chromecast_entity) %}\n{% set mass_state = states(group_entity) %}\n{% set mass_content = state_attr(group_entity, 'media_content_id') | default('', true) | string %}\n{% set cc_content = state_attr(chromecast_entity, 'media_content_id') | default('', true) | string %}\n{{ cc_state not in ['off', 'unavailable', 'unknown']\n   and mass_state in ['playing', 'paused', 'buffering']\n   and (mass_content.startswith('library://radio/') or cc_content.startswith('library://radio/')) }}\n"
+      is_hot_swap: "{% set cc_state = states(chromecast_entity) %}\n{% set mass_state = states(group_entity) %}\n{% set mass_content\
+        \ = state_attr(group_entity, 'media_content_id') | default('', true) | string %}\n{% set cc_content = state_attr(chromecast_entity,\
+        \ 'media_content_id') | default('', true) | string %}\n{{ cc_state not in ['off', 'unavailable', 'unknown']\n   and\
+        \ mass_state in ['playing', 'paused', 'buffering']\n   and (mass_content.startswith('library://radio/') or cc_content.startswith('library://radio/'))\
+        \ }}\n"
   - choose:
     - conditions:
       - condition: template
@@ -2302,13 +2116,15 @@ media_koksradio_tyst_start:
           metadata: {}
       - wait_for_trigger:
         - trigger: template
-          value_template: "{% set content = state_attr(group_entity, 'media_content_id') | default('', true) %}\n{{ content == station_url\n   and (is_state(group_entity, 'playing') or is_state(group_entity, 'buffering')) }}\n"
+          value_template: "{% set content = state_attr(group_entity, 'media_content_id') | default('', true) %}\n{{ content\
+            \ == station_url\n   and (is_state(group_entity, 'playing') or is_state(group_entity, 'buffering')) }}\n"
         timeout:
           seconds: 15
       - choose:
         - conditions:
           - condition: template
-            value_template: "{% set content = state_attr(group_entity, 'media_content_id') | default('', true) %}\n{{ content == station_url\n   and (is_state(group_entity, 'playing') or is_state(group_entity, 'buffering')) }}\n"
+            value_template: "{% set content = state_attr(group_entity, 'media_content_id') | default('', true) %}\n{{ content\
+              \ == station_url\n   and (is_state(group_entity, 'playing') or is_state(group_entity, 'buffering')) }}\n"
           sequence:
           - stop: Varmt kanalbyte — volym oförändrad
   - action: media_player.media_stop
@@ -2322,11 +2138,10 @@ media_koksradio_tyst_start:
     continue_on_error: true
     target:
       entity_id: '{{ chromecast_entity }}'
-  - wait_template: '{{ not is_state(chromecast_entity, ''off'') and not is_state(chromecast_entity,
-      ''unavailable'') }}'
-    timeout: '00:00:15'
+  - wait_template: '{{ not is_state(chromecast_entity, ''off'') and not is_state(chromecast_entity, ''unavailable'') }}'
+    timeout: 00:00:15
     continue_on_timeout: true
-  - delay: '00:00:02'
+  - delay: 00:00:02
   - action: media_player.volume_set
     target:
       entity_id: '{{ chromecast_entity }}'
@@ -2354,8 +2169,8 @@ media_koksradio_tyst_start:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ is_state(group_entity, 'playing') or is_state(group_entity,
-          'buffering') or is_state(chromecast_entity, 'playing') }}"
+        value_template: '{{ is_state(group_entity, ''playing'') or is_state(group_entity, ''buffering'') or is_state(chromecast_entity,
+          ''playing'') }}'
       sequence: []
     default:
     - action: media_player.media_play
@@ -2377,15 +2192,15 @@ media_koksradio_tyst_start:
     - choose:
       - conditions:
         - condition: template
-          value_template: "{{ is_state(group_entity, 'playing') or is_state(group_entity,
-            'buffering') or is_state(chromecast_entity, 'playing') }}"
+          value_template: '{{ is_state(group_entity, ''playing'') or is_state(group_entity, ''buffering'') or is_state(chromecast_entity,
+            ''playing'') }}'
         sequence: []
       default:
       - action: media_player.media_stop
         continue_on_error: true
         target:
           entity_id: '{{ group_entity }}'
-      - delay: '00:00:01'
+      - delay: 00:00:01
       - action: media_player.play_media
         target:
           entity_id: '{{ group_entity }}'
@@ -2406,8 +2221,8 @@ media_koksradio_tyst_start:
         timeout:
           seconds: 20
   - condition: template
-    value_template: "{{ is_state(group_entity, 'playing') or is_state(group_entity,
-      'buffering') or is_state(chromecast_entity, 'playing') }}"
+    value_template: '{{ is_state(group_entity, ''playing'') or is_state(group_entity, ''buffering'') or is_state(chromecast_entity,
+      ''playing'') }}'
   - action: media_player.volume_set
     target:
       entity_id: '{{ chromecast_entity }}'
@@ -2440,61 +2255,131 @@ test_spela_p1_i_ilias_rum_med_tyst_start:
       volume_level: 0.2
   mode: restart
   icon: mdi:radio
-
 grasklipparen_starta:
-  alias: "Gräsklipparen: Starta klippning"
+  alias: 'Gräsklipparen: Starta klippning'
   description: Startar gräsklipparen och meddelar om regnfördröjning blockerar start.
   mode: single
   sequence:
-    - action: lawn_mower.start_mowing
-      target:
-        entity_id: lawn_mower.grasklipparen
-    - delay:
-        seconds: 5
-    - if:
-      - condition: state
-        entity_id: lawn_mower.grasklipparen
-        state: rain_delayed
-      then:
-        - action: notify.mobile_app_ilias_s23_ultra
-          data:
-            message: "HEMMET {{ now().strftime('%R') }}: Gräsklipparen är i regnfördröjning och startade inte. Stäng av regnfördröjning i Worx-appen eller vänta tills den gått ut."
-            data:
-              ttl: 0
-              priority: high
-
+  - action: lawn_mower.start_mowing
+    target:
+      entity_id: lawn_mower.grasklipparen
+  - delay:
+      seconds: 5
+  - if:
+    - condition: state
+      entity_id: lawn_mower.grasklipparen
+      state: rain_delayed
+    then:
+    - action: script.mobilnotis
+      data:
+        meddelande: 'HEMMET {{ now().strftime(''%R'') }}: Gräsklipparen är i regnfördröjning och startade inte. Stäng av regnfördröjning
+          i Worx-appen eller vänta tills den gått ut.'
+        mottagare: mobile_app_ilias_s23_ultra
 grasklipparen_stoppa:
-  alias: "Gräsklipparen: Stoppa och åk hem"
+  alias: 'Gräsklipparen: Stoppa och åk hem'
   description: Skickar gräsklipparen till ladstationen.
   mode: single
   sequence:
-    - action: lawn_mower.dock
-      target:
-        entity_id: lawn_mower.grasklipparen
-
+  - action: lawn_mower.dock
+    target:
+      entity_id: lawn_mower.grasklipparen
 grasklipparen_pausa:
-  alias: "Gräsklipparen: Pausa klippning"
+  alias: 'Gräsklipparen: Pausa klippning'
   description: Pausar gräsklipparen där den står.
   mode: single
   sequence:
-    - action: lawn_mower.pause
-      target:
-        entity_id: lawn_mower.grasklipparen
-
+  - action: lawn_mower.pause
+    target:
+      entity_id: lawn_mower.grasklipparen
 git_synka_config:
-  alias: "Git: Synka /config från GitHub"
-  description: "Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP."
+  alias: 'Git: Synka /config från GitHub'
+  description: Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP.
   mode: single
   sequence:
-    - action: shell_command.git_pull
-    - delay:
-        seconds: 8
-    - action: homeassistant.reload_core_config
-    - action: automation.reload
-    - action: script.reload
-    - action: template.reload
-    - action: group.reload
-
+  - action: shell_command.git_pull
+  - delay:
+      seconds: 8
+  - action: homeassistant.reload_core_config
+  - action: automation.reload
+  - action: script.reload
+  - action: template.reload
+  - action: group.reload
+mobilnotis:
+  alias: Mobilnotis
+  description: Central avsändare för alla mobilnotiser via Companion-appen.
+  mode: parallel
+  max: 50
+  fields:
+    mottagare:
+      name: Mottagare
+      description: Notify-tjänst utan notify.-prefix, t.ex. mobile_app_ilias_s23_ultra
+      required: true
+      example: mobile_app_ilias_s23_ultra
+      selector:
+        text: null
+    meddelande:
+      name: Meddelande
+      required: true
+      selector:
+        text: null
+    title:
+      name: Titel
+      default: ''
+      selector:
+        text: null
+    ikon:
+      name: Ikon
+      default: standard
+      selector:
+        select:
+          options:
+          - standard
+          - husage_morgon
+          - husage_dag
+          - husage_kvall
+          - husage_natt
+          - vitvaror
+          - cursor
+          - zon
+    prefix_hemmet:
+      name: Prefix HEMMET
+      default: false
+      selector:
+        boolean: null
+    tag:
+      name: Tag
+      default: ''
+      selector:
+        text: null
+    vibration:
+      name: Vibration
+      default: ''
+      selector:
+        text: null
+    notis_data:
+      name: Extra notis-data
+      description: t.ex. actions, channel, intent_action
+      default: {}
+      selector:
+        object: null
+  sequence:
+  - variables:
+      meddelande_text: '{% if prefix_hemmet %} HEMMET {{ now().strftime(''%R'') }}: {{ meddelande }} {% else %} {{ meddelande
+        }} {% endif %}'
+      ikon_sokvag: "{% if mottagare != 'mobile_app_ilias_s23_ultra' or ikon == 'standard' %} {% else %} {% set icons = {\n\
+        \  'huslage_morgon': '/local/notis/huslage-morgon.png',\n  'huslage_dag': '/local/notis/huslage-dag.png',\n  'huslage_kvall':\
+        \ '/local/notis/huslage-kvall.png',\n  'huslage_natt': '/local/notis/huslage-natt.png',\n  'vitvaror': '/local/notis/vitvaror.png',\n\
+        \  'cursor': '/local/notis/cursor.png',\n  'zon': '/local/notis/zon.png'\n} %} {{ icons.get(ikon, '') }} {% endif\
+        \ %}"
+      notify_payload: '{% set d = {''ttl'': 0, ''priority'': ''high''} %} {% if ikon_sokvag %}{% set d = d | combine({''icon_url'':
+        ikon_sokvag}) %}{% endif %} {% if tag %}{% set d = d | combine({''tag'': tag}) %}{% endif %} {% if vibration %}{%
+        set d = d | combine({''vibration'': vibration}) %}{% endif %} {% if notis_data %}{% set d = d | combine(notis_data)
+        %}{% endif %} {{ d }}'
+  - action: notify.{{ mottagare }}
+    data:
+      title: '{{ title }}'
+      message: '{{ meddelande_text }}'
+      data: '{{ notify_payload }}'
 skrivare_mobilnotis:
   alias: 'Mobilnotis: HP-skrivaren'
   description: Central avsändare för alla mobilnotiser från HP-skrivaren.
@@ -2505,31 +2390,28 @@ skrivare_mobilnotis:
       required: true
       example: Utskriften är klar i HP-skrivaren.
   sequence:
-  - action: notify.mobile_app_ilias_s23_ultra
+  - action: script.mobilnotis
     data:
-      message: "HEMMET {{ now().strftime('%R') }}:\n{{ meddelande }}\n"
-      data:
-        ttl: 0
-        priority: high
+      mottagare: mobile_app_ilias_s23_ultra
+      meddelande: "{{ meddelande }}\n"
+      prefix_hemmet: true
 cursor_klar_notis:
-  alias: "Cursor: Agent klar — mobilnotis"
-  description: "Skickar klar-notis till Elias S23 Ultra. Anropas av Cursor-agenter via MCP."
+  alias: 'Cursor: Agent klar — mobilnotis'
+  description: Skickar klar-notis till Elias S23 Ultra. Anropas av Cursor-agenter via MCP.
   mode: single
   fields:
     beskrivning:
-      description: "Kort beskrivning (max en mening) av vad som hänt eller vad som behövs"
-      example: "PR #42 mergad och git-synk klar — vill du testa live?"
+      description: Kort beskrivning (max en mening) av vad som hänt eller vad som behövs
+      example: 'PR #42 mergad och git-synk klar — vill du testa live?'
       required: true
   sequence:
-    - action: notify.mobile_app_ilias_s23_ultra
-      data:
-        title: "Cursor: {{ now().strftime('%H:%M') }}"
-        message: "Nu är jag klar, Home Assistant. {{ beskrivning }}"
-        data:
-          ttl: 0
-          priority: high
-          vibration: "1000, 300, 1000, 300, 1000"
-
+  - action: script.mobilnotis
+    data:
+      meddelande: Nu är jag klar, Home Assistant. {{ beskrivning }}
+      mottagare: mobile_app_ilias_s23_ultra
+      title: 'Cursor: {{ now().strftime(''%H:%M'') }}'
+      ikon: cursor
+      vibration: 1000, 300, 1000, 300, 1000
 sl_hamta_site_avgangar:
   alias: SL hämta avgångar för hållplats
   description: Proxy mot SL Transport API — används av sl-nearby-stops-card.
@@ -2538,21 +2420,21 @@ sl_hamta_site_avgangar:
   fields:
     site_id:
       description: SL site-id
-      example: "1923"
+      example: '1923'
       required: true
       selector:
-        text:
+        text: null
   sequence:
-    - action: rest_command.sl_site_departures
-      data:
-        site_id: "{{ site_id | int }}"
-      response_variable: sl_dep
-    - variables:
-        payload:
-          departures: "{{ sl_dep.content.departures | default([]) }}"
-          stop_deviations: "{{ sl_dep.content.stop_deviations | default([]) }}"
-    - stop: return
-      response_variable: payload
+  - action: rest_command.sl_site_departures
+    data:
+      site_id: '{{ site_id | int }}'
+    response_variable: sl_dep
+  - variables:
+      payload:
+        departures: '{{ sl_dep.content.departures | default([]) }}'
+        stop_deviations: '{{ sl_dep.content.stop_deviations | default([]) }}'
+  - stop: return
+    response_variable: payload
 badrum_spara_profil:
   alias: Badrum spara ljusprofil från lampor
   description: Sparar nuvarande ljusläge för badrummets lampor till vald persons profil.
@@ -2564,116 +2446,103 @@ badrum_spara_profil:
       selector:
         select:
           options:
-            - besok
-            - dusch
+          - besok
+          - dusch
   sequence:
   - variables:
-      person: "{{ states('input_select.badrum_profil_valj') }}"
-      key: >-
-        {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
-        {{ m.get(person, 'invalid') }}
-      pct_tak: >-
-        {% if is_state('light.takspottar_badrummet', 'on') %}
-        {{ ((state_attr('light.takspottar_badrummet', 'brightness') | int(255) * 100 / 255) | round(0) | int) }}
-        {% else %}0{% endif %}
-      pct_handfat: >-
-        {% if is_state('light.led_badrummet_handfatet', 'on') %}
-        {{ ((state_attr('light.led_badrummet_handfatet', 'brightness') | int(255) * 100 / 255) | round(0) | int) }}
-        {% else %}0{% endif %}
-      pct_kommod: >-
-        {% if is_state('light.led_badrummet_kommoden', 'on') %}
-        {{ ((state_attr('light.led_badrummet_kommoden', 'brightness') | int(255) * 100 / 255) | round(0) | int) }}
-        {% else %}0{% endif %}
-      pct_spegel: "{{ 100 if is_state('light.spegeln_badrummet', 'on') else 0 }}"
-      pct_dusch_tak: >-
-        {% if is_state('light.takspott_duschen', 'on') %}
-        {{ ((state_attr('light.takspott_duschen', 'brightness') | int(255) * 100 / 255) | round(0) | int) }}
-        {% else %}0{% endif %}
-      pct_dusch_strip: >-
-        {% if is_state('light.led_strip_i_duschen', 'on') %}
-        {{ ((state_attr('light.led_strip_i_duschen', 'brightness') | int(255) * 100 / 255) | round(0) | int) }}
-        {% else %}0{% endif %}
+      person: '{{ states(''input_select.badrum_profil_valj'') }}'
+      key: '{% set m = {''Anna'': ''anna'', ''Ilias'': ''ilias'', ''Erik'': ''erik''} %} {{ m.get(person, ''invalid'') }}'
+      pct_tak: '{% if is_state(''light.takspottar_badrummet'', ''on'') %} {{ ((state_attr(''light.takspottar_badrummet'',
+        ''brightness'') | int(255) * 100 / 255) | round(0) | int) }} {% else %}0{% endif %}'
+      pct_handfat: '{% if is_state(''light.led_badrummet_handfatet'', ''on'') %} {{ ((state_attr(''light.led_badrummet_handfatet'',
+        ''brightness'') | int(255) * 100 / 255) | round(0) | int) }} {% else %}0{% endif %}'
+      pct_kommod: '{% if is_state(''light.led_badrummet_kommoden'', ''on'') %} {{ ((state_attr(''light.led_badrummet_kommoden'',
+        ''brightness'') | int(255) * 100 / 255) | round(0) | int) }} {% else %}0{% endif %}'
+      pct_spegel: '{{ 100 if is_state(''light.spegeln_badrummet'', ''on'') else 0 }}'
+      pct_dusch_tak: '{% if is_state(''light.takspott_duschen'', ''on'') %} {{ ((state_attr(''light.takspott_duschen'', ''brightness'')
+        | int(255) * 100 / 255) | round(0) | int) }} {% else %}0{% endif %}'
+      pct_dusch_strip: '{% if is_state(''light.led_strip_i_duschen'', ''on'') %} {{ ((state_attr(''light.led_strip_i_duschen'',
+        ''brightness'') | int(255) * 100 / 255) | round(0) | int) }} {% else %}0{% endif %}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ lage == 'besok' }}"
+        value_template: '{{ lage == ''besok'' }}'
       sequence:
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_tak_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_besok_tak_pct'' }}'
         data:
-          value: "{{ pct_tak }}"
+          value: '{{ pct_tak }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_handfat_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_besok_handfat_pct'' }}'
         data:
-          value: "{{ pct_handfat }}"
+          value: '{{ pct_handfat }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_kommod_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_besok_kommod_pct'' }}'
         data:
-          value: "{{ pct_kommod }}"
+          value: '{{ pct_kommod }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_spegel_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_besok_spegel_pct'' }}'
         data:
-          value: "{{ pct_spegel }}"
+          value: '{{ pct_spegel }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_besok_dusch_tak_pct'' }}'
         data:
-          value: "{{ pct_dusch_tak }}"
+          value: '{{ pct_dusch_tak }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_besok_dusch_strip_pct'' }}'
         data:
-          value: "{{ pct_dusch_strip }}"
+          value: '{{ pct_dusch_strip }}'
       - action: input_boolean.turn_on
         target:
-          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_besok_profil' }}"
+          entity_id: '{{ ''input_boolean.badrum_'' ~ key ~ ''_besok_profil'' }}'
     - conditions:
       - condition: template
-        value_template: "{{ lage == 'dusch' }}"
+        value_template: '{{ lage == ''dusch'' }}'
       sequence:
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_badrum_tak_pct'' }}'
         data:
-          value: "{{ pct_tak }}"
+          value: '{{ pct_tak }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_handfat_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_handfat_pct'' }}'
         data:
-          value: "{{ pct_handfat }}"
+          value: '{{ pct_handfat }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_kommod_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_kommod_pct'' }}'
         data:
-          value: "{{ pct_kommod }}"
+          value: '{{ pct_kommod }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_spegel_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_spegel_pct'' }}'
         data:
-          value: "{{ pct_spegel }}"
+          value: '{{ pct_spegel }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_tak_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_tak_pct'' }}'
         data:
-          value: "{{ pct_dusch_tak }}"
+          value: '{{ pct_dusch_tak }}'
       - action: input_number.set_value
         target:
-          entity_id: "{{ 'input_number.badrum_' ~ key ~ '_dusch_strip_pct' }}"
+          entity_id: '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_strip_pct'' }}'
         data:
-          value: "{{ pct_dusch_strip }}"
+          value: '{{ pct_dusch_strip }}'
       - action: input_boolean.turn_on
         target:
-          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_dusch_profil' }}"
+          entity_id: '{{ ''input_boolean.badrum_'' ~ key ~ ''_dusch_profil'' }}'
   - action: logbook.log
     data:
       name: Badrumsprofil
-      message: >-
-        Sparade {{ person }} {{ lage }}-profil (badrum {{ pct_tak }}/{{ pct_handfat }}/{{ pct_kommod }}/{{ pct_spegel }}%;
-        dusch {{ pct_dusch_tak }}/{{ pct_dusch_strip }}%).
+      message: Sparade {{ person }} {{ lage }}-profil (badrum {{ pct_tak }}/{{ pct_handfat }}/{{ pct_kommod }}/{{ pct_spegel
+        }}%; dusch {{ pct_dusch_tak }}/{{ pct_dusch_strip }}%).
 badrum_visa_profil:
   alias: Badrum visa sparad ljusprofil på lampor
   description: Tillämpar sparad profil på badrummets lampor för vald person.
@@ -2685,50 +2554,32 @@ badrum_visa_profil:
       selector:
         select:
           options:
-            - besok
-            - dusch
+          - besok
+          - dusch
   sequence:
   - variables:
-      person: "{{ states('input_select.badrum_profil_valj') }}"
-      key: >-
-        {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
-        {{ m.get(person, 'invalid') }}
-      profil_finns: >-
-        {% if key == 'invalid' %}false
-        {% elif lage == 'besok' %}
-        {% set nums = [
-          'input_number.badrum_' ~ key ~ '_besok_tak_pct',
-          'input_number.badrum_' ~ key ~ '_besok_handfat_pct',
-          'input_number.badrum_' ~ key ~ '_besok_kommod_pct',
-          'input_number.badrum_' ~ key ~ '_besok_spegel_pct',
-          'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct',
-          'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'
-        ] %}
-        {% set ns = namespace(v=false) %}
-        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') or ns.v }}
-        {% else %}
-        {% set nums = [
-          'input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_handfat_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_kommod_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_spegel_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_tak_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_strip_pct'
-        ] %}
-        {% set ns = namespace(v=false) %}
-        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') or ns.v }}
-        {% endif %}
+      person: '{{ states(''input_select.badrum_profil_valj'') }}'
+      key: '{% set m = {''Anna'': ''anna'', ''Ilias'': ''ilias'', ''Erik'': ''erik''} %} {{ m.get(person, ''invalid'') }}'
+      profil_finns: "{% if key == 'invalid' %}false {% elif lage == 'besok' %} {% set nums = [\n  'input_number.badrum_' ~\
+        \ key ~ '_besok_tak_pct',\n  'input_number.badrum_' ~ key ~ '_besok_handfat_pct',\n  'input_number.badrum_' ~ key\
+        \ ~ '_besok_kommod_pct',\n  'input_number.badrum_' ~ key ~ '_besok_spegel_pct',\n  'input_number.badrum_' ~ key ~\
+        \ '_besok_dusch_tak_pct',\n  'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'\n] %} {% set ns = namespace(v=false)\
+        \ %} {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %} {{ is_state('input_boolean.badrum_'\
+        \ ~ key ~ '_besok_profil', 'on') or ns.v }} {% else %} {% set nums = [\n  'input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct',\n\
+        \  'input_number.badrum_' ~ key ~ '_dusch_handfat_pct',\n  'input_number.badrum_' ~ key ~ '_dusch_kommod_pct',\n \
+        \ 'input_number.badrum_' ~ key ~ '_dusch_spegel_pct',\n  'input_number.badrum_' ~ key ~ '_dusch_tak_pct',\n  'input_number.badrum_'\
+        \ ~ key ~ '_dusch_strip_pct'\n] %} {% set ns = namespace(v=false) %} {% for e in nums %}{% if states(e) | float(0)\
+        \ > 0 %}{% set ns.v = true %}{% endif %}{% endfor %} {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil',\
+        \ 'on') or ns.v }} {% endif %}"
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ profil_finns }}"
+        value_template: '{{ profil_finns }}'
       sequence:
       - action: script.badrum_tillampa_profil
         data:
-          lage: "{{ lage }}"
-          person: "{{ person }}"
+          lage: '{{ lage }}'
+          person: '{{ person }}'
       - action: logbook.log
         data:
           name: Badrumsprofil
@@ -2749,49 +2600,47 @@ badrum_tom_profil:
       selector:
         select:
           options:
-            - besok
-            - dusch
+          - besok
+          - dusch
   sequence:
   - variables:
-      person: "{{ states('input_select.badrum_profil_valj') }}"
-      key: >-
-        {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
-        {{ m.get(person, 'invalid') }}
+      person: '{{ states(''input_select.badrum_profil_valj'') }}'
+      key: '{% set m = {''Anna'': ''anna'', ''Ilias'': ''ilias'', ''Erik'': ''erik''} %} {{ m.get(person, ''invalid'') }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ lage == 'besok' }}"
+        value_template: '{{ lage == ''besok'' }}'
       sequence:
       - action: input_boolean.turn_off
         target:
-          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_besok_profil' }}"
+          entity_id: '{{ ''input_boolean.badrum_'' ~ key ~ ''_besok_profil'' }}'
       - action: input_number.set_value
         target:
           entity_id:
-          - "{{ 'input_number.badrum_' ~ key ~ '_besok_tak_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_besok_handfat_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_besok_kommod_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_besok_spegel_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct' }}"
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_besok_tak_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_besok_handfat_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_besok_kommod_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_besok_spegel_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_besok_dusch_tak_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_besok_dusch_strip_pct'' }}'
         data:
           value: 0
     - conditions:
       - condition: template
-        value_template: "{{ lage == 'dusch' }}"
+        value_template: '{{ lage == ''dusch'' }}'
       sequence:
       - action: input_boolean.turn_off
         target:
-          entity_id: "{{ 'input_boolean.badrum_' ~ key ~ '_dusch_profil' }}"
+          entity_id: '{{ ''input_boolean.badrum_'' ~ key ~ ''_dusch_profil'' }}'
       - action: input_number.set_value
         target:
           entity_id:
-          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_handfat_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_kommod_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_spegel_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_tak_pct' }}"
-          - "{{ 'input_number.badrum_' ~ key ~ '_dusch_strip_pct' }}"
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_badrum_tak_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_handfat_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_kommod_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_spegel_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_tak_pct'' }}'
+          - '{{ ''input_number.badrum_'' ~ key ~ ''_dusch_strip_pct'' }}'
         data:
           value: 0
   - action: logbook.log
@@ -2809,20 +2658,20 @@ badrum_tillampa_profil:
       selector:
         select:
           options:
-            - besok
-            - dusch
+          - besok
+          - dusch
     endast_dusch_ljus:
       description: Endast dusch-tak och strip
       required: false
       default: false
       selector:
-        boolean:
+        boolean: null
     utan_dusch_ljus:
       description: Endast badrumslampor (ej dusch)
       required: false
       default: false
       selector:
-        boolean:
+        boolean: null
     transition:
       description: Fade utanför duschen i sekunder
       required: false
@@ -2846,179 +2695,162 @@ badrum_tillampa_profil:
       selector:
         select:
           options:
-            - Anna
-            - Ilias
-            - Erik
+          - Anna
+          - Ilias
+          - Erik
   sequence:
   - variables:
-      person_val: "{{ person | default(states('input_select.badrummet_vem'), true) }}"
-      key: >-
-        {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
-        {{ m.get(person_val, 'invalid') }}
-      bara_dusch: "{{ endast_dusch_ljus | default(false) }}"
-      utan_dusch: "{{ utan_dusch_ljus | default(false) }}"
-      fade_utanfor: "{{ transition | default(0) | int }}"
-      fade_dusch: "{{ transition_dusch | default(transition, true) | default(0) | int }}"
-      profil_finns: >-
-        {% if key == 'invalid' %}false
-        {% elif lage == 'besok' %}
-        {% set nums = [
-          'input_number.badrum_' ~ key ~ '_besok_tak_pct',
-          'input_number.badrum_' ~ key ~ '_besok_handfat_pct',
-          'input_number.badrum_' ~ key ~ '_besok_kommod_pct',
-          'input_number.badrum_' ~ key ~ '_besok_spegel_pct',
-          'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct',
-          'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'
-        ] %}
-        {% set ns = namespace(v=false) %}
-        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') or ns.v }}
-        {% else %}
-        {% set nums = [
-          'input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_handfat_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_kommod_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_spegel_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_tak_pct',
-          'input_number.badrum_' ~ key ~ '_dusch_strip_pct'
-        ] %}
-        {% set ns = namespace(v=false) %}
-        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil', 'on') or ns.v }}
-        {% endif %}
+      person_val: '{{ person | default(states(''input_select.badrummet_vem''), true) }}'
+      key: '{% set m = {''Anna'': ''anna'', ''Ilias'': ''ilias'', ''Erik'': ''erik''} %} {{ m.get(person_val, ''invalid'')
+        }}'
+      bara_dusch: '{{ endast_dusch_ljus | default(false) }}'
+      utan_dusch: '{{ utan_dusch_ljus | default(false) }}'
+      fade_utanfor: '{{ transition | default(0) | int }}'
+      fade_dusch: '{{ transition_dusch | default(transition, true) | default(0) | int }}'
+      profil_finns: "{% if key == 'invalid' %}false {% elif lage == 'besok' %} {% set nums = [\n  'input_number.badrum_' ~\
+        \ key ~ '_besok_tak_pct',\n  'input_number.badrum_' ~ key ~ '_besok_handfat_pct',\n  'input_number.badrum_' ~ key\
+        \ ~ '_besok_kommod_pct',\n  'input_number.badrum_' ~ key ~ '_besok_spegel_pct',\n  'input_number.badrum_' ~ key ~\
+        \ '_besok_dusch_tak_pct',\n  'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'\n] %} {% set ns = namespace(v=false)\
+        \ %} {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %} {{ is_state('input_boolean.badrum_'\
+        \ ~ key ~ '_besok_profil', 'on') or ns.v }} {% else %} {% set nums = [\n  'input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct',\n\
+        \  'input_number.badrum_' ~ key ~ '_dusch_handfat_pct',\n  'input_number.badrum_' ~ key ~ '_dusch_kommod_pct',\n \
+        \ 'input_number.badrum_' ~ key ~ '_dusch_spegel_pct',\n  'input_number.badrum_' ~ key ~ '_dusch_tak_pct',\n  'input_number.badrum_'\
+        \ ~ key ~ '_dusch_strip_pct'\n] %} {% set ns = namespace(v=false) %} {% for e in nums %}{% if states(e) | float(0)\
+        \ > 0 %}{% set ns.v = true %}{% endif %}{% endfor %} {{ is_state('input_boolean.badrum_' ~ key ~ '_dusch_profil',\
+        \ 'on') or ns.v }} {% endif %}"
   - condition: template
-    value_template: "{{ profil_finns }}"
+    value_template: '{{ profil_finns }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ lage == 'besok' }}"
+        value_template: '{{ lage == ''besok'' }}'
       sequence:
       - variables:
-          pct_badrum_tak: "{{ states('input_number.badrum_' ~ key ~ '_besok_tak_pct') | int(0) }}"
-          pct_handfat: "{{ states('input_number.badrum_' ~ key ~ '_besok_handfat_pct') | int(0) }}"
-          pct_kommod: "{{ states('input_number.badrum_' ~ key ~ '_besok_kommod_pct') | int(0) }}"
-          pct_spegel: "{{ states('input_number.badrum_' ~ key ~ '_besok_spegel_pct') | int(0) }}"
-          pct_dusch_tak: "{{ states('input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct') | int(0) }}"
-          pct_dusch_strip: "{{ states('input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct') | int(0) }}"
+          pct_badrum_tak: '{{ states(''input_number.badrum_'' ~ key ~ ''_besok_tak_pct'') | int(0) }}'
+          pct_handfat: '{{ states(''input_number.badrum_'' ~ key ~ ''_besok_handfat_pct'') | int(0) }}'
+          pct_kommod: '{{ states(''input_number.badrum_'' ~ key ~ ''_besok_kommod_pct'') | int(0) }}'
+          pct_spegel: '{{ states(''input_number.badrum_'' ~ key ~ ''_besok_spegel_pct'') | int(0) }}'
+          pct_dusch_tak: '{{ states(''input_number.badrum_'' ~ key ~ ''_besok_dusch_tak_pct'') | int(0) }}'
+          pct_dusch_strip: '{{ states(''input_number.badrum_'' ~ key ~ ''_besok_dusch_strip_pct'') | int(0) }}'
     default:
     - variables:
-        pct_badrum_tak: "{{ states('input_number.badrum_' ~ key ~ '_dusch_badrum_tak_pct') | int(0) }}"
-        pct_handfat: "{{ states('input_number.badrum_' ~ key ~ '_dusch_handfat_pct') | int(0) }}"
-        pct_kommod: "{{ states('input_number.badrum_' ~ key ~ '_dusch_kommod_pct') | int(0) }}"
-        pct_spegel: "{{ states('input_number.badrum_' ~ key ~ '_dusch_spegel_pct') | int(0) }}"
-        pct_dusch_tak: "{{ states('input_number.badrum_' ~ key ~ '_dusch_tak_pct') | int(0) }}"
-        pct_dusch_strip: "{{ states('input_number.badrum_' ~ key ~ '_dusch_strip_pct') | int(0) }}"
+        pct_badrum_tak: '{{ states(''input_number.badrum_'' ~ key ~ ''_dusch_badrum_tak_pct'') | int(0) }}'
+        pct_handfat: '{{ states(''input_number.badrum_'' ~ key ~ ''_dusch_handfat_pct'') | int(0) }}'
+        pct_kommod: '{{ states(''input_number.badrum_'' ~ key ~ ''_dusch_kommod_pct'') | int(0) }}'
+        pct_spegel: '{{ states(''input_number.badrum_'' ~ key ~ ''_dusch_spegel_pct'') | int(0) }}'
+        pct_dusch_tak: '{{ states(''input_number.badrum_'' ~ key ~ ''_dusch_tak_pct'') | int(0) }}'
+        pct_dusch_strip: '{{ states(''input_number.badrum_'' ~ key ~ ''_dusch_strip_pct'') | int(0) }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ not bara_dusch }}"
+        value_template: '{{ not bara_dusch }}'
       sequence:
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ pct_badrum_tak | int > 0 }}"
+            value_template: '{{ pct_badrum_tak | int > 0 }}'
           sequence:
           - action: light.turn_on
             target:
               entity_id: light.takspottar_badrummet
             data:
-              brightness_pct: "{{ pct_badrum_tak }}"
-              transition: "{{ fade_utanfor }}"
+              brightness_pct: '{{ pct_badrum_tak }}'
+              transition: '{{ fade_utanfor }}'
         default:
         - action: light.turn_off
           target:
             entity_id: light.takspottar_badrummet
           data:
-            transition: "{{ fade_utanfor }}"
+            transition: '{{ fade_utanfor }}'
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ pct_handfat | int > 0 }}"
+            value_template: '{{ pct_handfat | int > 0 }}'
           sequence:
           - action: light.turn_on
             target:
               entity_id: light.led_badrummet_handfatet
             data:
-              brightness_pct: "{{ pct_handfat }}"
-              transition: "{{ fade_utanfor }}"
+              brightness_pct: '{{ pct_handfat }}'
+              transition: '{{ fade_utanfor }}'
         default:
         - action: light.turn_off
           target:
             entity_id: light.led_badrummet_handfatet
           data:
-            transition: "{{ fade_utanfor }}"
+            transition: '{{ fade_utanfor }}'
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ pct_kommod | int > 0 }}"
+            value_template: '{{ pct_kommod | int > 0 }}'
           sequence:
           - action: light.turn_on
             target:
               entity_id: light.led_badrummet_kommoden
             data:
-              brightness_pct: "{{ pct_kommod }}"
-              transition: "{{ fade_utanfor }}"
+              brightness_pct: '{{ pct_kommod }}'
+              transition: '{{ fade_utanfor }}'
         default:
         - action: light.turn_off
           target:
             entity_id: light.led_badrummet_kommoden
           data:
-            transition: "{{ fade_utanfor }}"
+            transition: '{{ fade_utanfor }}'
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ pct_spegel | int > 0 }}"
+            value_template: '{{ pct_spegel | int > 0 }}'
           sequence:
           - action: light.turn_on
             target:
               entity_id: light.spegeln_badrummet
             data:
-              transition: "{{ fade_utanfor }}"
+              transition: '{{ fade_utanfor }}'
         default:
         - action: light.turn_off
           target:
             entity_id: light.spegeln_badrummet
           data:
-            transition: "{{ fade_utanfor }}"
+            transition: '{{ fade_utanfor }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ not utan_dusch }}"
+        value_template: '{{ not utan_dusch }}'
       sequence:
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ pct_dusch_tak | int > 0 }}"
+            value_template: '{{ pct_dusch_tak | int > 0 }}'
           sequence:
           - action: light.turn_on
             target:
               entity_id: light.takspott_duschen
             data:
-              brightness_pct: "{{ pct_dusch_tak }}"
-              transition: "{{ fade_dusch }}"
+              brightness_pct: '{{ pct_dusch_tak }}'
+              transition: '{{ fade_dusch }}'
         default:
         - action: light.turn_off
           target:
             entity_id: light.takspott_duschen
           data:
-            transition: "{{ fade_dusch }}"
+            transition: '{{ fade_dusch }}'
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ pct_dusch_strip | int > 0 }}"
+            value_template: '{{ pct_dusch_strip | int > 0 }}'
           sequence:
           - action: light.turn_on
             target:
               entity_id: light.led_strip_i_duschen
             data:
-              brightness_pct: "{{ pct_dusch_strip }}"
-              transition: "{{ fade_dusch }}"
+              brightness_pct: '{{ pct_dusch_strip }}'
+              transition: '{{ fade_dusch }}'
         default:
         - action: light.turn_off
           target:
             entity_id: light.led_strip_i_duschen
           data:
-            transition: "{{ fade_dusch }}"
+            transition: '{{ fade_dusch }}'
   - action: logbook.log
     data:
       name: Badrumsprofil
@@ -3047,26 +2879,27 @@ badrum_default_besok:
       required: false
       default: false
       selector:
-        boolean:
+        boolean: null
   sequence:
   - variables:
-      fade_utanfor: "{{ transition | default(0) | int }}"
-      fade_dusch: "{{ transition_dusch | default(transition, true) | default(0) | int }}"
-      bara_dusch: "{{ endast_dusch_ljus | default(false) }}"
+      fade_utanfor: '{{ transition | default(0) | int }}'
+      fade_dusch: '{{ transition_dusch | default(transition, true) | default(0) | int }}'
+      bara_dusch: '{{ endast_dusch_ljus | default(false) }}'
       is_night: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
-      lux: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) }}"
+      lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
       is_cleaning: '{{ is_state(''input_boolean.stadning_pagar'', ''on'') }}'
-      day_brightness: "{% if is_cleaning %}100{% elif lux < 300 %}30{% elif lux <= 2000 %}35{% elif lux <= 13000 %}40{% else %}99{% endif %}"
+      day_brightness: '{% if is_cleaning %}100{% elif lux < 300 %}30{% elif lux <= 2000 %}35{% elif lux <= 13000 %}40{% else
+        %}99{% endif %}'
       dusch_brightness: '{{ 20 if (lux | int(0)) < 2000 else 30 }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ bara_dusch }}"
+        value_template: '{{ bara_dusch }}'
       sequence:
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ not is_night }}"
+            value_template: '{{ not is_night }}'
           sequence:
           - action: light.turn_on
             target:
@@ -3075,7 +2908,7 @@ badrum_default_besok:
               - light.led_strip_i_duschen
             data:
               brightness_pct: '{{ dusch_brightness }}'
-              transition: "{{ fade_dusch }}"
+              transition: '{{ fade_dusch }}'
     default:
     - choose:
       - conditions:
@@ -3087,7 +2920,7 @@ badrum_default_besok:
             entity_id: light.led_badrummet_kommoden
           data:
             brightness_pct: 2
-            transition: "{{ fade_utanfor }}"
+            transition: '{{ fade_utanfor }}'
       default:
       - action: light.turn_on
         target:
@@ -3097,11 +2930,11 @@ badrum_default_besok:
           - light.led_badrummet_kommoden
         data:
           brightness_pct: '{{ day_brightness }}'
-          transition: "{{ fade_utanfor }}"
+          transition: '{{ fade_utanfor }}'
     - choose:
       - conditions:
         - condition: template
-          value_template: "{{ not is_night }}"
+          value_template: '{{ not is_night }}'
         sequence:
         - action: light.turn_on
           target:
@@ -3110,7 +2943,7 @@ badrum_default_besok:
             - light.led_strip_i_duschen
           data:
             brightness_pct: '{{ dusch_brightness }}'
-            transition: "{{ fade_dusch }}"
+            transition: '{{ fade_dusch }}'
 badrum_default_dusch:
   alias: Badrum default duschläge (duschslackning)
   description: Släcker badrumslampor utanför duschen; valfritt fade av duschlampor.
@@ -3133,9 +2966,9 @@ badrum_default_dusch:
           step: 1
   sequence:
   - variables:
-      fade_utanfor: "{{ transition | default(5) | int }}"
-      fade_dusch: "{{ transition_dusch | default(none) }}"
-      lux: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) }}"
+      fade_utanfor: '{{ transition | default(5) | int }}'
+      fade_dusch: '{{ transition_dusch | default(none) }}'
+      lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
       dusch_brightness: '{{ 20 if (lux | int(0)) < 2000 else 30 }}'
   - action: input_boolean.turn_on
     target:
@@ -3148,11 +2981,11 @@ badrum_default_dusch:
       - light.led_badrummet_handfatet
       - light.led_badrummet_kommoden
     data:
-      transition: "{{ fade_utanfor }}"
+      transition: '{{ fade_utanfor }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ fade_dusch is not none }}"
+        value_template: '{{ fade_dusch is not none }}'
       sequence:
       - action: light.turn_on
         target:
@@ -3161,7 +2994,7 @@ badrum_default_dusch:
           - light.led_strip_i_duschen
         data:
           brightness_pct: '{{ dusch_brightness }}'
-          transition: "{{ fade_dusch | int }}"
+          transition: '{{ fade_dusch | int }}'
 badrum_besok_eller_default:
   alias: Badrum besök — profil eller default
   description: Sparad besöksprofil om den finns, annars lux/natt-default.
@@ -3186,50 +3019,40 @@ badrum_besok_eller_default:
       required: false
       default: false
       selector:
-        boolean:
+        boolean: null
   sequence:
   - variables:
-      person_key: >-
-        {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
-        {{ m.get(states('input_select.badrummet_vem'), 'invalid') }}
-      besok_profil_finns: >-
-        {% if person_key == 'invalid' %}false
-        {% else %}
-        {% set nums = [
-          'input_number.badrum_' ~ person_key ~ '_besok_tak_pct',
-          'input_number.badrum_' ~ person_key ~ '_besok_handfat_pct',
-          'input_number.badrum_' ~ person_key ~ '_besok_kommod_pct',
-          'input_number.badrum_' ~ person_key ~ '_besok_spegel_pct',
-          'input_number.badrum_' ~ person_key ~ '_besok_dusch_tak_pct',
-          'input_number.badrum_' ~ person_key ~ '_besok_dusch_strip_pct'
-        ] %}
-        {% set ns = namespace(v=false) %}
-        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
-        {{ is_state('input_boolean.badrum_' ~ person_key ~ '_besok_profil', 'on') or ns.v }}
-        {% endif %}
+      person_key: '{% set m = {''Anna'': ''anna'', ''Ilias'': ''ilias'', ''Erik'': ''erik''} %} {{ m.get(states(''input_select.badrummet_vem''),
+        ''invalid'') }}'
+      besok_profil_finns: "{% if person_key == 'invalid' %}false {% else %} {% set nums = [\n  'input_number.badrum_' ~ person_key\
+        \ ~ '_besok_tak_pct',\n  'input_number.badrum_' ~ person_key ~ '_besok_handfat_pct',\n  'input_number.badrum_' ~ person_key\
+        \ ~ '_besok_kommod_pct',\n  'input_number.badrum_' ~ person_key ~ '_besok_spegel_pct',\n  'input_number.badrum_' ~\
+        \ person_key ~ '_besok_dusch_tak_pct',\n  'input_number.badrum_' ~ person_key ~ '_besok_dusch_strip_pct'\n] %} {%\
+        \ set ns = namespace(v=false) %} {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif\
+        \ %}{% endfor %} {{ is_state('input_boolean.badrum_' ~ person_key ~ '_besok_profil', 'on') or ns.v }} {% endif %}"
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.duschslackning_aktiv
   - variables:
-      fade_out: "{{ transition | default(0) | int }}"
-      fade_dusch_out: "{{ transition_dusch | default(transition, true) | default(0) | int }}"
+      fade_out: '{{ transition | default(0) | int }}'
+      fade_dusch_out: '{{ transition_dusch | default(transition, true) | default(0) | int }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ besok_profil_finns }}"
+        value_template: '{{ besok_profil_finns }}'
       sequence:
       - action: script.badrum_tillampa_profil
         data:
           lage: besok
-          endast_dusch_ljus: "{{ endast_dusch_ljus | default(false) }}"
-          transition: "{{ fade_out }}"
-          transition_dusch: "{{ fade_dusch_out }}"
+          endast_dusch_ljus: '{{ endast_dusch_ljus | default(false) }}'
+          transition: '{{ fade_out }}'
+          transition_dusch: '{{ fade_dusch_out }}'
     default:
     - action: script.badrum_default_besok
       data:
-        endast_dusch_ljus: "{{ endast_dusch_ljus | default(false) }}"
-        transition: "{{ fade_out }}"
-        transition_dusch: "{{ fade_dusch_out }}"
+        endast_dusch_ljus: '{{ endast_dusch_ljus | default(false) }}'
+        transition: '{{ fade_out }}'
+        transition_dusch: '{{ fade_dusch_out }}'
 badrum_dusch_eller_default:
   alias: Badrum dusch — profil eller default
   description: Sparad duschprofil om den finns, annars duschslackning.
@@ -3252,41 +3075,31 @@ badrum_dusch_eller_default:
           step: 1
   sequence:
   - variables:
-      person_key: >-
-        {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
-        {{ m.get(states('input_select.badrummet_vem'), 'invalid') }}
-      fade_out: "{{ transition | default(5) | int }}"
-      fade_dusch_out: "{{ transition_dusch | default(none) }}"
-      dusch_profil_finns: >-
-        {% if person_key == 'invalid' %}false
-        {% else %}
-        {% set nums = [
-          'input_number.badrum_' ~ person_key ~ '_dusch_badrum_tak_pct',
-          'input_number.badrum_' ~ person_key ~ '_dusch_handfat_pct',
-          'input_number.badrum_' ~ person_key ~ '_dusch_kommod_pct',
-          'input_number.badrum_' ~ person_key ~ '_dusch_spegel_pct',
-          'input_number.badrum_' ~ person_key ~ '_dusch_tak_pct',
-          'input_number.badrum_' ~ person_key ~ '_dusch_strip_pct'
-        ] %}
-        {% set ns = namespace(v=false) %}
-        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
-        {{ is_state('input_boolean.badrum_' ~ person_key ~ '_dusch_profil', 'on') or ns.v }}
-        {% endif %}
+      person_key: '{% set m = {''Anna'': ''anna'', ''Ilias'': ''ilias'', ''Erik'': ''erik''} %} {{ m.get(states(''input_select.badrummet_vem''),
+        ''invalid'') }}'
+      fade_out: '{{ transition | default(5) | int }}'
+      fade_dusch_out: '{{ transition_dusch | default(none) }}'
+      dusch_profil_finns: "{% if person_key == 'invalid' %}false {% else %} {% set nums = [\n  'input_number.badrum_' ~ person_key\
+        \ ~ '_dusch_badrum_tak_pct',\n  'input_number.badrum_' ~ person_key ~ '_dusch_handfat_pct',\n  'input_number.badrum_'\
+        \ ~ person_key ~ '_dusch_kommod_pct',\n  'input_number.badrum_' ~ person_key ~ '_dusch_spegel_pct',\n  'input_number.badrum_'\
+        \ ~ person_key ~ '_dusch_tak_pct',\n  'input_number.badrum_' ~ person_key ~ '_dusch_strip_pct'\n] %} {% set ns = namespace(v=false)\
+        \ %} {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %} {{ is_state('input_boolean.badrum_'\
+        \ ~ person_key ~ '_dusch_profil', 'on') or ns.v }} {% endif %}"
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ dusch_profil_finns }}"
+        value_template: '{{ dusch_profil_finns }}'
       sequence:
       - action: script.badrum_tillampa_profil
         data:
           lage: dusch
-          transition: "{{ fade_out }}"
-          transition_dusch: "{{ fade_dusch_out | default(fade_out, true) | int }}"
+          transition: '{{ fade_out }}'
+          transition_dusch: '{{ fade_dusch_out | default(fade_out, true) | int }}'
     default:
     - action: script.badrum_default_dusch
       data:
-        transition: "{{ fade_out }}"
-        transition_dusch: "{{ fade_dusch_out }}"
+        transition: '{{ fade_out }}'
+        transition_dusch: '{{ fade_dusch_out }}'
 badrum_satt_besokare:
   alias: Badrum sätt besökare (NFC eller belysning)
   description: Sätter badrummet_vem, tillämpar besöksprofil om den finns och skickar notis.
@@ -3298,58 +3111,45 @@ badrum_satt_besokare:
       selector:
         select:
           options:
-            - Anna
-            - Erik
-            - Ilias
+          - Anna
+          - Erik
+          - Ilias
     metod:
       description: Hur personen identifierades (t.ex. NFC eller identifierad via belysning)
       required: true
       selector:
-        text:
+        text: null
   sequence:
   - action: script.badrum_synka_profil_flaggor
   - variables:
-      key: >-
-        {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
-        {{ m.get(person, 'invalid') }}
-      har_besok_profil: >-
-        {% if key == 'invalid' %}false
-        {% else %}
-        {% set nums = [
-          'input_number.badrum_' ~ key ~ '_besok_tak_pct',
-          'input_number.badrum_' ~ key ~ '_besok_handfat_pct',
-          'input_number.badrum_' ~ key ~ '_besok_kommod_pct',
-          'input_number.badrum_' ~ key ~ '_besok_spegel_pct',
-          'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct',
-          'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'
-        ] %}
-        {% set ns = namespace(v=false) %}
-        {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
-        {{ is_state('input_boolean.badrum_' ~ key ~ '_besok_profil', 'on') or ns.v }}
-        {% endif %}
+      key: '{% set m = {''Anna'': ''anna'', ''Ilias'': ''ilias'', ''Erik'': ''erik''} %} {{ m.get(person, ''invalid'') }}'
+      har_besok_profil: "{% if key == 'invalid' %}false {% else %} {% set nums = [\n  'input_number.badrum_' ~ key ~ '_besok_tak_pct',\n\
+        \  'input_number.badrum_' ~ key ~ '_besok_handfat_pct',\n  'input_number.badrum_' ~ key ~ '_besok_kommod_pct',\n \
+        \ 'input_number.badrum_' ~ key ~ '_besok_spegel_pct',\n  'input_number.badrum_' ~ key ~ '_besok_dusch_tak_pct',\n\
+        \  'input_number.badrum_' ~ key ~ '_besok_dusch_strip_pct'\n] %} {% set ns = namespace(v=false) %} {% for e in nums\
+        \ %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %} {{ is_state('input_boolean.badrum_'\
+        \ ~ key ~ '_besok_profil', 'on') or ns.v }} {% endif %}"
   - action: input_select.select_option
     target:
       entity_id: input_select.badrummet_vem
     data:
-      option: "{{ person }}"
+      option: '{{ person }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ har_besok_profil }}"
+        value_template: '{{ har_besok_profil }}'
       sequence:
       - action: script.badrum_tillampa_profil
         data:
           lage: besok
           utan_dusch_ljus: true
           transition: 1
-          person: "{{ person }}"
-  - action: notify.mobile_app_ilias_s23_ultra
+          person: '{{ person }}'
+  - action: script.mobilnotis
     data:
+      meddelande: '{{ person }} är i badrummet, {{ metod }}.'
+      mottagare: mobile_app_ilias_s23_ultra
       title: Badrummet
-      message: "{{ person }} är i badrummet, {{ metod }}."
-      data:
-        ttl: 0
-        priority: high
 badrum_synka_profil_flaggor:
   alias: Badrum synka profil-flaggor från sparade värden
   description: Återställer input_boolean profil-flaggor från input_number efter omstart.
@@ -3357,75 +3157,55 @@ badrum_synka_profil_flaggor:
   sequence:
   - repeat:
       for_each:
-        - key: anna
-        - key: ilias
-        - key: erik
+      - key: anna
+      - key: ilias
+      - key: erik
       sequence:
       - variables:
-          besok_nums: >-
-            {{ [
-              'input_number.badrum_' ~ repeat.item.key ~ '_besok_tak_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_besok_handfat_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_besok_kommod_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_besok_spegel_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_besok_dusch_tak_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_besok_dusch_strip_pct'
-            ] }}
-          dusch_nums: >-
-            {{ [
-              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_badrum_tak_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_handfat_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_kommod_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_spegel_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_tak_pct',
-              'input_number.badrum_' ~ repeat.item.key ~ '_dusch_strip_pct'
-            ] }}
-          besok_har: >-
-            {% set ns = namespace(v=false) %}
-            {% for e in besok_nums %}
-              {% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}
-            {% endfor %}
-            {{ ns.v }}
-          dusch_har: >-
-            {% set ns = namespace(v=false) %}
-            {% for e in dusch_nums %}
-              {% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}
-            {% endfor %}
-            {{ ns.v }}
+          besok_nums: "{{ [\n  'input_number.badrum_' ~ repeat.item.key ~ '_besok_tak_pct',\n  'input_number.badrum_' ~ repeat.item.key\
+            \ ~ '_besok_handfat_pct',\n  'input_number.badrum_' ~ repeat.item.key ~ '_besok_kommod_pct',\n  'input_number.badrum_'\
+            \ ~ repeat.item.key ~ '_besok_spegel_pct',\n  'input_number.badrum_' ~ repeat.item.key ~ '_besok_dusch_tak_pct',\n\
+            \  'input_number.badrum_' ~ repeat.item.key ~ '_besok_dusch_strip_pct'\n] }}"
+          dusch_nums: "{{ [\n  'input_number.badrum_' ~ repeat.item.key ~ '_dusch_badrum_tak_pct',\n  'input_number.badrum_'\
+            \ ~ repeat.item.key ~ '_dusch_handfat_pct',\n  'input_number.badrum_' ~ repeat.item.key ~ '_dusch_kommod_pct',\n\
+            \  'input_number.badrum_' ~ repeat.item.key ~ '_dusch_spegel_pct',\n  'input_number.badrum_' ~ repeat.item.key\
+            \ ~ '_dusch_tak_pct',\n  'input_number.badrum_' ~ repeat.item.key ~ '_dusch_strip_pct'\n] }}"
+          besok_har: "{% set ns = namespace(v=false) %} {% for e in besok_nums %}\n  {% if states(e) | float(0) > 0 %}{% set\
+            \ ns.v = true %}{% endif %}\n{% endfor %} {{ ns.v }}"
+          dusch_har: "{% set ns = namespace(v=false) %} {% for e in dusch_nums %}\n  {% if states(e) | float(0) > 0 %}{% set\
+            \ ns.v = true %}{% endif %}\n{% endfor %} {{ ns.v }}"
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ besok_har }}"
+            value_template: '{{ besok_har }}'
           sequence:
           - action: input_boolean.turn_on
             target:
-              entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_besok_profil' }}"
+              entity_id: '{{ ''input_boolean.badrum_'' ~ repeat.item.key ~ ''_besok_profil'' }}'
         default:
         - action: input_boolean.turn_off
           target:
-            entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_besok_profil' }}"
+            entity_id: '{{ ''input_boolean.badrum_'' ~ repeat.item.key ~ ''_besok_profil'' }}'
       - choose:
         - conditions:
           - condition: template
-            value_template: "{{ dusch_har }}"
+            value_template: '{{ dusch_har }}'
           sequence:
           - action: input_boolean.turn_on
             target:
-              entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_dusch_profil' }}"
+              entity_id: '{{ ''input_boolean.badrum_'' ~ repeat.item.key ~ ''_dusch_profil'' }}'
         default:
         - action: input_boolean.turn_off
           target:
-            entity_id: "{{ 'input_boolean.badrum_' ~ repeat.item.key ~ '_dusch_profil' }}"
+            entity_id: '{{ ''input_boolean.badrum_'' ~ repeat.item.key ~ ''_dusch_profil'' }}'
 spion_uppdatera_ilias_position:
   alias: 'Spion: Uppdatera Ilias GPS-position'
   mode: single
   sequence:
-  - action: notify.mobile_app_ilias_s23_ultra
+  - action: script.mobilnotis
     data:
-      message: request_location_update
-      data:
-        priority: high
-        ttl: 0
+      meddelande: request_location_update
+      mottagare: mobile_app_ilias_s23_ultra
   - action: browser_mod.notification
     data:
       message: Uppdaterar positioner
