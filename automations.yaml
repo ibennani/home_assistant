@@ -2008,9 +2008,8 @@
 - id: badrum_dusch_fas3_dorr_cykel
   alias: 'Belysning: Duschsession dörrcykel (fas 3)'
   description: 'Under bekräftad duschsession. Öppen duschdörr → besök/default. Stängd
-    → 60 s → släck utanför duschen om ingen närvaro-minne och inget klivit-ur-mönster.
-    Närvaro-minne (3 min) och klivit-ur (öppen ≥12 s med rörelse, eller ≥25 s) skyddar
-    efter avslutad dusch med stängd badrumsdörr.
+    → 60 s → duschprofil om kort öppning (ej klivit-ur), annars besök kvar vid klivit-ur.
+    Klivit-ur (öppen ≥12 s med rörelse, eller ≥25 s) skyddar vid torkning utanför duschen.
 
     '
   triggers:
@@ -2105,17 +2104,9 @@
         state: 'off'
       - choose:
         - conditions:
-          - condition: or
-            conditions:
-            - condition: state
-              entity_id: binary_sensor.badrummet_rorelse
-              state: 'on'
-            - condition: state
-              entity_id: binary_sensor.badrum_narvaro_minne
-              state: 'on'
-            - condition: state
-              entity_id: input_boolean.badrum_klivit_ur_dusch
-              state: 'on'
+          - condition: state
+            entity_id: input_boolean.badrum_klivit_ur_dusch
+            state: 'on'
           sequence:
           - choose:
             - conditions:
@@ -2125,6 +2116,7 @@
               - action: script.badrum_besok_eller_default
                 data:
                   transition: 0
+                  transition_dusch: 1
           - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.duschslackning_aktiv
