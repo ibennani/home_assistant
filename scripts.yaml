@@ -2902,7 +2902,7 @@ badrum_tillampa_profil:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ not bara_dusch and lage != 'dusch' }}"
+        value_template: "{{ not bara_dusch and (lage != 'dusch' or key == 'ilias') }}"
       sequence:
       - choose:
         - conditions:
@@ -3094,7 +3094,7 @@ badrum_default_besok:
             transition: "{{ fade }}"
 badrum_default_dusch:
   alias: Badrum default duschläge
-  description: Tänder dusch-LED-list; lampor utanför duschen lämnas oförändrade.
+  description: Ilias släcker utanför duschen; övriga tänder bara LED-list.
   mode: single
   fields:
     transition:
@@ -3110,20 +3110,39 @@ badrum_default_dusch:
       fade: "{{ transition | default(0) | int }}"
       lux: "{{ states('sensor.utomhus_framsidan_ljusstyrka') | int(0) }}"
       dusch_brightness: '{{ 20 if (lux | int(0)) < 2000 else 30 }}'
-  - action: input_boolean.turn_off
-    target:
-      entity_id: input_boolean.duschslackning_aktiv
-  - action: light.turn_off
-    target:
-      entity_id: light.takspott_duschen
-    data:
-      transition: "{{ fade }}"
-  - action: light.turn_on
-    target:
-      entity_id: light.led_strip_i_duschen
-    data:
-      brightness_pct: '{{ dusch_brightness }}'
-      transition: "{{ fade }}"
+      ilias: "{{ is_state('input_select.badrummet_vem', 'Ilias') }}"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ ilias }}"
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.duschslackning_aktiv
+      - action: light.turn_off
+        target:
+          entity_id:
+          - light.spegeln_badrummet
+          - light.takspottar_badrummet
+          - light.led_badrummet_handfatet
+          - light.led_badrummet_kommoden
+        data:
+          transition: "{{ fade }}"
+    default:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.duschslackning_aktiv
+    - action: light.turn_off
+      target:
+        entity_id: light.takspott_duschen
+      data:
+        transition: "{{ fade }}"
+    - action: light.turn_on
+      target:
+        entity_id: light.led_strip_i_duschen
+      data:
+        brightness_pct: '{{ dusch_brightness }}'
+        transition: "{{ fade }}"
 badrum_besok_eller_default:
   alias: Badrum besök — profil eller default
   description: Sparad besöksprofil om den finns, annars lux/natt-default.
@@ -3182,7 +3201,7 @@ badrum_besok_eller_default:
         transition: "{{ transition | default(0) | int }}"
 badrum_dusch_eller_default:
   alias: Badrum dusch — profil eller default
-  description: Sparad duschprofil (endast duschlampor) om den finns, annars default duschläge.
+  description: Sparad duschprofil om den finns; Ilias dimmar utanför, övriga bara duschlampor.
   mode: single
   fields:
     transition:
@@ -3198,6 +3217,7 @@ badrum_dusch_eller_default:
       person_key: >-
         {% set m = {'Anna': 'anna', 'Ilias': 'ilias', 'Erik': 'erik'} %}
         {{ m.get(states('input_select.badrummet_vem'), 'invalid') }}
+      ilias: "{{ is_state('input_select.badrummet_vem', 'Ilias') }}"
       dusch_profil_finns: >-
         {% if person_key == 'invalid' %}false
         {% else %}
@@ -3213,9 +3233,14 @@ badrum_dusch_eller_default:
         {% for e in nums %}{% if states(e) | float(0) > 0 %}{% set ns.v = true %}{% endif %}{% endfor %}
         {{ is_state('input_boolean.badrum_' ~ person_key ~ '_dusch_profil', 'on') or ns.v }}
         {% endif %}
-  - action: input_boolean.turn_off
-    target:
-      entity_id: input_boolean.duschslackning_aktiv
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ not ilias }}"
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.duschslackning_aktiv
   - choose:
     - conditions:
       - condition: template
@@ -3225,6 +3250,14 @@ badrum_dusch_eller_default:
         data:
           lage: dusch
           transition: "{{ transition | default(0) | int }}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: "{{ ilias }}"
+          sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.duschslackning_aktiv
     default:
     - action: script.badrum_default_dusch
       data:

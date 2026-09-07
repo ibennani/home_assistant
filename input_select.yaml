@@ -235,7 +235,7 @@
       - Släck
       - Dämpat
       - Behåll
-    initial: Behåll
+    initial: Släck
     icon: mdi:shower-head
   badrum_erik_dusch_utanfor:
     name: "Badrum Erik dusch utanför"
