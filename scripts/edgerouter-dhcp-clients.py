@@ -65,8 +65,6 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
     ctx.verify_mode = ssl.CERT_NONE
 
     cookie_jar = http.cookiejar.CookieJar()
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookie_jar))
-
     login_data = urllib.parse.urlencode(
         {"username": username, "password": password}
     ).encode()
@@ -74,19 +72,22 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
     last_error: Exception | None = None
     for scheme in ("https", "http"):
         try:
+            handlers = [urllib.request.HTTPCookieProcessor(cookie_jar)]
+            if scheme == "https":
+                handlers.append(urllib.request.HTTPSHandler(context=ctx))
+            opener = urllib.request.build_opener(*handlers)
+
             login_req = urllib.request.Request(
                 f"{scheme}://{host}/",
                 data=login_data,
                 method="POST",
             )
-            opener.open(login_req, timeout=8, context=ctx if scheme == "https" else None)
+            opener.open(login_req, timeout=8)
 
             leases_req = urllib.request.Request(
                 f"{scheme}://{host}/api/edge/data.json?data=dhcp_leases"
             )
-            with opener.open(
-                leases_req, timeout=8, context=ctx if scheme == "https" else None
-            ) as response:
+            with opener.open(leases_req, timeout=8) as response:
                 return json.loads(response.read().decode("utf-8"))
         except (
             urllib.error.URLError,
@@ -113,7 +114,7 @@ def parse_leases(payload: dict) -> list[dict]:
     now = int(time.time())
 
     for lease in leases:
-        if str(lease.get("active", "0")) != "1":
+        if str(lease.get("active", "0")) not in ("1", "true", "True", "yes"):
             continue
         mac = normalize_mac(str(lease.get("mac", "")))
         if not mac or mac in INFRA_MACS:
