@@ -86,6 +86,11 @@
       name: När ska diskmaskinen starta vid fjärrstart
       initial: ""
 
+  # Bosch-program vid schemalagd fjärrstart (t.ex. Eco50 eller Intensiv70)
+    diskmaskin_program_fjarrstart:
+      name: Program vid diskmaskinens fjärrstart
+      initial: ""
+
   # Vad kostade den senaste diskningen
     diskmaskin_senaste_kostnaden:
       name: Priset för den senaste diskningen
