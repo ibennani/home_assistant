@@ -10088,4 +10088,6 @@
   - condition: template
     value_template: "{{ trigger.from_state is not none and trigger.from_state.state not in ['unknown', 'unavailable', 'none', ''] }}"
   actions:
-  - action: script.dhcp_ny_enhet_notis
+  - action: homeassistant.update_entity
+    target:
+      entity_id: sensor.edgerouter_dhcp_klienter
