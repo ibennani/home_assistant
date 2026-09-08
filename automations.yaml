@@ -9430,7 +9430,7 @@
   mode: restart
   triggers:
   - trigger: state
-    entity_id: includes/skalskydd_sensors.yaml
+    entity_id: !include includes/skalskydd_sensors.yaml
     from: 'off'
     to: 'on'
   conditions:
