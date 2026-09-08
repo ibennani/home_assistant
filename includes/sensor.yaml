@@ -133,6 +133,27 @@
     - sensor.utomhus_baksidan_ljusstyrka
     - sensor.ljusstyrka_framsidan_maximal
 
+# UniFi — anslutna Wi-Fi-klienter (SSID, namn, senast sedd)
+- platform: rest
+  name: UniFi WiFi klienter
+  unique_id: unifi_wifi_clients_raw
+  resource: !secret unifi_api_url
+  headers:
+    X-API-KEY: !secret unifi_api_key
+    Accept: application/json
+  verify_ssl: false
+  scan_interval: 60
+  timeout: 20
+  value_template: >-
+    {{ value_json.data
+        | default([])
+        | selectattr('is_wired', 'eq', false)
+        | selectattr('essid', 'in', ['Bennani', 'Bennani_Guest', '2FarAway'])
+        | list
+        | count }}
+  json_attributes:
+    - data
+
 # Kollektivtrafik — SL Transport API (site 1923 Ekshäradsgatan, buss m.m.)
 - platform: rest
   name: Ekshäradsgatan SL buss

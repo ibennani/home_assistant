@@ -1,0 +1,28 @@
+# MAC → visningsnamn för Wi-Fi-klienter (steg 4: städa enhetsnamn).
+# Nyckel i gemener utan kolon, t.ex. 1c697a6781e5.
+# Lägg till rader när nya prylar dyker upp med kryptiska hostnamn.
+names:
+  0024e8e0c01b: HA-server (Dell)
+  1c697a6781e5: EliteGroup-dator
+  546009d0b9da: Chromecast Audio
+  546009fa5416: Chromecast Audio
+  546009fadaca: Chromecast Audio
+  44070b93e3ab: Google Home Mini
+  44070b687338: Google Home Mini
+  44070bb01974: Google Home Mini
+  7c2ebd50c5a0: Google Home Mini
+  20dfb97a2b48: Google Home Mini
+  d4f547817878: Google Nest Mini
+  70ee501e16b0: Netatmo-väderstation
+  98d863340532: Gräsklippare
+  68a40e70cb46: Bosch diskmaskin
+  40b07606aba1: RP-N12
+  ac67b2dc81e8: Pulse
+  72412e7ec90a: Ilias S23 Ultra
+  1ae3c1a291e1: Ilias Tab S10 Ultra
+  502e91c80b88: Annas mobil
+  00b5d0f8d3c5: Annas Galaxy Tab S4
+  f4c88a7535fa: Eriks dator
+  c41375708d99: Ilias Lenovo
+  a851ab2dbacc: Apple TV
+  105fad770a65: HP-skrivare

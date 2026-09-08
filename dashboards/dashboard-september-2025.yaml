@@ -6182,7 +6182,7 @@ views:
       icon: mdi:radiator
     - entity: switch.vattenslang_framsidan
     - entity: input_boolean.vattenspridaren_audostart
-- title: Network devices
+- title: Wi-Fi
   visible:
   - user: 19d971cd430d457e90fe70b83c9d5df1
   icon: mdi:wifi
@@ -6190,15 +6190,21 @@ views:
   cards:
   - type: vertical-stack
     cards:
-    - type: horizontal-stack
-      title: Internet access
-      cards:
-      - type: entities
-        title: Uppkopplade prylar och personer
-        entities:
-        - sensor.time
-        - sensor.family_people_home_count
-        - sensor.people_home_count
+    - type: markdown
+      content: >
+        ## {{ states('sensor.wifi_klienter_antal') | int(0) }}
+        {%- set n = states('sensor.wifi_klienter_antal') | int(0) -%}
+        {%- if n == 1 %} enhet{% else %} enheter{% endif %} anslutna via Wi-Fi
+
+        {{ state_attr('sensor.wifi_klienter_lista', 'markdown') }}
+    - type: entities
+      title: Status
+      show_header_toggle: false
+      entities:
+      - entity: sensor.unifi_wifi_klienter
+        name: UniFi API
+      - entity: sensor.wifi_klienter_antal
+        name: Antal Wi-Fi-klienter
 - title: Inställningar
   visible:
   - user: 19d971cd430d457e90fe70b83c9d5df1
