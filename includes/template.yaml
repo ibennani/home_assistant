@@ -562,8 +562,8 @@
       icon: mdi:wifi
       state: >-
         {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
-        {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([]) %}
-        {% if raw | length > 0 %}
+        {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
+        {% if raw is iterable and raw is not string and (raw | length) > 0 %}
           {{ raw
               | rejectattr('mac', 'in', infra)
               | list
@@ -612,8 +612,8 @@
             '105fad770a65': 'HP-skrivare'
           } %}
           {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
-          {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([]) %}
-          {% if raw | length > 0 %}
+          {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
+          {% if raw is iterable and raw is not string and (raw | length) > 0 %}
             {% set clients = raw | rejectattr('mac', 'in', infra) | list %}
             {% for c in clients %}
               {% set key = c.mac | replace(':', '') | lower %}
