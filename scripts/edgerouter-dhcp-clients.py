@@ -3,12 +3,17 @@
 
 Läser edgerouter_host, edgerouter_username och edgerouter_password
 från /config/secrets.yaml. Utan giltiga uppgifter returneras tom lista.
+
+Användning:
+  python3 edgerouter-dhcp-clients.py              # skriv JSON till stdout
+  python3 edgerouter-dhcp-clients.py /path/out.json
 """
 from __future__ import annotations
 
 import http.cookiejar
 import json
 import re
+import socket
 import ssl
 import sys
 import time
@@ -16,6 +21,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+socket.setdefaulttimeout(8)
 
 INFRA_MACS = {
     "f0:9f:c2:64:3d:cc",
@@ -48,8 +55,8 @@ def normalize_mac(mac: str) -> str:
     return mac.strip().lower()
 
 
-def empty_payload() -> None:
-    print(json.dumps({"count": 0, "data": []}))
+def empty_result() -> dict:
+    return {"count": 0, "data": []}
 
 
 def login_and_fetch(host: str, username: str, password: str) -> dict:
@@ -63,18 +70,38 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
     login_data = urllib.parse.urlencode(
         {"username": username, "password": password}
     ).encode()
-    login_req = urllib.request.Request(
-        f"https://{host}/",
-        data=login_data,
-        method="POST",
-    )
-    opener.open(login_req, timeout=15, context=ctx)
 
-    leases_req = urllib.request.Request(
-        f"https://{host}/api/edge/data.json?data=dhcp_leases"
-    )
-    with opener.open(leases_req, timeout=20, context=ctx) as response:
-        return json.loads(response.read().decode("utf-8"))
+    last_error: Exception | None = None
+    for scheme in ("https", "http"):
+        try:
+            login_req = urllib.request.Request(
+                f"{scheme}://{host}/",
+                data=login_data,
+                method="POST",
+            )
+            opener.open(login_req, timeout=8, context=ctx if scheme == "https" else None)
+
+            leases_req = urllib.request.Request(
+                f"{scheme}://{host}/api/edge/data.json?data=dhcp_leases"
+            )
+            with opener.open(
+                leases_req, timeout=8, context=ctx if scheme == "https" else None
+            ) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except (
+            urllib.error.URLError,
+            urllib.error.HTTPError,
+            json.JSONDecodeError,
+            TimeoutError,
+            OSError,
+            ValueError,
+        ) as exc:
+            last_error = exc
+            continue
+
+    if last_error:
+        raise last_error
+    raise RuntimeError("EdgeRouter login failed")
 
 
 def parse_leases(payload: dict) -> list[dict]:
@@ -111,20 +138,29 @@ def parse_leases(payload: dict) -> list[dict]:
     return clients
 
 
+def emit(result: dict, output_path: str | None) -> None:
+    payload = json.dumps(result)
+    if output_path:
+        Path(output_path).write_text(payload, encoding="utf-8")
+    else:
+        print(payload)
+
+
 def main() -> None:
+    output_path = sys.argv[1] if len(sys.argv) > 1 else None
     secrets = load_secrets()
     host = secrets.get("edgerouter_host", "192.168.0.1")
     username = secrets.get("edgerouter_username", "")
     password = secrets.get("edgerouter_password", "")
 
     if username in PLACEHOLDER_VALUES or password in PLACEHOLDER_VALUES:
-        empty_payload()
+        emit(empty_result(), output_path)
         return
 
     try:
         payload = login_and_fetch(host, username, password)
         clients = parse_leases(payload)
-        print(json.dumps({"count": len(clients), "data": clients}))
+        emit({"count": len(clients), "data": clients}, output_path)
     except (
         urllib.error.URLError,
         urllib.error.HTTPError,
@@ -133,8 +169,9 @@ def main() -> None:
         OSError,
         KeyError,
         ValueError,
+        RuntimeError,
     ):
-        empty_payload()
+        emit(empty_result(), output_path)
 
 
 if __name__ == "__main__":

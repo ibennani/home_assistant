@@ -628,8 +628,7 @@
                   {% endif %}
                 {% endif %}
               {% endfor %}
-          **{{ loop.index }}.** {{ label }} — {{ ns.net }} — {{ c.ip }}
-
+          **{{ loop.index }}.** {{ label }} — {{ ns.net }} — {{ c.ip }}<br>
             {% else %}
           *Inga klienter med aktiv DHCP-lease just nu.*
             {% endfor %}
@@ -650,8 +649,7 @@
                   or t.entity_id %}
               {% set ip = state_attr(t.entity_id, 'ip') | default('—', true) %}
               {% set net = 'bennani gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' %}
-          **{{ loop.index }}.** {{ label }} — {{ net }} — {{ ip }} — {{ relative_time(t.last_changed) }} sedan
-
+          **{{ loop.index }}.** {{ label }} — {{ net }} — {{ ip }} — {{ relative_time(t.last_changed) }} sedan<br>
             {% else %}
           *EdgeRouter-uppgifter saknas — lägg till i `/config/secrets.yaml`.*
             {% endfor %}

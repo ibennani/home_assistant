@@ -69,7 +69,6 @@ var: !include includes/var.yaml
 utility_meter: !include includes/utility_meter.yaml
 intent_script: !include includes/intent_script.yaml
 template: !include includes/template.yaml
-command_line: !include includes/command_line.yaml
 rest_command: !include includes/rest_command.yaml
 
 #######################################################
@@ -93,6 +92,8 @@ shell_command:
     && git reset --hard origin/main
     2>&1 | tee -a /config/git-pull.log
     && echo "--- $(date -Iseconds) ---" >> /config/git-pull.log
+  edgerouter_dhcp_update: >-
+    python3 /config/scripts/edgerouter-dhcp-clients.py /config/www/edgerouter-dhcp.json
 
 #######################################################
 # Media

@@ -1,9 +1,0 @@
-- sensor:
-    name: EdgeRouter DHCP klienter
-    unique_id: edgerouter_dhcp_clients_raw
-    command: python3 /config/scripts/edgerouter-dhcp-clients.py
-    scan_interval: 60
-    command_timeout: 30
-    value_template: "{{ value_json.count | default(0) }}"
-    json_attributes:
-      - data
