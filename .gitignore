@@ -27,6 +27,7 @@ deps/
 *.conf
 ip_bans.yaml
 known_devices.yaml
+known_dhcp_macs.json
 
 # Exporterad config
 config/.storage/

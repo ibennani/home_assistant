@@ -2405,6 +2405,25 @@ cursor_klar_notis:
       title: 'Cursor: {{ now().strftime(''%H:%M'') }}'
       ikon: cursor
       vibration: 1000, 300, 1000, 300, 1000
+dhcp_ny_enhet_notis:
+  alias: 'Nätverk: Notis för nya DHCP-enheter'
+  description: Jämför DHCP-lista mot kända MAC och skickar mobilnotis för helt nya enheter.
+  mode: queued
+  sequence:
+  - action: shell_command.dhcp_ny_enhet_kontrollera
+  - action: homeassistant.update_entity
+    target:
+      entity_id: sensor.dhcp_nya_enheter_pending
+  - variables:
+      devices: "{{ state_attr('sensor.dhcp_nya_enheter_pending', 'devices') | default([]) }}"
+  - repeat:
+      for_each: "{{ devices }}"
+      sequence:
+      - action: script.mobilnotis
+        data:
+          mottagare: mobile_app_ilias_s23_ultra
+          meddelande: 'Ny enhet på nätet: {{ repeat.item.label }} — {{ repeat.item.ip }} ({{ repeat.item.mac }})'
+          prefix_hemmet: true
 sl_hamta_site_avgangar:
   alias: SL hämta avgångar för hållplats
   description: Proxy mot SL Transport API — används av sl-nearby-stops-card.
