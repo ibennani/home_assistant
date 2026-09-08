@@ -10077,15 +10077,3 @@
         \ pendeltag_total_count }} tåg i prognosen).\n{% endif %}\n"
       mottagare: mobile_app_ilias_s23_ultra
       title: Pendeltåg Farsta strand
-
-- id: edgerouter_dhcp_uppdatera
-  alias: 'Nätverk: Uppdatera EdgeRouter DHCP-lista'
-  description: Hämtar DHCP-leases till sensor.edgerouter_dhcp_klienter var 2:e minut.
-  mode: single
-  trigger:
-    - trigger: homeassistant
-      event: start
-    - trigger: time_pattern
-      minutes: '/2'
-  action:
-    - action: shell_command.edgerouter_dhcp_update

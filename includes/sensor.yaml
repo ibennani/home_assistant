@@ -156,13 +156,3 @@
   json_attributes:
     - departures
     - stop_deviations
-
-# EdgeRouter DHCP — läser JSON som shell_command uppdaterar
-- platform: file
-  name: EdgeRouter DHCP klienter
-  unique_id: edgerouter_dhcp_clients_raw
-  file_path: /config/www/edgerouter-dhcp.json
-  value_template: "{{ value_json.count | default(0) }}"
-  json_attributes:
-    - count
-    - data
