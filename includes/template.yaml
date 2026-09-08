@@ -562,8 +562,11 @@
       icon: mdi:wifi
       state: >-
         {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
-        {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
-        {% if raw is iterable and raw is not string and (raw | length) > 0 %}
+        {% set raw = [] %}
+        {% if states('sensor.edgerouter_dhcp_klienter') not in ['unknown', 'unavailable', 'none', ''] %}
+          {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
+        {% endif %}
+        {% if raw is not none and raw is iterable and raw is not string and (raw | length) > 0 %}
           {{ raw
               | rejectattr('mac', 'in', infra)
               | list
@@ -612,35 +615,35 @@
             '105fad770a65': 'HP-skrivare'
           } %}
           {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
-          {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
-          {% if raw is iterable and raw is not string and (raw | length) > 0 %}
-            {% set clients = raw | rejectattr('mac', 'in', infra) | list %}
-            {% for c in clients %}
+          {% set raw = [] %}
+          {% if states('sensor.edgerouter_dhcp_klienter') not in ['unknown', 'unavailable', 'none', ''] %}
+            {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
+          {% endif %}
+          {% set out = namespace(lines=[]) %}
+          {% if raw is not none and raw is iterable and raw is not string and (raw | length) > 0 %}
+            {% for c in raw | rejectattr('mac', 'in', infra) | list %}
               {% set key = c.mac | replace(':', '') | lower %}
               {% set label = names.get(key) or c.hostname or c.mac %}
-              {% set ns = namespace(net='nätverk') %}
+              {% set net = namespace(value='nätverk') %}
               {% for t in states.device_tracker | selectattr('entity_id', 'search', 'unifi_') %}
                 {% if (state_attr(t.entity_id, 'mac') | default('') | lower) == c.mac %}
                   {% if state_attr(t.entity_id, 'is_guest') %}
-                    {% set ns.net = 'bennani gäst' %}
+                    {% set net.value = 'bennani gäst' %}
                   {% else %}
-                    {% set ns.net = 'Wi-Fi' %}
+                    {% set net.value = 'Wi-Fi' %}
                   {% endif %}
                 {% endif %}
               {% endfor %}
-          **{{ loop.index }}.** {{ label }} — {{ ns.net }} — {{ c.ip }}<br>
-            {% else %}
-          *Inga klienter med aktiv DHCP-lease just nu.*
+              {% set out.lines = out.lines + ['**' ~ loop.index ~ '.** ' ~ label ~ ' — ' ~ net.value ~ ' — ' ~ c.ip] %}
             {% endfor %}
           {% else %}
             {% set exclude = state_attr('group.wifi_klient_undantag', 'entity_id') | default([]) %}
-            {% set trackers = states.device_tracker
+            {% for t in states.device_tracker
                 | selectattr('entity_id', 'search', 'unifi_')
                 | selectattr('state', 'eq', 'home')
                 | rejectattr('entity_id', 'in', exclude)
                 | sort(attribute='last_changed', reverse=true)
                 | list %}
-            {% for t in trackers %}
               {% set mac = state_attr(t.entity_id, 'mac') | default('', true) %}
               {% set key = mac | replace(':', '') | lower %}
               {% set label = names.get(key)
@@ -649,10 +652,15 @@
                   or t.entity_id %}
               {% set ip = state_attr(t.entity_id, 'ip') | default('—', true) %}
               {% set net = 'bennani gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' %}
-          **{{ loop.index }}.** {{ label }} — {{ net }} — {{ ip }} — {{ relative_time(t.last_changed) }} sedan<br>
-            {% else %}
-          *EdgeRouter-uppgifter saknas — lägg till i `/config/secrets.yaml`.*
+              {% set out.lines = out.lines + ['**' ~ loop.index ~ '.** ' ~ label ~ ' — ' ~ net ~ ' — ' ~ ip ~ ' — ' ~ relative_time(t.last_changed) ~ ' sedan'] %}
             {% endfor %}
+          {% endif %}
+          {% if out.lines | length > 0 %}
+          {{ out.lines | join('<br>\n') }}
+          {% elif raw is not none and raw is iterable and raw is not string %}
+          *Inga klienter med aktiv DHCP-lease just nu.*
+          {% else %}
+          *EdgeRouter-uppgifter saknas — lägg till i `/config/secrets.yaml`.*
           {% endif %}
 
     # ---- Disk / luftavfuktare -----------------------------------------------
