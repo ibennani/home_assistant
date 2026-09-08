@@ -70,6 +70,11 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
     ).encode()
 
     last_error: Exception | None = None
+    endpoints = (
+        "dhcp_leases",
+        "dhcp-server-leases",
+        "dhcp_dynamic",
+    )
     for scheme in ("https", "http"):
         try:
             handlers = [urllib.request.HTTPCookieProcessor(cookie_jar)]
@@ -84,11 +89,21 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
             )
             opener.open(login_req, timeout=8)
 
-            leases_req = urllib.request.Request(
-                f"{scheme}://{host}/api/edge/data.json?data=dhcp_leases"
-            )
-            with opener.open(leases_req, timeout=8) as response:
-                return json.loads(response.read().decode("utf-8"))
+            for endpoint in endpoints:
+                for path in (
+                    f"/api/edge/data.json?data={endpoint}",
+                    f"/api/edge/legacy/data.json?data={endpoint}",
+                ):
+                    leases_req = urllib.request.Request(f"{scheme}://{host}{path}")
+                    try:
+                        with opener.open(leases_req, timeout=8) as response:
+                            payload = json.loads(response.read().decode("utf-8"))
+                    except (urllib.error.HTTPError, json.JSONDecodeError):
+                        continue
+                    unwrapped = unwrap_payload(payload)
+                    if any(unwrapped.get(k) for k in ("dhcp_leases", "dhcp-server-leases", "lease")):
+                        return payload
+            raise RuntimeError("no dhcp data in EdgeRouter response")
         except (
             urllib.error.URLError,
             urllib.error.HTTPError,
@@ -203,7 +218,7 @@ def main() -> None:
         clients = parse_leases(payload)
         result = {"count": len(clients), "data": clients}
         debug_path.write_text(
-            f"ok host={host} user={username} leases={len(clients)}\n",
+            f"ok host={host} user={username} leases={len(clients)} preview={json.dumps(result)[:300]}\n",
             encoding="utf-8",
         )
         emit(result, output_path)
