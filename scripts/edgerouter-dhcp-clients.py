@@ -74,6 +74,7 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
         "dhcp_leases",
         "dhcp-server-leases",
         "dhcp_dynamic",
+        "arp",
     )
     for scheme in ("https", "http"):
         try:
@@ -101,7 +102,10 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
                     except (urllib.error.HTTPError, json.JSONDecodeError):
                         continue
                     unwrapped = unwrap_payload(payload)
-                    if any(unwrapped.get(k) for k in ("dhcp_leases", "dhcp-server-leases", "lease")):
+                    if any(
+                        unwrapped.get(k)
+                        for k in ("dhcp_leases", "dhcp-server-leases", "lease", "arp")
+                    ):
                         return payload
             raise RuntimeError("no dhcp data in EdgeRouter response")
         except (
@@ -137,7 +141,7 @@ def unwrap_payload(payload: dict) -> dict:
 def parse_leases(payload: dict) -> list[dict]:
     payload = unwrap_payload(payload)
     leases: list | dict = []
-    for key in ("dhcp_leases", "dhcp-server-leases"):
+    for key in ("dhcp_leases", "dhcp-server-leases", "arp"):
         block = payload.get(key)
         if not block:
             continue
@@ -146,6 +150,8 @@ def parse_leases(payload: dict) -> list[dict]:
                 leases = block.get("lease", [])
             elif "leases" in block:
                 leases = block.get("leases", [])
+            elif "entry" in block:
+                leases = block.get("entry", [])
             else:
                 leases = list(block.values())
         elif isinstance(block, list):
@@ -175,7 +181,12 @@ def parse_leases(payload: dict) -> list[dict]:
         hostname = str(
             lease.get("hostname") or lease.get("host-name") or lease.get("name") or ""
         ).strip()
-        ip = str(lease.get("ip") or lease.get("ip-address") or "").strip()
+        ip = str(
+            lease.get("ip")
+            or lease.get("ip-address")
+            or lease.get("address")
+            or ""
+        ).strip()
         if not ip:
             continue
         clients.append(
