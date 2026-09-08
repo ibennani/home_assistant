@@ -107,6 +107,8 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
 
 def parse_leases(payload: dict) -> list[dict]:
     leases = payload.get("dhcp_leases", {}).get("lease", [])
+    if not leases:
+        leases = payload.get("lease", [])
     if isinstance(leases, dict):
         leases = [leases]
 
@@ -114,13 +116,14 @@ def parse_leases(payload: dict) -> list[dict]:
     now = int(time.time())
 
     for lease in leases:
-        if str(lease.get("active", "0")) not in ("1", "true", "True", "yes"):
-            continue
         mac = normalize_mac(str(lease.get("mac", "")))
         if not mac or mac in INFRA_MACS:
             continue
         expires = int(lease.get("expires", 0) or 0)
         if expires and expires < now:
+            continue
+        active = str(lease.get("active", "1")).lower()
+        if active in ("0", "false", "no", "off"):
             continue
         hostname = str(lease.get("hostname", "") or "").strip()
         ip = str(lease.get("ip", "") or "").strip()
@@ -162,10 +165,17 @@ def main() -> None:
             return
 
         payload = login_and_fetch(host, username, password)
+        raw_leases = payload.get("dhcp_leases", {}).get("lease", [])
+        if isinstance(raw_leases, dict):
+            raw_count = 1
+        elif isinstance(raw_leases, list):
+            raw_count = len(raw_leases)
+        else:
+            raw_count = 0
         clients = parse_leases(payload)
         result = {"count": len(clients), "data": clients}
         debug_path.write_text(
-            f"ok host={host} user={username} leases={len(clients)}\n",
+            f"ok host={host} user={username} raw={raw_count} leases={len(clients)} keys={list(payload.keys())[:5]}\n",
             encoding="utf-8",
         )
         emit(result, output_path)
