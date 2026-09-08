@@ -1,0 +1,60 @@
+---
+description: Kontrollera och åtgärda HA Repairs innan uppgiften markeras som klar
+globs:
+alwaysApply: true
+---
+
+# Kontrollera Repairs innan "klart"
+
+## Princip
+
+När en uppgift är **helt klar** (deploy/sync gjord och funktion verifierad): kontrollera alltid om nya **Repairs** har tillkommit i Home Assistant. Åtgärda aktiva repairs som hänger ihop med ändringen innan du avslutar.
+
+## Obligatorisk kontroll
+
+Efter deploy av YAML/automationer/script:
+
+```
+ha_get_system_health(include="config_check,repairs")
+```
+
+Alternativt lokalt (om MCP saknas):
+
+```
+bash scripts/verify-change.sh --post-deploy
+```
+
+## Vad som ska åtgärdas
+
+| Severity | Åtgärd |
+|----------|--------|
+| **error** | Måste fixas innan "klart" — rotorsak i git/live, deploy om, verifiera att repair försvinner |
+| **warning** | Åtgärda om den tydligt beror på din ändring; annars nämn kort i slutrapporten |
+| **ignored** | Räkna inte som blockerande om avsiktligt ignorerad |
+
+Vanliga orsaker efter agent-ändringar:
+
+- `service_not_found` — script/automation anropar tjänst som inte finns (t.ex. `shell_command.*` utan reload)
+- `automation` / `script` med ogiltiga entiteter eller templates
+- Duplicerade entiteter (`unique_id`, entity registry)
+
+## Arbetsflöde vid repair
+
+1. Läs `issue_id`, `translation_key` och `translation_placeholders` från `repairs.issues`.
+2. Fixa i repot (föredra git-synk, inte engångs-MCP-deploy som primär källa).
+3. `automation.reload` / `script.reload` / `template.reload` / `homeassistant.reload_core_config` — **inte** full omstart om reload räcker (se `ingen-ha-omstart.mdc`).
+4. Kör `ha_get_system_health(include="repairs")` igen tills aktiva **error**-repairs för din ändring är borta.
+5. Om repair kvarstår efter fix: dokumentera i verifieringsrapporten (DELVIS) — ignorera inte tyst.
+
+## Slutrapport
+
+I verifieringsrapporten, lägg till rad:
+
+```
+- Repairs efter deploy: 0 aktiva error (eller: … åtgärdade, … kvar med orsak)
+```
+
+## Referens
+
+- [verifiera-fore-klart.mdc](verifiera-fore-klart.mdc)
+- [docs/verifiering-och-test.md](../docs/verifiering-och-test.md)
