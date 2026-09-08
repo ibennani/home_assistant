@@ -105,7 +105,22 @@ def login_and_fetch(host: str, username: str, password: str) -> dict:
     raise RuntimeError("EdgeRouter login failed")
 
 
+def unwrap_payload(payload: dict) -> dict:
+    if "dhcp_leases" in payload:
+        return payload
+    output = payload.get("output")
+    if isinstance(output, str):
+        try:
+            output = json.loads(output)
+        except json.JSONDecodeError:
+            return payload
+    if isinstance(output, dict):
+        return output
+    return payload
+
+
 def parse_leases(payload: dict) -> list[dict]:
+    payload = unwrap_payload(payload)
     leases = payload.get("dhcp_leases", {}).get("lease", [])
     if not leases:
         leases = payload.get("lease", [])
@@ -165,7 +180,8 @@ def main() -> None:
             return
 
         payload = login_and_fetch(host, username, password)
-        raw_leases = payload.get("dhcp_leases", {}).get("lease", [])
+        unwrapped = unwrap_payload(payload)
+        raw_leases = unwrapped.get("dhcp_leases", {}).get("lease", [])
         if isinstance(raw_leases, dict):
             raw_count = 1
         elif isinstance(raw_leases, list):
@@ -175,7 +191,7 @@ def main() -> None:
         clients = parse_leases(payload)
         result = {"count": len(clients), "data": clients}
         debug_path.write_text(
-            f"ok host={host} user={username} raw={raw_count} leases={len(clients)} keys={list(payload.keys())[:5]}\n",
+            f"ok host={host} user={username} raw={raw_count} leases={len(clients)} keys={list(unwrapped.keys())[:8]}\n",
             encoding="utf-8",
         )
         emit(result, output_path)
