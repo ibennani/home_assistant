@@ -19,7 +19,6 @@ FILES = [
     "includes/media_player.yaml",
     "groups.yaml",
     "automations.yaml",
-    "archive/ui-lovelace.yaml",
 ]
 
 # Längre mönster först
