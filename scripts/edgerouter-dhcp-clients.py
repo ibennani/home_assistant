@@ -138,26 +138,44 @@ def unwrap_payload(payload: dict) -> dict:
     return payload
 
 
-def parse_leases(payload: dict) -> list[dict]:
-    payload = unwrap_payload(payload)
-    leases: list | dict = []
-    for key in ("dhcp_leases", "dhcp-server-leases", "arp"):
-        block = payload.get(key)
-        if not block:
+def parse_dhcp_server_leases(block: dict) -> list[dict]:
+    """EdgeOS: dhcp-server-leases → interface → IP-keyed lease dict."""
+    clients: list[dict] = []
+    for iface_data in block.values():
+        if not isinstance(iface_data, dict):
             continue
-        if isinstance(block, dict):
-            if "lease" in block:
-                leases = block.get("lease", [])
-            elif "leases" in block:
-                leases = block.get("leases", [])
-            elif "entry" in block:
-                leases = block.get("entry", [])
-            else:
-                leases = list(block.values())
-        elif isinstance(block, list):
-            leases = block
-        if leases:
-            break
+        for ip, lease in iface_data.items():
+            if not isinstance(lease, dict):
+                continue
+            mac = normalize_mac(
+                str(
+                    lease.get("mac")
+                    or lease.get("mac-address")
+                    or lease.get("hwaddr")
+                    or ""
+                )
+            )
+            if not mac or mac in INFRA_MACS:
+                continue
+            hostname = str(
+                lease.get("client-hostname")
+                or lease.get("hostname")
+                or lease.get("host-name")
+                or lease.get("name")
+                or ""
+            ).strip()
+            clients.append(
+                {
+                    "mac": mac,
+                    "ip": str(ip).strip(),
+                    "hostname": hostname,
+                    "expires": 0,
+                }
+            )
+    return clients
+
+
+def parse_flat_leases(leases: list | dict) -> list[dict]:
     if isinstance(leases, dict):
         leases = [leases]
 
@@ -172,14 +190,19 @@ def parse_leases(payload: dict) -> list[dict]:
         )
         if not mac or mac in INFRA_MACS:
             continue
-        expires = int(lease.get("expires", 0) or 0)
+        expires_raw = lease.get("expires", 0) or 0
+        expires = int(expires_raw) if str(expires_raw).isdigit() else 0
         if expires and expires < now:
             continue
         active = str(lease.get("active", "1")).lower()
         if active in ("0", "false", "no", "off"):
             continue
         hostname = str(
-            lease.get("hostname") or lease.get("host-name") or lease.get("name") or ""
+            lease.get("hostname")
+            or lease.get("host-name")
+            or lease.get("client-hostname")
+            or lease.get("name")
+            or ""
         ).strip()
         ip = str(
             lease.get("ip")
@@ -197,9 +220,69 @@ def parse_leases(payload: dict) -> list[dict]:
                 "expires": expires,
             }
         )
+    return clients
 
+
+def parse_leases(payload: dict) -> list[dict]:
+    payload = unwrap_payload(payload)
+
+    dhcp_server = payload.get("dhcp-server-leases")
+    if isinstance(dhcp_server, dict) and dhcp_server:
+        clients = parse_dhcp_server_leases(dhcp_server)
+        if clients:
+            clients.sort(key=lambda item: (item.get("hostname") or item["ip"]).lower())
+            return clients
+
+    leases: list | dict = []
+    for key in ("dhcp_leases", "arp"):
+        block = payload.get(key)
+        if not block:
+            continue
+        if isinstance(block, dict):
+            if "lease" in block:
+                leases = block.get("lease", [])
+            elif "leases" in block:
+                leases = block.get("leases", [])
+            elif "entry" in block:
+                leases = block.get("entry", [])
+            else:
+                leases = list(block.values())
+        elif isinstance(block, list):
+            leases = block
+        if leases:
+            break
+
+    clients = parse_flat_leases(leases)
     clients.sort(key=lambda item: (item.get("hostname") or item["ip"]).lower())
     return clients
+
+
+def credential_pairs(secrets: dict[str, str]) -> list[tuple[str, str, str]]:
+    host = secrets.get("edgerouter_host", "192.168.0.1")
+    pairs: list[tuple[str, str, str]] = []
+    username = secrets.get("edgerouter_username", "")
+    password = secrets.get("edgerouter_password", "")
+    if username not in PLACEHOLDER_VALUES and password not in PLACEHOLDER_VALUES:
+        pairs.append((host, username, password))
+    pairs.append((host, "ubnt", "ubnt"))
+    return pairs
+
+
+def fetch_clients(secrets: dict[str, str]) -> tuple[list[dict], str, str]:
+    last_error: Exception | None = None
+    for host, username, password in credential_pairs(secrets):
+        try:
+            payload = login_and_fetch(host, username, password)
+            clients = parse_leases(payload)
+            if clients:
+                return clients, host, username
+            last_error = RuntimeError("login ok but no dhcp leases parsed")
+        except Exception as exc:
+            last_error = exc
+            continue
+    if last_error:
+        raise last_error
+    return [], secrets.get("edgerouter_host", "192.168.0.1"), secrets.get("edgerouter_username", "")
 
 
 def emit(result: dict, output_path: str | None) -> None:
@@ -215,18 +298,7 @@ def main() -> None:
     debug_path = Path("/config/www/edgerouter-debug.txt")
     try:
         secrets = load_secrets()
-        host = secrets.get("edgerouter_host", "192.168.0.1")
-        username = secrets.get("edgerouter_username", "")
-        password = secrets.get("edgerouter_password", "")
-
-        if username in PLACEHOLDER_VALUES or password in PLACEHOLDER_VALUES:
-            debug_path.write_text("missing credentials in secrets.yaml\n", encoding="utf-8")
-            emit(empty_result(), output_path)
-            return
-
-        payload = login_and_fetch(host, username, password)
-        unwrapped = unwrap_payload(payload)
-        clients = parse_leases(payload)
+        clients, host, username = fetch_clients(secrets)
         result = {"count": len(clients), "data": clients}
         debug_path.write_text(
             f"ok host={host} user={username} leases={len(clients)} preview={json.dumps(result)[:300]}\n",
