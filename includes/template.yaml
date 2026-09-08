@@ -619,19 +619,19 @@
               | rejectattr('entity_id', 'in', exclude)
               | sort(attribute='last_changed', reverse=true)
               | list %}
-          {% for t in trackers %}
-            {% set mac = state_attr(t.entity_id, 'mac') | default('', true) %}
-            {% set key = mac | replace(':', '') | lower %}
-            {% set label = names.get(key)
-                or (t.name if (t.name and not t.name.startswith('unifi ')) else '')
-                or mac
-                or t.entity_id %}
-            {% set ip = state_attr(t.entity_id, 'ip') | default('—', true) %}
-            {% set nat = 'bennani gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' %}
+          {% for t in trackers -%}
+          {%- set mac = state_attr(t.entity_id, 'mac') | default('', true) -%}
+          {%- set key = mac | replace(':', '') | lower -%}
+          {%- set label = names.get(key)
+              or (t.name if (t.name and not t.name.startswith('unifi ')) else '')
+              or mac
+              or t.entity_id -%}
+          {%- set ip = state_attr(t.entity_id, 'ip') | default('—', true) -%}
+          {%- set nat = 'bennani gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' -%}
           **{{ loop.index }}.** {{ label }} — {{ nat }} — {{ ip }} — {{ relative_time(t.last_changed) }} sedan
-          {% else %}
+          {% else -%}
           *Inga Wi-Fi-klienter anslutna just nu.*
-          {% endfor %}
+          {%- endfor %}
 
     # ---- Disk / luftavfuktare -----------------------------------------------
     - name: Diskmaskinen diskar
