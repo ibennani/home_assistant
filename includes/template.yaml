@@ -739,6 +739,17 @@
           *EdgeRouter-uppgifter saknas — lägg till i `/config/secrets.yaml`.*
           {% endif %}
 
+    - name: Wi-Fi-klienter visning
+      unique_id: wifi_klienter_visning
+      default_entity_id: sensor.wifi_klienter_visning
+      icon: mdi:wifi
+      state: "{{ states('sensor.wifi_klienter_antal') | int(0) }}"
+      attributes:
+        markdown: |-
+          ## {{ states('sensor.wifi_klienter_antal') | int(0) }} {{ 'enhet' if (states('sensor.wifi_klienter_antal') | int(0)) == 1 else 'enheter' }} anslutna på nätet
+
+          {{ state_attr('sensor.wifi_klienter_lista', 'markdown') | default('*Ingen data*', true) }}
+
     # ---- Disk / luftavfuktare -----------------------------------------------
     - name: Diskmaskinen diskar
       unique_id: diskmaskinen_diskar
