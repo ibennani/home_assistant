@@ -285,8 +285,12 @@ def fetch_clients(secrets: dict[str, str]) -> tuple[list[dict], str, str]:
     return [], secrets.get("edgerouter_host", "192.168.0.1"), secrets.get("edgerouter_username", "")
 
 
+LAST_DHCP_PATH = Path("/config/www/edgerouter-dhcp-last.json")
+
+
 def emit(result: dict, output_path: str | None) -> None:
     payload = json.dumps(result)
+    LAST_DHCP_PATH.write_text(payload, encoding="utf-8")
     if output_path:
         Path(output_path).write_text(payload, encoding="utf-8")
     else:

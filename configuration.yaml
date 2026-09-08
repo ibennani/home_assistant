@@ -93,6 +93,7 @@ shell_command:
     && git reset --hard origin/main
     2>&1 | tee -a /config/git-pull.log
     && echo "--- $(date -Iseconds) ---" >> /config/git-pull.log
+  dhcp_ny_enhet_kontrollera: python3 /config/scripts/dhcp-new-device-check.py
 
 #######################################################
 # Media

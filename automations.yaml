@@ -5228,6 +5228,7 @@
       mottagare: mobile_app_ilias_s23_ultra
 - alias: 'HA: En ny enhet på vårt nätverk'
   id: '791834806309636364154'
+  initial_state: false
   triggers:
   - trigger: event
     event_type: device_tracker_new_device
@@ -10077,3 +10078,14 @@
         \ pendeltag_total_count }} tåg i prognosen).\n{% endif %}\n"
       mottagare: mobile_app_ilias_s23_ultra
       title: Pendeltåg Farsta strand
+- id: natverk_dhcp_ny_okand_enhet
+  alias: 'Nätverk: Ny okänd enhet på DHCP'
+  description: Notis när en MAC som inte setts tidigare dyker upp i DHCP-listan. Undantagna enheter ignoreras.
+  triggers:
+  - trigger: state
+    entity_id: sensor.edgerouter_dhcp_klienter
+  conditions:
+  - condition: template
+    value_template: "{{ trigger.from_state is not none and trigger.from_state.state not in ['unknown', 'unavailable', 'none', ''] }}"
+  actions:
+  - action: script.dhcp_ny_enhet_notis
