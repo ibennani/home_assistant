@@ -5468,9 +5468,12 @@
         id: rakna_ut_starttid
       sequence:
       - variables:
-          cycle_duration_minutes: 66
           slot_len_min: 15
-          dishwasher_program: Dishcare.Dishwasher.Program.Eco50
+          eco50_program: Dishcare.Dishwasher.Program.Eco50
+          intensiv70_program: Dishcare.Dishwasher.Program.Intensiv70
+          eco50_cycle_minutes: 66
+          intensiv70_cycle_minutes: 100
+          price_threshold_kr_kwh: 1
           use_speed_option: true
           speed_option_entity: switch.bosch_sma67md06e_68a40e70cb46_dishcare_dishwasher_option_variospeedplus
           weekday_morning_deadline: 6
@@ -5480,6 +5483,7 @@
           heavy_weight: 1
           light_weight: 0.5
       - variables:
+          cycle_duration_minutes: 66
           num_slots: '{{ (cycle_duration_minutes / slot_len_min) | round(0,''ceil'') | int }}'
           num_heavy_slots: '{{ (num_slots * heavy_load_percentage) | round(0,''ceil'') | int }}'
           num_light_slots: '{{ (num_slots - num_heavy_slots) | int }}'
@@ -5533,29 +5537,99 @@
           - condition: template
             value_template: '{{ best_start_iso != '''' }}'
           sequence:
-          - variables:
-              avg_run_price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {% set tv_raw = state_attr(np, 'today')\
-                \ | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([]) %} {% set tmr = state_attr(np,\
-                \ 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr\
-                \ | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is not string else (tv_raw\
-                \ | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw is sequence and\
-                \ tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set vals =\
-                \ (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set slot_len = (slot_len_min | int)\
-                \ %}  {% set slot_secs = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0,\
-                \ second=0, microsecond=0) %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set bi = (((as_timestamp(best_start_iso\
-                \ | as_datetime) | float) - base_ts) / slot_secs) | round(0,'floor') | int %}  {% set ns = namespace(s=0.0)\
-                \ %}  {% for k in range(bi, bi + (num_slots | int)) %}\n  {% set ns.s = ns.s + (vals[k] | float) %}\n{% endfor\
-                \ %}  {{ (ns.s / (num_slots | int)) | float }}"
+                - variables:
+          eco50_best_start_iso: '{{ best_start_iso }}'
+          eco50_next_deadline: '{{ next_deadline }}'
+      - variables:
+          eco50_avg_run_price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {% set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is not string else (tv_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw is sequence and tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set vals = (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set slot_len = (slot_len_min | int) %}  {% set slot_secs = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0) %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set bi = (((as_timestamp(best_start_iso | as_datetime) | float) - base_ts) / slot_secs) | round(0,'floor') | int %}  {% set ns = namespace(s=0.0) %}  {% for k in range(bi, bi + (num_slots | int)) %}\n  {% set ns.s = ns.s + (vals[k] | float) %}\n{% endfor %}  {{ (ns.s / (num_slots | int)) | float }}"
+      - variables:
+          cycle_duration_minutes: 100
+          num_slots: '{{ (cycle_duration_minutes / slot_len_min) | round(0,''ceil'') | int }}'
+          num_heavy_slots: '{{ (num_slots * heavy_load_percentage) | round(0,''ceil'') | int }}'
+          num_light_slots: '{{ (num_slots - num_heavy_slots) | int }}'
+          total_weight_unnormalized: '{{ num_heavy_slots * heavy_weight + num_light_slots * light_weight }}'
+          heavy_factor: '{{ (heavy_weight / total_weight_unnormalized) | float }}'
+          light_factor: '{{ (light_weight / total_weight_unnormalized) | float }}'
+      - variables:
+          next_deadline: "{% set current = now() %} {% set cycle_min = cycle_duration_minutes %}  {% set is_weekday = current.weekday()\
+            \ < 5 %}  {% set finish_time = current + timedelta(minutes=cycle_min) %}  {% if is_weekday %}\n  {% set morning\
+            \ = current.replace(hour=weekday_morning_deadline, minute=0, second=0, microsecond=0) %}\n  {% set afternoon =\
+            \ current.replace(hour=weekday_afternoon_deadline, minute=0, second=0, microsecond=0) %}\n  {{ morning if finish_time\
+            \ <= morning else (afternoon if finish_time <= afternoon else (\n    (current + timedelta(days=1)).replace(\n\
+            \      hour=(weekday_morning_deadline if (current + timedelta(days=1)).weekday() < 5 else weekend_deadline),\n\
+            \      minute=0, second=0, microsecond=0))) }}\n{% else %}\n  {% set today_deadline = current.replace(hour=weekend_deadline,\
+            \ minute=0, second=0, microsecond=0) %}\n  {{ today_deadline if finish_time <= today_deadline else\n    ((current\
+            \ + timedelta(days=1)).replace(\n      hour=(weekday_morning_deadline if (current + timedelta(days=1)).weekday()\
+            \ < 5 else weekend_deadline),\n      minute=0, second=0, microsecond=0)) }}\n{% endif %}"
+      - variables:
+          first_allowed_ts: '{% set base = (now() | as_datetime).replace(second=0, microsecond=0) %}  {% set m = base.minute
+            % (slot_len_min | int) %}  {{ as_timestamp(base if m == 0 else (base + timedelta(minutes=(slot_len_min | int)
+            - m))) | float }}'
+          latest_allowed_ts: '{% set dt = ((next_deadline | as_datetime) - timedelta(minutes=cycle_duration_minutes)) | as_datetime
+            %}  {% set floorm = (dt.minute // (slot_len_min | int)) * (slot_len_min | int) %}  {{ as_timestamp(dt.replace(minute=floorm,
+            second=0, microsecond=0)) | float }}'
+      - variables:
+          best_start_iso: "{# ---- 1) Läs priser robust ---- #}  {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {%\
+            \ set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([])\
+            \ %}  {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr)\
+            \ or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is\
+            \ not string else (tv_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw\
+            \ is sequence and tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {%\
+            \ set vals = (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set n = vals | count %}\n{# ----\
+            \ 2) Indexfönster (15-min) mot dagens midnatt ---- #}  {% set slot_len = (slot_len_min | int) %}  {% set slot_secs\
+            \ = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0)\
+            \ %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set fi = (((first_allowed_ts | float) - base_ts)\
+            \ / slot_secs) | round(0,'ceil') | int %}  {% set li = (((latest_allowed_ts | float) - base_ts) / slot_secs) |\
+            \ round(0,'floor') | int %}  {% set max_start = (n - (num_slots | int)) | int %}  {% set start_i = 0 if fi < 0\
+            \ else fi %}  {% set end_i = (max_start if li > max_start else li) %}\n{# ---- 3) Sök billigaste fönster (viktat)\
+            \ ---- #}  {% set ns = namespace(best_i=-1, best_cost=None, hs=0.0, ls=0.0) %}  {% if n >= (num_slots | int) and\
+            \ end_i >= start_i %}\n  {% for i in range(start_i, end_i + 1) %}\n    {% set ns.hs = 0.0 %}\n    {% for j in\
+            \ range(0, (num_heavy_slots | int)) %}\n      {% set ns.hs = ns.hs + (vals[i+j] | float) %}\n    {% endfor %}\n\
+            \    {% set ns.ls = 0.0 %}\n    {% for j in range((num_heavy_slots | int), (num_slots | int)) %}\n      {% set\
+            \ ns.ls = ns.ls + (vals[i+j] | float) %}\n    {% endfor %}\n    {% set cost = ns.hs * (heavy_factor | float) +\
+            \ ns.ls * (light_factor | float) %}\n    {% if ns.best_cost is none or cost < ns.best_cost %}\n      {% set ns.best_cost\
+            \ = cost %}\n      {% set ns.best_i = i %}\n    {% endif %}\n  {% endfor %}\n  {% if ns.best_i < 0 %}\n    {%\
+            \ set ns.best_i = start_i %}\n  {% endif %}\n{% endif %}\n{# ---- 4) Returnera ISO ---- #}  {% if ns.best_i >=\
+            \ 0 %}\n  {% set dt = (base_midnight + timedelta(minutes=slot_len*ns.best_i)) | as_local %}\n  {{ dt.strftime('%Y-%m-%dT%H:%M:00')\
+            \ }}\n{% else %}\n  {{ '' }}\n{% endif %}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ best_start_iso != '''' }}'
+          sequence:
+                - variables:
+          intensiv70_best_start_iso: '{{ best_start_iso }}'
+          intensiv70_next_deadline: '{{ next_deadline }}'
+      - variables:
+          intensiv70_avg_run_price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {% set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is not string else (tv_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw is sequence and tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set vals = (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set slot_len = (slot_len_min | int) %}  {% set slot_secs = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0) %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set bi = (((as_timestamp(best_start_iso | as_datetime) | float) - base_ts) / slot_secs) | round(0,'floor') | int %}  {% set ns = namespace(s=0.0) %}  {% for k in range(bi, bi + (num_slots | int)) %}\n  {% set ns.s = ns.s + (vals[k] | float) %}\n{% endfor %}  {{ (ns.s / (num_slots | int)) | float }}"
+      - variables:
+          use_intensiv70: "{{ intensiv70_best_start_iso != '' and intensiv70_avg_run_price | float(999) < (price_threshold_kr_kwh | float) }}"
+          chosen_program: "{% if use_intensiv70 | bool %}{{ intensiv70_program }}{% else %}{{ eco50_program }}{% endif %}"
+          chosen_program_label: "{% if use_intensiv70 | bool %}Intensiv 70°{% else %}Eco 50°{% endif %}"
+          best_start_iso: "{% if use_intensiv70 | bool %}{{ intensiv70_best_start_iso }}{% else %}{{ eco50_best_start_iso }}{% endif %}"
+          avg_run_price: "{% if use_intensiv70 | bool %}{{ intensiv70_avg_run_price }}{% else %}{{ eco50_avg_run_price }}{% endif %}"
+          cycle_duration_minutes: "{% if use_intensiv70 | bool %}{{ intensiv70_cycle_minutes }}{% else %}{{ eco50_cycle_minutes }}{% endif %}"
+          next_deadline: "{% if use_intensiv70 | bool %}{{ intensiv70_next_deadline }}{% else %}{{ eco50_next_deadline }}{% endif %}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ best_start_iso != '''' }}'
+          sequence:
           - action: input_text.set_value
             target:
               entity_id: input_text.diskmaskin_tid_fjarrstart
             data:
               value: '{{ best_start_iso }}'
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.diskmaskin_program_fjarrstart
+            data:
+              value: '{{ chosen_program }}'
           - action: script.mobilnotis
             data:
               meddelande: 'HEMMET {{ states(''sensor.time'') }}: Diskmaskinen kommer starta klockan {{ (best_start_iso | as_datetime
-                | as_local).strftime(''%H:%M'') }}. Snittpris under körning (~{{ cycle_duration_minutes }} min): ≈ {{ avg_run_price
-                | round(2, default=0) }} kr/kWh.'
+                | as_local).strftime(''%H:%M'') }} med {{ chosen_program_label }}. Snittpris under körning (~{{ cycle_duration_minutes
+                }} min): ≈ {{ avg_run_price | round(2, default=0) }} kr/kWh.'
               mottagare: mobile_app_ilias_s23_ultra
               ikon: vitvaror
           - action: script.turn_on
@@ -5565,10 +5639,12 @@
               variables:
                 hogtalare: media_player.googlehome_infopuckarna
                 meddelande: Diskmaskinen kommer starta klockan {{ (best_start_iso | as_datetime | as_local).strftime('%H:%M')
-                  }}.
-                volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}\n  {{ states('input_number.google_home_volume_setting_dag')\
-                  \ | float(default=0) / 100 }}\n{% else %}\n  {{ states('input_number.google_home_volume_setting_notiser')\
-                  \ | float(default=0) / 100 }}\n{% endif %}"
+                  }} med {{ chosen_program_label }}.
+                volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}
+  {{ states('input_number.google_home_volume_setting_dag')                  \ | float(default=0) / 100 }}
+{% else %}
+  {{ states('input_number.google_home_volume_setting_notiser')                  \ | float(default=0) / 100 }}
+{% endif %}"
                 voice: MattiasNeural
         - conditions:
           - condition: template
@@ -5579,10 +5655,14 @@
               entity_id: input_text.diskmaskin_tid_fjarrstart
             data:
               value: ''
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.diskmaskin_program_fjarrstart
+            data:
+              value: ''
           - action: script.mobilnotis
             data:
-              meddelande: 'HEMMET {{ states(''sensor.time'') }}: Ingen lämplig starttid hittades innan deadline {{ (next_deadline
-                | as_datetime | as_local).strftime(''%H:%M'') }}.'
+              meddelande: 'HEMMET {{ states(''sensor.time'') }}: Ingen lämplig starttid hittades (Eco 50° eller Intensiv 70°) innan respektive deadline.'
               mottagare: mobile_app_ilias_s23_ultra
               ikon: vitvaror
     - conditions:
@@ -5594,12 +5674,19 @@
           \ and\n  now() >= states('input_text.diskmaskin_tid_fjarrstart') | as_datetime | as_local\n}}"
       sequence:
       - variables:
-          dishwasher_program: Dishcare.Dishwasher.Program.Eco50
+          dishwasher_program: "{% set p = states('input_text.diskmaskin_program_fjarrstart') %}{{ p if p not in ['', 'unknown', 'unavailable'] else 'Dishcare.Dishwasher.Program.Eco50' }}"
           use_speed_option: true
           speed_option_entity: switch.bosch_sma67md06e_68a40e70cb46_dishcare_dishwasher_option_variospeedplus
+      - variables:
+          dishwasher_program_label: "{% if 'Intensiv70' in dishwasher_program %}Intensiv 70°{% else %}Eco 50°{% endif %}"
       - action: input_text.set_value
         target:
           entity_id: input_text.diskmaskin_tid_fjarrstart
+        data:
+          value: ''
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.diskmaskin_program_fjarrstart
         data:
           value: ''
       - action: select.select_option
@@ -5623,7 +5710,7 @@
         data:
           meddelande: 'HEMMET {{ states(''sensor.time'') }}:
 
-            Nu startar diskmaskinen (fjärrstart)'
+            Nu startar diskmaskinen (fjärrstart) med {{ dishwasher_program_label }}.'
           mottagare: mobile_app_ilias_s23_ultra
           ikon: vitvaror
     - conditions:
@@ -5635,6 +5722,11 @@
       - action: input_text.set_value
         target:
           entity_id: input_text.diskmaskin_tid_fjarrstart
+        data:
+          value: ''
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.diskmaskin_program_fjarrstart
         data:
           value: ''
       - action: script.mobilnotis
@@ -5713,6 +5805,11 @@
   - action: input_text.set_value
     target:
       entity_id: input_text.diskmaskin_tid_fjarrstart
+    data:
+      value: ''
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.diskmaskin_program_fjarrstart
     data:
       value: ''
 - alias: 'Mobilnotis: Diskmaskinen är klar'
