@@ -11,6 +11,7 @@ Användning:
 from __future__ import annotations
 
 import http.cookiejar
+import importlib.util
 import json
 import re
 import socket
@@ -297,6 +298,18 @@ def emit(result: dict, output_path: str | None) -> None:
         print(payload)
 
 
+def run_new_device_check() -> None:
+    path = Path("/config/scripts/dhcp-new-device-check.py")
+    if not path.exists():
+        return
+    spec = importlib.util.spec_from_file_location("dhcp_new_device_check", path)
+    if spec is None or spec.loader is None:
+        return
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.run_check()
+
+
 def main() -> None:
     output_path = sys.argv[1] if len(sys.argv) > 1 else None
     debug_path = Path("/config/www/edgerouter-debug.txt")
@@ -309,6 +322,7 @@ def main() -> None:
             encoding="utf-8",
         )
         emit(result, output_path)
+        run_new_device_check()
     except Exception as exc:
         debug_path.write_text(f"error: {exc!r}\n", encoding="utf-8")
         emit(empty_result(), output_path)
