@@ -2421,6 +2421,7 @@ wifi_synka_klienter:
   - parallel:
     - action: shell_command.edgerouter_dhcp_poll
     - action: shell_command.unifi_wlan_poll
+  - action: shell_command.edgerouter_dhcp_inspect
   - action: homeassistant.update_entity
     target:
       entity_id:

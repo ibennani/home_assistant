@@ -106,6 +106,39 @@ def walk_strings(value, hits: list[str], needle: str) -> None:
         hits.append(value)
 
 
+def summarize_findings(payloads: dict[str, object | None]) -> dict[str, object]:
+    summary: dict[str, object] = {
+        "pool": [],
+        "static_for_9": [],
+        "galaxy_matches": [],
+        "arp_for_9": [],
+    }
+    needles = ("192.168.0.9", "galaxy-s23", "galaxy", "erik", "1a:09:41", "1a09413c664f")
+    for endpoint, payload in payloads.items():
+        if payload is None:
+            continue
+        text = json.dumps(payload, ensure_ascii=False).lower()
+        if endpoint in {"dhcp-server-config", "dhcp-server-settings"} and "start" in text:
+            summary["pool"].append({"endpoint": endpoint, "payload": payload})
+        for needle in needles:
+            hits: list[str] = []
+            walk_strings(payload, hits, needle)
+            if not hits:
+                continue
+            if needle == "192.168.0.9":
+                if endpoint == "arp":
+                    summary["arp_for_9"].extend(hits[:10])
+                else:
+                    summary["static_for_9"].extend(
+                        [{"endpoint": endpoint, "hit": hit} for hit in hits[:10]]
+                    )
+            if "galaxy" in needle or "erik" in needle or "1a:09" in needle:
+                summary["galaxy_matches"].extend(
+                    [{"endpoint": endpoint, "needle": needle, "hit": hit} for hit in hits[:5]]
+                )
+    return summary
+
+
 def main() -> None:
     secrets = load_secrets()
     host = secrets.get("edgerouter_host", "192.168.0.1")
@@ -117,9 +150,11 @@ def main() -> None:
     opener, scheme, host = login(host, username, password)
     lines = [f"host={host} user={username} scheme={scheme}", ""]
     needles = ("192.168.0.9", "galaxy-s23", "galaxy", "erik", "1a:09:41", "1a09413c664f")
+    payloads: dict[str, object | None] = {}
 
     for endpoint in ENDPOINTS:
         payload = fetch_json(opener, scheme, host, endpoint)
+        payloads[endpoint] = payload
         lines.append(f"=== {endpoint} ===")
         if payload is None:
             lines.append("(saknas eller fel)")
@@ -139,8 +174,16 @@ def main() -> None:
                     lines.append(hit)
                 lines.append("")
 
+    summary = summarize_findings(payloads)
+    lines.append("=== summary ===")
+    lines.append(json.dumps(summary, indent=2, ensure_ascii=False))
+
     report = "\n".join(lines)
     OUTPUT_PATH.write_text(report + "\n", encoding="utf-8")
+    Path("/config/www/edgerouter-dhcp-inspect-summary.json").write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
     print(report)
 
 
