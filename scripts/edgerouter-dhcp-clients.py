@@ -148,29 +148,20 @@ def emit(result: dict, output_path: str | None) -> None:
 
 def main() -> None:
     output_path = sys.argv[1] if len(sys.argv) > 1 else None
-    secrets = load_secrets()
-    host = secrets.get("edgerouter_host", "192.168.0.1")
-    username = secrets.get("edgerouter_username", "")
-    password = secrets.get("edgerouter_password", "")
-
-    if username in PLACEHOLDER_VALUES or password in PLACEHOLDER_VALUES:
-        emit(empty_result(), output_path)
-        return
-
     try:
+        secrets = load_secrets()
+        host = secrets.get("edgerouter_host", "192.168.0.1")
+        username = secrets.get("edgerouter_username", "")
+        password = secrets.get("edgerouter_password", "")
+
+        if username in PLACEHOLDER_VALUES or password in PLACEHOLDER_VALUES:
+            emit(empty_result(), output_path)
+            return
+
         payload = login_and_fetch(host, username, password)
         clients = parse_leases(payload)
         emit({"count": len(clients), "data": clients}, output_path)
-    except (
-        urllib.error.URLError,
-        urllib.error.HTTPError,
-        json.JSONDecodeError,
-        TimeoutError,
-        OSError,
-        KeyError,
-        ValueError,
-        RuntimeError,
-    ):
+    except Exception:
         emit(empty_result(), output_path)
 
 
