@@ -148,6 +148,7 @@ def emit(result: dict, output_path: str | None) -> None:
 
 def main() -> None:
     output_path = sys.argv[1] if len(sys.argv) > 1 else None
+    debug_path = Path("/config/www/edgerouter-debug.txt")
     try:
         secrets = load_secrets()
         host = secrets.get("edgerouter_host", "192.168.0.1")
@@ -155,13 +156,20 @@ def main() -> None:
         password = secrets.get("edgerouter_password", "")
 
         if username in PLACEHOLDER_VALUES or password in PLACEHOLDER_VALUES:
+            debug_path.write_text("missing credentials in secrets.yaml\n", encoding="utf-8")
             emit(empty_result(), output_path)
             return
 
         payload = login_and_fetch(host, username, password)
         clients = parse_leases(payload)
-        emit({"count": len(clients), "data": clients}, output_path)
-    except Exception:
+        result = {"count": len(clients), "data": clients}
+        debug_path.write_text(
+            f"ok host={host} user={username} leases={len(clients)}\n",
+            encoding="utf-8",
+        )
+        emit(result, output_path)
+    except Exception as exc:
+        debug_path.write_text(f"error: {exc!r}\n", encoding="utf-8")
         emit(empty_result(), output_path)
 
 
