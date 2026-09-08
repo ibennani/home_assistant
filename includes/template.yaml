@@ -554,35 +554,35 @@
             | list
             | count }}
 
-    # ---- Wi-Fi-klienter (UniFi device_tracker, utan API) --------------------
+    # ---- Nätverksklienter (EdgeRouter DHCP + UniFi-fallback) ------------------
     - name: Wi-Fi-klienter antal
       unique_id: wifi_klienter_antal
       default_entity_id: sensor.wifi_klienter_antal
       unit_of_measurement: st
       icon: mdi:wifi
       state: >-
-        {{ states.device_tracker
-            | selectattr('entity_id', 'search', 'unifi_')
-            | selectattr('state', 'eq', 'home')
-            | rejectattr('entity_id', 'in',
-                (state_attr('group.wifi_klient_undantag', 'entity_id') | default([]))
-                + (state_attr('group.family_phones', 'entity_id') | default([])))
-            | list
-            | count }}
+        {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
+        {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([]) %}
+        {% if raw | length > 0 %}
+          {{ raw
+              | rejectattr('mac', 'in', infra)
+              | list
+              | count }}
+        {% else %}
+          {{ states.device_tracker
+              | selectattr('entity_id', 'search', 'unifi_')
+              | selectattr('state', 'eq', 'home')
+              | rejectattr('entity_id', 'in',
+                  (state_attr('group.wifi_klient_undantag', 'entity_id') | default([])))
+              | list
+              | count }}
+        {% endif %}
 
     - name: Wi-Fi-klienter lista
       unique_id: wifi_klienter_lista
       default_entity_id: sensor.wifi_klienter_lista
       icon: mdi:format-list-numbered
-      state: >-
-        {{ states.device_tracker
-            | selectattr('entity_id', 'search', 'unifi_')
-            | selectattr('state', 'eq', 'home')
-            | rejectattr('entity_id', 'in',
-                (state_attr('group.wifi_klient_undantag', 'entity_id') | default([]))
-                + (state_attr('group.family_phones', 'entity_id') | default([])))
-            | list
-            | count }}
+      state: "{{ states('sensor.wifi_klienter_antal') | int(0) }}"
       attributes:
         markdown: >-
           {% set names = {
@@ -611,27 +611,51 @@
             'a851ab2dbacc': 'Apple TV',
             '105fad770a65': 'HP-skrivare'
           } %}
-          {% set exclude = (state_attr('group.wifi_klient_undantag', 'entity_id') | default([]))
-              + (state_attr('group.family_phones', 'entity_id') | default([])) %}
-          {% set trackers = states.device_tracker
-              | selectattr('entity_id', 'search', 'unifi_')
-              | selectattr('state', 'eq', 'home')
-              | rejectattr('entity_id', 'in', exclude)
-              | sort(attribute='last_changed', reverse=true)
-              | list %}
-          {% for t in trackers -%}
-          {%- set mac = state_attr(t.entity_id, 'mac') | default('', true) -%}
-          {%- set key = mac | replace(':', '') | lower -%}
-          {%- set label = names.get(key)
-              or (t.name if (t.name and not t.name.startswith('unifi ')) else '')
-              or mac
-              or t.entity_id -%}
-          {%- set ip = state_attr(t.entity_id, 'ip') | default('—', true) -%}
-          {%- set nat = 'bennani gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' -%}
-          **{{ loop.index }}.** {{ label }} — {{ nat }} — {{ ip }} — {{ relative_time(t.last_changed) }} sedan
-          {% else -%}
-          *Inga Wi-Fi-klienter anslutna just nu.*
-          {%- endfor %}
+          {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
+          {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([]) %}
+          {% if raw | length > 0 %}
+            {% set clients = raw | rejectattr('mac', 'in', infra) | list %}
+            {% for c in clients %}
+              {% set key = c.mac | replace(':', '') | lower %}
+              {% set label = names.get(key) or c.hostname or c.mac %}
+              {% set ns = namespace(net='nätverk') %}
+              {% for t in states.device_tracker | selectattr('entity_id', 'search', 'unifi_') %}
+                {% if (state_attr(t.entity_id, 'mac') | default('') | lower) == c.mac %}
+                  {% if state_attr(t.entity_id, 'is_guest') %}
+                    {% set ns.net = 'bennani gäst' %}
+                  {% else %}
+                    {% set ns.net = 'Wi-Fi' %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+          **{{ loop.index }}.** {{ label }} — {{ ns.net }} — {{ c.ip }}
+
+            {% else %}
+          *Inga klienter med aktiv DHCP-lease just nu.*
+            {% endfor %}
+          {% else %}
+            {% set exclude = state_attr('group.wifi_klient_undantag', 'entity_id') | default([]) %}
+            {% set trackers = states.device_tracker
+                | selectattr('entity_id', 'search', 'unifi_')
+                | selectattr('state', 'eq', 'home')
+                | rejectattr('entity_id', 'in', exclude)
+                | sort(attribute='last_changed', reverse=true)
+                | list %}
+            {% for t in trackers %}
+              {% set mac = state_attr(t.entity_id, 'mac') | default('', true) %}
+              {% set key = mac | replace(':', '') | lower %}
+              {% set label = names.get(key)
+                  or (t.name if (t.name and not t.name.startswith('unifi ')) else '')
+                  or mac
+                  or t.entity_id %}
+              {% set ip = state_attr(t.entity_id, 'ip') | default('—', true) %}
+              {% set net = 'bennani gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' %}
+          **{{ loop.index }}.** {{ label }} — {{ net }} — {{ ip }} — {{ relative_time(t.last_changed) }} sedan
+
+            {% else %}
+          *EdgeRouter-uppgifter saknas — lägg till i `/config/secrets.yaml`.*
+            {% endfor %}
+          {% endif %}
 
     # ---- Disk / luftavfuktare -----------------------------------------------
     - name: Diskmaskinen diskar
