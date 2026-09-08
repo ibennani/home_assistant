@@ -6197,8 +6197,6 @@ views:
         {% if n == 1 %}enhet{% else %}enheter{% endif %} anslutna på nätet
 
         {{ state_attr('sensor.wifi_klienter_lista', 'markdown') }}
-
-        *Lista från EdgeRouter DHCP (alla klienter med aktiv lease). Gästnät markeras via UniFi. Exakt SSID (Bennani / 2faraway) kräver UniFi API.*
 - title: Inställningar
   visible:
   - user: 19d971cd430d457e90fe70b83c9d5df1
