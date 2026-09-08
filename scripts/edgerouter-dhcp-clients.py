@@ -121,9 +121,17 @@ def unwrap_payload(payload: dict) -> dict:
 
 def parse_leases(payload: dict) -> list[dict]:
     payload = unwrap_payload(payload)
-    leases = payload.get("dhcp_leases", {}).get("lease", [])
-    if not leases:
-        leases = payload.get("lease", [])
+    leases: list | dict = []
+    for key in ("dhcp_leases", "dhcp-server-leases"):
+        block = payload.get(key)
+        if not block:
+            continue
+        if isinstance(block, dict):
+            leases = block.get("lease", block.get("leases", []))
+        elif isinstance(block, list):
+            leases = block
+        if leases:
+            break
     if isinstance(leases, dict):
         leases = [leases]
 
@@ -181,7 +189,15 @@ def main() -> None:
 
         payload = login_and_fetch(host, username, password)
         unwrapped = unwrap_payload(payload)
-        raw_leases = unwrapped.get("dhcp_leases", {}).get("lease", [])
+        raw_leases = []
+        for key in ("dhcp_leases", "dhcp-server-leases"):
+            block = unwrapped.get(key)
+            if isinstance(block, dict):
+                raw_leases = block.get("lease", block.get("leases", []))
+            elif isinstance(block, list):
+                raw_leases = block
+            if raw_leases:
+                break
         if isinstance(raw_leases, dict):
             raw_count = 1
         elif isinstance(raw_leases, list):
