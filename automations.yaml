@@ -10080,14 +10080,25 @@
       title: Pendeltåg Farsta strand
 - id: natverk_dhcp_ny_okand_enhet
   alias: 'Nätverk: Ny okänd enhet på DHCP'
-  description: Notis när en MAC som inte setts tidigare dyker upp i DHCP-listan. Kontrollen körs vid varje DHCP-poll.
+  description: Notis när en MAC som inte setts tidigare dyker upp (DHCP eller UniFi Wi-Fi).
   triggers:
   - trigger: state
-    entity_id: sensor.edgerouter_dhcp_klienter
+    entity_id:
+    - sensor.edgerouter_dhcp_klienter
+    - sensor.unifi_wlan_klienter
   conditions:
   - condition: template
     value_template: "{{ trigger.from_state is not none and trigger.from_state.state not in ['unknown', 'unavailable', 'none', ''] }}"
   actions:
-  - action: homeassistant.update_entity
-    target:
-      entity_id: sensor.edgerouter_dhcp_klienter
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ trigger.entity_id == 'sensor.unifi_wlan_klienter' }}"
+      sequence:
+      - action: homeassistant.update_entity
+        target:
+          entity_id: sensor.unifi_wlan_klienter
+    default:
+    - action: homeassistant.update_entity
+      target:
+        entity_id: sensor.edgerouter_dhcp_klienter
