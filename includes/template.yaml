@@ -641,15 +641,30 @@
               {% set key = c.mac | replace(':', '') | lower %}
               {% set label = names.get(key) or c.hostname or c.mac %}
               {% set net = namespace(value='nätverk') %}
-              {% for t in states.device_tracker | selectattr('entity_id', 'search', 'unifi_') %}
-                {% if (state_attr(t.entity_id, 'mac') | default('') | lower) == c.mac %}
-                  {% if state_attr(t.entity_id, 'is_guest') %}
-                    {% set net.value = 'bennani gäst' %}
+              {% for u in state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
+                {% if (u.mac | default('') | lower) == c.mac %}
+                  {% if u.essid %}
+                    {% set net.value = u.essid %}
+                  {% elif u.is_wired %}
+                    {% set net.value = 'trådbunden' %}
+                  {% elif u.is_guest %}
+                    {% set net.value = 'gäst' %}
                   {% else %}
                     {% set net.value = 'Wi-Fi' %}
                   {% endif %}
                 {% endif %}
               {% endfor %}
+              {% if net.value == 'nätverk' %}
+                {% for t in states.device_tracker | selectattr('entity_id', 'search', 'unifi_') %}
+                  {% if (state_attr(t.entity_id, 'mac') | default('') | lower) == c.mac %}
+                    {% if state_attr(t.entity_id, 'is_guest') %}
+                      {% set net.value = 'gäst' %}
+                    {% else %}
+                      {% set net.value = 'Wi-Fi' %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
               {% set out.lines = out.lines + ['**' ~ loop.index ~ '.** ' ~ label ~ ' — ' ~ net.value ~ ' — ' ~ c.ip] %}
             {% endfor %}
           {% else %}
@@ -668,8 +683,24 @@
                   or mac
                   or t.entity_id %}
               {% set ip = state_attr(t.entity_id, 'ip') | default('—', true) %}
-              {% set net = 'bennani gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' %}
-              {% set out.lines = out.lines + ['**' ~ loop.index ~ '.** ' ~ label ~ ' — ' ~ net ~ ' — ' ~ ip ~ ' — ' ~ relative_time(t.last_changed) ~ ' sedan'] %}
+              {% set net = namespace(value='nätverk') %}
+              {% for u in state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
+                {% if (u.mac | default('') | lower) == mac %}
+                  {% if u.essid %}
+                    {% set net.value = u.essid %}
+                  {% elif u.is_wired %}
+                    {% set net.value = 'trådbunden' %}
+                  {% elif u.is_guest %}
+                    {% set net.value = 'gäst' %}
+                  {% else %}
+                    {% set net.value = 'Wi-Fi' %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {% if net.value == 'nätverk' %}
+                {% set net.value = 'gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' %}
+              {% endif %}
+              {% set out.lines = out.lines + ['**' ~ loop.index ~ '.** ' ~ label ~ ' — ' ~ net.value ~ ' — ' ~ ip ~ ' — ' ~ relative_time(t.last_changed) ~ ' sedan'] %}
             {% endfor %}
           {% endif %}
           {% if out.lines | length > 0 %}
