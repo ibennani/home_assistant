@@ -5532,12 +5532,7 @@
             \ set ns.best_i = start_i %}\n  {% endif %}\n{% endif %}\n{# ---- 4) Returnera ISO ---- #}  {% if ns.best_i >=\
             \ 0 %}\n  {% set dt = (base_midnight + timedelta(minutes=slot_len*ns.best_i)) | as_local %}\n  {{ dt.strftime('%Y-%m-%dT%H:%M:00')\
             \ }}\n{% else %}\n  {{ '' }}\n{% endif %}"
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ best_start_iso != '''' }}'
-          sequence:
-                - variables:
+      - variables:
           eco50_best_start_iso: '{{ best_start_iso }}'
           eco50_next_deadline: '{{ next_deadline }}'
       - variables:
@@ -5592,20 +5587,17 @@
             \ set ns.best_i = start_i %}\n  {% endif %}\n{% endif %}\n{# ---- 4) Returnera ISO ---- #}  {% if ns.best_i >=\
             \ 0 %}\n  {% set dt = (base_midnight + timedelta(minutes=slot_len*ns.best_i)) | as_local %}\n  {{ dt.strftime('%Y-%m-%dT%H:%M:00')\
             \ }}\n{% else %}\n  {{ '' }}\n{% endif %}"
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ best_start_iso != '''' }}'
-          sequence:
-                - variables:
+      - variables:
           intensiv70_best_start_iso: '{{ best_start_iso }}'
           intensiv70_next_deadline: '{{ next_deadline }}'
       - variables:
           intensiv70_avg_run_price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {% set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is not string else (tv_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw is sequence and tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set vals = (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set slot_len = (slot_len_min | int) %}  {% set slot_secs = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0) %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set bi = (((as_timestamp(best_start_iso | as_datetime) | float) - base_ts) / slot_secs) | round(0,'floor') | int %}  {% set ns = namespace(s=0.0) %}  {% for k in range(bi, bi + (num_slots | int)) %}\n  {% set ns.s = ns.s + (vals[k] | float) %}\n{% endfor %}  {{ (ns.s / (num_slots | int)) | float }}"
       - variables:
           use_intensiv70: "{{ intensiv70_best_start_iso != '' and intensiv70_avg_run_price | float(999) < (price_threshold_kr_kwh | float) }}"
+      - variables:
           chosen_program: "{% if use_intensiv70 | bool %}{{ intensiv70_program }}{% else %}{{ eco50_program }}{% endif %}"
           chosen_program_label: "{% if use_intensiv70 | bool %}Intensiv 70°{% else %}Eco 50°{% endif %}"
+      - variables:
           best_start_iso: "{% if use_intensiv70 | bool %}{{ intensiv70_best_start_iso }}{% else %}{{ eco50_best_start_iso }}{% endif %}"
           avg_run_price: "{% if use_intensiv70 | bool %}{{ intensiv70_avg_run_price }}{% else %}{{ eco50_avg_run_price }}{% endif %}"
           cycle_duration_minutes: "{% if use_intensiv70 | bool %}{{ intensiv70_cycle_minutes }}{% else %}{{ eco50_cycle_minutes }}{% endif %}"
