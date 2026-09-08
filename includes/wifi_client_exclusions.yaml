@@ -1,0 +1,15 @@
+# MAC-adresser (gemener, med kolon) som inte ska visas i Wi-Fi-klientlistan.
+# Synkas manuellt med rejectattr('mac', 'in', hidden) i includes/template.yaml.
+- "54:60:09:d0:b9:da" # Chromecast Audio
+- "54:60:09:fa:54:16" # Chromecast Audio
+- "54:60:09:fa:da:ca" # Chromecast Audio
+- "54:60:09:d0:ad:ca" # Chromecast Audio
+- "54:60:09:fa:24:f2" # Chromecast Audio
+- "44:07:0b:93:e3:ab" # Google Home Mini
+- "44:07:0b:68:73:38" # Google Home Mini
+- "44:07:0b:b0:19:74" # Google Home Mini
+- "7c:2e:bd:50:c5:a0" # Google Home Mini
+- "20:df:b9:7a:2b:48" # Google Home Mini
+- "d4:f5:47:81:78:78" # Google Nest Mini
+- "68:a4:0e:70:cb:46" # Bosch diskmaskin
+- "10:5f:ad:77:0a:65" # HP-skrivare
