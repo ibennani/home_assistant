@@ -189,8 +189,8 @@ battery_levels:
     - sensor.ilias_rum_skrivbord_rorelse_battery
     - sensor.vardagsrummet_rorelse_battery
     - sensor.vardagsrummet_soffan_rorelse_battery
-    - sensor.sovrummet_rorelse_battery
-    - sensor.wc_rorelse_battery_2
+    - sensor.sovrummet_rorelse_battery_2
+    - sensor.wc_rorelse_battery
     - sensor.annas_rum_rorelse_battery_2
     - sensor.annas_rum_skrivbord_rorelse_battery
     - sensor.koket_arbetsbanken_rorelse_battery
