@@ -7,13 +7,3 @@
     value_template: "{{ value_json.count | default(0) }}"
     json_attributes:
       - data
-
-- sensor:
-    name: DHCP nya enheter pending
-    unique_id: dhcp_new_devices_pending
-    command: cat /config/www/dhcp-new-devices-pending.json 2>/dev/null || echo '{"count":0,"devices":[]}'
-    scan_interval: 86400
-    command_timeout: 5
-    value_template: "{{ value_json.count | default(0) }}"
-    json_attributes:
-      - devices
