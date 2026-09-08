@@ -134,23 +134,14 @@
     - sensor.ljusstyrka_framsidan_maximal
 
 # UniFi — anslutna Wi-Fi-klienter (SSID, namn, senast sedd)
-- platform: rest
+# Nyckel läses från /config/secrets.yaml via scripts/unifi-wifi-clients.py
+- platform: command_line
   name: UniFi WiFi klienter
   unique_id: unifi_wifi_clients_raw
-  resource: !secret unifi_api_url
-  headers:
-    X-API-KEY: !secret unifi_api_key
-    Accept: application/json
-  verify_ssl: false
+  command: python3 /config/scripts/unifi-wifi-clients.py
   scan_interval: 60
-  timeout: 20
-  value_template: >-
-    {{ value_json.data
-        | default([])
-        | selectattr('is_wired', 'eq', false)
-        | selectattr('essid', 'in', ['Bennani', 'Bennani_Guest', '2FarAway'])
-        | list
-        | count }}
+  timeout: 25
+  value_template: "{{ value_json.count | default(0) }}"
   json_attributes:
     - data
 
