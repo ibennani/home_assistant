@@ -127,7 +127,12 @@ def parse_leases(payload: dict) -> list[dict]:
         if not block:
             continue
         if isinstance(block, dict):
-            leases = block.get("lease", block.get("leases", []))
+            if "lease" in block:
+                leases = block.get("lease", [])
+            elif "leases" in block:
+                leases = block.get("leases", [])
+            else:
+                leases = list(block.values())
         elif isinstance(block, list):
             leases = block
         if leases:
@@ -139,7 +144,11 @@ def parse_leases(payload: dict) -> list[dict]:
     now = int(time.time())
 
     for lease in leases:
-        mac = normalize_mac(str(lease.get("mac", "")))
+        if not isinstance(lease, dict):
+            continue
+        mac = normalize_mac(
+            str(lease.get("mac") or lease.get("mac-address") or lease.get("hwaddr") or "")
+        )
         if not mac or mac in INFRA_MACS:
             continue
         expires = int(lease.get("expires", 0) or 0)
@@ -148,8 +157,10 @@ def parse_leases(payload: dict) -> list[dict]:
         active = str(lease.get("active", "1")).lower()
         if active in ("0", "false", "no", "off"):
             continue
-        hostname = str(lease.get("hostname", "") or "").strip()
-        ip = str(lease.get("ip", "") or "").strip()
+        hostname = str(
+            lease.get("hostname") or lease.get("host-name") or lease.get("name") or ""
+        ).strip()
+        ip = str(lease.get("ip") or lease.get("ip-address") or "").strip()
         if not ip:
             continue
         clients.append(
@@ -189,30 +200,10 @@ def main() -> None:
 
         payload = login_and_fetch(host, username, password)
         unwrapped = unwrap_payload(payload)
-        block = unwrapped.get("dhcp-server-leases") or unwrapped.get("dhcp_leases")
-        debug_path.write_text(
-            f"ok host={host} user={username} block_type={type(block).__name__} block_preview={json.dumps(block)[:400]}\n",
-            encoding="utf-8",
-        )
-        raw_leases = []
-        for key in ("dhcp_leases", "dhcp-server-leases"):
-            block = unwrapped.get(key)
-            if isinstance(block, dict):
-                raw_leases = block.get("lease", block.get("leases", []))
-            elif isinstance(block, list):
-                raw_leases = block
-            if raw_leases:
-                break
-        if isinstance(raw_leases, dict):
-            raw_count = 1
-        elif isinstance(raw_leases, list):
-            raw_count = len(raw_leases)
-        else:
-            raw_count = 0
         clients = parse_leases(payload)
         result = {"count": len(clients), "data": clients}
         debug_path.write_text(
-            f"ok host={host} user={username} raw={raw_count} leases={len(clients)} keys={list(unwrapped.keys())[:8]}\n",
+            f"ok host={host} user={username} leases={len(clients)}\n",
             encoding="utf-8",
         )
         emit(result, output_path)
