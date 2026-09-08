@@ -560,25 +560,15 @@
       default_entity_id: sensor.wifi_klienter_antal
       unit_of_measurement: st
       icon: mdi:wifi
-      variables:
-        wifi_allowed_ssids: ['Bennani', 'Bennani_Guest', '2FarAway']
-        wifi_ssid_labels:
-          Bennani: Bennani
-          Bennani_Guest: bennani gäst
-          2FarAway: 2faraway
-        wifi_name_map: !include wifi_client_names.yaml
-        wifi_infra_macs:
-          - f0:9f:c2:64:3d:cc
-          - 02:42:c0:a8:00:0a
-          - 02:42:c0:a8:00:0b
-          - 3c:e1:a1:b4:29:f4
       state: >-
+        {% set allowed = ['Bennani', 'Bennani_Guest', '2FarAway'] %}
+        {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
         {% set raw = state_attr('sensor.unifi_wifi_klienter', 'data') | default([]) %}
         {% if raw | length > 0 %}
           {{ raw
               | selectattr('is_wired', 'eq', false)
-              | selectattr('essid', 'in', wifi_allowed_ssids)
-              | rejectattr('mac', 'in', wifi_infra_macs)
+              | selectattr('essid', 'in', allowed)
+              | rejectattr('mac', 'in', infra)
               | list
               | count }}
         {% else %}
@@ -602,61 +592,32 @@
       unique_id: wifi_klienter_lista
       default_entity_id: sensor.wifi_klienter_lista
       icon: mdi:format-list-numbered
-      variables:
-        wifi_allowed_ssids: ['Bennani', 'Bennani_Guest', '2FarAway']
-        wifi_ssid_labels:
-          Bennani: Bennani
-          Bennani_Guest: bennani gäst
-          2FarAway: 2faraway
-        wifi_name_map: !include wifi_client_names.yaml
-        wifi_infra_macs:
-          - f0:9f:c2:64:3d:cc
-          - 02:42:c0:a8:00:0a
-          - 02:42:c0:a8:00:0b
-          - 3c:e1:a1:b4:29:f4
-      state: "{{ states('sensor.wifi_klienter_antal') }}"
+      state: "{{ states('sensor.wifi_klienter_antal') | int(0) }}"
       attributes:
         markdown: >-
-          {% macro client_label(mac, hostname) %}
-            {% set key = (mac | default('') | replace(':', '') | lower) %}
-            {% set mapped = wifi_name_map.names.get(key) %}
-            {% if mapped %}
-              {{ mapped }}
-            {% elif hostname %}
-              {{ hostname }}
-            {% else %}
-              {% set tracker = states.device_tracker
-                  | selectattr('attributes.mac', 'defined')
-                  | selectattr('attributes.mac', 'eq', mac)
-                  | list | first %}
-              {% if tracker and tracker.name and not tracker.name.startswith('unifi ') %}
-                {{ tracker.name }}
-              {% else %}
-                {{ mac }}
-              {% endif %}
-            {% endif %}
-          {% endmacro %}
-          {% macro connected_since(uptime) %}
-            {% set s = uptime | int(0) %}
-            {% if s < 60 %}
-              just nu
-            {% elif s < 3600 %}
-              {{ (s / 60) | int }} min sedan
-            {% elif s < 86400 %}
-              {{ (s / 3600) | int }} h sedan
-            {% else %}
-              {{ (s / 86400) | int }} d sedan
-            {% endif %}
-          {% endmacro %}
+          {% set allowed = ['Bennani', 'Bennani_Guest', '2FarAway'] %}
+          {% set ssid_labels = {'Bennani': 'Bennani', 'Bennani_Guest': 'bennani gäst', '2FarAway': '2faraway'} %}
+          {% set names = {
+            '0024e8e0c01b': 'HA-server (Dell)',
+            '1c697a6781e5': 'EliteGroup-dator'
+          } %}
+          {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
           {% set raw = state_attr('sensor.unifi_wifi_klienter', 'data') | default([]) %}
           {% if raw | length > 0 %}
             {% set clients = raw
                 | selectattr('is_wired', 'eq', false)
-                | selectattr('essid', 'in', wifi_allowed_ssids)
-                | rejectattr('mac', 'in', wifi_infra_macs)
+                | selectattr('essid', 'in', allowed)
+                | rejectattr('mac', 'in', infra)
                 | sort(attribute='uptime') %}
             {% for c in clients %}
-          **{{ loop.index }}.** {{ client_label(c.mac, c.hostname) }} — {{ wifi_ssid_labels.get(c.essid, c.essid) }} — {{ connected_since(c.uptime) }}
+              {% set key = (c.mac | default('') | replace(':', '') | lower) %}
+              {% set label = names.get(key) or c.hostname or c.mac %}
+              {% set s = c.uptime | int(0) %}
+              {% if s < 60 %}{% set since = 'just nu' %}
+              {% elif s < 3600 %}{% set since = ((s / 60) | int) ~ ' min sedan' %}
+              {% elif s < 86400 %}{% set since = ((s / 3600) | int) ~ ' h sedan' %}
+              {% else %}{% set since = ((s / 86400) | int) ~ ' d sedan' %}{% endif %}
+          **{{ loop.index }}.** {{ label }} — {{ ssid_labels.get(c.essid, c.essid) }} — {{ since }}
             {% else %}
           *Inga Wi-Fi-klienter på Bennani, bennani gäst eller 2faraway just nu.*
             {% endfor %}
@@ -675,9 +636,9 @@
                     state_attr('group.family_phones', 'entity_id') | default([]))
                 | sort(attribute='last_changed', reverse=true) %}
             {% for t in trackers %}
-          **{{ loop.index }}.** {{ t.name }} — *SSID okänd (UniFi API ej tillgänglig)* — {{ relative_time(t.last_changed) }} sedan
+          **{{ loop.index }}.** {{ t.name }} — *SSID okänd (lägg till UniFi API-nyckel)* — {{ relative_time(t.last_changed) }} sedan
             {% else %}
-          *UniFi API saknas — lägg till `unifi_api_url` och `unifi_api_key` i secrets.yaml.*
+          *Lägg till `unifi_api_key` i `/config/secrets.yaml` för SSID och exakta namn.*
             {% endfor %}
           {% endif %}
 

@@ -133,18 +133,6 @@
     - sensor.utomhus_baksidan_ljusstyrka
     - sensor.ljusstyrka_framsidan_maximal
 
-# UniFi — anslutna Wi-Fi-klienter (SSID, namn, senast sedd)
-# Nyckel läses från /config/secrets.yaml via scripts/unifi-wifi-clients.py
-- platform: command_line
-  name: UniFi WiFi klienter
-  unique_id: unifi_wifi_clients_raw
-  command: python3 /config/scripts/unifi-wifi-clients.py
-  scan_interval: 60
-  timeout: 25
-  value_template: "{{ value_json.count | default(0) }}"
-  json_attributes:
-    - data
-
 # Kollektivtrafik — SL Transport API (site 1923 Ekshäradsgatan, buss m.m.)
 - platform: rest
   name: Ekshäradsgatan SL buss
