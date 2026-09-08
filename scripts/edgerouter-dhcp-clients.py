@@ -189,6 +189,11 @@ def main() -> None:
 
         payload = login_and_fetch(host, username, password)
         unwrapped = unwrap_payload(payload)
+        block = unwrapped.get("dhcp-server-leases") or unwrapped.get("dhcp_leases")
+        debug_path.write_text(
+            f"ok host={host} user={username} block_type={type(block).__name__} block_preview={json.dumps(block)[:400]}\n",
+            encoding="utf-8",
+        )
         raw_leases = []
         for key in ("dhcp_leases", "dhcp-server-leases"):
             block = unwrapped.get(key)
