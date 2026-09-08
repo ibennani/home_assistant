@@ -566,7 +566,7 @@
           Bennani: Bennani
           Bennani_Guest: bennani gäst
           2FarAway: 2faraway
-        wifi_name_map: !include includes/wifi_client_names.yaml
+        wifi_name_map: !include wifi_client_names.yaml
         wifi_infra_macs:
           - f0:9f:c2:64:3d:cc
           - 02:42:c0:a8:00:0a
@@ -608,7 +608,7 @@
           Bennani: Bennani
           Bennani_Guest: bennani gäst
           2FarAway: 2faraway
-        wifi_name_map: !include includes/wifi_client_names.yaml
+        wifi_name_map: !include wifi_client_names.yaml
         wifi_infra_macs:
           - f0:9f:c2:64:3d:cc
           - 02:42:c0:a8:00:0a
@@ -629,7 +629,7 @@
                   | selectattr('attributes.mac', 'defined')
                   | selectattr('attributes.mac', 'eq', mac)
                   | list | first %}
-              {% if tracker and not tracker.name.startswith('unifi ') %}
+              {% if tracker and tracker.name and not tracker.name.startswith('unifi ') %}
                 {{ tracker.name }}
               {% else %}
                 {{ mac }}
