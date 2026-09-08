@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Hämtar aktiva UniFi-klienter med SSID (essid) från Network Controller API.
 
-Läser unifi_host, unifi_username, unifi_password och valfritt unifi_site
-från /config/secrets.yaml.
+Läser unifi_* från /config/secrets.yaml, eller faller tillbaka till
+UniFi-integrationens config entry i .storage/core.config_entries.
 
 Användning:
   python3 unifi-wlan-clients.py
@@ -39,6 +39,48 @@ def load_secrets() -> dict[str, str]:
             raw = raw[1:-1]
         values[key] = raw
     return values
+
+
+def load_unifi_from_config_entry() -> dict[str, str]:
+    """Läser UniFi-uppgifter från HA:s config entry (samma som integrationen)."""
+    path = Path("/config/.storage/core.config_entries")
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    for entry in payload.get("data", {}).get("entries", []):
+        if entry.get("domain") != "unifi":
+            continue
+        data = entry.get("data") or {}
+        host = str(data.get("host") or "").strip()
+        username = str(data.get("username") or "").strip()
+        password = str(data.get("password") or "").strip()
+        if not host or not username or not password:
+            continue
+        port = data.get("port", 443)
+        verify_ssl = data.get("verify_ssl", False)
+        return {
+            "unifi_host": host,
+            "unifi_username": username,
+            "unifi_password": password,
+            "unifi_site": str(data.get("site") or "default"),
+            "unifi_port": str(port),
+            "unifi_verify_ssl": "true" if verify_ssl else "false",
+        }
+    return {}
+
+
+def resolve_unifi_config() -> dict[str, str]:
+    secrets = load_secrets()
+    entry = load_unifi_from_config_entry()
+    merged = {**entry, **{k: v for k, v in secrets.items() if k.startswith("unifi_")}}
+    for key, value in entry.items():
+        current = merged.get(key, "")
+        if current in PLACEHOLDER_VALUES or not current:
+            merged[key] = value
+    return merged
 
 
 def normalize_mac(mac: str) -> str:
@@ -192,7 +234,7 @@ def fetch_clients(secrets: dict[str, str]) -> tuple[list[dict], str]:
     verify_ssl = secrets.get("unifi_verify_ssl", "false").lower() in ("1", "true", "yes")
 
     if username in PLACEHOLDER_VALUES or password in PLACEHOLDER_VALUES:
-        raise RuntimeError("missing unifi credentials in secrets.yaml")
+        raise RuntimeError("missing unifi credentials (secrets.yaml or UniFi integration)")
 
     try:
         port = int(port_raw)
@@ -224,7 +266,7 @@ def fetch_clients(secrets: dict[str, str]) -> tuple[list[dict], str]:
 
 def main() -> None:
     try:
-        secrets = load_secrets()
+        secrets = resolve_unifi_config()
         clients, info = fetch_clients(secrets)
         result = {"count": len(clients), "data": clients}
         DEBUG_PATH.write_text(f"ok {info} clients={len(clients)}\n", encoding="utf-8")
