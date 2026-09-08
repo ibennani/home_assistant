@@ -10102,3 +10102,29 @@
     - action: homeassistant.update_entity
       target:
         entity_id: sensor.edgerouter_dhcp_klienter
+  - action: script.wifi_ny_klient_kontroll
+- id: natverk_wifi_klient_poll
+  alias: 'Nätverk: Poll DHCP och UniFi för Wi-Fi-lista'
+  description: Hämtar DHCP/UniFi-data till JSON-filer och uppdaterar visningssensorn.
+  mode: single
+  triggers:
+  - trigger: time_pattern
+    minutes: "/1"
+  actions:
+  - action: script.wifi_synka_klienter
+- id: natverk_wifi_ny_klient_notis
+  alias: 'Nätverk: Notis vid ny Wi-Fi-klient'
+  description: Skickar mobilnotis när dhcp-new-device-check.py hittar en ny MAC i listan.
+  mode: queued
+  triggers:
+  - trigger: event
+    event_type: wifi_ny_klient
+  conditions:
+  - condition: template
+    value_template: "{{ trigger.event.data.meddelande | default('', true) | trim | length > 0 }}"
+  actions:
+  - action: script.mobilnotis
+    data:
+      mottagare: mobile_app_ilias_s23_ultra
+      meddelande: "{{ trigger.event.data.meddelande }}"
+      prefix_hemmet: true

@@ -62,7 +62,9 @@ def merge_wifi_clients(
         ip = str(client.get("ip") or "").strip()
         if mac in seen_macs:
             continue
-        if ip and ip in seen_ips:
+        if not ip:
+            continue
+        if ip in seen_ips:
             continue
         merged.append(
             {

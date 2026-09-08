@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -23,6 +24,7 @@ INFRA_MACS = {
     "02:42:c0:a8:00:0a",
     "02:42:c0:a8:00:0b",
     "3c:e1:a1:b4:29:f4",
+    "60:6d:c7:5b:9e:85",
 }
 LAST_PATH = Path("/config/www/edgerouter-dhcp-last.json")
 UNIFI_LAST_PATH = Path("/config/www/unifi-wlan-last.json")
@@ -31,7 +33,6 @@ DEBUG_PATH = Path("/config/www/dhcp-new-device-debug.txt")
 EXCLUSIONS_PATH = Path("/config/includes/wifi_client_exclusions.yaml")
 NAMES_PATH = Path("/config/includes/wifi_client_names.yaml")
 SECRETS_PATH = Path("/config/secrets.yaml")
-NOTIFY_TARGET = "mobile_app_ilias_s23_ultra"
 
 
 def normalize_mac(mac: str) -> str:
@@ -107,33 +108,42 @@ def label_for(client: dict, names: dict[str, str]) -> str:
 
 
 def send_mobilnotis(meddelande: str, secrets: dict[str, str]) -> bool:
+    return fire_event(
+        "wifi_ny_klient",
+        {"meddelande": meddelande},
+        secrets,
+    )
+
+
+def fire_event(event_type: str, data: dict, secrets: dict[str, str]) -> bool:
     url = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
     token = secrets.get("ha_long_lived_token", "")
-    if not token:
-        return False
-    payload = json.dumps(
-        {
-            "entity_id": "script.mobilnotis",
-            "variables": {
-                "mottagare": NOTIFY_TARGET,
-                "meddelande": meddelande,
-                "prefix_hemmet": True,
+    if token:
+        payload = json.dumps(data).encode()
+        request = urllib.request.Request(
+            f"{url}/api/events/{event_type}",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
             },
-        }
-    ).encode()
-    request = urllib.request.Request(
-        f"{url}/api/services/script/turn_on",
-        data=payload,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=8):
+                return True
+        except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError):
+            pass
     try:
-        with urllib.request.urlopen(request, timeout=8):
-            return True
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError):
+        result = subprocess.run(
+            ["ha", "events", "fire", event_type, json.dumps(data)],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        return result.returncode == 0
+    except (OSError, subprocess.SubprocessError):
         return False
 
 
@@ -148,7 +158,11 @@ def run_check() -> None:
 
     dhcp_clients = load_json_list(LAST_PATH)
     unifi_clients = load_json_list(UNIFI_LAST_PATH)
-    tracked = merge_wifi_clients(dhcp_clients, unifi_clients, skip)
+    tracked = [
+        client
+        for client in merge_wifi_clients(dhcp_clients, unifi_clients, skip)
+        if str(client.get("ip") or "").strip()
+    ]
     current_macs = {normalize_mac(client["mac"]) for client in tracked if client.get("mac")}
 
     known = load_known()
@@ -164,6 +178,7 @@ def run_check() -> None:
 
     new_macs = current_macs - known
     notified = 0
+    newly_known: set[str] = set()
     for client in tracked:
         mac = normalize_mac(client.get("mac", ""))
         if mac not in new_macs:
@@ -174,8 +189,9 @@ def run_check() -> None:
         meddelande = f"Ny enhet på nätet: {label} — {net} — {ip} ({mac})"
         if send_mobilnotis(meddelande, secrets):
             notified += 1
+            newly_known.add(mac)
 
-    save_known(known | current_macs)
+    save_known(known | newly_known)
     DEBUG_PATH.write_text(
         f"new={len(new_macs)} notified={notified} tracked={len(tracked)} token={'yes' if secrets.get('ha_long_lived_token') else 'no'}\n",
         encoding="utf-8",

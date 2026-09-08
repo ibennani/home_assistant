@@ -6191,12 +6191,8 @@ views:
   - type: vertical-stack
     cards:
     - type: markdown
-      content: >
-        ## {{ states('sensor.wifi_klienter_antal') | int(0) }}
-        {% set n = states('sensor.wifi_klienter_antal') | int(0) %}
-        {% if n == 1 %}enhet{% else %}enheter{% endif %} anslutna på nätet
-
-        {{ state_attr('sensor.wifi_klienter_lista', 'markdown') }}
+      content: |
+        {{ state_attr('sensor.wifi_klienter_visning', 'markdown') | default('*Hämtar klienter …*', true) }}
 - title: Inställningar
   visible:
   - user: 19d971cd430d457e90fe70b83c9d5df1

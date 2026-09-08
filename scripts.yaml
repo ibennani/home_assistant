@@ -2413,6 +2413,26 @@ dhcp_ny_enhet_notis:
   - action: homeassistant.update_entity
     target:
       entity_id: sensor.edgerouter_dhcp_klienter
+wifi_synka_klienter:
+  alias: 'Nätverk: Synka Wi-Fi-klientdata'
+  description: Pollar EdgeRouter och UniFi, uppdaterar JSON-filer och kör ny-enhet-kontroll.
+  mode: single
+  sequence:
+  - parallel:
+    - action: shell_command.edgerouter_dhcp_poll
+    - action: shell_command.unifi_wlan_poll
+  - action: homeassistant.update_entity
+    target:
+      entity_id:
+      - sensor.edgerouter_dhcp_klienter
+      - sensor.unifi_wlan_klienter
+      - sensor.wifi_klienter_visning
+  - action: shell_command.wifi_ny_klient_kontroll
+wifi_ny_klient_kontroll:
+  alias: 'Nätverk: Kontrollera nya Wi-Fi-klienter'
+  mode: single
+  sequence:
+  - action: shell_command.wifi_ny_klient_kontroll
 sl_hamta_site_avgangar:
   alias: SL hämta avgångar för hållplats
   description: Proxy mot SL Transport API — används av sl-nearby-stops-card.

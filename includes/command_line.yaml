@@ -1,9 +1,9 @@
 - sensor:
     name: EdgeRouter DHCP klienter
     unique_id: edgerouter_dhcp_clients_raw
-    command: python3 /config/scripts/edgerouter-dhcp-clients.py
-    scan_interval: 30
-    command_timeout: 15
+    command: python3 /config/scripts/read-json-sensor.py /config/www/edgerouter-dhcp-last.json
+    scan_interval: 15
+    command_timeout: 10
     value_template: "{{ value_json.count | default(0) }}"
     json_attributes:
       - data
@@ -11,9 +11,20 @@
 - sensor:
     name: UniFi WLAN klienter
     unique_id: unifi_wlan_clients_raw
-    command: python3 /config/scripts/unifi-wlan-clients.py
-    scan_interval: 30
-    command_timeout: 15
+    command: python3 /config/scripts/read-json-sensor.py /config/www/unifi-wlan-last.json
+    scan_interval: 15
+    command_timeout: 10
     value_template: "{{ value_json.count | default(0) }}"
     json_attributes:
       - data
+
+- sensor:
+    name: Wi-Fi klienter visning
+    unique_id: wifi_klienter_visning_raw
+    command: python3 /config/scripts/wifi-clients-display.py
+    scan_interval: 15
+    command_timeout: 10
+    value_template: "{{ value_json.count | default(0) }}"
+    json_attributes:
+      - count
+      - markdown
