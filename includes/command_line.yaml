@@ -7,3 +7,13 @@
     value_template: "{{ value_json.count | default(0) }}"
     json_attributes:
       - data
+
+- sensor:
+    name: UniFi WLAN klienter
+    unique_id: unifi_wlan_clients_raw
+    command: python3 /config/scripts/unifi-wlan-clients.py
+    scan_interval: 30
+    command_timeout: 15
+    value_template: "{{ value_json.count | default(0) }}"
+    json_attributes:
+      - data
