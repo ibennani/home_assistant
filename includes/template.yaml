@@ -561,7 +561,7 @@
       unit_of_measurement: st
       icon: mdi:wifi
       state: >-
-        {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
+        {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4', '60:6d:c7:5b:9e:85'] %}
         {% set hidden = [
           '54:60:09:d0:b9:da', '54:60:09:fa:54:16', '54:60:09:fa:da:ca', '54:60:09:d0:ad:ca', '54:60:09:fa:24:f2',
           '44:07:0b:93:e3:ab', '44:07:0b:68:73:38', '44:07:0b:b0:19:74', '7c:2e:bd:50:c5:a0', '20:df:b9:7a:2b:48',
@@ -578,6 +578,7 @@
           {% if u.is_wired or (u.mac | default('') | lower) in skip %}{% continue %}{% endif %}
           {% set umac = u.mac | default('') | lower %}
           {% set uip = u.ip | default('') %}
+          {% if not uip %}{% continue %}{% endif %}
           {% if umac in seen_ns.macs %}{% continue %}{% endif %}
           {% if uip and uip in seen_ns.ips %}{% continue %}{% endif %}
           {% set merge_ns.items = merge_ns.items + [{'mac': umac, 'ip': uip, 'hostname': u.hostname | default(''), 'essid': u.essid | default(''), 'is_guest': u.is_guest | default(false)}] %}
@@ -628,7 +629,7 @@
             'a851ab2dbacc': 'Apple TV',
             '105fad770a65': 'HP-skrivare'
           } %}
-          {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
+          {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4', '60:6d:c7:5b:9e:85'] %}
           {% set hidden = [
             '54:60:09:d0:b9:da', '54:60:09:fa:54:16', '54:60:09:fa:da:ca', '54:60:09:d0:ad:ca', '54:60:09:fa:24:f2',
             '44:07:0b:93:e3:ab', '44:07:0b:68:73:38', '44:07:0b:b0:19:74', '7c:2e:bd:50:c5:a0', '20:df:b9:7a:2b:48',
@@ -645,6 +646,7 @@
             {% if u.is_wired or (u.mac | default('') | lower) in skip %}{% continue %}{% endif %}
             {% set umac = u.mac | default('') | lower %}
             {% set uip = u.ip | default('') %}
+            {% if not uip %}{% continue %}{% endif %}
             {% if umac in seen_ns.macs %}{% continue %}{% endif %}
             {% if uip and uip in seen_ns.ips %}{% continue %}{% endif %}
             {% set merge_ns.items = merge_ns.items + [{'mac': umac, 'ip': uip, 'hostname': u.hostname | default(''), 'essid': u.essid | default(''), 'is_guest': u.is_guest | default(false)}] %}
@@ -730,7 +732,7 @@
             {% endfor %}
           {% endif %}
           {% if out.lines | length > 0 %}
-          {{ out.lines | join('<br>\n') }}
+          {{ out.lines | join('\n\n') }}
           {% elif raw is iterable and raw is not string %}
           *Inga Wi-Fi-klienter just nu.*
           {% else %}
