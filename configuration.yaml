@@ -96,6 +96,7 @@ shell_command:
   edgerouter_dhcp_poll: python3 /config/scripts/edgerouter-dhcp-clients.py
   unifi_wlan_poll: python3 /config/scripts/unifi-wlan-clients.py
   wifi_ny_klient_kontroll: python3 /config/scripts/dhcp-new-device-check.py
+  edgerouter_dhcp_inspect: python3 /config/scripts/edgerouter-dhcp-inspect.py
 
 #######################################################
 # Media
