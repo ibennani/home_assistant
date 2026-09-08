@@ -66,6 +66,16 @@ family_phones:
   - device_tracker.annelies_iphone  # Isabelles mobil 
   - device_tracker.erik_s23 # Eriks mobil
 
+wifi_klient_undantag:
+  name: Wi-Fi-infrastruktur (exkluderas från klientlista)
+  entities:
+    - device_tracker.ap_nedre_trappan
+    - device_tracker.ap_ovre_trappan
+    - device_tracker.us8p60
+    - device_tracker.unifi_f0_9f_c2_64_3d_cc_default
+    - device_tracker.unifi_02_42_c0_a8_00_0a_default
+    - device_tracker.unifi_02_42_c0_a8_00_0b_default
+
 
 rullgardiner_framsidan:
   name: "Rullgardiner mot framsidan"

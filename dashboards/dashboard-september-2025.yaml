@@ -6197,14 +6197,8 @@ views:
         {%- if n == 1 %} enhet{% else %} enheter{% endif %} anslutna via Wi-Fi
 
         {{ state_attr('sensor.wifi_klienter_lista', 'markdown') }}
-    - type: entities
-      title: Status
-      show_header_toggle: false
-      entities:
-      - entity: sensor.unifi_wifi_klienter
-        name: UniFi API
-      - entity: sensor.wifi_klienter_antal
-        name: Antal Wi-Fi-klienter
+
+        *Gästnät visas som «bennani gäst». Exakt SSID (Bennani / 2faraway) kräver UniFi API — inte EdgeRouter.*
 - title: Inställningar
   visible:
   - user: 19d971cd430d457e90fe70b83c9d5df1
