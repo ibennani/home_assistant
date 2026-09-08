@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Jämför DHCP-klienter mot kända MAC och notifierar helt nya enheter.
+"""Jämför nätverksklienter (DHCP + UniFi Wi-Fi) mot kända MAC och notifierar nya.
 
-Läser senaste poll från /config/www/edgerouter-dhcp-last.json.
+Läser /config/www/edgerouter-dhcp-last.json och /config/www/unifi-wlan-last.json.
 Sparar kända MAC i /config/known_dhcp_macs.json (skapas på HA-servern).
 
 Första körningen: registrerar alla nuvarande enheter (utom undantag) utan notis.
@@ -10,9 +10,13 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from wifi_clients_merge import load_json_list, merge_wifi_clients
 
 INFRA_MACS = {
     "f0:9f:c2:64:3d:cc",
@@ -21,6 +25,7 @@ INFRA_MACS = {
     "3c:e1:a1:b4:29:f4",
 }
 LAST_PATH = Path("/config/www/edgerouter-dhcp-last.json")
+UNIFI_LAST_PATH = Path("/config/www/unifi-wlan-last.json")
 KNOWN_PATH = Path("/config/known_dhcp_macs.json")
 DEBUG_PATH = Path("/config/www/dhcp-new-device-debug.txt")
 EXCLUSIONS_PATH = Path("/config/includes/wifi_client_exclusions.yaml")
@@ -141,22 +146,9 @@ def run_check() -> None:
     skip = INFRA_MACS | load_mac_list_yaml(EXCLUSIONS_PATH)
     names = load_name_map(NAMES_PATH)
 
-    if not LAST_PATH.exists():
-        DEBUG_PATH.write_text("missing edgerouter-dhcp-last.json\n", encoding="utf-8")
-        return
-
-    try:
-        payload = json.loads(LAST_PATH.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        DEBUG_PATH.write_text("invalid edgerouter-dhcp-last.json\n", encoding="utf-8")
-        return
-
-    clients = payload.get("data", [])
-    tracked = [
-        client
-        for client in clients
-        if isinstance(client, dict) and normalize_mac(client.get("mac", "")) not in skip
-    ]
+    dhcp_clients = load_json_list(LAST_PATH)
+    unifi_clients = load_json_list(UNIFI_LAST_PATH)
+    tracked = merge_wifi_clients(dhcp_clients, unifi_clients, skip)
     current_macs = {normalize_mac(client["mac"]) for client in tracked if client.get("mac")}
 
     known = load_known()
@@ -165,7 +157,7 @@ def run_check() -> None:
     if first_run:
         save_known(current_macs)
         DEBUG_PATH.write_text(
-            f"init known={len(current_macs)} macs\n",
+            f"init known={len(current_macs)} macs (dhcp+unifi)\n",
             encoding="utf-8",
         )
         return
@@ -178,13 +170,14 @@ def run_check() -> None:
             continue
         label = label_for(client, names)
         ip = client.get("ip", "")
-        meddelande = f"Ny enhet på nätet: {label} — {ip} ({mac})"
+        net = client.get("essid") or "Wi-Fi"
+        meddelande = f"Ny enhet på nätet: {label} — {net} — {ip} ({mac})"
         if send_mobilnotis(meddelande, secrets):
             notified += 1
 
     save_known(known | current_macs)
     DEBUG_PATH.write_text(
-        f"new={len(new_macs)} notified={notified} token={'yes' if secrets.get('ha_long_lived_token') else 'no'}\n",
+        f"new={len(new_macs)} notified={notified} tracked={len(tracked)} token={'yes' if secrets.get('ha_long_lived_token') else 'no'}\n",
         encoding="utf-8",
     )
 

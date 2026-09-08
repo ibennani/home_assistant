@@ -10,6 +10,7 @@ Användning:
 from __future__ import annotations
 
 import http.cookiejar
+import importlib.util
 import json
 import re
 import ssl
@@ -264,6 +265,18 @@ def fetch_clients(secrets: dict[str, str]) -> tuple[list[dict], str]:
     raise RuntimeError("UniFi login failed")
 
 
+def run_new_device_check() -> None:
+    path = Path("/config/scripts/dhcp-new-device-check.py")
+    if not path.exists():
+        return
+    spec = importlib.util.spec_from_file_location("dhcp_new_device_check", path)
+    if spec is None or spec.loader is None:
+        return
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.run_check()
+
+
 def main() -> None:
     try:
         secrets = resolve_unifi_config()
@@ -271,6 +284,7 @@ def main() -> None:
         result = {"count": len(clients), "data": clients}
         DEBUG_PATH.write_text(f"ok {info} clients={len(clients)}\n", encoding="utf-8")
         emit(result)
+        run_new_device_check()
     except Exception as exc:
         DEBUG_PATH.write_text(f"error: {exc!r}\n", encoding="utf-8")
         emit(empty_result())

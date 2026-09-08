@@ -570,15 +570,20 @@
           '00:17:88:2b:61:e2', '00:23:c1:1d:2b:1b'
         ] %}
         {% set skip = infra + hidden %}
-        {% set raw = [] %}
-        {% if states('sensor.edgerouter_dhcp_klienter') not in ['unknown', 'unavailable', 'none', ''] %}
-          {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
-        {% endif %}
-        {% if raw is not none and raw is iterable and raw is not string and (raw | length) > 0 %}
-          {{ raw
-              | rejectattr('mac', 'in', skip)
-              | list
-              | count }}
+        {% set dhcp_raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
+        {% set dhcp = dhcp_raw | rejectattr('mac', 'in', skip) | list if dhcp_raw is iterable and dhcp_raw is not string else [] %}
+        {% set merge_ns = namespace(items=dhcp) %}
+        {% set seen_ns = namespace(macs=dhcp | map(attribute='mac') | map('lower') | list, ips=dhcp | map(attribute='ip') | list) %}
+        {% for u in state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
+          {% if u.is_wired or (u.mac | default('') | lower) in skip %}{% continue %}{% endif %}
+          {% set umac = u.mac | default('') | lower %}
+          {% set uip = u.ip | default('') %}
+          {% if umac in seen_ns.macs %}{% continue %}{% endif %}
+          {% if uip and uip in seen_ns.ips %}{% continue %}{% endif %}
+          {% set merge_ns.items = merge_ns.items + [{'mac': umac, 'ip': uip, 'hostname': u.hostname | default(''), 'essid': u.essid | default(''), 'is_guest': u.is_guest | default(false)}] %}
+        {% endfor %}
+        {% if merge_ns.items | length > 0 %}
+          {{ merge_ns.items | length }}
         {% else %}
           {{ states.device_tracker
               | selectattr('entity_id', 'search', 'unifi_')
@@ -618,6 +623,7 @@
             '502e91c80b88': 'Annas mobil',
             '00b5d0f8d3c5': 'Annas Galaxy Tab S4',
             'f4c88a7535fa': 'Eriks dator',
+            '1a09413c664f': 'Eriks mobil',
             'c41375708d99': 'Ilias Lenovo',
             'a851ab2dbacc': 'Apple TV',
             '105fad770a65': 'HP-skrivare'
@@ -631,16 +637,31 @@
           '00:17:88:2b:61:e2', '00:23:c1:1d:2b:1b'
           ] %}
           {% set skip = infra + hidden %}
-          {% set raw = [] %}
-          {% if states('sensor.edgerouter_dhcp_klienter') not in ['unknown', 'unavailable', 'none', ''] %}
-            {% set raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
-          {% endif %}
+          {% set dhcp_raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
+          {% set dhcp = dhcp_raw | rejectattr('mac', 'in', skip) | list if dhcp_raw is iterable and dhcp_raw is not string else [] %}
+          {% set merge_ns = namespace(items=dhcp) %}
+          {% set seen_ns = namespace(macs=dhcp | map(attribute='mac') | map('lower') | list, ips=dhcp | map(attribute='ip') | list) %}
+          {% for u in state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
+            {% if u.is_wired or (u.mac | default('') | lower) in skip %}{% continue %}{% endif %}
+            {% set umac = u.mac | default('') | lower %}
+            {% set uip = u.ip | default('') %}
+            {% if umac in seen_ns.macs %}{% continue %}{% endif %}
+            {% if uip and uip in seen_ns.ips %}{% continue %}{% endif %}
+            {% set merge_ns.items = merge_ns.items + [{'mac': umac, 'ip': uip, 'hostname': u.hostname | default(''), 'essid': u.essid | default(''), 'is_guest': u.is_guest | default(false)}] %}
+          {% endfor %}
+          {% set raw = merge_ns.items %}
           {% set out = namespace(lines=[]) %}
-          {% if raw is not none and raw is iterable and raw is not string and (raw | length) > 0 %}
-            {% for c in raw | rejectattr('mac', 'in', skip) | list %}
+          {% if raw | length > 0 %}
+            {% for c in raw %}
               {% set key = c.mac | replace(':', '') | lower %}
               {% set label = names.get(key) or c.hostname or c.mac %}
               {% set net = namespace(value='nätverk') %}
+              {% if c.essid %}
+                {% set net.value = c.essid %}
+              {% elif c.is_guest %}
+                {% set net.value = 'gäst' %}
+              {% endif %}
+              {% if net.value == 'nätverk' %}
               {% for u in state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
                 {% set umac = u.mac | default('') | lower %}
                 {% set uip = u.ip | default('') %}
@@ -656,6 +677,7 @@
                   {% endif %}
                 {% endif %}
               {% endfor %}
+              {% endif %}
               {% if net.value == 'nätverk' %}
                 {% for t in states.device_tracker | selectattr('entity_id', 'search', 'unifi_') %}
                   {% if (state_attr(t.entity_id, 'mac') | default('') | lower) == c.mac %}
@@ -709,8 +731,8 @@
           {% endif %}
           {% if out.lines | length > 0 %}
           {{ out.lines | join('<br>\n') }}
-          {% elif raw is not none and raw is iterable and raw is not string %}
-          *Inga klienter med aktiv DHCP-lease just nu.*
+          {% elif raw is iterable and raw is not string %}
+          *Inga Wi-Fi-klienter just nu.*
           {% else %}
           *EdgeRouter-uppgifter saknas — lägg till i `/config/secrets.yaml`.*
           {% endif %}
