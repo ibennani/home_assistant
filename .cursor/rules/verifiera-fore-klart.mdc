@@ -69,6 +69,10 @@ Avsluta alltid med en kort **Verifieringsrapport**:
 
 Uppgiften är klar först när resultatet är **OK**, eller **DELVIS** med tydlig förklaring och användarens godkännande av kvarvarande risk.
 
-## 5. Referens
+## 5. Repairs (obligatoriskt efter deploy)
+
+Se [kontrollera-repairs.mdc](kontrollera-repairs.mdc): kör `ha_get_system_health(include="config_check,repairs")` och åtgärda aktiva **error**-repairs som hänger ihop med ändringen innan du säger att uppgiften är klar.
+
+## 6. Referens
 
 Detaljerad guide: [docs/verifiering-och-test.md](../docs/verifiering-och-test.md)

@@ -2415,25 +2415,31 @@ dhcp_ny_enhet_notis:
       entity_id: sensor.edgerouter_dhcp_klienter
 wifi_synka_klienter:
   alias: 'Nätverk: Synka Wi-Fi-klientdata'
-  description: Pollar EdgeRouter och UniFi, uppdaterar JSON-filer och kör ny-enhet-kontroll.
+  description: Pollar EdgeRouter och UniFi via command_line-sensorer och uppdaterar visningen.
   mode: single
   sequence:
   - parallel:
-    - action: shell_command.edgerouter_dhcp_poll
-    - action: shell_command.unifi_wlan_poll
-  - action: shell_command.edgerouter_dhcp_inspect
+    - action: homeassistant.update_entity
+      target:
+        entity_id: sensor.edgerouter_dhcp_klienter
+    - action: homeassistant.update_entity
+      target:
+        entity_id: sensor.unifi_wlan_klienter
   - action: homeassistant.update_entity
     target:
-      entity_id:
-      - sensor.edgerouter_dhcp_klienter
-      - sensor.unifi_wlan_klienter
-      - sensor.wifi_klienter_visning
-  - action: shell_command.wifi_ny_klient_kontroll
+      entity_id: sensor.wifi_klienter_visning
 wifi_ny_klient_kontroll:
   alias: 'Nätverk: Kontrollera nya Wi-Fi-klienter'
+  description: Uppdaterar DHCP/UniFi-sensorer (ny-enhet-kontroll körs i poll-scripten).
   mode: single
   sequence:
-  - action: shell_command.wifi_ny_klient_kontroll
+  - parallel:
+    - action: homeassistant.update_entity
+      target:
+        entity_id: sensor.edgerouter_dhcp_klienter
+    - action: homeassistant.update_entity
+      target:
+        entity_id: sensor.unifi_wlan_klienter
 sl_hamta_site_avgangar:
   alias: SL hämta avgångar för hållplats
   description: Proxy mot SL Transport API — används av sl-nearby-stops-card.
