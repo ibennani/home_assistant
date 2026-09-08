@@ -133,6 +133,10 @@ def send_mobilnotis(meddelande: str, secrets: dict[str, str]) -> bool:
 
 
 def main() -> None:
+    run_check()
+
+
+def run_check() -> None:
     secrets = load_secrets()
     skip = INFRA_MACS | load_mac_list_yaml(EXCLUSIONS_PATH)
     names = load_name_map(NAMES_PATH)

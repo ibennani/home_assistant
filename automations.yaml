@@ -10080,7 +10080,7 @@
       title: Pendeltåg Farsta strand
 - id: natverk_dhcp_ny_okand_enhet
   alias: 'Nätverk: Ny okänd enhet på DHCP'
-  description: Notis när en MAC som inte setts tidigare dyker upp i DHCP-listan. Undantagna enheter ignoreras.
+  description: Notis när en MAC som inte setts tidigare dyker upp i DHCP-listan. Kontrollen körs vid varje DHCP-poll.
   triggers:
   - trigger: state
     entity_id: sensor.edgerouter_dhcp_klienter

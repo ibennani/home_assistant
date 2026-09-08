@@ -2407,10 +2407,12 @@ cursor_klar_notis:
       vibration: 1000, 300, 1000, 300, 1000
 dhcp_ny_enhet_notis:
   alias: 'Nätverk: Notis för nya DHCP-enheter'
-  description: Jämför DHCP-lista mot kända MAC och skickar mobilnotis för helt nya enheter.
+  description: Uppdaterar DHCP-sensorn (kör även ny-enhet-kontroll i samma poll).
   mode: queued
   sequence:
-  - action: shell_command.dhcp_ny_enhet_kontrollera
+  - action: homeassistant.update_entity
+    target:
+      entity_id: sensor.edgerouter_dhcp_klienter
 sl_hamta_site_avgangar:
   alias: SL hämta avgångar för hållplats
   description: Proxy mot SL Transport API — används av sl-nearby-stops-card.
