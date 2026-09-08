@@ -176,7 +176,7 @@ battery_levels:
     - sensor.skafferiet_temperatur_battery
     - sensor.kylskapet_koket_temperatur_battery
     - sensor.frysen_koket_temp_battery
-    - sensor.eriks_rum_temperatur_battery_2
+    - sensor.eriks_rum_temperatur_battery
     - sensor.badrummet_temperatur_battery
     - sensor.tvattstugan_temperatur_battery
     - sensor.lumi_weather_battery
@@ -185,13 +185,13 @@ battery_levels:
 # Rörelsesensorer
     - sensor.balkongen_rorelse_battery
     - sensor.baksidan_rorelse_wc_fonster_battery
-    - sensor.ilias_rum_rorelse_battery_2
+    - sensor.ilias_rum_rorelse_battery
     - sensor.ilias_rum_skrivbord_rorelse_battery
     - sensor.vardagsrummet_rorelse_battery
     - sensor.vardagsrummet_soffan_rorelse_battery
-    - sensor.sovrummet_rorelse_battery_2
+    - sensor.sovrummet_rorelse_battery
     - sensor.wc_rorelse_battery
-    - sensor.annas_rum_rorelse_battery_2
+    - sensor.annas_rum_rorelse_battery
     - sensor.annas_rum_skrivbord_rorelse_battery
     - sensor.koket_arbetsbanken_rorelse_battery
     - sensor.koket_rorelse_battery
@@ -200,8 +200,8 @@ battery_levels:
     - sensor.eriks_rum_rorelse_battery
     - sensor.nedre_trappan_battery
     - sensor.ovre_trappan_rorelse_battery
-    - sensor.badrummet_rorelse_battery_2
-    - sensor.tvattstugan_rorelse_battery_2
+    - sensor.badrummet_rorelse_battery
+    - sensor.tvattstugan_rorelse_battery
     - sensor.rorelse_i_brevladan_battery
     - sensor.slim_multi_sensor_pir_temperature_illumination_battery_level
 # Fönster och dörrsensorer
