@@ -554,49 +554,37 @@
             | list
             | count }}
 
-    # ---- Wi-Fi-klienter (UniFi) ---------------------------------------------
+    # ---- Wi-Fi-klienter (UniFi device_tracker, utan API) --------------------
     - name: Wi-Fi-klienter antal
       unique_id: wifi_klienter_antal
       default_entity_id: sensor.wifi_klienter_antal
       unit_of_measurement: st
       icon: mdi:wifi
       state: >-
-        {% set allowed = ['Bennani', 'Bennani_Guest', '2FarAway'] %}
-        {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
-        {% set raw = state_attr('sensor.unifi_wifi_klienter', 'data') | default([]) %}
-        {% if raw | length > 0 %}
-          {{ raw
-              | selectattr('is_wired', 'eq', false)
-              | selectattr('essid', 'in', allowed)
-              | rejectattr('mac', 'in', infra)
-              | list
-              | count }}
-        {% else %}
-          {{ states.device_tracker
-              | selectattr('entity_id', 'search', 'unifi_')
-              | selectattr('state', 'eq', 'home')
-              | rejectattr('entity_id', 'in',
-                  ['device_tracker.ap_nedre_trappan',
-                   'device_tracker.ap_ovre_trappan',
-                   'device_tracker.us8p60',
-                   'device_tracker.unifi_f0_9f_c2_64_3d_cc_default',
-                   'device_tracker.unifi_02_42_c0_a8_00_0a_default',
-                   'device_tracker.unifi_02_42_c0_a8_00_0b_default'])
-              | rejectattr('entity_id', 'in',
-                  state_attr('group.family_phones', 'entity_id') | default([]))
-              | list
-              | count }}
-        {% endif %}
+        {{ states.device_tracker
+            | selectattr('entity_id', 'search', 'unifi_')
+            | selectattr('state', 'eq', 'home')
+            | rejectattr('entity_id', 'in',
+                (state_attr('group.wifi_klient_undantag', 'entity_id') | default([]))
+                + (state_attr('group.family_phones', 'entity_id') | default([])))
+            | list
+            | count }}
 
     - name: Wi-Fi-klienter lista
       unique_id: wifi_klienter_lista
       default_entity_id: sensor.wifi_klienter_lista
       icon: mdi:format-list-numbered
-      state: "{{ states('sensor.wifi_klienter_antal') | int(0) }}"
+      state: >-
+        {{ states.device_tracker
+            | selectattr('entity_id', 'search', 'unifi_')
+            | selectattr('state', 'eq', 'home')
+            | rejectattr('entity_id', 'in',
+                (state_attr('group.wifi_klient_undantag', 'entity_id') | default([]))
+                + (state_attr('group.family_phones', 'entity_id') | default([])))
+            | list
+            | count }}
       attributes:
         markdown: >-
-          {% set allowed = ['Bennani', 'Bennani_Guest', '2FarAway'] %}
-          {% set ssid_labels = {'Bennani': 'Bennani', 'Bennani_Guest': 'bennani gäst', '2FarAway': '2faraway'} %}
           {% set names = {
             '0024e8e0c01b': 'HA-server (Dell)',
             '1c697a6781e5': 'EliteGroup-dator',
@@ -623,46 +611,27 @@
             'a851ab2dbacc': 'Apple TV',
             '105fad770a65': 'HP-skrivare'
           } %}
-          {% set infra = ['f0:9f:c2:64:3d:cc', '02:42:c0:a8:00:0a', '02:42:c0:a8:00:0b', '3c:e1:a1:b4:29:f4'] %}
-          {% set raw = state_attr('sensor.unifi_wifi_klienter', 'data') | default([]) %}
-          {% if raw | length > 0 %}
-            {% set clients = raw
-                | selectattr('is_wired', 'eq', false)
-                | selectattr('essid', 'in', allowed)
-                | rejectattr('mac', 'in', infra)
-                | sort(attribute='uptime') %}
-            {% for c in clients %}
-              {% set key = (c.mac | default('') | replace(':', '') | lower) %}
-              {% set label = names.get(key) or c.hostname or c.mac %}
-              {% set s = c.uptime | int(0) %}
-              {% if s < 60 %}{% set since = 'just nu' %}
-              {% elif s < 3600 %}{% set since = ((s / 60) | int) ~ ' min sedan' %}
-              {% elif s < 86400 %}{% set since = ((s / 3600) | int) ~ ' h sedan' %}
-              {% else %}{% set since = ((s / 86400) | int) ~ ' d sedan' %}{% endif %}
-          **{{ loop.index }}.** {{ label }} — {{ ssid_labels.get(c.essid, c.essid) }} — {{ since }}
-            {% else %}
-          *Inga Wi-Fi-klienter på Bennani, bennani gäst eller 2faraway just nu.*
-            {% endfor %}
+          {% set exclude = (state_attr('group.wifi_klient_undantag', 'entity_id') | default([]))
+              + (state_attr('group.family_phones', 'entity_id') | default([])) %}
+          {% set trackers = states.device_tracker
+              | selectattr('entity_id', 'search', 'unifi_')
+              | selectattr('state', 'eq', 'home')
+              | rejectattr('entity_id', 'in', exclude)
+              | sort(attribute='last_changed', reverse=true)
+              | list %}
+          {% for t in trackers %}
+            {% set mac = state_attr(t.entity_id, 'mac') | default('', true) %}
+            {% set key = mac | replace(':', '') | lower %}
+            {% set label = names.get(key)
+                or (t.name if (t.name and not t.name.startswith('unifi ')) else '')
+                or mac
+                or t.entity_id %}
+            {% set ip = state_attr(t.entity_id, 'ip') | default('—', true) %}
+            {% set nat = 'bennani gäst' if state_attr(t.entity_id, 'is_guest') else 'Wi-Fi' %}
+          **{{ loop.index }}.** {{ label }} — {{ nat }} — {{ ip }} — {{ relative_time(t.last_changed) }} sedan
           {% else %}
-            {% set trackers = states.device_tracker
-                | selectattr('entity_id', 'search', 'unifi_')
-                | selectattr('state', 'eq', 'home')
-                | rejectattr('entity_id', 'in',
-                    ['device_tracker.ap_nedre_trappan',
-                     'device_tracker.ap_ovre_trappan',
-                     'device_tracker.us8p60',
-                     'device_tracker.unifi_f0_9f_c2_64_3d_cc_default',
-                     'device_tracker.unifi_02_42_c0_a8_00_0a_default',
-                     'device_tracker.unifi_02_42_c0_a8_00_0b_default'])
-                | rejectattr('entity_id', 'in',
-                    state_attr('group.family_phones', 'entity_id') | default([]))
-                | sort(attribute='last_changed', reverse=true) %}
-            {% for t in trackers %}
-          **{{ loop.index }}.** {{ t.name }} — *SSID okänd (lägg till UniFi API-nyckel)* — {{ relative_time(t.last_changed) }} sedan
-            {% else %}
-          *Lägg till `unifi_api_key` i `/config/secrets.yaml` för SSID och exakta namn.*
-            {% endfor %}
-          {% endif %}
+          *Inga Wi-Fi-klienter anslutna just nu.*
+          {% endfor %}
 
     # ---- Disk / luftavfuktare -----------------------------------------------
     - name: Diskmaskinen diskar

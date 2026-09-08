@@ -1,9 +1,0 @@
-- sensor:
-    name: UniFi WiFi klienter
-    unique_id: unifi_wifi_clients_raw
-    command: python3 /config/scripts/unifi-wifi-clients.py
-    scan_interval: 60
-    command_timeout: 25
-    value_template: "{{ value_json.count | default(0) }}"
-    json_attributes:
-      - data

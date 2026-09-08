@@ -69,7 +69,6 @@ var: !include includes/var.yaml
 utility_meter: !include includes/utility_meter.yaml
 intent_script: !include includes/intent_script.yaml
 template: !include includes/template.yaml
-command_line: !include includes/command_line.yaml
 rest_command: !include includes/rest_command.yaml
 
 #######################################################
