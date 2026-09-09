@@ -5202,20 +5202,28 @@
       entity_id: media_player.kd_65xd8505
 - alias: 'HA: Z-wave är igång'
   id: '348674'
+  description: Sätter var.z_wave_is_ready när Z-Wave JS har aktiva noder efter HA-start (ersätter OpenZWave-events).
   triggers:
-  - trigger: event
-    event_type: zwave.network_ready
-  - trigger: event
-    event_type: zwave.network_complete
+  - trigger: homeassistant
+    event: start
   action:
   - action: var.set
     data:
       entity_id: var.z_wave_is_ready
-      value: 'true'
-  - action: script.mobilnotis
+      value: 'false'
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: lock.ytterdorr
+      from: unavailable
+    - trigger: state
+      entity_id: lock.ytterdorr
+      from: unknown
+    timeout: '00:15:00'
+    continue_on_timeout: false
+  - action: var.set
     data:
-      meddelande: "HEMMET {{ now().strftime('%R') }}: \nZ-wave är igång\n"
-      mottagare: mobile_app_ilias_s23_ultra
+      entity_id: var.z_wave_is_ready
+      value: 'true'
 - alias: 'HA: Home Assistant har stoppats'
   id: '86740501680602568'
   triggers:
