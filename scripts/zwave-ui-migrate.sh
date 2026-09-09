@@ -152,16 +152,36 @@ done
 
 write_settings /tmp/zwave-settings.json.$$
 docker cp /tmp/zwave-settings.json.$$ "$CID:/data/store/settings.json"
-rm -f /tmp/zwave-settings.json.$$
 log_ha "docker wrote settings.json"
 
 store_list=$(docker exec "$CID" ls -la /data/store/ 2>&1 | tr '\n' ' | ')
-log_ha "container store: $store_list"
+log_ha "container store after cp: $store_list"
+settings_check=$(docker exec "$CID" sh -c 'test -f /data/store/settings.json && wc -c < /data/store/settings.json || echo missing' 2>&1)
+log_ha "settings.json bytes in container: $settings_check"
 serial_list=$(docker exec "$CID" ls /dev/serial/by-id/ 2>&1 | tr '\n' ' ' || echo none)
 log_ha "serial in container: $serial_list"
 
-ha addons stop "$SLUG" 2>&1 || true
-sleep 2
+# Skriv även till supervisor-volym (persisterar över container-omstart)
+UI_DATA=/mnt/data/supervisor/addons/data/${SLUG}
+if [[ -d /mnt/data/supervisor/addons/data ]] || mkdir -p "$UI_DATA/store" 2>/dev/null; then
+  mkdir -p "$UI_DATA/store" "$UI_DATA/db"
+  [[ -f /tmp/zwave-settings.json.$$ ]] || write_settings /tmp/zwave-settings.json.$$
+  cp -f /tmp/zwave-settings.json.$$ "$UI_DATA/store/settings.json"
+  [[ -n "$nodes_src" ]] && cp -f "$nodes_src" "$UI_DATA/store/nodes.json"
+  for f in users.json scenes.json groups.json; do
+    src=$(find_store_file "$f" || true)
+    [[ -n "$src" ]] && cp -f "$src" "$UI_DATA/store/$f"
+  done
+  for db_src in "$CORE_DATA/.config-db" "$CORE/.config-db"; do
+    [[ -d "$db_src" ]] && cp -a "$db_src/." "$UI_DATA/db/" && break
+  done
+  log_ha "mirrored store to $UI_DATA/store"
+fi
+rm -f /tmp/zwave-settings.json.$$
+
+# Starta om endast zwave-js-ui-processen inuti containern (behåll filer på volym)
+docker exec "$CID" sh -c 'wget -qO- --post-data="" http://127.0.0.1:44920/api/zwave/_restart 2>/dev/null || kill -USR1 $(pgrep -f "node.*zwave-js-ui" | head -1) 2>/dev/null || true' 2>&1 | log_ha "zwave restart:"
+sleep 15
 
 # Patcha integration till UI-websocket
 python3 - << PY
@@ -178,9 +198,9 @@ json.dump(d, open(p, "w"), indent=2)
 print("patched config entry")
 PY
 
-log_ha "starting UI addon"
-ha addons start "$SLUG" 2>&1 || true
-sleep 40
+log_ha "restarting UI addon to pick up store"
+ha addons restart "$SLUG" 2>&1 || true
+sleep 45
 
 if command -v docker >/dev/null 2>&1; then
   CID=$(docker ps --format '{{.Names}} {{.ID}}' | awk '/zwavejs2mqtt/ {print $2; exit}')
