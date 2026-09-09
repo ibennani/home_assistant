@@ -27,7 +27,7 @@ write_settings() {
   "mqtt": {"auth": true, "disabled": true, "host": "core-mosquitto", "name": "Mosquitto", "password": "", "port": 1883, "username": ""},
   "zwave": {
     "commandsTimeout": 30, "logLevel": "info", "logToFile": false,
-    "port": "/dev/serial/by-id/usb-0658_0200-if00",
+    "port": "/dev/ttyUSB1",
     "networkKey": "8603980F1A8F744FE709E464F636CC81",
     "securityKeys": {
       "S0_Legacy": "8603980F1A8F744FE709E464F636CC81",
@@ -49,7 +49,7 @@ CORE=/addon_configs/core_zwave_js
 CORE_DATA=/mnt/data/supervisor/addons/data/core_zwave_js
 SLUG=a0d7b954_zwavejs2mqtt
 ENTRY_ID=bddd840684d182ad003d4c0bb4bbca0e
-SERIAL=/dev/serial/by-id/usb-0658_0200-if00
+SERIAL=/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DM00ZRYW-if00-port0
 
 # Stoppa core och bryt eventuell stickkonflikt — starta ALDRIG core igen
 ha addons stop core_zwave_js 2>&1 || true
