@@ -20,7 +20,8 @@ log_ha() {
 }
 
 SLUG=a0d7b954_zwavejs2mqtt
-SERIAL=/dev/serial/by-id/usb-0658_0200-if00
+SERIAL_BY_ID=/dev/serial/by-id/usb-0658_0200-if00
+SERIAL=/dev/ttyACM0
 UI_DATA=/mnt/data/supervisor/addons/data/${SLUG}
 CORE_DATA=/mnt/data/supervisor/addons/data/core_zwave_js
 
