@@ -2297,6 +2297,12 @@ zwave_ui_migrate:
   mode: single
   sequence:
   - action: shell_command.zwave_ui_migrate
+zwave_usb_fix:
+  alias: 'Z-Wave: tilldela USB till JS UI'
+  description: Supervisor API + settings.json. Logg i /config/zwave-usb-fix.log.
+  mode: single
+  sequence:
+  - action: shell_command.zwave_usb_fix
 git_synka_config:
   alias: 'Git: Synka /config från GitHub'
   description: Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP.
