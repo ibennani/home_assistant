@@ -86,6 +86,14 @@ write_settings() {
 }
 EOF
 }
+# Socat-brygga när Supervisor devices[] misslyckas (RFXCOM=ttyUSB0, Z-Wave=ttyUSB1)
+pkill -f "socat.*${SOCAT_PORT}" 2>/dev/null || true
+if command -v socat >/dev/null 2>&1 && [[ -e "$SERIAL_DEV" || -e "$DEV" ]]; then
+  socat "TCP-LISTEN:${SOCAT_PORT},fork,reuseaddr" "OPEN:${SERIAL_DEV:-$DEV},b115200,raw,echo=0" &
+  PORT="${ZWAVE_PORT}"
+  log_ha "socat -> ${PORT}"
+fi
+
 write_settings "${UI_STORE}/settings.json"
 write_settings "${UI_DATA}/store/settings.json"
 log_ha "settings port=${PORT} nodes=$(wc -c < "${UI_STORE}/nodes.json" 2>/dev/null || echo 0)"
