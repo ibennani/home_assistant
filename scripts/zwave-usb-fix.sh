@@ -24,7 +24,9 @@ SLUG=a0d7b954_zwavejs2mqtt
 SERIAL_BY_ID=/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DM00ZRYW-if00-port0
 SERIAL=/dev/ttyUSB1
 UI_DATA=/mnt/data/supervisor/addons/data/${SLUG}
+UI_CONFIG=/addon_configs/${SLUG}
 CORE_DATA=/mnt/data/supervisor/addons/data/core_zwave_js
+CORE_CONFIG=/addon_configs/core_zwave_js
 
 log_ha "start"
 
@@ -61,25 +63,32 @@ assign_usb() {
 }
 assign_usb
 
-# Skriv settings + kopiera store
-mkdir -p "${UI_DATA}/store"
-for f in nodes.json users.json scenes.json groups.json; do
-  for src in "${CORE_DATA}/store/${f}" "${CORE_DATA}/${f}"; do
-    if [[ -f "$src" ]]; then
-      cp "$src" "${UI_DATA}/store/${f}"
-      log_ha "copied $f from $src"
-      break
-    fi
+# Skriv settings + kopiera store (båda volymer — addon_configs är källan på HA OS)
+rm -rf "${UI_DATA}/db/"* "${UI_CONFIG}/db/"* 2>/dev/null || true
+for STORE in "${UI_CONFIG}/store" "${UI_DATA}/store"; do
+  mkdir -p "$STORE"
+  for f in nodes.json users.json scenes.json groups.json; do
+    for src in \
+      "${CORE_CONFIG}/${f}" "${CORE_CONFIG}/store/${f}" \
+      "${CORE_DATA}/store/${f}" "${CORE_DATA}/${f}"; do
+      if [[ -f "$src" ]]; then
+        cp "$src" "${STORE}/${f}"
+        log_ha "copied $f to ${STORE} from $src"
+        break
+      fi
+    done
   done
 done
 
-cat > "${UI_DATA}/store/settings.json" << 'EOF'
+write_settings() {
+  local dest="$1"
+  cat > "$dest" << 'EOF'
 {
   "gateway": {"type": 0, "payloadType": 0, "hassDiscovery": false, "logEnabled": true, "logLevel": "info", "logToFile": false, "nodeNames": true},
   "mqtt": {"auth": true, "disabled": true, "host": "core-mosquitto", "name": "Mosquitto", "password": "", "port": 1883, "username": ""},
   "zwave": {
     "commandsTimeout": 30, "logLevel": "info", "logToFile": false,
-    "port": "/dev/ttyUSB1",
+    "port": "/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DM00ZRYW-if00-port0",
     "networkKey": "8603980F1A8F744FE709E464F636CC81",
     "securityKeys": {
       "S0_Legacy": "8603980F1A8F744FE709E464F636CC81",
@@ -93,8 +102,11 @@ cat > "${UI_DATA}/store/settings.json" << 'EOF'
   }
 }
 EOF
-log_ha "wrote settings.json"
-ls -la "${UI_DATA}/store/" 2>&1 | head -10
+}
+write_settings "${UI_CONFIG}/store/settings.json"
+write_settings "${UI_DATA}/store/settings.json"
+log_ha "wrote settings.json (addon_configs + supervisor data)"
+ls -la "${UI_CONFIG}/store/" 2>&1 | head -10
 
 ha addons restart "${SLUG}" 2>&1 || ha addons start "${SLUG}" 2>&1 || true
 log_ha "restarted UI"
