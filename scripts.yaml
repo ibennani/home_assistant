@@ -2293,10 +2293,10 @@ grasklipparen_pausa:
       entity_id: lawn_mower.grasklipparen
 zwave_ui_migrate:
   alias: 'Z-Wave: migrera till Z-Wave JS UI'
-  description: Kopierar store från core_zwave_js, konfigurerar stick och startar om Z-Wave JS UI.
+  description: Kopierar store till Z-Wave JS UI via SSH init (shell_command når inte addon-data).
   mode: single
   sequence:
-  - action: shell_command.zwave_ui_migrate
+  - action: shell_command.zwave_ui_migrate_ssh
 git_synka_config:
   alias: 'Git: Synka /config från GitHub'
   description: Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP.

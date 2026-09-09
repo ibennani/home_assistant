@@ -1,6 +1,6 @@
 #!/bin/bash
-# Z-Wave JS UI migration: copy store from core_zwave_js and configure stick/keys.
-# Run on HA host via SSH addon: bash /config/scripts/zwave-ui-migrate.sh
+# Z-Wave JS UI migration via docker exec (addon data is not under /addon_configs).
+# Run from SSH addon context: bash /config/scripts/zwave-ui-migrate.sh
 set -euo pipefail
 
 LOG=/config/zwave-migrate.log
@@ -12,47 +12,56 @@ CORE=/addon_configs/core_zwave_js
 SLUG=a0d7b954_zwavejs2mqtt
 PORT="/dev/serial/by-id/usb-0658_0200-if00"
 
-UI=""
-for BASE in \
-  "/mnt/data/supervisor/addons/data/${SLUG}" \
-  "/data/supervisor/addons/data/${SLUG}" \
-  "/addon_configs/${SLUG}"; do
-  if [[ -d "$BASE" ]]; then
-    UI="$BASE"
-    echo "UI data base: $BASE"
+ha addons stop core_zwave_js 2>&1 || true
+
+CID=""
+for name in $(docker ps --format '{{.Names}}' 2>/dev/null); do
+  if echo "$name" | grep -qi "zwavejs2mqtt"; then
+    CID=$(docker ps --filter "name=$name" --format '{{.ID}}' | head -1)
+    echo "Found container: $name ($CID)"
     break
   fi
 done
 
-if [[ -z "$UI" ]]; then
-  echo "ERROR: Z-Wave JS UI addon data directory not found"
+if [[ -z "$CID" ]]; then
+  echo "ERROR: Z-Wave JS UI container not running"
+  ha addons start "$SLUG" 2>&1 || true
+  sleep 10
+  CID=$(docker ps --format '{{.Names}} {{.ID}}' | awk '/zwavejs2mqtt/ {print $2; exit}')
+fi
+
+if [[ -z "$CID" ]]; then
+  echo "ERROR: still no container"
   exit 1
 fi
 
-mkdir -p "$UI/store" "$UI/db"
+echo "=== container store before ==="
+docker exec "$CID" ls -la /data/store/ 2>&1 || true
+
+docker exec "$CID" mkdir -p /data/store /data/db
 
 for f in nodes.json users.json scenes.json groups.json; do
   for src in "$CORE/$f" "$CORE/store/$f"; do
     if [[ -f "$src" ]]; then
-      cp -a "$src" "$UI/store/$f"
-      echo "copied $f from $src ($(wc -c < "$UI/store/$f") bytes)"
+      docker cp "$src" "$CID:/data/store/$f"
+      echo "docker cp $f from $src ($(wc -c < "$src") bytes)"
       break
     fi
   done
 done
 
 if [[ -d "$CORE/.config-db" ]]; then
-  cp -a "$CORE/.config-db/." "$UI/db/"
-  echo "copied .config-db"
+  docker cp "$CORE/.config-db/." "$CID:/data/db/"
+  echo "docker cp .config-db"
 fi
 
 if [[ -d "$CORE/cache" ]]; then
-  mkdir -p "$UI/store/cache"
-  cp -a "$CORE/cache/." "$UI/store/cache/"
-  echo "copied cache"
+  docker exec "$CID" mkdir -p /data/store/cache
+  docker cp "$CORE/cache/." "$CID:/data/store/cache/"
+  echo "docker cp cache"
 fi
 
-cat > "$UI/store/settings.json" << 'EOF'
+docker exec -i "$CID" tee /data/store/settings.json > /dev/null << 'EOF'
 {
   "gateway": {
     "type": 0,
@@ -94,17 +103,12 @@ cat > "$UI/store/settings.json" << 'EOF'
 }
 EOF
 
-chmod 644 "$UI/store/settings.json"
-echo "settings.json: $(wc -c < "$UI/store/settings.json") bytes"
-ls -la "$UI/store/"
-
-# Mirror to addon_configs (some HA versions)
-mkdir -p "/addon_configs/${SLUG}/store" "/addon_configs/${SLUG}/db"
-cp -a "$UI/store/." "/addon_configs/${SLUG}/store/"
-cp -a "$UI/db/." "/addon_configs/${SLUG}/db/" 2>/dev/null || true
-
-echo "Serial devices:"
-ls -la /dev/serial/by-id/ 2>&1 || true
+echo "=== container store after ==="
+docker exec "$CID" ls -la /data/store/
+docker exec "$CID" head -c 200 /data/store/settings.json || true
+echo
+echo "=== serial in container ==="
+docker exec "$CID" ls -la /dev/serial/by-id/ 2>&1 | head -10 || true
 
 python3 - << 'PY'
 import json
@@ -117,14 +121,13 @@ for e in d["data"]["entries"]:
         e["data"]["integration_created_addon"] = False
         e["disabled_by"] = None
         e["state"] = "not_loaded"
-        print("patched integration url ->", e["data"]["url"])
+        print("patched url ->", e["data"]["url"])
 json.dump(d, open(p, "w"), indent=2)
 PY
 
-ha addons stop core_zwave_js || true
-ha addons options core_zwave_js --boot manual 2>/dev/null || true
+ha addons stop core_zwave_js 2>&1 || true
 ha addons restart "$SLUG"
-sleep 25
-ha addons logs "$SLUG" | tail -40
+sleep 30
+ha addons logs "$SLUG" 2>&1 | tail -50
 
 echo "=== done ==="
