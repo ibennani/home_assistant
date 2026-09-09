@@ -242,8 +242,7 @@
         {% set tracker = 'person.anna_bennani' %}
         {% set bad = ['unavailable', 'unknown', 'none', ''] %}
         {% if states(tracker) in bad %}
-          {% set prev = this.state | default('not_home', true) %}
-          {{ prev if prev not in bad else 'not_home' }}
+          not_home
         {% else %}
         {% set zones = [
                   'zone.home',
@@ -316,8 +315,7 @@
         {% set tracker = 'person.erik_bennani' %}
         {% set bad = ['unavailable', 'unknown', 'none', ''] %}
         {% if states(tracker) in bad %}
-          {% set prev = this.state | default('not_home', true) %}
-          {{ prev if prev not in bad else 'not_home' }}
+          not_home
         {% else %}
         {% set zones = [
                   'zone.home',
@@ -390,8 +388,7 @@
         {% set tracker = 'person.isabelle_sovig' %}
         {% set bad = ['unavailable', 'unknown', 'none', ''] %}
         {% if states(tracker) in bad %}
-          {% set prev = this.state | default('not_home', true) %}
-          {{ prev if prev not in bad else 'not_home' }}
+          not_home
         {% else %}
         {% set zones = [
                   'zone.home',
@@ -464,8 +461,7 @@
         {% set tracker = 'person.ilias_bennani' %}
         {% set bad = ['unavailable', 'unknown', 'none', ''] %}
         {% if states(tracker) in bad %}
-          {% set prev = this.state | default('not_home', true) %}
-          {{ prev if prev not in bad else 'not_home' }}
+          not_home
         {% else %}
         {% set zones = [
                   'zone.home',
@@ -572,9 +568,13 @@
         {% set skip = infra + hidden %}
         {% set dhcp_raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
         {% set dhcp = dhcp_raw | rejectattr('mac', 'in', skip) | list if dhcp_raw is iterable and dhcp_raw is not string else [] %}
-        {% set merge_ns = namespace(items=dhcp) %}
-        {% set seen_ns = namespace(macs=dhcp | map(attribute='mac') | map('lower') | list, ips=dhcp | map(attribute='ip') | list) %}
-        {% for u in state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
+        {% set unifi_raw = state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
+        {% set unifi_list = unifi_raw if unifi_raw is iterable and unifi_raw is not string else [] %}
+        {% set unifi_ok = unifi_list | length > 0 %}
+        {% set unifi_macs = unifi_list | map(attribute='mac') | map('lower') | list %}
+        {% set merge_ns = namespace(items=[]) %}
+        {% set seen_ns = namespace(macs=[], ips=[]) %}
+        {% for u in unifi_list %}
           {% if u.is_wired or (u.mac | default('') | lower) in skip %}{% continue %}{% endif %}
           {% set umac = u.mac | default('') | lower %}
           {% set uip = u.ip | default('') %}
@@ -582,6 +582,18 @@
           {% if umac in seen_ns.macs %}{% continue %}{% endif %}
           {% if uip and uip in seen_ns.ips %}{% continue %}{% endif %}
           {% set merge_ns.items = merge_ns.items + [{'mac': umac, 'ip': uip, 'hostname': u.hostname | default(''), 'essid': u.essid | default(''), 'is_guest': u.is_guest | default(false)}] %}
+          {% set seen_ns.macs = seen_ns.macs + [umac] %}
+          {% if uip %}{% set seen_ns.ips = seen_ns.ips + [uip] %}{% endif %}
+        {% endfor %}
+        {% for c in dhcp %}
+          {% set cmac = c.mac | default('') | lower %}
+          {% if unifi_ok and cmac not in unifi_macs %}{% continue %}{% endif %}
+          {% if cmac in seen_ns.macs %}{% continue %}{% endif %}
+          {% set cip = c.ip | default('') %}
+          {% if cip and cip in seen_ns.ips %}{% continue %}{% endif %}
+          {% set merge_ns.items = merge_ns.items + [{'mac': cmac, 'ip': cip, 'hostname': c.hostname | default(''), 'essid': '', 'is_guest': false}] %}
+          {% set seen_ns.macs = seen_ns.macs + [cmac] %}
+          {% if cip %}{% set seen_ns.ips = seen_ns.ips + [cip] %}{% endif %}
         {% endfor %}
         {% if merge_ns.items | length > 0 %}
           {{ merge_ns.items | length }}
@@ -640,9 +652,13 @@
           {% set skip = infra + hidden %}
           {% set dhcp_raw = state_attr('sensor.edgerouter_dhcp_klienter', 'data') | default([], true) %}
           {% set dhcp = dhcp_raw | rejectattr('mac', 'in', skip) | list if dhcp_raw is iterable and dhcp_raw is not string else [] %}
-          {% set merge_ns = namespace(items=dhcp) %}
-          {% set seen_ns = namespace(macs=dhcp | map(attribute='mac') | map('lower') | list, ips=dhcp | map(attribute='ip') | list) %}
-          {% for u in state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
+          {% set unifi_raw = state_attr('sensor.unifi_wlan_klienter', 'data') | default([], true) %}
+          {% set unifi_list = unifi_raw if unifi_raw is iterable and unifi_raw is not string else [] %}
+          {% set unifi_ok = unifi_list | length > 0 %}
+          {% set unifi_macs = unifi_list | map(attribute='mac') | map('lower') | list %}
+          {% set merge_ns = namespace(items=[]) %}
+          {% set seen_ns = namespace(macs=[], ips=[]) %}
+          {% for u in unifi_list %}
             {% if u.is_wired or (u.mac | default('') | lower) in skip %}{% continue %}{% endif %}
             {% set umac = u.mac | default('') | lower %}
             {% set uip = u.ip | default('') %}
@@ -650,6 +666,18 @@
             {% if umac in seen_ns.macs %}{% continue %}{% endif %}
             {% if uip and uip in seen_ns.ips %}{% continue %}{% endif %}
             {% set merge_ns.items = merge_ns.items + [{'mac': umac, 'ip': uip, 'hostname': u.hostname | default(''), 'essid': u.essid | default(''), 'is_guest': u.is_guest | default(false)}] %}
+            {% set seen_ns.macs = seen_ns.macs + [umac] %}
+            {% if uip %}{% set seen_ns.ips = seen_ns.ips + [uip] %}{% endif %}
+          {% endfor %}
+          {% for c in dhcp %}
+            {% set cmac = c.mac | default('') | lower %}
+            {% if unifi_ok and cmac not in unifi_macs %}{% continue %}{% endif %}
+            {% if cmac in seen_ns.macs %}{% continue %}{% endif %}
+            {% set cip = c.ip | default('') %}
+            {% if cip and cip in seen_ns.ips %}{% continue %}{% endif %}
+            {% set merge_ns.items = merge_ns.items + [{'mac': cmac, 'ip': cip, 'hostname': c.hostname | default(''), 'essid': '', 'is_guest': false}] %}
+            {% set seen_ns.macs = seen_ns.macs + [cmac] %}
+            {% if cip %}{% set seen_ns.ips = seen_ns.ips + [cip] %}{% endif %}
           {% endfor %}
           {% set raw = merge_ns.items %}
           {% set out = namespace(lines=[]) %}

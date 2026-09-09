@@ -283,14 +283,13 @@ def zone_list_jinja(indent: str = "          ") -> str:
 
 
 def aktiv_zon_state_template(tracker: str) -> str:
-    """Håll senaste zon vid tillfällig person-unavailable — undvik falska borta-triggers."""
+    """Vid unavailable: not_home — undvik falskt hemma när GPS slutat rapportera."""
     return textwrap.dedent(
         f"""\
         {{% set tracker = '{tracker}' %}}
         {{% set bad = ['unavailable', 'unknown', 'none', ''] %}}
         {{% if states(tracker) in bad %}}
-          {{% set prev = this.state | default('not_home', true) %}}
-          {{{{ prev if prev not in bad else 'not_home' }}}}
+          not_home
         {{% else %}}
         {{% set zones = [
         {zone_list_jinja()}
