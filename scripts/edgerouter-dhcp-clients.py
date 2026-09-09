@@ -139,14 +139,38 @@ def unwrap_payload(payload: dict) -> dict:
     return payload
 
 
+def lease_expires_ts(lease: dict) -> int:
+    for key in ("expires", "lease-end", "end", "expiration"):
+        raw = lease.get(key)
+        if raw is None:
+            continue
+        if str(raw).isdigit():
+            return int(raw)
+    return 0
+
+
+def lease_is_active(lease: dict, now: int | None = None) -> bool:
+    now = now if now is not None else int(time.time())
+    expires = lease_expires_ts(lease)
+    if expires and expires < now:
+        return False
+    active = str(lease.get("active", "1")).lower()
+    if active in ("0", "false", "no", "off"):
+        return False
+    return True
+
+
 def parse_dhcp_server_leases(block: dict) -> list[dict]:
     """EdgeOS: dhcp-server-leases → interface → IP-keyed lease dict."""
     clients: list[dict] = []
+    now = int(time.time())
     for iface_data in block.values():
         if not isinstance(iface_data, dict):
             continue
         for ip, lease in iface_data.items():
             if not isinstance(lease, dict):
+                continue
+            if not lease_is_active(lease, now):
                 continue
             mac = normalize_mac(
                 str(
@@ -170,7 +194,7 @@ def parse_dhcp_server_leases(block: dict) -> list[dict]:
                     "mac": mac,
                     "ip": str(ip).strip(),
                     "hostname": hostname,
-                    "expires": 0,
+                    "expires": lease_expires_ts(lease),
                 }
             )
     return clients
@@ -186,18 +210,14 @@ def parse_flat_leases(leases: list | dict) -> list[dict]:
     for lease in leases:
         if not isinstance(lease, dict):
             continue
+        if not lease_is_active(lease, now):
+            continue
         mac = normalize_mac(
             str(lease.get("mac") or lease.get("mac-address") or lease.get("hwaddr") or "")
         )
         if not mac or mac in INFRA_MACS:
             continue
-        expires_raw = lease.get("expires", 0) or 0
-        expires = int(expires_raw) if str(expires_raw).isdigit() else 0
-        if expires and expires < now:
-            continue
-        active = str(lease.get("active", "1")).lower()
-        if active in ("0", "false", "no", "off"):
-            continue
+        expires = lease_expires_ts(lease)
         hostname = str(
             lease.get("hostname")
             or lease.get("host-name")
