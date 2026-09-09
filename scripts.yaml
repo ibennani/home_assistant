@@ -2291,6 +2291,12 @@ grasklipparen_pausa:
   - action: lawn_mower.pause
     target:
       entity_id: lawn_mower.grasklipparen
+zwave_ui_migrate:
+  alias: 'Z-Wave: migrera till Z-Wave JS UI'
+  description: Kopierar store från core_zwave_js, konfigurerar stick och startar om Z-Wave JS UI.
+  mode: single
+  sequence:
+  - action: shell_command.zwave_ui_migrate
 git_synka_config:
   alias: 'Git: Synka /config från GitHub'
   description: Pull från origin/main och ladda om YAML. Anropas av Cursor Cloud via MCP.
