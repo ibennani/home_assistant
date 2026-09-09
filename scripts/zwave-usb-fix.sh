@@ -36,17 +36,27 @@ if [[ -n "${SUPERVISOR_TOKEN:-}" ]]; then
     -d '{"boot":"manual","devices":[]}' 2>/dev/null || true
 fi
 
-# Tilldela USB till UI
-if [[ -n "${SUPERVISOR_TOKEN:-}" ]]; then
-  resp=$(curl -sS -w '%{http_code}' -o /tmp/zwave_usb_resp.txt -X POST \
-    -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
-    -H "Content-Type: application/json" \
-    "http://supervisor/addons/${SLUG}/options" \
-    -d "{\"devices\":[\"${SERIAL}\"],\"boot\":\"auto\"}" 2>&1) || resp="000"
-  log_ha "assign USB http=${resp} body=$(head -c 200 /tmp/zwave_usb_resp.txt 2>/dev/null || echo none)"
-else
-  log_ha "ERROR no SUPERVISOR_TOKEN"
-fi
+# Tilldela USB till UI (Supervisor API + ha CLI fallback)
+assign_usb() {
+  if [[ -n "${SUPERVISOR_TOKEN:-}" ]]; then
+    local resp body
+    body=$(printf '{"devices":["%s"],"boot":"auto","options":{}}' "$SERIAL")
+    resp=$(curl -sS -w '%{http_code}' -o /tmp/zwave_usb_resp.txt -X POST \
+      -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+      -H "Content-Type: application/json" \
+      "http://supervisor/addons/${SLUG}/options" \
+      -d "$body" 2>&1) || resp="000"
+    log_ha "supervisor assign USB http=${resp} body=$(head -c 200 /tmp/zwave_usb_resp.txt 2>/dev/null || echo none)"
+    [[ "$resp" == "200" ]] && return 0
+  fi
+  if command -v ha >/dev/null 2>&1; then
+    ha addons options "${SLUG}" --devices "$SERIAL" --boot auto 2>&1 | head -3 | tr '\n' ' '
+    log_ha "ha CLI assign USB attempted"
+  else
+    log_ha "ERROR no SUPERVISOR_TOKEN or ha CLI"
+  fi
+}
+assign_usb
 
 # Skriv settings + kopiera store
 mkdir -p "${UI_DATA}/store"
