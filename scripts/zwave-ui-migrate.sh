@@ -51,9 +51,28 @@ SLUG=a0d7b954_zwavejs2mqtt
 ENTRY_ID=bddd840684d182ad003d4c0bb4bbca0e
 SERIAL=/dev/serial/by-id/usb-0658_0200-if00
 
-# Stoppa core och bryt eventuell stickkonflikt
+# Stoppa core och bryt eventuell stickkonflikt — starta ALDRIG core igen
 ha addons stop core_zwave_js 2>&1 || true
 ha addons options core_zwave_js --boot manual 2>/dev/null || true
+
+# Flytta USB-sticka från core till Z-Wave JS UI via Supervisor API
+if [[ -n "${SUPERVISOR_TOKEN:-}" ]]; then
+  curl -sf -X POST \
+    -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+    -H "Content-Type: application/json" \
+    "http://supervisor/addons/core_zwave_js/options" \
+    -d '{"boot":"manual","devices":[]}' \
+    && log_ha "supervisor: cleared core devices" || log_ha "WARN supervisor: clear core devices failed"
+  sleep 2
+  curl -sf -X POST \
+    -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+    -H "Content-Type: application/json" \
+    "http://supervisor/addons/${SLUG}/options" \
+    -d "{\"devices\":[\"${SERIAL}\"],\"boot\":\"auto\"}" \
+    && log_ha "supervisor: assigned ${SERIAL} to UI" || log_ha "WARN supervisor: assign USB to UI failed"
+else
+  log_ha "WARN SUPERVISOR_TOKEN missing — cannot assign USB via API"
+fi
 
 # Stoppa UI (bryt crash-loop) innan vi skriver store
 ha addons stop "$SLUG" 2>&1 || true
