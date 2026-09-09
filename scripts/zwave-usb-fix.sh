@@ -20,8 +20,9 @@ log_ha() {
 }
 
 SLUG=a0d7b954_zwavejs2mqtt
-SERIAL_BY_ID=/dev/serial/by-id/usb-0658_0200-if00
-SERIAL=/dev/ttyACM0
+# RFXCOM = ttyUSB0 — använd INTE. Z-Wave FTDI = ttyUSB1 på denna installation.
+SERIAL_BY_ID=/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DM00ZRYW-if00-port0
+SERIAL=/dev/ttyUSB1
 UI_DATA=/mnt/data/supervisor/addons/data/${SLUG}
 CORE_DATA=/mnt/data/supervisor/addons/data/core_zwave_js
 
@@ -37,25 +38,26 @@ if [[ -n "${SUPERVISOR_TOKEN:-}" ]]; then
     -d '{"boot":"manual","devices":[]}' 2>/dev/null || true
 fi
 
-# Tilldela USB till UI (Supervisor API + ha CLI fallback)
+# Tilldela USB till UI (addons.json + Supervisor API)
 assign_usb() {
+  if [[ -f /config/scripts/patch-zwave-usb.py ]]; then
+    python3 /config/scripts/patch-zwave-usb.py 2>&1 | tee -a "$LOG" || true
+    log_ha "patch-zwave-usb.py körd"
+  fi
   if [[ -n "${SUPERVISOR_TOKEN:-}" ]]; then
-    local resp body
-    body=$(printf '{"devices":["%s"],"boot":"auto","options":{}}' "$SERIAL")
+    local resp body dev
+    dev="$SERIAL_BY_ID"
+    [[ -e "$dev" ]] || dev="$SERIAL"
+    body=$(printf '{"devices":["%s"],"boot":"auto","options":{}}' "$dev")
     resp=$(curl -sS -w '%{http_code}' -o /tmp/zwave_usb_resp.txt -X POST \
       -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
       -H "Content-Type: application/json" \
       "http://supervisor/addons/${SLUG}/options" \
       -d "$body" 2>&1) || resp="000"
-    log_ha "supervisor assign USB http=${resp} body=$(head -c 200 /tmp/zwave_usb_resp.txt 2>/dev/null || echo none)"
+    log_ha "supervisor assign USB http=${resp} dev=${dev} body=$(head -c 200 /tmp/zwave_usb_resp.txt 2>/dev/null || echo none)"
     [[ "$resp" == "200" ]] && return 0
   fi
-  if command -v ha >/dev/null 2>&1; then
-    ha addons options "${SLUG}" --devices "$SERIAL" --boot auto 2>&1 | head -3 | tr '\n' ' '
-    log_ha "ha CLI assign USB attempted"
-  else
-    log_ha "ERROR no SUPERVISOR_TOKEN or ha CLI"
-  fi
+  log_ha "WARN USB kunde ej tilldelas via Supervisor API"
 }
 assign_usb
 
@@ -77,7 +79,7 @@ cat > "${UI_DATA}/store/settings.json" << 'EOF'
   "mqtt": {"auth": true, "disabled": true, "host": "core-mosquitto", "name": "Mosquitto", "password": "", "port": 1883, "username": ""},
   "zwave": {
     "commandsTimeout": 30, "logLevel": "info", "logToFile": false,
-    "port": "/dev/serial/by-id/usb-0658_0200-if00",
+    "port": "/dev/ttyUSB1",
     "networkKey": "8603980F1A8F744FE709E464F636CC81",
     "securityKeys": {
       "S0_Legacy": "8603980F1A8F744FE709E464F636CC81",
