@@ -94,6 +94,7 @@ shell_command:
     2>&1 | tee -a /config/git-pull.log
     && echo "--- $(date -Iseconds) ---" >> /config/git-pull.log
   zwave_ui_migrate: bash /config/scripts/zwave-ui-migrate.sh
+  zwave_usb_fix: bash /config/scripts/zwave-usb-fix.sh
 
 #######################################################
 # Media
