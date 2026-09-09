@@ -19,8 +19,12 @@ SLUG=a0d7b954_zwavejs2mqtt
 ENTRY_ID=bddd840684d182ad003d4c0bb4bbca0e
 DEV=/dev/ttyUSB1
 DEV_ID=/dev/serial/by-id/usb-FTDI_FT230X_Basic_UART_DM00ZRYW-if00-port0
+UI_STORE=/addon_configs/${SLUG}/store
 UI_DATA=/mnt/data/supervisor/addons/data/${SLUG}
+CORE_CONFIG=/addon_configs/core_zwave_js
 CORE_DATA=/mnt/data/supervisor/addons/data/core_zwave_js
+PORT="${DEV_ID}"
+[[ -e "$PORT" ]] || PORT="${DEV}"
 
 log_ha "start"
 
@@ -44,22 +48,27 @@ PY
   log_ha "addons.json patched via $AJ"
 done
 
-# Store + rensa gammal db (tvingar settings.json)
-mkdir -p "${UI_DATA}/store"
-rm -rf "${UI_DATA}/db" "${UI_DATA}/.config-db" 2>/dev/null || true
-
-for src in /addon_configs/core_zwave_js/nodes.json \
-  "${CORE_DATA}/store/nodes.json" "${CORE_DATA}/nodes.json"; do
-  [[ -f "$src" ]] && cp -f "$src" "${UI_DATA}/store/nodes.json" && log_ha "nodes from $src ($(wc -c < "$src") bytes)" && break
+# Store + rensa gammal db (tvingar settings.json) — addon_configs är primär volym
+for BASE in "/addon_configs/${SLUG}" "${UI_DATA}"; do
+  rm -rf "${BASE}/db" "${BASE}/.config-db" 2>/dev/null || true
 done
 
-cat > "${UI_DATA}/store/settings.json" <<EOF
+for STORE in "${UI_STORE}" "${UI_DATA}/store"; do
+  mkdir -p "$STORE"
+  for src in "${CORE_CONFIG}/nodes.json" "${CORE_DATA}/store/nodes.json" "${CORE_DATA}/nodes.json"; do
+    [[ -f "$src" ]] && cp -f "$src" "${STORE}/nodes.json" && log_ha "nodes from $src ($(wc -c < "$src") bytes)" && break
+  done
+done
+
+write_settings() {
+  local dest="$1"
+  cat > "$dest" <<EOF
 {
   "gateway": {"type": 0, "payloadType": 0, "hassDiscovery": false, "logEnabled": true, "logLevel": "info", "logToFile": false, "nodeNames": true},
   "mqtt": {"auth": true, "disabled": true, "host": "core-mosquitto", "name": "Mosquitto", "password": "", "port": 1883, "username": ""},
   "zwave": {
     "commandsTimeout": 30, "logLevel": "info", "logToFile": false,
-    "port": "${DEV}",
+    "port": "${PORT}",
     "networkKey": "8603980F1A8F744FE709E464F636CC81",
     "securityKeys": {
       "S0_Legacy": "8603980F1A8F744FE709E464F636CC81",
@@ -73,7 +82,10 @@ cat > "${UI_DATA}/store/settings.json" <<EOF
   }
 }
 EOF
-log_ha "settings port=${DEV} nodes=$(wc -c < "${UI_DATA}/store/nodes.json" 2>/dev/null || echo 0)"
+}
+write_settings "${UI_STORE}/settings.json"
+write_settings "${UI_DATA}/store/settings.json"
+log_ha "settings port=${PORT} nodes=$(wc -c < "${UI_STORE}/nodes.json" 2>/dev/null || echo 0)"
 
 # Patcha integration
 python3 - <<PY
