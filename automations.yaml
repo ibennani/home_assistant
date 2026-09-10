@@ -7887,27 +7887,11 @@
     not_to:
     - unavailable
     - unknown
-  - trigger: state
-    entity_id: sensor.front_door_last_activity
-    id: ring_last_activity_motion
-    not_from:
-    - unavailable
-    - unknown
-    not_to:
-    - unavailable
-    - unknown
   conditions:
   - condition: template
     value_template: "{% if trigger.id == 'ring_motion_mqtt' %}\n  {{ trigger.to_state.state == 'on'\n     and trigger.from_state.state\
-      \ not in ['unavailable', 'unknown'] }}\n{% elif trigger.id == 'ring_motion_event' %}\n  {{ trigger.to_state.state not\
-      \ in ['unavailable', 'unknown', 'none']\n     and trigger.from_state.state not in ['unavailable', 'unknown', 'none']\
-      \ }}\n{% else %}\n  {% set mqtt_ts = as_timestamp(states.binary_sensor.front_door_motion_2.last_changed) %}\n  {% set\
-      \ event_ts = as_timestamp(states.event.front_door_motion.state)\n     if states.event.front_door_motion.state not in\
-      \ ['unavailable', 'unknown', 'none', ''] else 0 %}\n  {% set latest = mqtt_ts if event_ts < mqtt_ts else event_ts %}\n\
-      \  {{ trigger.to_state.attributes.get('category') == 'motion'\n     and trigger.to_state.state not in ['unavailable',\
-      \ 'unknown', 'none', '']\n     and trigger.from_state.state not in ['unavailable', 'unknown', 'none', '']\n     and\
-      \ trigger.to_state.state != trigger.from_state.state\n     and (as_timestamp(trigger.to_state.state) - latest) > 120\
-      \ }}\n{% endif %}\n"
+      \ not in ['unavailable', 'unknown'] }}\n{% else %}\n  {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']\
+      \ and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}\n{% endif %}\n"
   - condition: state
     entity_id: binary_sensor.isabelle_hemma
     state: 'off'
