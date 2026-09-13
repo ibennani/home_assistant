@@ -1064,6 +1064,7 @@
 
     - name: Badrum städningläge
       unique_id: badrum_stadning_lage
+      default_entity_id: binary_sensor.badrum_stadninglage
       icon: mdi:broom
       state: >-
         {% set lights = [
