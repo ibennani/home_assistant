@@ -106,3 +106,9 @@
       name: Eriks rum vägg — föregående läge
       initial: Släckt
       max: 20
+
+  # SSID (WiFi-namn) som Companion-appen rapporterar = hemma. Kommaseparerat vid flera.
+    settings_hemma_wifi_ssid:
+      name: Hemma-WiFi SSID för närvaro
+      initial: "Bennani"
+      max: 100

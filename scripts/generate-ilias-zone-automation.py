@@ -21,6 +21,17 @@ AKTIV_ZON_PEOPLE = [
     ("person.ilias_bennani", "Ilias", "ilias"),
 ]
 
+# Companion-app: GPS-tracker + SSID-sensor (aktivera SSID under appens sensorer).
+# Isabelle använder fortfarande person + GPS (oförändrat).
+COMPANION_WIFI_PRESENCE: dict[str, tuple[str, str]] = {
+    "anna": ("device_tracker.anna_s22_ultra", "sensor.anna_s22_ultra_ssid"),
+    "erik": ("device_tracker.erik_s23", "sensor.erik_s23_ssid"),
+    "ilias": ("device_tracker.ilias_s23_ultra", "sensor.ilias_s23_ultra_ssid"),
+}
+
+HOME_WIFI_SSIDS_INPUT = "input_text.settings_hemma_wifi_ssid"
+HOME_WIFI_SSIDS_DEFAULT = "Bennani"
+
 # Ilias platsnotiser: övriga familjemedlemmar (ej Ilias själv)
 TRACKED_PEOPLE = [p for p in AKTIV_ZON_PEOPLE if p[2] != "ilias"]
 
@@ -276,37 +287,67 @@ def all_aktiv_zon_people() -> list[tuple[str, str, str]]:
 
 
 def zone_list_jinja(indent: str = "          ") -> str:
+    """Indentering måste vara >= state:-blockets innehåll (YAML block scalar)."""
     lines = [f"{indent}'{zone}'," for zone, _slug in ZONES]
     if lines:
         lines[-1] = lines[-1].rstrip(",")
     return "\n".join(lines)
 
 
+def aktiv_zon_nearest_zone_block(tracker_var: str = "tracker") -> str:
+    """Närmaste zoncentrum inom radie för given tracker-entitet."""
+    zones_inner = zone_list_jinja(indent="  ")
+    return (
+        f"{{% set zones = [\n{zones_inner}\n] %}}\n"
+        f"{{% set ns = namespace(best='not_home', best_d=999999) %}}\n"
+        f"{{% if states({tracker_var}) not in bad "
+        f"and state_attr({tracker_var}, 'latitude') is not none "
+        f"and state_attr({tracker_var}, 'longitude') is not none %}}\n"
+        f"  {{% for z in zones %}}\n"
+        f"    {{% set d_m = distance({tracker_var}, z) * 1000 %}}\n"
+        f"    {{% set r = state_attr(z, 'radius') | float(0) %}}\n"
+        f"    {{% if d_m <= r and d_m < ns.best_d %}}\n"
+        f"      {{% set ns.best = z %}}\n"
+        f"      {{% set ns.best_d = d_m %}}\n"
+        f"    {{% endif %}}\n"
+        f"  {{% endfor %}}\n"
+        f"{{% endif %}}\n"
+        f"{{{{ ns.best }}}}"
+    )
+
+
 def aktiv_zon_state_template(tracker: str) -> str:
-    """Vid unavailable: not_home — undvik falskt hemma när GPS slutat rapportera."""
-    return textwrap.dedent(
-        f"""\
-        {{% set tracker = '{tracker}' %}}
-        {{% set bad = ['unavailable', 'unknown', 'none', ''] %}}
-        {{% if states(tracker) in bad %}}
-          not_home
-        {{% else %}}
-        {{% set zones = [
-        {zone_list_jinja()}
-        ] %}}
-        {{% set ns = namespace(best='not_home', best_d=999999) %}}
-        {{% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}}
-          {{% for z in zones %}}
-            {{% set d_m = distance(tracker, z) * 1000 %}}
-            {{% set r = state_attr(z, 'radius') | float(0) %}}
-            {{% if d_m <= r and d_m < ns.best_d %}}
-              {{% set ns.best = z %}}
-              {{% set ns.best_d = d_m %}}
-            {{% endif %}}
-          {{% endfor %}}
-        {{% endif %}}
-        {{{{ ns.best }}}}
-        {{% endif %}}"""
+    """Person/GPS (Isabelle): vid unavailable → not_home."""
+    nearest = aktiv_zon_nearest_zone_block("tracker")
+    return (
+        f"{{% set tracker = '{tracker}' %}}\n"
+        f"{{% set bad = ['unavailable', 'unknown', 'none', ''] %}}\n"
+        f"{{% if states(tracker) in bad %}}\n"
+        f"not_home\n"
+        f"{{% else %}}\n"
+        f"{nearest}\n"
+        f"{{% endif %}}"
+    )
+
+
+def aktiv_zon_state_template_companion(gps_tracker: str, ssid_sensor: str) -> str:
+    """Anna/Ilias/Erik: hemma-WiFi från Companion-appen, annars närmaste zon via app-GPS."""
+    nearest = aktiv_zon_nearest_zone_block("gps_tracker")
+    return (
+        f"{{% set gps_tracker = '{gps_tracker}' %}}\n"
+        f"{{% set ssid_sensor = '{ssid_sensor}' %}}\n"
+        f"{{% set bad = ['unavailable', 'unknown', 'none', ''] %}}\n"
+        f"{{% set home_raw = states('{HOME_WIFI_SSIDS_INPUT}') %}}\n"
+        f"{{% set home_ssids = home_raw.split(',') | map('trim') | reject('equalto', '') | list %}}\n"
+        f"{{% if home_ssids | length == 0 %}}\n"
+        f"  {{% set home_ssids = ['{HOME_WIFI_SSIDS_DEFAULT}'] %}}\n"
+        f"{{% endif %}}\n"
+        f"{{% set ssid = states(ssid_sensor) %}}\n"
+        f"{{% if ssid not in bad and ssid in home_ssids %}}\n"
+        f"zone.home\n"
+        f"{{% else %}}\n"
+        f"{nearest}\n"
+        f"{{% endif %}}"
     )
 
 
@@ -327,10 +368,17 @@ def borta_kand_binary_state_template(sensor: str) -> str:
     )
 
 
+def aktiv_zon_state_for_slug(slug: str, person_tracker: str) -> str:
+    if slug in COMPANION_WIFI_PRESENCE:
+        gps_tracker, ssid_sensor = COMPANION_WIFI_PRESENCE[slug]
+        return aktiv_zon_state_template_companion(gps_tracker, ssid_sensor)
+    return aktiv_zon_state_template(person_tracker)
+
+
 def build_template_sensors() -> str:
     lines = [TEMPLATE_BEGIN, "    # ---- Aktiv zon (mittpunkt i zon, en zon åt gången) ----"]
-    for _tracker, display_name, slug in all_aktiv_zon_people():
-        state_tpl = aktiv_zon_state_template(_tracker)
+    for person_tracker, display_name, slug in all_aktiv_zon_people():
+        state_tpl = aktiv_zon_state_for_slug(slug, person_tracker)
         sensor = f"sensor.{slug}_aktiv_zon"
         lines.append(f"    - name: {display_name} aktiv zon")
         lines.append(f"      unique_id: {slug}_aktiv_zon")
