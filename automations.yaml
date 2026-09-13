@@ -1567,8 +1567,40 @@
     not_to:
     - unavailable
     - unknown
+  - trigger: state
+    id: badrum_stadning
+    entity_id: binary_sensor.badrum_stadning_lage
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   conditions: []
   actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.badrum_stadning_lage
+        state: 'on'
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ trigger.id == ''badrum_stadning'' }}'
+          sequence:
+          - action: timer.cancel
+            target:
+              entity_id:
+              - timer.badrum_slackning_pagar
+              - timer.badrum_dusch_120s
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ trigger.id in [''tand'', ''badrumsdorr_stangd'', ''badrumsdorr_oppnad'', ''slack'', ''duschdorr_oppnad'',
+              ''dusch_bekraftad''] }}'
+          sequence:
+          - stop: Badrum städningläge — ingen automatisk styrning
   - choose:
     - conditions:
       - condition: state
@@ -1610,7 +1642,7 @@
         - variables:
             is_night: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
             lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
-            is_cleaning: '{{ is_state(''input_boolean.stadning_pagar'', ''on'') }}'
+            is_cleaning: "{{ is_state('input_boolean.stadning_pagar', 'on')\n   or is_state('binary_sensor.badrum_stadning_lage', 'on') }}"
             day_brightness: '{% if is_cleaning %}100{% elif lux < 300 %}30{% elif lux <= 2000 %}35{% elif lux <= 13000 %}40{%
               else %}99{% endif %}'
         - choose:
@@ -1644,7 +1676,8 @@
         value_template: "{% set lights = [\n  'light.takspottar_badrummet',\n  'light.led_badrummet_handfatet',\n  'light.led_badrummet_kommoden',\n\
           \  'light.takspott_duschen',\n  'light.led_strip_i_duschen'\n] %} {% set ns = namespace(n=0) %} {% for l in lights\
           \ %}\n  {% if is_state(l, 'on') and (state_attr(l, 'brightness') | int(0)) >= 254 %}\n    {% set ns.n = ns.n + 1\
-          \ %}\n  {% endif %}\n{% endfor %} {{ is_state('input_boolean.stadning_pagar', 'off')\n   and not is_state('timer.badrum_slackning_pagar',\
+          \ %}\n  {% endif %}\n{% endfor %} {{ is_state('input_boolean.stadning_pagar', 'off')\n   and is_state('binary_sensor.badrum_stadning_lage',\
+          \ 'off')\n   and not is_state('timer.badrum_slackning_pagar',\
           \ 'active')\n   and is_state('binary_sensor.badrumsdorren', 'on')\n   and ns.n < 2 }}"
       sequence:
       - action: timer.start
@@ -1773,6 +1806,9 @@
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''ha_start'' }}'
+      - condition: state
+        entity_id: binary_sensor.badrum_stadning_lage
+        state: 'off'
       - condition: template
         value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'') or is_state(''input_boolean.badrum_dusch_snapshot_finns'',
           ''on'') }}'
@@ -1835,6 +1871,9 @@
   - condition: template
     value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'') and is_state(''input_boolean.badrum_dusch_snapshot_finns'',
       ''on'') }}'
+  - condition: state
+    entity_id: binary_sensor.badrum_stadning_lage
+    state: 'off'
   actions:
   - choose:
     - conditions:
@@ -1957,6 +1996,9 @@
   - condition: state
     entity_id: input_boolean.duschslackning_aktiv
     state: 'on'
+  - condition: state
+    entity_id: binary_sensor.badrum_stadning_lage
+    state: 'off'
   actions:
   - choose:
     - conditions:
@@ -8377,7 +8419,7 @@
     sekunder efter stängd duschdörr utan rörelse vid timerutgång. Kandidat ligger kvar tills badrums- eller duschdörr öppnas,
     eller rörelse avbryter. Kraftig fuktökning bekräftar till Någon duschar. Bekräftad session avslutas endast när badrumsdörren
     öppnas. Fukt spåras under session för toppvärde och för att släppa ljuslås efter paus. Detektion startar inte när alla
-    badrumslampor är tända och de fem dimmbara lyser på max (binary_sensor.badrum_fullt_upplyst_manuellt).
+    minst en badrumslampa lyser på 100 % (binary_sensor.badrum_stadning_lage).
 
     '
   triggers:
@@ -8506,7 +8548,7 @@
             value_template: '{{ is_state(''binary_sensor.badrumsdorren'', ''off'') and is_state(''input_select.nagon_duschar'',
               ''Ingen duschar'') and is_state(''input_boolean.duschsekvens_giltig'', ''on'') }}'
           - condition: state
-            entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+            entity_id: binary_sensor.badrum_stadning_lage
             state: 'off'
           sequence:
           - action: timer.start
@@ -8528,7 +8570,7 @@
       - condition: template
         value_template: '{{ is_state(''binary_sensor.badrummet_rorelse'', ''off'') }}'
       - condition: state
-        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        entity_id: binary_sensor.badrum_stadning_lage
         state: 'off'
       sequence:
       - action: input_datetime.set_datetime
@@ -8599,7 +8641,7 @@
         entity_id: binary_sensor.duschdorren
         state: 'on'
       - condition: state
-        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        entity_id: binary_sensor.badrum_stadning_lage
         state: 'off'
       - condition: template
         value_template: '{% set bad = [''unknown'', ''unavailable'', ''none'', ''None'', ''''] %} {% set valid_trigger = trigger.from_state
@@ -8689,7 +8731,7 @@
         entity_id: binary_sensor.badrumsdorren
         state: 'off'
       - condition: state
-        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        entity_id: binary_sensor.badrum_stadning_lage
         state: 'off'
       - condition: template
         value_template: '{% set bad = [''unknown'', ''unavailable'', ''none'', ''None'', ''''] %} {% set valid_trigger = trigger.from_state
@@ -8777,7 +8819,7 @@
       - condition: template
         value_template: '{{ is_state(''input_boolean.duschsekvens_giltig'', ''on'') }}'
       - condition: state
-        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        entity_id: binary_sensor.badrum_stadning_lage
         state: 'off'
       - condition: template
         value_template: '{% set bad = [''unknown'', ''unavailable'', ''none'', ''None'', ''''] %} {% set valid_trigger = trigger.from_state
@@ -8836,7 +8878,7 @@
       - condition: template
         value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon kanske duschar'') }}'
       - condition: state
-        entity_id: binary_sensor.badrum_fullt_upplyst_manuellt
+        entity_id: binary_sensor.badrum_stadning_lage
         state: 'off'
       - condition: template
         value_template: '{% set bad = [''unknown'', ''unavailable'', ''none'', ''None'', ''''] %} {% set valid_trigger = trigger.from_state
