@@ -1062,6 +1062,26 @@
         {% endfor %}
         {{ ns.ok }}
 
+    - name: Badrum städningläge
+      unique_id: badrum_stadning_lage
+      icon: mdi:broom
+      state: >-
+        {% set lights = [
+          'light.takspottar_badrummet',
+          'light.led_badrummet_handfatet',
+          'light.led_badrummet_kommoden',
+          'light.takspott_duschen',
+          'light.led_strip_i_duschen',
+          'light.taklampan_badrummet'
+        ] %}
+        {% set ns = namespace(hit=false) %}
+        {% for e in lights %}
+          {% if is_state(e, 'on') and (state_attr(e, 'brightness') | int(0)) >= 254 %}
+            {% set ns.hit = true %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.hit }}
+
     # ---- Kalender -----------------------------------------------------------
     - name: "Julbelysning"
       unique_id: julbelysningen
