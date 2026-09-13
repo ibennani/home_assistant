@@ -239,13 +239,20 @@
       availability: >
         {{ true }}
       state: >
-        {% set tracker = 'person.anna_bennani' %}
+        {% set gps_tracker = 'device_tracker.anna_s22_ultra' %}
+        {% set ssid_sensor = 'sensor.anna_s22_ultra_ssid' %}
         {% set bad = ['unavailable', 'unknown', 'none', ''] %}
-        {% if states(tracker) in bad %}
-          not_home
+        {% set home_raw = states('input_text.settings_hemma_wifi_ssid') %}
+        {% set home_ssids = home_raw.split(',') | map('trim') | reject('equalto', '') | list %}
+        {% if home_ssids | length == 0 %}
+          {% set home_ssids = ['Bennani'] %}
+        {% endif %}
+        {% set ssid = states(ssid_sensor) %}
+        {% if ssid not in bad and ssid in home_ssids %}
+        zone.home
         {% else %}
         {% set zones = [
-                  'zone.home',
+          'zone.home',
           'zone.annas_jobb',
           'zone.eriks_skola',
           'zone.ilias_jobb',
@@ -293,9 +300,9 @@
           'zone.isabelles_hem'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
-        {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
+        {% if states(gps_tracker) not in bad and state_attr(gps_tracker, 'latitude') is not none and state_attr(gps_tracker, 'longitude') is not none %}
           {% for z in zones %}
-            {% set d_m = distance(tracker, z) * 1000 %}
+            {% set d_m = distance(gps_tracker, z) * 1000 %}
             {% set r = state_attr(z, 'radius') | float(0) %}
             {% if d_m <= r and d_m < ns.best_d %}
               {% set ns.best = z %}
@@ -312,13 +319,20 @@
       availability: >
         {{ true }}
       state: >
-        {% set tracker = 'person.erik_bennani' %}
+        {% set gps_tracker = 'device_tracker.erik_s23' %}
+        {% set ssid_sensor = 'sensor.erik_s23_ssid' %}
         {% set bad = ['unavailable', 'unknown', 'none', ''] %}
-        {% if states(tracker) in bad %}
-          not_home
+        {% set home_raw = states('input_text.settings_hemma_wifi_ssid') %}
+        {% set home_ssids = home_raw.split(',') | map('trim') | reject('equalto', '') | list %}
+        {% if home_ssids | length == 0 %}
+          {% set home_ssids = ['Bennani'] %}
+        {% endif %}
+        {% set ssid = states(ssid_sensor) %}
+        {% if ssid not in bad and ssid in home_ssids %}
+        zone.home
         {% else %}
         {% set zones = [
-                  'zone.home',
+          'zone.home',
           'zone.annas_jobb',
           'zone.eriks_skola',
           'zone.ilias_jobb',
@@ -366,9 +380,9 @@
           'zone.isabelles_hem'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
-        {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
+        {% if states(gps_tracker) not in bad and state_attr(gps_tracker, 'latitude') is not none and state_attr(gps_tracker, 'longitude') is not none %}
           {% for z in zones %}
-            {% set d_m = distance(tracker, z) * 1000 %}
+            {% set d_m = distance(gps_tracker, z) * 1000 %}
             {% set r = state_attr(z, 'radius') | float(0) %}
             {% if d_m <= r and d_m < ns.best_d %}
               {% set ns.best = z %}
@@ -388,10 +402,10 @@
         {% set tracker = 'person.isabelle_sovig' %}
         {% set bad = ['unavailable', 'unknown', 'none', ''] %}
         {% if states(tracker) in bad %}
-          not_home
+        not_home
         {% else %}
         {% set zones = [
-                  'zone.home',
+          'zone.home',
           'zone.annas_jobb',
           'zone.eriks_skola',
           'zone.ilias_jobb',
@@ -439,7 +453,7 @@
           'zone.isabelles_hem'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
-        {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
+        {% if states(tracker) not in bad and state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
           {% for z in zones %}
             {% set d_m = distance(tracker, z) * 1000 %}
             {% set r = state_attr(z, 'radius') | float(0) %}
@@ -458,13 +472,20 @@
       availability: >
         {{ true }}
       state: >
-        {% set tracker = 'person.ilias_bennani' %}
+        {% set gps_tracker = 'device_tracker.ilias_s23_ultra' %}
+        {% set ssid_sensor = 'sensor.ilias_s23_ultra_ssid' %}
         {% set bad = ['unavailable', 'unknown', 'none', ''] %}
-        {% if states(tracker) in bad %}
-          not_home
+        {% set home_raw = states('input_text.settings_hemma_wifi_ssid') %}
+        {% set home_ssids = home_raw.split(',') | map('trim') | reject('equalto', '') | list %}
+        {% if home_ssids | length == 0 %}
+          {% set home_ssids = ['Bennani'] %}
+        {% endif %}
+        {% set ssid = states(ssid_sensor) %}
+        {% if ssid not in bad and ssid in home_ssids %}
+        zone.home
         {% else %}
         {% set zones = [
-                  'zone.home',
+          'zone.home',
           'zone.annas_jobb',
           'zone.eriks_skola',
           'zone.ilias_jobb',
@@ -512,9 +533,9 @@
           'zone.isabelles_hem'
         ] %}
         {% set ns = namespace(best='not_home', best_d=999999) %}
-        {% if state_attr(tracker, 'latitude') is not none and state_attr(tracker, 'longitude') is not none %}
+        {% if states(gps_tracker) not in bad and state_attr(gps_tracker, 'latitude') is not none and state_attr(gps_tracker, 'longitude') is not none %}
           {% for z in zones %}
-            {% set d_m = distance(tracker, z) * 1000 %}
+            {% set d_m = distance(gps_tracker, z) * 1000 %}
             {% set r = state_attr(z, 'radius') | float(0) %}
             {% if d_m <= r and d_m < ns.best_d %}
               {% set ns.best = z %}
