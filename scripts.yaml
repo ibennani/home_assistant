@@ -2927,7 +2927,7 @@ badrum_default_besok:
       bara_dusch: '{{ endast_dusch_ljus | default(false) }}'
       is_night: '{{ is_state(''input_select.house_time_modes'', ''Natt'') }}'
       lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
-      is_cleaning: "{{ is_state('input_boolean.stadning_pagar', 'on')\n   or is_state('binary_sensor.badrum_stadning_lage', 'on') }}"
+      is_cleaning: "{{ is_state('input_boolean.stadning_pagar', 'on')\n   or is_state('binary_sensor.badrum_stadninglage', 'on') }}"
       day_brightness: '{% if is_cleaning %}100{% elif lux < 300 %}30{% elif lux <= 2000 %}35{% elif lux <= 13000 %}40{% else
         %}99{% endif %}'
       dusch_brightness: '{{ 20 if (lux | int(0)) < 2000 else 30 }}'
