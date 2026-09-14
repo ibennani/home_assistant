@@ -6354,6 +6354,13 @@ views:
               - service: browser_mod.notification
                 data:
                   message: Uppdaterar positioner
+    - type: entities
+      title: Aktiv zon (WiFi hemma, annars närmaste zon)
+      entities:
+      - entity: sensor.anna_aktiv_zon
+      - entity: sensor.ilias_aktiv_zon
+      - entity: sensor.erik_aktiv_zon
+      - entity: sensor.isabelle_aktiv_zon
     - type: custom:state-switch
       entity: group
       states:
@@ -6367,7 +6374,7 @@ views:
     - type: map
       title: Ilias senaste 24 timmarna
       entities:
-      - person.ilias_bennani
+      - device_tracker.ilias_spionkarta
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albin
@@ -6421,7 +6428,7 @@ views:
     - type: map
       title: Anna senaste 24 timmarna
       entities:
-      - person.anna_bennani
+      - device_tracker.anna_spionkarta
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albin
@@ -6529,7 +6536,7 @@ views:
     - type: map
       title: Erik senaste 24 timmarna
       entities:
-      - person.erik_bennani
+      - device_tracker.erik_spionkarta
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albin
