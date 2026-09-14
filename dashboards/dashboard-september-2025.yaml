@@ -6374,7 +6374,7 @@ views:
     - type: map
       title: Ilias senaste 24 timmarna
       entities:
-      - device_tracker.ilias_spionkarta
+      - sensor.ilias_spionkarta
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albin
@@ -6428,7 +6428,7 @@ views:
     - type: map
       title: Anna senaste 24 timmarna
       entities:
-      - device_tracker.anna_spionkarta
+      - sensor.anna_spionkarta
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albin
@@ -6536,7 +6536,7 @@ views:
     - type: map
       title: Erik senaste 24 timmarna
       entities:
-      - device_tracker.erik_spionkarta
+      - sensor.erik_spionkarta
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albin

@@ -278,8 +278,8 @@ TEMPLATE_BEGIN = "# BEGIN aktiv-zon-sensorer (generate-ilias-zone-automation.py)
 TEMPLATE_END = "# END aktiv-zon-sensorer (generate-ilias-zone-automation.py)"
 BINARY_BEGIN = "# BEGIN hemma-borta-sensorer (generate-ilias-zone-automation.py)"
 BINARY_END = "# END hemma-borta-sensorer (generate-ilias-zone-automation.py)"
-SPION_BEGIN = "# BEGIN spion-karta-device-tracker (generate-ilias-zone-automation.py)"
-SPION_END = "# END spion-karta-device-tracker (generate-ilias-zone-automation.py)"
+SPION_BEGIN = "# BEGIN spion-karta-sensorer (generate-ilias-zone-automation.py)"
+SPION_END = "# END spion-karta-sensorer (generate-ilias-zone-automation.py)"
 SPION_INSERT_BEFORE = "# Kollektivtrafik — SL-hållplatser som kartmarkörer"
 AUTOMATION_ID = "7918348674111555999"
 ANNA_AUTOMATION_ID = "791834010101014158674"
@@ -400,12 +400,12 @@ def spion_map_coordinate_templates(gps_tracker: str, aktiv_sensor: str) -> tuple
     return lat, lon
 
 
-def build_spion_device_trackers() -> str:
-    """Spionfliken: kartnål enligt aktiv_zon (WiFi hemma + närmaste zon)."""
+def build_spion_map_sensors() -> str:
+    """Spionfliken: kartmarkör (sensor + lat/lon) enligt aktiv_zon."""
     lines = [
         SPION_BEGIN,
         "# Spionfliken — Anna/Erik/Ilias (Isabelle använder person på dashboarden)",
-        "- device_tracker:",
+        "- sensor:",
     ]
     display_by_slug = {slug: name for _t, name, slug in AKTIV_ZON_PEOPLE}
     for slug, (gps_tracker, _ssid) in COMPANION_WIFI_PRESENCE.items():
@@ -414,13 +414,20 @@ def build_spion_device_trackers() -> str:
         lat, lon = spion_map_coordinate_templates(gps_tracker, aktiv_sensor)
         lines.append(f"    - name: {display} spionkarta")
         lines.append(f"      unique_id: {slug}_spionkarta")
-        lines.append("      source_type: gps")
-        lines.append("      latitude: >")
+        lines.append("      icon: mdi:map-marker-radius")
+        lines.append("      state: >")
+        lines.append(
+            f"        {{{{ states('{aktiv_sensor}') | replace('zone.', '') "
+            f"| replace('not_home', 'Borta') }}}}"
+        )
+        lines.append("      attributes:")
+        lines.append("        latitude: >")
         for line in lat.splitlines():
-            lines.append(f"        {line}")
-        lines.append("      longitude: >")
+            lines.append(f"          {line}")
+        lines.append("        longitude: >")
         for line in lon.splitlines():
-            lines.append(f"        {line}")
+            lines.append(f"          {line}")
+        lines.append("        gps_accuracy: 25")
         lines.append("")
     lines.append(SPION_END)
     return "\n".join(lines)
@@ -681,8 +688,14 @@ def patch_template_sensors() -> None:
             binary_block + "\n\n" + marker,
             1,
         )
-    spion_block = build_spion_device_trackers()
-    if SPION_BEGIN in template_content:
+    spion_block = build_spion_map_sensors()
+    old_spion_begin = "# BEGIN spion-karta-device-tracker (generate-ilias-zone-automation.py)"
+    old_spion_end = "# END spion-karta-device-tracker (generate-ilias-zone-automation.py)"
+    if old_spion_begin in template_content:
+        template_content = replace_marked_block(
+            template_content, old_spion_begin, old_spion_end, spion_block
+        )
+    elif SPION_BEGIN in template_content:
         template_content = replace_marked_block(
             template_content, SPION_BEGIN, SPION_END, spion_block
         )
@@ -693,7 +706,7 @@ def patch_template_sensors() -> None:
             1,
         )
     else:
-        raise ValueError("Could not find insertion point for spion device_trackers")
+        raise ValueError("Could not find insertion point for spion map sensors")
     TEMPLATE_FILE.write_text(template_content, encoding="utf-8")
 
 
