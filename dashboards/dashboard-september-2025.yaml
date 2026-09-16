@@ -6334,9 +6334,6 @@ views:
     cards:
     - type: horizontal-stack
       cards:
-      - type: markdown
-        content: |
-          **Familjens mobiler**
       - type: button
         name: Uppdatera positioner
         show_icon: false
@@ -6354,35 +6351,6 @@ views:
               - service: browser_mod.notification
                 data:
                   message: Uppdaterar positioner
-    - type: markdown
-      content: |
-        {% macro spion_zon(aktiv_sensor) %}
-        {% set az = states(aktiv_sensor) %}
-        {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-        {% if az in bad or az == 'not_home' %}
-        Okänd plats
-        {% else %}
-        {{ state_attr(az, 'friendly_name') or az | replace('zone.', '') | replace('_', ' ') | title }}
-        {% endif %}
-        {% endmacro %}
-        <style>
-        .spion-lista { margin: 0; padding: 0; list-style: none; }
-        .spion-lista li {
-          display: flex;
-          justify-content: space-between;
-          gap: 1rem;
-          padding: 0.35rem 0;
-          border-bottom: 1px solid var(--divider-color, rgba(127,127,127,.3));
-        }
-        .spion-lista li:last-child { border-bottom: none; }
-        .spion-lista .zon { opacity: 0.85; text-align: right; }
-        </style>
-        <ul class="spion-lista">
-        <li><span>Anna Bennani</span><span class="zon">{{ spion_zon('sensor.anna_aktiv_zon') }}</span></li>
-        <li><span>Erik Bennani</span><span class="zon">{{ spion_zon('sensor.erik_aktiv_zon') }}</span></li>
-        <li><span>Ilias Bennani</span><span class="zon">{{ spion_zon('sensor.ilias_aktiv_zon') }}</span></li>
-        <li><span>Isabelle Sovig</span><span class="zon">{{ spion_zon('sensor.isabelle_aktiv_zon') }}</span></li>
-        </ul>
     - type: custom:state-switch
       entity: group
       states:
