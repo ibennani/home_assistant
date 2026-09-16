@@ -1729,6 +1729,8 @@
       state: >
         {{ states('sensor.anna_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
       attributes:
+        entity_picture: >
+          {{ state_attr('person.anna_bennani', 'entity_picture') }}
         latitude: >
           {% set az = states('sensor.anna_aktiv_zon') %}
           {% set bad = ['unknown', 'unavailable', 'none', ''] %}
@@ -1759,6 +1761,8 @@
       state: >
         {{ states('sensor.erik_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
       attributes:
+        entity_picture: >
+          {{ state_attr('person.erik_bennani', 'entity_picture') }}
         latitude: >
           {% set az = states('sensor.erik_aktiv_zon') %}
           {% set bad = ['unknown', 'unavailable', 'none', ''] %}
@@ -1789,6 +1793,8 @@
       state: >
         {{ states('sensor.ilias_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
       attributes:
+        entity_picture: >
+          {{ state_attr('person.ilias_bennani', 'entity_picture') }}
         latitude: >
           {% set az = states('sensor.ilias_aktiv_zon') %}
           {% set bad = ['unknown', 'unavailable', 'none', ''] %}
