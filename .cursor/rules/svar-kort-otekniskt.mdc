@@ -1,0 +1,32 @@
+---
+description: Svar ska vara korta och otekniska om användaren inte ber om annat
+globs:
+alwaysApply: true
+---
+
+# Svar: kort och otekniskt
+
+## Standard
+
+Formulera svar så att en vanlig användare förstår direkt — **kort**, **klart språk**, **svenska**.
+
+## Struktur
+
+1. **Börja med slutsatsen** i en tydlig mening (t.ex. "Just nu: inget akut." / "Ja, det går." / "Nej, inte utan …").
+2. **Kort stöd** under — gärna punktlista om det hjälper, men håll den smal.
+3. **Avsluta med det viktigaste att veta härnäst** (risk, begränsning eller "inget att göra nu") — utan att låtsas att allt är perfekt om det inte är det.
+
+## Språk
+
+- Undvik fackspråk, filnamn, entity_id, addon-sluggar och loggterminologi **om användaren inte uttryckligen vill ha teknisk nivå**.
+- Skriv **vad det betyder i vardagen** (lampor, sensorer, "svarar igen", "kan strula igen") i stället för **hur systemet är kopplat**.
+- Ingen lång tidslinje, ingen verifieringsrapport och inga tabeller med portar/USB — **såvida inte användaren ber om analys, felsökning eller implementation**.
+
+## När det ska vara mer
+
+- **Uttrycklig begäran** om detaljer, loggar, kod, deploy eller plan i djup → då får svaret vara längre och mer tekniskt, men börja ändå med en kort slutsats.
+- **Implementering / git / HA** följer fortfarande övriga projektregler (verifiering, deploy, repairs) — redovisa det **kort** i slutet om det behövs, inte som huvudtext.
+
+## Exempel på ton (riktning, inte mall)
+
+> **Just nu: inget akut med Zigbee.** Rullgardinerna och flera sensorer svarar igen. Det kan fortfarande strula senare eftersom fel USB-kabel/enhet används — inget du behöver fixa i panik i natt.
