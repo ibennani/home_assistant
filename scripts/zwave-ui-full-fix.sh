@@ -98,21 +98,28 @@ write_settings "${UI_STORE}/settings.json"
 write_settings "${UI_DATA}/store/settings.json"
 log_ha "settings port=${PORT} nodes=$(wc -c < "${UI_STORE}/nodes.json" 2>/dev/null || echo 0)"
 
-# Patcha integration
+# Patcha integration (IP undviker DNS-problem efter HA-omstart)
+ZWAVE_WS_URL="ws://a0d7b954-zwavejs2mqtt:3000"
+if command -v ha >/dev/null 2>&1; then
+  ZW_IP=$(ha apps info "${SLUG}" 2>/dev/null | sed -n 's/.*"ip_address": "\([^"]*\)".*/\1/p' | head -1)
+  [[ -n "${ZW_IP}" ]] && ZWAVE_WS_URL="ws://${ZW_IP}:3000"
+fi
+export ZWAVE_WS_URL
 python3 - <<PY
-import json
+import json, os
 p = "/config/.storage/core.config_entries"
 d = json.load(open(p))
+url = os.environ.get("ZWAVE_WS_URL", "ws://a0d7b954-zwavejs2mqtt:3000")
 for e in d["data"]["entries"]:
     if e.get("domain") == "zwave_js" and e.get("entry_id") == "${ENTRY_ID}":
-        e["data"]["url"] = "ws://a0d7b954-zwavejs2mqtt:3000"
+        e["data"]["url"] = url
         e["data"]["use_addon"] = False
         e["data"]["integration_created_addon"] = False
         e["disabled_by"] = None
 json.dump(d, open(p, "w"), indent=2)
-print("integration patched")
+print("integration patched", url)
 PY
-log_ha "integration ws://a0d7b954-zwavejs2mqtt:3000"
+log_ha "integration ${ZWAVE_WS_URL}"
 
 ha apps start "$SLUG" 2>&1 || true
 sleep 50
