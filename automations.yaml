@@ -9942,13 +9942,11 @@
       entity_id: input_text.grokbot_ask_last
     data:
       value: '{{ svar_id_part }}|{{ svar_text }}|{{ now().isoformat() }}'
-  - action: event.fire
-    data:
-      event_type: grokbot_ask_svar
-      event_data:
-        svar_id: '{{ svar_id_part }}'
-        svar: '{{ svar_text }}'
-        action: '{{ action_raw }}'
+  - event: grokbot_ask_svar
+    event_data:
+      svar_id: '{{ svar_id_part }}'
+      svar: '{{ svar_text }}'
+      action: '{{ action_raw }}'
   - action: script.mobilnotis
     data:
       meddelande: clear_notification
