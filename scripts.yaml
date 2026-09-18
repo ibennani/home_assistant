@@ -2456,9 +2456,7 @@ grokbot_notify:
   sequence:
   - variables:
       dedupe_key: "{% set ny = nyckel | default('') | trim %}{% if ny | length > 0 %}{{ ny }}{% else %}{% set msg = meddelande | default('') | lower | trim | regex_replace('\\\\s+', ' ') %}{{ (bot | default('grokbot') | lower | trim) ~ ':' ~ msg }}{% endif %}"
-      lagrade_nycklar: '{{ (states(''input_text.grokbot_notify_dedupe'') | default('''')) .split(''|'') | reject(''equalto'', '''') | list }}'
-      redan_skickad: '{{ dedupe_key in lagrade_nycklar }}'
-      tysta_timmar: '{{ now().hour >= 22 or now().hour < 8 }}'
+      lagrade_raw: '{{ states(''input_text.grokbot_notify_dedupe'') | default('''') }}'
   - choose:
     - conditions:
       - condition: template
@@ -2467,18 +2465,18 @@ grokbot_notify:
       - stop: Grokbot — ingen åtgärd, ingen notis
     - conditions:
       - condition: template
-        value_template: '{{ redan_skickad }}'
+        value_template: "{% set keys = lagrade_raw.split('|') | reject('equalto', '') | list %}{{ dedupe_key in keys }}"
       sequence:
       - stop: Grokbot — dedupe, redan skickad
     - conditions:
       - condition: template
-        value_template: '{{ tysta_timmar and not (kritisk | default(false)) }}'
+        value_template: '{{ (now().hour >= 22 or now().hour < 8) and not (kritisk | default(false)) }}'
       sequence:
       - stop: Grokbot — tysta timmar, icke-kritisk
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ tysta_timmar and (kritisk | default(false)) }}'
+        value_template: '{{ (now().hour >= 22 or now().hour < 8) and (kritisk | default(false)) }}'
       sequence:
       - wait_for_trigger:
         - trigger: time
