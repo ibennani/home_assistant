@@ -109,8 +109,26 @@
     - unknown
   - trigger: state
     entity_id:
+    - sensor.erik_aktiv_zon
+    - sensor.isabelle_aktiv_zon
+    to: zone.home
+    not_from:
+    - unavailable
+    - unknown
+  - trigger: state
+    entity_id:
+    - sensor.erik_aktiv_zon
+    - sensor.isabelle_aktiv_zon
+    from: zone.home
+    for: 00:02:00
+    not_to:
+    - unavailable
+    - unknown
+  - trigger: state
+    entity_id:
     - sensor.ilias_s23_ultra_charger_type
     - sensor.anna_s22_ultra_charger_type
+    - sensor.erik_s23_charger_type
     not_from:
     - unavailable
     - unknown
@@ -145,9 +163,12 @@
         \ if t_natt_fre_lor not in _bad else none %}\n{% set t_natt_lediga = states('input_datetime.huset_nattid_lediga')\
         \ %} {% set nattid_lediga_ts = as_timestamp(today_at(t_natt_lediga)) if t_natt_lediga not in _bad else none %}\n{%\
         \ set ljusstyrka_framsidan = states('sensor.utomhus_framsidan_ljusstyrka') | int(0) %}\n{% set ilias_hemma = is_state('binary_sensor.ilias_hemma',\
-        \ 'on') %} {% set anna_hemma  = is_state('binary_sensor.anna_hemma', 'on') %} {% set någon_hemma = ilias_hemma or\
-        \ anna_hemma %}\n{% set ilias_mobil_laddar = is_state('sensor.ilias_s23_ultra_charger_type','ac') %} {% set annas_mobil_laddar\
-        \ = is_state('sensor.anna_s22_ultra_charger_type','ac') %}\n{# Robust hantering av laddvillkor beroende på vem som\
+        \ 'on') %} {% set anna_hemma  = is_state('binary_sensor.anna_hemma', 'on') %} {% set vuxen_hemma = ilias_hemma or anna_hemma %}\
+        \ {% set erik_hemma = is_state('binary_sensor.erik_hemma', 'on') %} {% set isabelle_hemma = is_state('binary_sensor.isabelle_hemma',\
+        \ 'on') %} {% set barn_hemma = erik_hemma or isabelle_hemma %} {% set huset_tomt = not vuxen_hemma and not barn_hemma %}\
+        \ {% set någon_hemma = vuxen_hemma %}\n{% set ilias_mobil_laddar = is_state('sensor.ilias_s23_ultra_charger_type','ac') %}\
+        \ {% set annas_mobil_laddar = is_state('sensor.anna_s22_ultra_charger_type','ac') %} {% set erik_mobil_laddar = is_state('sensor.erik_s23_charger_type','ac')\
+        \ %}\n{# Robust hantering av laddvillkor beroende på vem som\
         \ är hemma #} {% set laddvillkor_ok =\n  (ilias_hemma and anna_hemma and ilias_mobil_laddar and annas_mobil_laddar)\n\
         \  or (ilias_hemma and not anna_hemma and ilias_mobil_laddar)\n  or (not ilias_hemma and anna_hemma and annas_mobil_laddar)\n\
         %}\n{% set solvinkel_dag   = states('input_number.settings_solvinkel_dag') | float(0) %} {% set solvinkel_kvall =\
@@ -167,12 +188,14 @@
         \ %}\n{% set current_mode = states('input_select.house_time_modes') %} {% set ns = namespace(mode=current_mode) %}\n\
         {# ============================================================ #} {# Regelmotor: VACATION OFF                   \
         \                  #} {# ============================================================ #} {% if is_state('input_boolean.vacation_mode','off')\
-        \ %}\n\n  {# Tvinga kvar Kväll fram till cutoff eller tills laddvillkor uppfylls #}\n  {% set keep_evening =\n   \
-        \ current_mode == 'Kväll'\n    and någon_hemma\n    and now_ts < cutoff_ts\n    and not (now_ts >= laddtid_ts and\
-        \ laddvillkor_ok)\n  %}\n\n  {% if keep_evening %}\n    {% set ns.mode = 'Kväll' %}\n  {% else %}\n\n    {# Natt före\
+        \ %}\n\n  {# Tvinga kvar Kväll: vuxna (laddning) eller barn utan vuxen (Erik laddar / Isabelle till cutoff) #}\n  {% set keep_evening =\n\
+        \    (current_mode == 'Kväll'\n     and vuxen_hemma\n     and now_ts < cutoff_ts\n     and not (now_ts >= laddtid_ts and laddvillkor_ok))\n\
+        \    or (current_mode == 'Kväll'\n     and not vuxen_hemma\n     and erik_hemma\n     and now_ts < cutoff_ts\n     and not (now_ts >= laddtid_ts and erik_mobil_laddar))\n\
+        \    or (current_mode == 'Kväll'\n     and not vuxen_hemma\n     and isabelle_hemma\n     and not erik_hemma\n     and now_ts < cutoff_ts)\n\
+        \  %}\n\n  {% if keep_evening %}\n    {% set ns.mode = 'Kväll' %}\n  {% else %}\n\n    {# Natt före\
         \ morgontid #}\n    {% if veckodag in [1,2,3,4,5] and morgontid_vardagar_ts is not none and now_ts < morgontid_vardagar_ts\
-        \ and (not någon_hemma or now_ts >= cutoff_ts or current_mode == 'Natt') %}\n      {% set ns.mode = 'Natt' %}\n  \
-        \  {% elif veckodag in [6,7] and morgontid_helger_ts is not none and now_ts < morgontid_helger_ts and (not någon_hemma\
+        \ and (huset_tomt or now_ts >= cutoff_ts or current_mode == 'Natt') %}\n      {% set ns.mode = 'Natt' %}\n  \
+        \  {% elif veckodag in [6,7] and morgontid_helger_ts is not none and now_ts < morgontid_helger_ts and (huset_tomt\
         \ or now_ts >= cutoff_ts or current_mode == 'Natt') %}\n      {% set ns.mode = 'Natt' %}\n\n    {# Morgon/Dag före\
         \ lunch #}\n    {% elif veckodag in [1,2,3,4,5]\n          and morgontid_vardagar_ts is not none and now_ts >= morgontid_vardagar_ts\n\
         \          and noon_today_ts is not none and now_ts < noon_today_ts\n          and elevation < solvinkel_dag %}\n\
@@ -197,15 +220,21 @@
         \          and ljusstyrka_framsidan < 2000 %}\n      {% set ns.mode = 'Kväll' %}\n\n    {# Kväll -> Natt #}\n    {%\
         \ elif current_mode == 'Kväll' and någon_hemma and now_ts >= laddtid_ts and laddvillkor_ok %}\n      {% set ns.mode\
         \ = 'Natt' %}\n    {% elif current_mode == 'Kväll' and någon_hemma and now_ts >= cutoff_ts %}\n      {% set ns.mode\
-        \ = 'Natt' %}\n\n    {# Ingen hemma #}\n    {% elif not någon_hemma and veckodag in [7,1,2,3,4]\n          and nattid_son_tor_ts\
-        \ is not none and now_ts >= nattid_son_tor_ts %}\n      {% set ns.mode = 'Natt' %}\n    {% elif not någon_hemma and\
+        \ = 'Natt' %}\n\n    {% elif current_mode == 'Kväll' and not vuxen_hemma and erik_hemma and now_ts >= laddtid_ts and erik_mobil_laddar %}\n\
+        \      {% set ns.mode = 'Natt' %}\n    {% elif current_mode == 'Kväll' and not vuxen_hemma and erik_hemma and now_ts >= cutoff_ts %}\n\
+        \      {% set ns.mode = 'Natt' %}\n    {% elif current_mode == 'Kväll' and not vuxen_hemma and isabelle_hemma and not erik_hemma and now_ts >= cutoff_ts %}\n\
+        \      {% set ns.mode = 'Natt' %}\n\n    {# Ingen hemma (vuxen eller barn) #}\n    {% elif huset_tomt and veckodag in [7,1,2,3,4]\n          and nattid_son_tor_ts\
+        \ is not none and now_ts >= nattid_son_tor_ts %}\n      {% set ns.mode = 'Natt' %}\n    {% elif huset_tomt and\
         \ veckodag in [5,6]\n          and nattid_fre_lor_ts is not none and now_ts >= nattid_fre_lor_ts %}\n      {% set\
         \ ns.mode = 'Natt' %}\n    {% endif %}\n\n  {% endif %}\n\n{# ============================================================\
         \ #} {# Regelmotor: VACATION ON                                      #} {# ============================================================\
-        \ #} {% elif is_state('input_boolean.vacation_mode','on') %}\n\n  {% set keep_evening =\n    current_mode == 'Kväll'\n\
-        \    and någon_hemma\n    and now_ts < cutoff_ts\n    and not (now_ts >= laddtid_ts and laddvillkor_ok)\n  %}\n\n\
+        \ #} {% elif is_state('input_boolean.vacation_mode','on') %}\n\n  {% set keep_evening =\n    (current_mode == 'Kväll'\n\
+        \     and vuxen_hemma\n     and now_ts < cutoff_ts\n     and not (now_ts >= laddtid_ts and laddvillkor_ok))\n\
+        \    or (current_mode == 'Kväll'\n     and not vuxen_hemma\n     and erik_hemma\n     and now_ts < cutoff_ts\n     and not (now_ts >= laddtid_ts and erik_mobil_laddar))\n\
+        \    or (current_mode == 'Kväll'\n     and not vuxen_hemma\n     and isabelle_hemma\n     and not erik_hemma\n     and now_ts < cutoff_ts)\n\
+        \  %}\n\n\
         \  {% if keep_evening %}\n    {% set ns.mode = 'Kväll' %}\n  {% else %}\n\n    {# Natt före morgontid (lediga) #}\n\
-        \    {% if morgontid_lediga_ts is not none and now_ts < morgontid_lediga_ts and (not någon_hemma or now_ts >= cutoff_ts\
+        \    {% if morgontid_lediga_ts is not none and now_ts < morgontid_lediga_ts and (huset_tomt or now_ts >= cutoff_ts\
         \ or current_mode == 'Natt') %}\n      {% set ns.mode = 'Natt' %}\n\n    {# Morgon/Dag före lunch (lediga) #}\n  \
         \  {% elif morgontid_lediga_ts is not none and now_ts >= morgontid_lediga_ts\n          and noon_today_ts is not none\
         \ and now_ts < noon_today_ts\n          and elevation < solvinkel_dag %}\n      {% set ns.mode = 'Morgon' %}\n   \
@@ -218,7 +247,10 @@
         \        and ljusstyrka_framsidan < 2000 %}\n      {% set ns.mode = 'Kväll' %}\n\n    {# Kväll -> Natt (lediga) #}\n\
         \    {% elif current_mode == 'Kväll' and någon_hemma and now_ts >= laddtid_ts and laddvillkor_ok %}\n      {% set\
         \ ns.mode = 'Natt' %}\n    {% elif current_mode == 'Kväll' and någon_hemma and now_ts >= cutoff_ts %}\n      {% set\
-        \ ns.mode = 'Natt' %}\n\n    {# Ingen hemma -> Natt (lediga) #}\n    {% elif not någon_hemma and nattid_lediga_ts\
+        \ ns.mode = 'Natt' %}\n    {% elif current_mode == 'Kväll' and not vuxen_hemma and erik_hemma and now_ts >= laddtid_ts and erik_mobil_laddar %}\n\
+        \      {% set ns.mode = 'Natt' %}\n    {% elif current_mode == 'Kväll' and not vuxen_hemma and erik_hemma and now_ts >= cutoff_ts %}\n\
+        \      {% set ns.mode = 'Natt' %}\n    {% elif current_mode == 'Kväll' and not vuxen_hemma and isabelle_hemma and not erik_hemma and now_ts >= cutoff_ts %}\n\
+        \      {% set ns.mode = 'Natt' %}\n\n    {# Ingen hemma -> Natt (lediga) #}\n    {% elif huset_tomt and nattid_lediga_ts\
         \ is not none and now_ts >= nattid_lediga_ts %}\n      {% set ns.mode = 'Natt' %}\n    {% endif %}\n\n  {% endif %}\n\
         \n{% endif %}\n{# Slutgiltig failsafe #} {{ (ns.mode if ns.mode in ['Morgon','Dag','Kväll','Natt']\n   else (current_mode\
         \ if current_mode in ['Morgon','Dag','Kväll','Natt'] else 'Natt')) | string }}\n"
