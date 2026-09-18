@@ -112,3 +112,9 @@
       name: Hemma-WiFi SSID för närvaro
       initial: "Bennani"
       max: 100
+
+  # Pipe-separerade dedupe-nycklar för script.grokbot_notify (rensa via grokbot_notify_clear)
+    grokbot_notify_dedupe:
+      name: Grokbot notify — skickade nycklar
+      initial: ""
+      max: 255

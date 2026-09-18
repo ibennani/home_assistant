@@ -2352,6 +2352,7 @@ mobilnotis:
           - husage_natt
           - vitvaror
           - cursor
+          - grokbot
           - zon
     prefix_hemmet:
       name: Prefix HEMMET
@@ -2378,7 +2379,7 @@ mobilnotis:
   - variables:
       meddelande_text: '{% if prefix_hemmet %} HEMMET {{ now().strftime(''%R'') }}: {{ meddelande }} {% else %} {{ meddelande
         }} {% endif %}'
-      ikon_sokvag: "{% if mottagare != 'mobile_app_ilias_s23_ultra' or ikon == 'standard' %}{% else %}{% set icons = {\n  'huslage_morgon': '/local/notis/huslage-morgon.png',\n  'huslage_dag': '/local/notis/huslage-dag.png',\n  'huslage_kvall': '/local/notis/huslage-kvall.png',\n  'huslage_natt': '/local/notis/huslage-natt.png',\n  'vitvaror': '/local/notis/vitvaror.png',\n  'cursor': '/local/notis/cursor.png',\n  'zon': '/local/notis/zon.png'\n} %}{{ icons.get(ikon, '') }}{% endif %}"
+      ikon_sokvag: "{% if mottagare != 'mobile_app_ilias_s23_ultra' or ikon == 'standard' %}{% else %}{% set icons = {\n  'huslage_morgon': '/local/notis/huslage-morgon.png',\n  'huslage_dag': '/local/notis/huslage-dag.png',\n  'huslage_kvall': '/local/notis/huslage-kvall.png',\n  'huslage_natt': '/local/notis/huslage-natt.png',\n  'vitvaror': '/local/notis/vitvaror.png',\n  'cursor': '/local/notis/cursor.png',\n  'grokbot': '/local/notis/grokbot.png',\n  'zon': '/local/notis/zon.png'\n} %}{{ icons.get(ikon, '') }}{% endif %}"
       notify_payload: '{% set d = {''ttl'': 0, ''priority'': ''high''} %}{% if ikon_sokvag %}{% set d = d | combine({''icon_url'': ikon_sokvag}) %}{% endif %}{% if tag %}{% set d = d | combine({''tag'': tag}) %}{% endif %}{% if vibration %}{% set d = d | combine({''vibration'': vibration}) %}{% endif %}{% if notis_data %}{% set d = d | combine(notis_data) %}{% endif %}{{ d }}'
   - action: notify.{{ mottagare }}
     data:
@@ -2417,6 +2418,120 @@ cursor_klar_notis:
       title: 'Cursor: {{ now().strftime(''%H:%M'') }}'
       ikon: cursor
       vibration: 1000, 300, 1000, 300, 1000
+grokbot_notify:
+  alias: 'Grokbot: Mobilnotis (policy)'
+  description: Skickar Grokbot-notis till Ilias endast vid åtgärd, utan dedupe-spam. Tyst 22:00–08:00 — icke-kritisk droppas, kritisk väntar till 08:00.
+  mode: queued
+  max: 10
+  fields:
+    meddelande:
+      name: Meddelande
+      required: true
+      selector:
+        text: null
+    bot:
+      name: Bot
+      description: Avsändare för dedupe-nyckel om nyckel utelämnas
+      default: grokbot
+      selector:
+        text: null
+    atgard:
+      name: Åtgärd krävs
+      description: Måste vara true — annars skickas ingen notis
+      default: false
+      selector:
+        boolean: null
+    nyckel:
+      name: Dedupe-nyckel
+      description: Valfri stabil nyckel (bot+ärende). Tom = bot + normaliserat meddelande
+      default: ''
+      selector:
+        text: null
+    kritisk:
+      name: Kritisk
+      description: Under tysta timmar (22–08) köas till 08:00 i stället för att droppas
+      default: false
+      selector:
+        boolean: null
+  sequence:
+  - variables:
+      dedupe_key: "{% set ny = nyckel | default('') | trim %}{% if ny | length > 0 %}{{ ny }}{% else %}{% set msg = meddelande | default('') | lower | trim | regex_replace('\\\\s+', ' ') %}{{ (bot | default('grokbot') | lower | trim) ~ ':' ~ msg }}{% endif %}"
+      lagrade_nycklar: '{{ (states(''input_text.grokbot_notify_dedupe'') | default('''')) .split(''|'') | reject(''equalto'', '''') | list }}'
+      redan_skickad: '{{ dedupe_key in lagrade_nycklar }}'
+      tysta_timmar: '{{ now().hour >= 22 or now().hour < 8 }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not (atgard | default(false)) }}'
+      sequence:
+      - stop: Grokbot — ingen åtgärd, ingen notis
+    - conditions:
+      - condition: template
+        value_template: '{{ redan_skickad }}'
+      sequence:
+      - stop: Grokbot — dedupe, redan skickad
+    - conditions:
+      - condition: template
+        value_template: '{{ tysta_timmar and not (kritisk | default(false)) }}'
+      sequence:
+      - stop: Grokbot — tysta timmar, icke-kritisk
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ tysta_timmar and (kritisk | default(false)) }}'
+      sequence:
+      - wait_for_trigger:
+        - trigger: time
+          at: 08:00:00
+  - action: script.mobilnotis
+    data:
+      mottagare: mobile_app_ilias_s23_ultra
+      meddelande: '{{ meddelande }}'
+      title: Grokbot
+      ikon: grokbot
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.grokbot_notify_dedupe
+    data:
+      value: "{% set k = dedupe_key %}{% set raw = states('input_text.grokbot_notify_dedupe') | default('') %}{% set keys = raw.split('|') | reject('equalto', '') | reject('equalto', k) | list + [k] %}{% set trimmed = keys[-20:] %}{{ trimmed | join('|') }}"
+grokbot_notify_clear:
+  alias: 'Grokbot: Rensa dedupe-nyckel'
+  description: Rensa en dedupe-nyckel eller alla, så samma ärende kan notiseras igen efter lösning.
+  mode: parallel
+  fields:
+    nyckel:
+      name: Nyckel
+      description: Nyckel att ta bort från dedupe-listan
+      default: ''
+      selector:
+        text: null
+    alla:
+      name: Rensa alla
+      default: false
+      selector:
+        boolean: null
+  sequence:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ alla | default(false) }}'
+      sequence:
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.grokbot_notify_dedupe
+        data:
+          value: ''
+    - conditions:
+      - condition: template
+        value_template: '{{ (nyckel | default('''') | trim | length) > 0 }}'
+      sequence:
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.grokbot_notify_dedupe
+        data:
+          value: "{% set k = nyckel | trim %}{% set keys = (states('input_text.grokbot_notify_dedupe') | default('')).split('|') | reject('equalto', '') | reject('equalto', k) | list %}{{ keys | join('|') }}"
+    default:
+    - stop: Grokbot clear — ange nyckel eller alla=true
 dhcp_ny_enhet_notis:
   alias: 'Nätverk: Notis för nya DHCP-enheter'
   description: Uppdaterar DHCP-sensorn (kör även ny-enhet-kontroll i samma poll).
