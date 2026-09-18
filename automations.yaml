@@ -9921,6 +9921,41 @@
   - action: script.cursor_klar_notis
     data:
       beskrivning: '{{ trigger.event.data.beskrivning }}'
+- alias: 'Grokbot: Ja/Nej-svar från mobilnotis'
+  id: grokbot_ask_svar
+  description: Skriver svar till input_text.grokbot_ask_last och event grokbot_ask_svar vid tryck på Ja/Nej.
+  mode: queued
+  max: 10
+  triggers:
+  - trigger: event
+    event_type: mobile_app_notification_action
+  conditions:
+  - condition: template
+    value_template: "{% set a = trigger.event.data.action | default('') %}{{ a is string and (a.startswith('GROKBOT_YES_') or a.startswith('GROKBOT_NO_')) }}"
+  actions:
+  - variables:
+      action_raw: '{{ trigger.event.data.action }}'
+      svar_id_part: "{% set a = trigger.event.data.action %}{{ a.replace('GROKBOT_YES_', '').replace('GROKBOT_NO_', '') }}"
+      svar_text: "{% if trigger.event.data.action.startswith('GROKBOT_YES_') %}ja{% else %}nej{% endif %}"
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.grokbot_ask_last
+    data:
+      value: '{{ svar_id_part }}|{{ svar_text }}|{{ now().isoformat() }}'
+  - action: event.fire
+    data:
+      event_type: grokbot_ask_svar
+      event_data:
+        svar_id: '{{ svar_id_part }}'
+        svar: '{{ svar_text }}'
+        action: '{{ action_raw }}'
+  - action: script.mobilnotis
+    data:
+      meddelande: clear_notification
+      mottagare: mobile_app_ilias_s23_ultra
+      title: Grokbot
+      ikon: grokbot
+      tag: grokbot_ask_{{ svar_id_part }}
 - alias: 'Mobilnotis: NFC Badrummet under spegeln'
   id: nfc_badrum_blipp
   description: Sätter badrummet_vem via NFC-blipp (Anna/Erik/Ilias) eller när Erik släcker takspotten (on→off) med LED-lampor
