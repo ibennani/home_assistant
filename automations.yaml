@@ -5330,106 +5330,225 @@
     - sensor.isabelle_aktiv_zon
   conditions:
   - condition: template
-    value_template: "{{ trigger.from_state.state not in ['unknown', 'unavailable', 'none']\n   and trigger.to_state.state\
-      \ not in ['unknown', 'unavailable', 'none']\n   and trigger.from_state.state != trigger.to_state.state }}\n"
+    value_template: >
+      {{ trigger.from_state.state not in ['unknown', 'unavailable', 'none']
+         and trigger.to_state.state not in ['unknown', 'unavailable', 'none']
+         and trigger.from_state.state != trigger.to_state.state }}
   actions:
   - variables:
-      notification_message: "{%- if trigger.entity_id == 'sensor.anna_aktiv_zon' -%}\n  {%- set person = 'Anna' -%}\n{%- elif\
-        \ trigger.entity_id == 'sensor.erik_aktiv_zon' -%}\n  {%- set person = 'Erik' -%}\n{%- elif trigger.entity_id == 'sensor.isabelle_aktiv_zon'\
-        \ -%}\n  {%- set person = 'Isabelle' -%}\n{%- else -%}\n  {%- set person = 'Okänd' -%}\n{%- endif -%} {%- set from_slug\
-        \ = trigger.from_state.state.replace('zone.', '') if trigger.from_state.state.startswith('zone.') else trigger.from_state.state\
-        \ -%} {%- set to_slug = trigger.to_state.state.replace('zone.', '') if trigger.to_state.state.startswith('zone.')\
-        \ else trigger.to_state.state -%} {%- if to_slug == 'not_home' and from_slug == 'home' -%}\n  {{ person }} har gått\
-        \ hemifrån\n{%- elif to_slug == 'not_home' and from_slug == 'annas_jobb' -%}\n  {{ person }} {% if person == 'Anna'\
-        \ %}har lämnat jobbet {% else %}har lämnat Annas jobb{% endif %}\n{%- elif to_slug == 'not_home' and from_slug ==\
-        \ 'eriks_skola' -%}\n  {{ person }} {% if person == 'Erik' %}har lämnat skolan {% else %}har lämnat Eriks skola{%\
-        \ endif %}\n{%- elif to_slug == 'not_home' and from_slug == 'ilias_jobb' -%}\n  {{ person }} {% if person == 'Ilias'\
-        \ %}har lämnat jobbet {% else %}har lämnat Ilias jobb{% endif %}\n{%- elif to_slug == 'not_home' and from_slug ==\
-        \ 'kth_campus' -%}\n  {{ person }} har lämnat KTH\n{%- elif to_slug == 'not_home' and from_slug == 'kth_flemmingsberg'\
-        \ -%}\n  {{ person }} har lämnat Youssef och Emma\n{%- elif to_slug == 'not_home' and from_slug == 'albins_mamma'\
-        \ -%}\n  {{ person }} har åkt ifrån Albins mamma\n{%- elif to_slug == 'not_home' and from_slug == 'albins_jobb' -%}\n\
-        \  {{ person }} {% if person == 'Albin' %}har lämnat jobbet {% else %}har lämnat Albins jobb{% endif %}\n{%- elif\
-        \ to_slug == 'not_home' and from_slug == 'isabelles_jobb' -%}\n  {{ person }} {% if person == 'Isabelle' %}har lämnat\
-        \ jobbet {% else %}har lämnat Isabelles jobb{% endif %}\n{%- elif to_slug == 'not_home' and from_slug == 'albin' -%}\n\
-        \  {{ person }} har åkt hemifrån Albin\n{%- elif to_slug == 'not_home' and from_slug == 'grasko' -%}\n  {{ person\
-        \ }} har lämnat Gräskö\n{%- elif to_slug == 'not_home' and from_slug == 'isabelles_mormor' -%}\n  {{ person }} {%\
-        \ if person == 'Isabelle' %}har åkt hemifrån mormor {% else %}har åkt ifrån Isabelles mormor{% endif %}\n{%- elif\
-        \ to_slug == 'not_home' and from_slug == 'isabelles_skola' -%}\n  {{ person }} {% if person == 'Isabelle' %}har lämnat\
-        \ skolan {% else %}har lämnat Isabelles skola{% endif %}\n{%- elif to_slug == 'not_home' and from_slug == 'goteborg_c'\
-        \ -%}\n  {{ person }} har lämnat Göteborg Central\n{%- elif to_slug == 'not_home' and from_slug == 'isabelles_moster_jenny'\
-        \ -%}\n  {{ person }} har lämnat moster Jenny\n{%- elif to_slug == 'not_home' and from_slug == 'adrian' -%}\n  {{\
-        \ person }} har lämnat Adrian\n{%- elif to_slug == 'not_home' and from_slug == 'justus' -%}\n  {{ person }} har lämnat\
-        \ Justus\n{%- elif to_slug == 'not_home' and from_slug == 'rodkinda_19' -%}\n  {{ person }} har lämnat Rödkinda 19\n\
-        {%- elif to_slug == 'not_home' and from_slug == 'eddie' -%}\n  {{ person }} har lämnat Eddie\n{%- elif to_slug ==\
-        \ 'not_home' and from_slug == 'knut' -%}\n  {{ person }} har lämnat Knut\n{%- elif to_slug == 'not_home' and from_slug\
-        \ == 'milo' -%}\n  {{ person }} har lämnat Milo\n{%- elif to_slug == 'not_home' and from_slug == 'hemma_hos_rio' -%}\n\
-        \  {{ person }} har lämnat Rio i Norge\n{%- elif to_slug == 'not_home' and from_slug == 'ellio_i_tanum' -%}\n  {{\
-        \ person }} har lämnat Selma i Tanum\n{%- elif to_slug == 'not_home' and from_slug == 'digg_sundsvall' -%}\n  {{ person\
-        \ }} har lämnat Stockholm centralstation\n{%- elif to_slug == 'not_home' and from_slug == 'ostra_sjukhuset' -%}\n\
-        \  {{ person }} har lämnat Östra sjukhuset\n{%- elif to_slug == 'not_home' and from_slug == 'stromstad' -%}\n  {{\
-        \ person }} har lämnat Strömstad\n{%- elif to_slug == 'not_home' and from_slug == 'ik_sodra_skarpnack' -%}\n  {{ person\
-        \ }} har lämnat judohallen i Skarpnäck\n{%- elif to_slug == 'not_home' and from_slug == 'torvallahallen' -%}\n  {{\
-        \ person }} har lämnat Torvallahallen\n{%- elif to_slug == 'not_home' and from_slug == 'zaki_och_hanna' -%}\n  {{\
-        \ person }} har lämnat Zaki och Hanna\n{%- elif to_slug == 'not_home' and from_slug == 'maria' -%}\n  {{ person }}\
-        \ har lämnat Maria\n{%- elif to_slug == 'not_home' and from_slug == 'sixten' -%}\n  {{ person }} har lämnat Sixten\n\
-        {%- elif to_slug == 'not_home' and from_slug == 'oslo' -%}\n  {{ person }} har lämnat Oslo\n{%- elif to_slug == 'not_home'\
-        \ and from_slug == 'farmor_och_farfar' -%}\n  {{ person }} har lämnat farmor och farfar\n{%- elif to_slug == 'not_home'\
-        \ and from_slug == 'solveig_och_lennart' -%}\n  {{ person }} har lämnat Solveig och Lennart i Västerås\n{%- elif to_slug\
-        \ == 'not_home' and from_slug == 'bengt' -%}\n  {{ person }} har lämnat Bengt i Nol\n{%- elif to_slug == 'not_home'\
-        \ and from_slug == 'farsta_centrum' -%}\n  {{ person }} har lämnat Farsta centrum\n{%- elif to_slug == 'not_home'\
-        \ and from_slug == 'farsta_strand_pendeltagstation' -%}\n  {{ person }} har lämnat Farsta strand pendeltågstation\n\
-        {%- elif to_slug == 'not_home' and from_slug == 'eksharadsgatans_busshallplats' -%}\n  {{ person }} har lämnat Ekshäradsgatans\
-        \ busshållplats\n{%- elif to_slug == 'not_home' and from_slug == 'ellio_i_norge' -%}\n  {{ person }} har lämnat Selma\
-        \ i Norge\n{%- elif to_slug == 'not_home' and from_slug == 'eina' -%}\n  {{ person }} har lämnat Eina\n{%- elif to_slug\
-        \ == 'not_home' and from_slug == 'norge_2' -%}\n  {{ person }} har lämnat Norge 2\n{%- elif to_slug == 'not_home'\
-        \ and from_slug == 'sahlgrenska_sjukhuset' -%}\n  {{ person }} har lämnat Sahlgrenska sjukhuset\n{%- elif to_slug\
-        \ == 'not_home' and from_slug == 'molndahls_sjukhus' -%}\n  {{ person }} har lämnat Mölndahls sjukhuset\n{%- elif\
-        \ to_slug == 'not_home' and from_slug == 'stefan' -%}\n  {{ person }} har åkt ifrån Stefan\n{%- elif to_slug == 'not_home'\
-        \ and from_slug == 'elins_jobb' -%}\n  {{ person }} har lämnat Elins jobb\n{%- elif to_slug == 'not_home' and from_slug\
-        \ == 'isabelles_hem' -%}\n  {{ person }} {% if person == 'Isabelle' %}har åkt hemifrån sitt hem{% else %}har lämnat\
-        \ Isabelles hem{% endif %}\n{%- elif to_slug == 'home' -%}\n  {{ person }} är hemma\n{%- elif to_slug == 'annas_jobb'\
-        \ -%}\n  {{ person }} {% if person == 'Anna' %}är på jobbet {% else %}är på Annas jobb{% endif %}\n{%- elif to_slug\
-        \ == 'eriks_skola' -%}\n  {{ person }} {% if person == 'Erik' %}är i skolan {% else %}är i Eriks skola{% endif %}\n\
-        {%- elif to_slug == 'ilias_jobb' -%}\n  {{ person }} {% if person == 'Ilias' %}är på jobbet {% else %}är på Ilias\
-        \ jobb{% endif %}\n{%- elif to_slug == 'kth_campus' -%}\n  {{ person }} är på KTH\n{%- elif to_slug == 'kth_flemmingsberg'\
-        \ -%}\n  {{ person }} är på Youssef och Emma\n{%- elif to_slug == 'albins_mamma' -%}\n  {{ person }} är hos Albins\
-        \ mamma\n{%- elif to_slug == 'albins_jobb' -%}\n  {{ person }} {% if person == 'Albin' %}är på jobbet {% else %}är\
-        \ på Albins jobb{% endif %}\n{%- elif to_slug == 'isabelles_jobb' -%}\n  {{ person }} {% if person == 'Isabelle' %}är\
-        \ på jobbet {% else %}är på Isabelles jobb{% endif %}\n{%- elif to_slug == 'albin' -%}\n  {{ person }} är hemma hos\
-        \ Albin\n{%- elif to_slug == 'grasko' -%}\n  {{ person }} är på Gräskö\n{%- elif to_slug == 'isabelles_mormor' -%}\n\
-        \  {{ person }} {% if person == 'Isabelle' %}är hos mormor {% else %}är hos Isabelles mormor{% endif %}\n{%- elif\
-        \ to_slug == 'isabelles_skola' -%}\n  {{ person }} {% if person == 'Isabelle' %}är i skolan {% else %}är i Isabelles\
-        \ skola{% endif %}\n{%- elif to_slug == 'goteborg_c' -%}\n  {{ person }} är på Göteborg Central\n{%- elif to_slug\
-        \ == 'isabelles_moster_jenny' -%}\n  {{ person }} är hos moster Jenny\n{%- elif to_slug == 'adrian' -%}\n  {{ person\
-        \ }} är hos Adrian\n{%- elif to_slug == 'justus' -%}\n  {{ person }} är hos Justus\n{%- elif to_slug == 'rodkinda_19'\
-        \ -%}\n  {{ person }} är hos Rödkinda 19\n{%- elif to_slug == 'eddie' -%}\n  {{ person }} är hos Eddie\n{%- elif to_slug\
-        \ == 'knut' -%}\n  {{ person }} är hos Knut\n{%- elif to_slug == 'milo' -%}\n  {{ person }} är hos Milo\n{%- elif\
-        \ to_slug == 'hemma_hos_rio' -%}\n  {{ person }} är hos Rio i Norge\n{%- elif to_slug == 'ellio_i_tanum' -%}\n  {{\
-        \ person }} är hos Selma i Tanum\n{%- elif to_slug == 'digg_sundsvall' -%}\n  {{ person }} är på Stockholm centralstation\n\
-        {%- elif to_slug == 'ostra_sjukhuset' -%}\n  {{ person }} är på Östra sjukhuset\n{%- elif to_slug == 'stromstad' -%}\n\
-        \  {{ person }} är i Strömstad\n{%- elif to_slug == 'ik_sodra_skarpnack' -%}\n  {{ person }} är i judohallen i Skarpnäck\n\
-        {%- elif to_slug == 'torvallahallen' -%}\n  {{ person }} är i Torvallahallen\n{%- elif to_slug == 'zaki_och_hanna'\
-        \ -%}\n  {{ person }} är hos Zaki och Hanna\n{%- elif to_slug == 'maria' -%}\n  {{ person }} är hos Maria\n{%- elif\
-        \ to_slug == 'sixten' -%}\n  {{ person }} är hemma hos Sixten\n{%- elif to_slug == 'oslo' -%}\n  {{ person }} är i\
-        \ Oslo\n{%- elif to_slug == 'farmor_och_farfar' -%}\n  {{ person }} är hos farmor och farfar\n{%- elif to_slug ==\
-        \ 'solveig_och_lennart' -%}\n  {{ person }} är hos Solveig och Lennart i Västerås\n{%- elif to_slug == 'bengt' -%}\n\
-        \  {{ person }} är hos Bengt i Nol\n{%- elif to_slug == 'farsta_centrum' -%}\n  {{ person }} är i Farsta centrum\n\
-        {%- elif to_slug == 'farsta_strand_pendeltagstation' -%}\n  {{ person }} är på Farsta strand pendeltågstation\n{%-\
-        \ elif to_slug == 'eksharadsgatans_busshallplats' -%}\n  {{ person }} är på Ekshäradsgatans busshållplats\n{%- elif\
-        \ to_slug == 'ellio_i_norge' -%}\n  {{ person }} är hos Selma i Norge\n{%- elif to_slug == 'eina' -%}\n  {{ person\
-        \ }} är i Eina\n{%- elif to_slug == 'norge_2' -%}\n  {{ person }} är i Norge 2\n{%- elif to_slug == 'sahlgrenska_sjukhuset'\
-        \ -%}\n  {{ person }} är på Sahlgrenska sjukhuset\n{%- elif to_slug == 'molndahls_sjukhus' -%}\n  {{ person }} är\
-        \ på Mölndahls sjukhus\n{%- elif to_slug == 'stefan' -%}\n  {{ person }} är hos Stefan\n{%- elif to_slug == 'elins_jobb'\
-        \ -%}\n  {{ person }} är på Elins jobb\n{%- elif to_slug == 'isabelles_hem' -%}\n  {{ person }} {% if person == 'Isabelle'\
-        \ %}är hemma hos sig{% else %}är på Isabelles hem{% endif %}\n{%- else -%}\n  {{ person }} platsändring ({{ from_slug\
-        \ }} → {{ to_slug }})\n{%- endif -%}\n"
-  - action: script.mobilnotis
+      notification_message: >
+                {%- if trigger.entity_id == 'sensor.anna_aktiv_zon' -%}
+                  {%- set person = 'Anna' -%}
+                {%- elif trigger.entity_id == 'sensor.erik_aktiv_zon' -%}
+                  {%- set person = 'Erik' -%}
+                {%- elif trigger.entity_id == 'sensor.isabelle_aktiv_zon' -%}
+                  {%- set person = 'Isabelle' -%}
+                {%- else -%}
+                  {%- set person = 'Okänd' -%}
+                {%- endif -%}
+                {%- set from_slug = trigger.from_state.state.replace('zone.', '') if trigger.from_state.state.startswith('zone.') else trigger.from_state.state -%}
+                {%- set to_slug = trigger.to_state.state.replace('zone.', '') if trigger.to_state.state.startswith('zone.') else trigger.to_state.state -%}
+                {%- if to_slug == 'not_home' and from_slug == 'home' -%}
+                  {{ person }} har gått hemifrån
+                {%- elif to_slug == 'not_home' and from_slug == 'annas_jobb' -%}
+                  {{ person }} {% if person == 'Anna' %}har lämnat jobbet {% else %}har lämnat Annas jobb{% endif %}
+                {%- elif to_slug == 'not_home' and from_slug == 'eriks_skola' -%}
+                  {{ person }} {% if person == 'Erik' %}har lämnat skolan {% else %}har lämnat Eriks skola{% endif %}
+                {%- elif to_slug == 'not_home' and from_slug == 'ilias_jobb' -%}
+                  {{ person }} {% if person == 'Ilias' %}har lämnat jobbet {% else %}har lämnat Ilias jobb{% endif %}
+                {%- elif to_slug == 'not_home' and from_slug == 'kth_campus' -%}
+                  {{ person }} har lämnat KTH
+                {%- elif to_slug == 'not_home' and from_slug == 'kth_flemmingsberg' -%}
+                  {{ person }} har lämnat Youssef och Emma
+                {%- elif to_slug == 'not_home' and from_slug == 'albins_mamma' -%}
+                  {{ person }} har åkt ifrån Albins mamma
+                {%- elif to_slug == 'not_home' and from_slug == 'albins_jobb' -%}
+                  {{ person }} {% if person == 'Albin' %}har lämnat jobbet {% else %}har lämnat Albins jobb{% endif %}
+                {%- elif to_slug == 'not_home' and from_slug == 'isabelles_jobb' -%}
+                  {{ person }} {% if person == 'Isabelle' %}har lämnat jobbet {% else %}har lämnat Isabelles jobb{% endif %}
+                {%- elif to_slug == 'not_home' and from_slug == 'albin' -%}
+                  {{ person }} har åkt hemifrån Albin
+                {%- elif to_slug == 'not_home' and from_slug == 'grasko' -%}
+                  {{ person }} har lämnat Gräskö
+                {%- elif to_slug == 'not_home' and from_slug == 'isabelles_mormor' -%}
+                  {{ person }} {% if person == 'Isabelle' %}har åkt hemifrån mormor {% else %}har åkt ifrån Isabelles mormor{% endif %}
+                {%- elif to_slug == 'not_home' and from_slug == 'isabelles_skola' -%}
+                  {{ person }} {% if person == 'Isabelle' %}har lämnat skolan {% else %}har lämnat Isabelles skola{% endif %}
+                {%- elif to_slug == 'not_home' and from_slug == 'goteborg_c' -%}
+                  {{ person }} har lämnat Göteborg Central
+                {%- elif to_slug == 'not_home' and from_slug == 'isabelles_moster_jenny' -%}
+                  {{ person }} har lämnat moster Jenny
+                {%- elif to_slug == 'not_home' and from_slug == 'adrian' -%}
+                  {{ person }} har lämnat Adrian
+                {%- elif to_slug == 'not_home' and from_slug == 'justus' -%}
+                  {{ person }} har lämnat Justus
+                {%- elif to_slug == 'not_home' and from_slug == 'rodkinda_19' -%}
+                  {{ person }} har lämnat Rödkinda 19
+                {%- elif to_slug == 'not_home' and from_slug == 'eddie' -%}
+                  {{ person }} har lämnat Eddie
+                {%- elif to_slug == 'not_home' and from_slug == 'knut' -%}
+                  {{ person }} har lämnat Knut
+                {%- elif to_slug == 'not_home' and from_slug == 'milo' -%}
+                  {{ person }} har lämnat Milo
+                {%- elif to_slug == 'not_home' and from_slug == 'hemma_hos_rio' -%}
+                  {{ person }} har lämnat Rio i Norge
+                {%- elif to_slug == 'not_home' and from_slug == 'ellio_i_tanum' -%}
+                  {{ person }} har lämnat Selma i Tanum
+                {%- elif to_slug == 'not_home' and from_slug == 'digg_sundsvall' -%}
+                  {{ person }} har lämnat Stockholm centralstation
+                {%- elif to_slug == 'not_home' and from_slug == 'ostra_sjukhuset' -%}
+                  {{ person }} har lämnat Östra sjukhuset
+                {%- elif to_slug == 'not_home' and from_slug == 'stromstad' -%}
+                  {{ person }} har lämnat Strömstad
+                {%- elif to_slug == 'not_home' and from_slug == 'ik_sodra_skarpnack' -%}
+                  {{ person }} har lämnat judohallen i Skarpnäck
+                {%- elif to_slug == 'not_home' and from_slug == 'torvallahallen' -%}
+                  {{ person }} har lämnat Torvallahallen
+                {%- elif to_slug == 'not_home' and from_slug == 'ulrika' -%}
+                  {{ person }} har lämnat Ulrika
+                {%- elif to_slug == 'not_home' and from_slug == 'zaki_och_hanna' -%}
+                  {{ person }} har lämnat Zaki och Hanna
+                {%- elif to_slug == 'not_home' and from_slug == 'maria' -%}
+                  {{ person }} har lämnat Maria
+                {%- elif to_slug == 'not_home' and from_slug == 'sixten' -%}
+                  {{ person }} har lämnat Sixten
+                {%- elif to_slug == 'not_home' and from_slug == 'oslo' -%}
+                  {{ person }} har lämnat Oslo
+                {%- elif to_slug == 'not_home' and from_slug == 'farmor_och_farfar' -%}
+                  {{ person }} har lämnat farmor och farfar
+                {%- elif to_slug == 'not_home' and from_slug == 'solveig_och_lennart' -%}
+                  {{ person }} har lämnat Solveig och Lennart i Västerås
+                {%- elif to_slug == 'not_home' and from_slug == 'bengt' -%}
+                  {{ person }} har lämnat Bengt i Nol
+                {%- elif to_slug == 'not_home' and from_slug == 'farsta_centrum' -%}
+                  {{ person }} har lämnat Farsta centrum
+                {%- elif to_slug == 'not_home' and from_slug == 'farsta_strand_pendeltagstation' -%}
+                  {{ person }} har lämnat Farsta strand pendeltågstation
+                {%- elif to_slug == 'not_home' and from_slug == 'eksharadsgatans_busshallplats' -%}
+                  {{ person }} har lämnat Ekshäradsgatans busshållplats
+                {%- elif to_slug == 'not_home' and from_slug == 'ellio_i_norge' -%}
+                  {{ person }} har lämnat Selma i Norge
+                {%- elif to_slug == 'not_home' and from_slug == 'eina' -%}
+                  {{ person }} har lämnat Eina
+                {%- elif to_slug == 'not_home' and from_slug == 'norge_2' -%}
+                  {{ person }} har lämnat Norge 2
+                {%- elif to_slug == 'not_home' and from_slug == 'sahlgrenska_sjukhuset' -%}
+                  {{ person }} har lämnat Sahlgrenska sjukhuset
+                {%- elif to_slug == 'not_home' and from_slug == 'molndahls_sjukhus' -%}
+                  {{ person }} har lämnat Mölndahls sjukhuset
+                {%- elif to_slug == 'not_home' and from_slug == 'stefan' -%}
+                  {{ person }} har åkt ifrån Stefan
+                {%- elif to_slug == 'not_home' and from_slug == 'elins_jobb' -%}
+                  {{ person }} har lämnat Elins jobb
+                {%- elif to_slug == 'not_home' and from_slug == 'isabelles_hem' -%}
+                  {{ person }} {% if person == 'Isabelle' %}har åkt hemifrån sitt hem{% else %}har lämnat Isabelles hem{% endif %}
+                {%- elif to_slug == 'home' -%}
+                  {{ person }} är hemma
+                {%- elif to_slug == 'annas_jobb' -%}
+                  {{ person }} {% if person == 'Anna' %}är på jobbet {% else %}är på Annas jobb{% endif %}
+                {%- elif to_slug == 'eriks_skola' -%}
+                  {{ person }} {% if person == 'Erik' %}är i skolan {% else %}är i Eriks skola{% endif %}
+                {%- elif to_slug == 'ilias_jobb' -%}
+                  {{ person }} {% if person == 'Ilias' %}är på jobbet {% else %}är på Ilias jobb{% endif %}
+                {%- elif to_slug == 'kth_campus' -%}
+                  {{ person }} är på KTH
+                {%- elif to_slug == 'kth_flemmingsberg' -%}
+                  {{ person }} är på Youssef och Emma
+                {%- elif to_slug == 'albins_mamma' -%}
+                  {{ person }} är hos Albins mamma
+                {%- elif to_slug == 'albins_jobb' -%}
+                  {{ person }} {% if person == 'Albin' %}är på jobbet {% else %}är på Albins jobb{% endif %}
+                {%- elif to_slug == 'isabelles_jobb' -%}
+                  {{ person }} {% if person == 'Isabelle' %}är på jobbet {% else %}är på Isabelles jobb{% endif %}
+                {%- elif to_slug == 'albin' -%}
+                  {{ person }} är hemma hos Albin
+                {%- elif to_slug == 'grasko' -%}
+                  {{ person }} är på Gräskö
+                {%- elif to_slug == 'isabelles_mormor' -%}
+                  {{ person }} {% if person == 'Isabelle' %}är hos mormor {% else %}är hos Isabelles mormor{% endif %}
+                {%- elif to_slug == 'isabelles_skola' -%}
+                  {{ person }} {% if person == 'Isabelle' %}är i skolan {% else %}är i Isabelles skola{% endif %}
+                {%- elif to_slug == 'goteborg_c' -%}
+                  {{ person }} är på Göteborg Central
+                {%- elif to_slug == 'isabelles_moster_jenny' -%}
+                  {{ person }} är hos moster Jenny
+                {%- elif to_slug == 'adrian' -%}
+                  {{ person }} är hos Adrian
+                {%- elif to_slug == 'justus' -%}
+                  {{ person }} är hos Justus
+                {%- elif to_slug == 'rodkinda_19' -%}
+                  {{ person }} är hos Rödkinda 19
+                {%- elif to_slug == 'eddie' -%}
+                  {{ person }} är hos Eddie
+                {%- elif to_slug == 'knut' -%}
+                  {{ person }} är hos Knut
+                {%- elif to_slug == 'milo' -%}
+                  {{ person }} är hos Milo
+                {%- elif to_slug == 'hemma_hos_rio' -%}
+                  {{ person }} är hos Rio i Norge
+                {%- elif to_slug == 'ellio_i_tanum' -%}
+                  {{ person }} är hos Selma i Tanum
+                {%- elif to_slug == 'digg_sundsvall' -%}
+                  {{ person }} är på Stockholm centralstation
+                {%- elif to_slug == 'ostra_sjukhuset' -%}
+                  {{ person }} är på Östra sjukhuset
+                {%- elif to_slug == 'stromstad' -%}
+                  {{ person }} är i Strömstad
+                {%- elif to_slug == 'ik_sodra_skarpnack' -%}
+                  {{ person }} är i judohallen i Skarpnäck
+                {%- elif to_slug == 'torvallahallen' -%}
+                  {{ person }} är i Torvallahallen
+                {%- elif to_slug == 'ulrika' -%}
+                  {{ person }} är hos Ulrika
+                {%- elif to_slug == 'zaki_och_hanna' -%}
+                  {{ person }} är hos Zaki och Hanna
+                {%- elif to_slug == 'maria' -%}
+                  {{ person }} är hos Maria
+                {%- elif to_slug == 'sixten' -%}
+                  {{ person }} är hemma hos Sixten
+                {%- elif to_slug == 'oslo' -%}
+                  {{ person }} är i Oslo
+                {%- elif to_slug == 'farmor_och_farfar' -%}
+                  {{ person }} är hos farmor och farfar
+                {%- elif to_slug == 'solveig_och_lennart' -%}
+                  {{ person }} är hos Solveig och Lennart i Västerås
+                {%- elif to_slug == 'bengt' -%}
+                  {{ person }} är hos Bengt i Nol
+                {%- elif to_slug == 'farsta_centrum' -%}
+                  {{ person }} är i Farsta centrum
+                {%- elif to_slug == 'farsta_strand_pendeltagstation' -%}
+                  {{ person }} är på Farsta strand pendeltågstation
+                {%- elif to_slug == 'eksharadsgatans_busshallplats' -%}
+                  {{ person }} är på Ekshäradsgatans busshållplats
+                {%- elif to_slug == 'ellio_i_norge' -%}
+                  {{ person }} är hos Selma i Norge
+                {%- elif to_slug == 'eina' -%}
+                  {{ person }} är i Eina
+                {%- elif to_slug == 'norge_2' -%}
+                  {{ person }} är i Norge 2
+                {%- elif to_slug == 'sahlgrenska_sjukhuset' -%}
+                  {{ person }} är på Sahlgrenska sjukhuset
+                {%- elif to_slug == 'molndahls_sjukhus' -%}
+                  {{ person }} är på Mölndahls sjukhus
+                {%- elif to_slug == 'stefan' -%}
+                  {{ person }} är hos Stefan
+                {%- elif to_slug == 'elins_jobb' -%}
+                  {{ person }} är på Elins jobb
+                {%- elif to_slug == 'isabelles_hem' -%}
+                  {{ person }} {% if person == 'Isabelle' %}är hemma hos sig{% else %}är på Isabelles hem{% endif %}
+                {%- else -%}
+                  {{ person }} platsändring ({{ from_slug }} → {{ to_slug }})
+                {%- endif -%}
+  - action: notify.mobile_app_ilias_s23_ultra
     data:
-      meddelande: 'HEMMET {{ now().strftime(''%R'') }}: {{ notification_message }}'
-      mottagare: mobile_app_ilias_s23_ultra
-      ikon: zon
+      message: "HEMMET {{ now().strftime('%R') }}: 
+{{ notification_message }}"
+      data:
+        ttl: 0
+        priority: high
   - action: homeassistant.update_entity
     entity_id: sensor.people_home_count
+
 - alias: 'Mobilnotis Anna: Vilka kommer hem och går hemifrån'
   id: '791834010101014158674'
   description: Hemma-notiser till Anna via aktiv_zon (mittpunkt i zone.home).
@@ -5442,21 +5561,36 @@
     - sensor.ilias_aktiv_zon
   conditions:
   - condition: template
-    value_template: "{{ trigger.from_state.state not in ['unknown', 'unavailable', 'none']\n   and trigger.to_state.state\
-      \ not in ['unknown', 'unavailable', 'none']\n   and trigger.from_state.state != trigger.to_state.state\n   and ('zone.home'\
-      \ in [trigger.from_state.state, trigger.to_state.state]) }}\n"
+    value_template: >
+      {{ trigger.from_state.state not in ['unknown', 'unavailable', 'none']
+         and trigger.to_state.state not in ['unknown', 'unavailable', 'none']
+         and trigger.from_state.state != trigger.to_state.state
+         and ('zone.home' in [trigger.from_state.state, trigger.to_state.state]) }}
   actions:
   - variables:
-      notification_message: "{%- if trigger.entity_id == 'sensor.erik_aktiv_zon' -%}\n  {%- set person = 'Erik' -%}\n{%- elif\
-        \ trigger.entity_id == 'sensor.isabelle_aktiv_zon' -%}\n  {%- set person = 'Isabelle' -%}\n{%- elif trigger.entity_id\
-        \ == 'sensor.ilias_aktiv_zon' -%}\n  {%- set person = 'Ilias' -%}\n{%- else -%}\n  {%- set person = 'Okänd' -%}\n\
-        {%- endif -%} {%- if trigger.to_state.state == 'zone.home' -%}\n  {{ person }} är hemma\n{%- elif trigger.from_state.state\
-        \ == 'zone.home' -%}\n  {{ person }} har gått hemifrån\n{%- endif -%}\n"
-  - action: script.mobilnotis
+      notification_message: >
+                {%- if trigger.entity_id == 'sensor.erik_aktiv_zon' -%}
+                  {%- set person = 'Erik' -%}
+                {%- elif trigger.entity_id == 'sensor.isabelle_aktiv_zon' -%}
+                  {%- set person = 'Isabelle' -%}
+                {%- elif trigger.entity_id == 'sensor.ilias_aktiv_zon' -%}
+                  {%- set person = 'Ilias' -%}
+                {%- else -%}
+                  {%- set person = 'Okänd' -%}
+                {%- endif -%}
+                {%- if trigger.to_state.state == 'zone.home' -%}
+                  {{ person }} är hemma
+                {%- elif trigger.from_state.state == 'zone.home' -%}
+                  {{ person }} har gått hemifrån
+                {%- endif -%}
+  - action: notify.mobile_app_anna_s22_ultra
     data:
-      meddelande: 'HEMMET {{ now().strftime(''%R'') }}: {{ notification_message }}'
-      mottagare: mobile_app_anna_s22_ultra
-      ikon: zon
+      message: "HEMMET {{ now().strftime('%R') }}: 
+{{ notification_message }}"
+      data:
+        ttl: 0
+        priority: high
+
 - alias: 'Mobilnotis: Posten har kommit'
   id: '7918365089098048674'
   mode: single
