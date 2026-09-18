@@ -118,3 +118,9 @@
       name: Grokbot notify — skickade nycklar
       initial: ""
       max: 255
+
+  # Senaste Ja/Nej-svar från Grokbot-notis (svar_id|ja|nej|ISO-tid). Uppdateras av automation grokbot_ask_svar.
+    grokbot_ask_last:
+      name: Grokbot — senaste Ja/Nej-svar
+      initial: ""
+      max: 255

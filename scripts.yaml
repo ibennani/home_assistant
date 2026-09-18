@@ -2453,10 +2453,29 @@ grokbot_notify:
       default: false
       selector:
         boolean: null
+    fraga_ja_nej:
+      name: Ja/Nej-fråga
+      description: Lägg till Ja/Nej-knappar i notisen (actionable notification)
+      default: false
+      selector:
+        boolean: null
+    actions_yes_no:
+      name: Ja/Nej (alias)
+      description: Samma som fraga_ja_nej — antingen fält räcker
+      default: false
+      selector:
+        boolean: null
+    svar_id:
+      name: Svar-ID
+      description: Stabil id-suffix för GROKBOT_YES_/NO_-knappar. Tom = härleds från nyckel/meddelande
+      default: ''
+      selector:
+        text: null
   sequence:
   - variables:
       dedupe_key: "{% set ny = nyckel | default('') | trim %}{% if ny | length > 0 %}{{ ny }}{% else %}{% set msg = meddelande | default('') | lower | trim | regex_replace('\\\\s+', ' ') %}{{ (bot | default('grokbot') | lower | trim) ~ ':' ~ msg }}{% endif %}"
       lagrade_raw: '{{ states(''input_text.grokbot_notify_dedupe'') | default('''') }}'
+      svar_id_safe: "{% set sid = svar_id | default('') | trim %}{% set base = sid if sid | length > 0 else dedupe_key %}{% set clean = base | regex_replace('[^A-Za-z0-9_]', '_') %}{% if clean | length > 24 %}{{ clean[:24] }}{% elif clean | length > 0 %}{{ clean }}{% else %}ask{% endif %}"
   - choose:
     - conditions:
       - condition: template
@@ -2481,12 +2500,31 @@ grokbot_notify:
       - wait_for_trigger:
         - trigger: time
           at: 08:00:00
-  - action: script.mobilnotis
-    data:
-      mottagare: mobile_app_ilias_s23_ultra
-      meddelande: '{{ meddelande }}'
-      title: Grokbot
-      ikon: grokbot
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ fraga_ja_nej | default(false) or actions_yes_no | default(false) }}'
+      sequence:
+      - action: script.mobilnotis
+        data:
+          mottagare: mobile_app_ilias_s23_ultra
+          meddelande: '{{ meddelande }}'
+          title: Grokbot
+          ikon: grokbot
+          tag: grokbot_ask_{{ svar_id_safe }}
+          notis_data:
+            actions:
+            - action: GROKBOT_YES_{{ svar_id_safe }}
+              title: Ja
+            - action: GROKBOT_NO_{{ svar_id_safe }}
+              title: Nej
+    default:
+    - action: script.mobilnotis
+      data:
+        mottagare: mobile_app_ilias_s23_ultra
+        meddelande: '{{ meddelande }}'
+        title: Grokbot
+        ikon: grokbot
   - action: input_text.set_value
     target:
       entity_id: input_text.grokbot_notify_dedupe
