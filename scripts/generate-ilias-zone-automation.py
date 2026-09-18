@@ -67,6 +67,7 @@ ZONES = [
     ("zone.stromstad", "stromstad"),
     ("zone.ik_sodra_skarpnack", "ik_sodra_skarpnack"),
     ("zone.torvallahallen", "torvallahallen"),
+    ("zone.ulrika", "ulrika"),
     ("zone.zaki_och_hanna", "zaki_och_hanna"),
     ("zone.maria", "maria"),
     ("zone.sixten", "sixten"),
@@ -199,6 +200,10 @@ ZONE_MESSAGES = {
     "torvallahallen": {
         "entered": "{{ person }} är i Torvallahallen",
         "left": "{{ person }} har lämnat Torvallahallen",
+    },
+    "ulrika": {
+        "entered": "{{ person }} är hos Ulrika",
+        "left": "{{ person }} har lämnat Ulrika",
     },
     "zaki_och_hanna": {
         "entered": "{{ person }} är hos Zaki och Hanna",

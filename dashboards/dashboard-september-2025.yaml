@@ -6385,26 +6385,23 @@ views:
         label: IB
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
-      - zone.albin
+      - zone.albins_hem
+      - zone.albins_jobb
       - zone.albins_mamma
       - zone.annas_jobb
       - zone.bengt
-      - zone.digg_sundsvall
       - zone.eddie
       - zone.eina
-      - zone.eksharadsgatans_busshallplats
+      - zone.eksh_radsgatans_bussh_llplats
       - zone.elins_jobb
-      - zone.ellio_i_norge
-      - zone.ellio_i_tanum
       - zone.eriks_skola
       - zone.farmor_och_farfar
       - zone.farsta_centrum
-      - zone.farsta_strand_pendeltagstation
-      - zone.goteborg_c
-      - zone.grasko
-      - zone.hemma_hos_rio
+      - zone.farsta_strand_pendelt_gstation
+      - zone.g_teborg_c
+      - zone.gr_sk
       - zone.home
-      - zone.ik_sodra_skarpnack
+      - zone.ik_s_dra_skarpn_ck
       - zone.ilias_jobb
       - zone.isabelles_hem
       - zone.isabelles_jobb
@@ -6414,20 +6411,25 @@ views:
       - zone.justus
       - zone.knut
       - zone.kth_campus
-      - zone.kth_flemmingsberg
+      - zone.m_lndahls_sjukhus
       - zone.maria
       - zone.milo
-      - zone.molndahls_sjukhus
       - zone.norge_2
       - zone.oslo
-      - zone.ostra_sjukhuset
-      - zone.rodkinda_19
+      - zone.r_dkinda_19
+      - zone.rio
       - zone.sahlgrenska_sjukhuset
+      - zone.selma_i_norge
+      - zone.selma_i_tanum
       - zone.sixten
       - zone.solveig_och_lennart
       - zone.stefan
-      - zone.stromstad
+      - zone.stockholm_c
+      - zone.str_mstad
+      - zone.stra_sjukhuset
       - zone.torvallahallen
+      - zone.ulrika
+      - zone.youssef_och_emma
       - zone.zaki_och_hanna
       # END map-zones
       show_zone_label: true
@@ -6440,26 +6442,23 @@ views:
         label: AB
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
-      - zone.albin
+      - zone.albins_hem
+      - zone.albins_jobb
       - zone.albins_mamma
       - zone.annas_jobb
       - zone.bengt
-      - zone.digg_sundsvall
       - zone.eddie
       - zone.eina
-      - zone.eksharadsgatans_busshallplats
+      - zone.eksh_radsgatans_bussh_llplats
       - zone.elins_jobb
-      - zone.ellio_i_norge
-      - zone.ellio_i_tanum
       - zone.eriks_skola
       - zone.farmor_och_farfar
       - zone.farsta_centrum
-      - zone.farsta_strand_pendeltagstation
-      - zone.goteborg_c
-      - zone.grasko
-      - zone.hemma_hos_rio
+      - zone.farsta_strand_pendelt_gstation
+      - zone.g_teborg_c
+      - zone.gr_sk
       - zone.home
-      - zone.ik_sodra_skarpnack
+      - zone.ik_s_dra_skarpn_ck
       - zone.ilias_jobb
       - zone.isabelles_hem
       - zone.isabelles_jobb
@@ -6469,20 +6468,25 @@ views:
       - zone.justus
       - zone.knut
       - zone.kth_campus
-      - zone.kth_flemmingsberg
+      - zone.m_lndahls_sjukhus
       - zone.maria
       - zone.milo
-      - zone.molndahls_sjukhus
       - zone.norge_2
       - zone.oslo
-      - zone.ostra_sjukhuset
-      - zone.rodkinda_19
+      - zone.r_dkinda_19
+      - zone.rio
       - zone.sahlgrenska_sjukhuset
+      - zone.selma_i_norge
+      - zone.selma_i_tanum
       - zone.sixten
       - zone.solveig_och_lennart
       - zone.stefan
-      - zone.stromstad
+      - zone.stockholm_c
+      - zone.str_mstad
+      - zone.stra_sjukhuset
       - zone.torvallahallen
+      - zone.ulrika
+      - zone.youssef_och_emma
       - zone.zaki_och_hanna
       # END map-zones
       show_zone_label: true
@@ -6495,26 +6499,23 @@ views:
         label: IS
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
-      - zone.albin
+      - zone.albins_hem
+      - zone.albins_jobb
       - zone.albins_mamma
       - zone.annas_jobb
       - zone.bengt
-      - zone.digg_sundsvall
       - zone.eddie
       - zone.eina
-      - zone.eksharadsgatans_busshallplats
+      - zone.eksh_radsgatans_bussh_llplats
       - zone.elins_jobb
-      - zone.ellio_i_norge
-      - zone.ellio_i_tanum
       - zone.eriks_skola
       - zone.farmor_och_farfar
       - zone.farsta_centrum
-      - zone.farsta_strand_pendeltagstation
-      - zone.goteborg_c
-      - zone.grasko
-      - zone.hemma_hos_rio
+      - zone.farsta_strand_pendelt_gstation
+      - zone.g_teborg_c
+      - zone.gr_sk
       - zone.home
-      - zone.ik_sodra_skarpnack
+      - zone.ik_s_dra_skarpn_ck
       - zone.ilias_jobb
       - zone.isabelles_hem
       - zone.isabelles_jobb
@@ -6524,20 +6525,25 @@ views:
       - zone.justus
       - zone.knut
       - zone.kth_campus
-      - zone.kth_flemmingsberg
+      - zone.m_lndahls_sjukhus
       - zone.maria
       - zone.milo
-      - zone.molndahls_sjukhus
       - zone.norge_2
       - zone.oslo
-      - zone.ostra_sjukhuset
-      - zone.rodkinda_19
+      - zone.r_dkinda_19
+      - zone.rio
       - zone.sahlgrenska_sjukhuset
+      - zone.selma_i_norge
+      - zone.selma_i_tanum
       - zone.sixten
       - zone.solveig_och_lennart
       - zone.stefan
-      - zone.stromstad
+      - zone.stockholm_c
+      - zone.str_mstad
+      - zone.stra_sjukhuset
       - zone.torvallahallen
+      - zone.ulrika
+      - zone.youssef_och_emma
       - zone.zaki_och_hanna
       # END map-zones
       show_zone_label: true
@@ -6550,26 +6556,23 @@ views:
         label: EB
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
-      - zone.albin
+      - zone.albins_hem
+      - zone.albins_jobb
       - zone.albins_mamma
       - zone.annas_jobb
       - zone.bengt
-      - zone.digg_sundsvall
       - zone.eddie
       - zone.eina
-      - zone.eksharadsgatans_busshallplats
+      - zone.eksh_radsgatans_bussh_llplats
       - zone.elins_jobb
-      - zone.ellio_i_norge
-      - zone.ellio_i_tanum
       - zone.eriks_skola
       - zone.farmor_och_farfar
       - zone.farsta_centrum
-      - zone.farsta_strand_pendeltagstation
-      - zone.goteborg_c
-      - zone.grasko
-      - zone.hemma_hos_rio
+      - zone.farsta_strand_pendelt_gstation
+      - zone.g_teborg_c
+      - zone.gr_sk
       - zone.home
-      - zone.ik_sodra_skarpnack
+      - zone.ik_s_dra_skarpn_ck
       - zone.ilias_jobb
       - zone.isabelles_hem
       - zone.isabelles_jobb
@@ -6579,20 +6582,25 @@ views:
       - zone.justus
       - zone.knut
       - zone.kth_campus
-      - zone.kth_flemmingsberg
+      - zone.m_lndahls_sjukhus
       - zone.maria
       - zone.milo
-      - zone.molndahls_sjukhus
       - zone.norge_2
       - zone.oslo
-      - zone.ostra_sjukhuset
-      - zone.rodkinda_19
+      - zone.r_dkinda_19
+      - zone.rio
       - zone.sahlgrenska_sjukhuset
+      - zone.selma_i_norge
+      - zone.selma_i_tanum
       - zone.sixten
       - zone.solveig_och_lennart
       - zone.stefan
-      - zone.stromstad
+      - zone.stockholm_c
+      - zone.str_mstad
+      - zone.stra_sjukhuset
       - zone.torvallahallen
+      - zone.ulrika
+      - zone.youssef_och_emma
       - zone.zaki_och_hanna
       # END map-zones
       show_zone_label: true
