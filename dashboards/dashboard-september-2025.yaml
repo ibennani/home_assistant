@@ -525,6 +525,23 @@ views:
     layout: center
     badges_position: bottom
     badges_wrap: wrap
+- title: Att göra
+  path: att-gora
+  icon: mdi:checkbox-marked-outline
+  type: panel
+  badges:
+  - type: entity
+    entity: sensor.grokbot_attgora_olasta
+    color: red
+    show_name: false
+    visibility:
+    - condition: numeric_state
+      entity: sensor.grokbot_attgora_olasta
+      above: 0
+  cards:
+  - type: iframe
+    url: https://pts.ilias.se/
+    aspect_ratio: 100%
 - title: Rum
   icon: mdi:floor-plan
   path: rum
