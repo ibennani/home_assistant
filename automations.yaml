@@ -4233,11 +4233,12 @@
           }}\n"
         timeout: 00:00:30
         continue_on_timeout: false
+      - delay: 00:00:08
       - action: media_player.select_source
         target:
           entity_id: media_player.denon_avr_x2800h
         data:
-          source: AppleTV
+          source: Apple TV
       - wait_template: "{{\n  states(\"media_player.sony_tv_i_vardagsrummet\")\n  not in [\"standby\", \"off\", \"unavailable\"\
           , \"unknown\"]\n}}\n"
         timeout: 00:00:30
@@ -4246,7 +4247,7 @@
         target:
           entity_id: media_player.sony_tv_i_vardagsrummet
         data:
-          source: HDMI 4
+          source: HDMI 4/ARC
       - action: media_player.turn_off
         target:
           entity_id:
@@ -4286,7 +4287,7 @@
         target:
           entity_id: media_player.sony_tv_i_vardagsrummet
         data:
-          source: HDMI 4
+          source: HDMI 4/ARC
       - action: media_player.turn_off
         target:
           entity_id:
