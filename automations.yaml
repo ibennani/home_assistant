@@ -4144,6 +4144,7 @@
     - standby
     to:
     - playing
+    - paused
     - idle
     for: 00:00:05
   - trigger: template
