@@ -4163,7 +4163,6 @@
   actions:
   - variables:
       trigger_id: '{{ trigger.id if trigger is defined else ''manuell'' }}'
-      appletv_lag_effekt: "{{\n  states(\"sensor.apple_tv_wall_plug_power\") | float(default=999) <= 1.5\n}}\n"
       appletv_av: "{{\n  states(\"media_player.appletv\") in [\"standby\", \"off\", \"unavailable\", \"unknown\"]\n}}\n"
       appletv_aktiv: "{{\n  states(\"media_player.appletv\") not in [\"standby\", \"off\", \"unavailable\", \"unknown\"]\n\
         \  and states(\"sensor.apple_tv_wall_plug_power\") | float(default=0) >= 5\n}}\n"
