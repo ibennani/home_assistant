@@ -413,10 +413,8 @@ def build_spion_map_sensors() -> str:
         "- sensor:",
     ]
     display_by_slug = {slug: name for _t, name, slug in AKTIV_ZON_PEOPLE}
-    person_by_slug = {slug: tracker for tracker, _name, slug in AKTIV_ZON_PEOPLE}
     for slug, (gps_tracker, _ssid) in COMPANION_WIFI_PRESENCE.items():
         display = display_by_slug[slug]
-        person_tracker = person_by_slug[slug]
         aktiv_sensor = f"sensor.{slug}_aktiv_zon"
         lat, lon = spion_map_coordinate_templates(gps_tracker, aktiv_sensor)
         lines.append(f"    - name: {display} spionkarta")
