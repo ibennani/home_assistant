@@ -1725,7 +1725,7 @@
         {{ v if v not in ['unknown', 'unavailable', 'none', ''] else 11 }}
 
 # BEGIN spion-karta-sensorer (generate-ilias-zone-automation.py)
-# Spionfliken — Anna/Erik/Ilias (Isabelle använder person på dashboarden)
+# Spionfliken — Anna/Erik/Ilias (Asher använder person på dashboarden; initialer via map label)
 - sensor:
     - name: Anna spionkarta
       unique_id: anna_spionkarta
@@ -1733,8 +1733,6 @@
       state: >
         {{ states('sensor.anna_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
       attributes:
-        entity_picture: >
-          {{ state_attr('person.anna_bennani', 'entity_picture') }}
         latitude: >
           {% set az = states('sensor.anna_aktiv_zon') %}
           {% set bad = ['unknown', 'unavailable', 'none', ''] %}
@@ -1765,8 +1763,6 @@
       state: >
         {{ states('sensor.erik_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
       attributes:
-        entity_picture: >
-          {{ state_attr('person.erik_bennani', 'entity_picture') }}
         latitude: >
           {% set az = states('sensor.erik_aktiv_zon') %}
           {% set bad = ['unknown', 'unavailable', 'none', ''] %}
@@ -1797,8 +1793,6 @@
       state: >
         {{ states('sensor.ilias_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
       attributes:
-        entity_picture: >
-          {{ state_attr('person.ilias_bennani', 'entity_picture') }}
         latitude: >
           {% set az = states('sensor.ilias_aktiv_zon') %}
           {% set bad = ['unknown', 'unavailable', 'none', ''] %}

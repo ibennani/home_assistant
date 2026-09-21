@@ -6493,10 +6493,10 @@ views:
       history: true
       hours_to_show: 24
     - type: map
-      title: Isabelle senaste 24 timmarna
+      title: Asher senaste 24 timmarna
       entities:
       - entity: person.isabelle_sovig
-        label: IS
+        label: AS
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albins_hem

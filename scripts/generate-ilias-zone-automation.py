@@ -409,7 +409,7 @@ def build_spion_map_sensors() -> str:
     """Spionfliken: kartmarkör (sensor + lat/lon) enligt aktiv_zon."""
     lines = [
         SPION_BEGIN,
-        "# Spionfliken — Anna/Erik/Ilias (Isabelle använder person på dashboarden)",
+        "# Spionfliken — Anna/Erik/Ilias (Asher använder person på dashboarden; initialer via map label)",
         "- sensor:",
     ]
     display_by_slug = {slug: name for _t, name, slug in AKTIV_ZON_PEOPLE}
@@ -428,10 +428,6 @@ def build_spion_map_sensors() -> str:
             f"| replace('not_home', 'Borta') }}}}"
         )
         lines.append("      attributes:")
-        lines.append("        entity_picture: >")
-        lines.append(
-            f"          {{{{ state_attr('{person_tracker}', 'entity_picture') }}}}"
-        )
         lines.append("        latitude: >")
         for line in lat.splitlines():
             lines.append(f"          {line}")
