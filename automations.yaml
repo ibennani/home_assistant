@@ -5817,7 +5817,7 @@
           use_intensiv70: "{{ intensiv70_best_start_iso != '' and intensiv70_avg_run_price | float(999) < (price_threshold_kr_kwh | float) }}"
       - variables:
           chosen_program: "{% if use_intensiv70 | bool %}{{ intensiv70_program }}{% else %}{{ eco50_program }}{% endif %}"
-          chosen_program_label: "{% if use_intensiv70 | bool %}Intensiv 70°{% else %}Eco 50°{% endif %}"
+          chosen_program_label: "{% if use_intensiv70 | bool %}Intensiv 70{% else %}Eco 50{% endif %}"
       - variables:
           best_start_iso: "{% if use_intensiv70 | bool %}{{ intensiv70_best_start_iso }}{% else %}{{ eco50_best_start_iso }}{% endif %}"
           avg_run_price: "{% if use_intensiv70 | bool %}{{ intensiv70_avg_run_price }}{% else %}{{ eco50_avg_run_price }}{% endif %}"
@@ -5847,7 +5847,7 @@
           - action: script.mobilnotis
             data:
               meddelande: 'HEMMET {{ states(''sensor.time'') }}: Diskmaskinen kommer starta klockan {{ (best_start_iso | as_datetime
-                | as_local).strftime(''%H:%M'') }}, kostar {{ prognos_kr }} kr.'
+                | as_local).strftime(''%H:%M'') }} med programmet {{ chosen_program_label }} och kommer kosta {{ prognos_kr }} kr.'
               mottagare: mobile_app_ilias_s23_ultra
               ikon: vitvaror
           - action: script.turn_on
