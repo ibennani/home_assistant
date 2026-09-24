@@ -18,6 +18,7 @@ import socket
 import ssl
 import sys
 import time
+import sqlite3
 import subprocess
 import urllib.error
 import urllib.parse
@@ -333,7 +334,31 @@ def ha_api(
         return json.loads(raw) if raw else {}
 
 
+def read_entity_state_local(entity_id: str) -> str | None:
+    """Läser entitetsläge från recorder-databasen (fungerar utan REST-token)."""
+    db_path = Path("/config/home-assistant_v2.db")
+    if not db_path.is_file():
+        return None
+    try:
+        with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=5) as conn:
+            row = conn.execute(
+                """
+                SELECT s.state
+                FROM states s
+                INNER JOIN states_meta m ON s.metadata_id = m.metadata_id
+                WHERE m.entity_id = ?
+                """,
+                (entity_id,),
+            ).fetchone()
+            return row[0] if row else None
+    except sqlite3.Error:
+        return None
+
+
 def tvattmaskin_cost_requested(secrets: dict[str, str]) -> bool:
+    local = read_entity_state_local(TVATTCOST_FLAG)
+    if local == "on":
+        return True
     try:
         state_obj = ha_api(secrets, "GET", f"/api/states/{TVATTCOST_FLAG}")
         return isinstance(state_obj, dict) and state_obj.get("state") == "on"
