@@ -95,6 +95,7 @@ shell_command:
     && echo "--- $(date -Iseconds) ---" >> /config/git-pull.log
   zwave_ui_migrate: bash /config/scripts/zwave-ui-migrate.sh
   zwave_usb_fix: bash /config/scripts/zwave-usb-fix.sh
+  tvattmaskin_berakna_kostnad_klar: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py
 
 #######################################################
 # Media
