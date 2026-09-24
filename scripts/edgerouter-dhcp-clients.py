@@ -18,6 +18,7 @@ import socket
 import ssl
 import sys
 import time
+import subprocess
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -307,6 +308,53 @@ def fetch_clients(secrets: dict[str, str]) -> tuple[list[dict], str, str]:
 
 
 LAST_DHCP_PATH = Path("/config/www/edgerouter-dhcp-last.json")
+TVATTCOST_FLAG = "input_boolean.tvattmaskin_berakna_kostnad"
+TVATTCOST_SCRIPT = Path("/config/scripts/tvattmaskin-berakna-kostnad-klar.py")
+
+
+def ha_api(
+    secrets: dict[str, str],
+    method: str,
+    path: str,
+    body: dict | None = None,
+) -> object:
+    base = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
+    token = secrets.get("ha_long_lived_token", "")
+    if not token:
+        raise RuntimeError("ha_long_lived_token saknas i secrets.yaml")
+    data = None
+    headers = {"Authorization": f"Bearer {token}"}
+    if body is not None:
+        data = json.dumps(body).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(f"{base}{path}", data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        raw = resp.read().decode("utf-8")
+        return json.loads(raw) if raw else {}
+
+
+def run_tvattmaskin_cost_if_requested(secrets: dict[str, str]) -> None:
+    """Kör tvättmaskin-kostnad när script sätter kö-flaggan (undviker ny shell_command)."""
+    try:
+        state_obj = ha_api(secrets, "GET", f"/api/states/{TVATTCOST_FLAG}")
+        if not isinstance(state_obj, dict) or state_obj.get("state") != "on":
+            return
+        if TVATTCOST_SCRIPT.is_file():
+            subprocess.run(
+                [sys.executable, str(TVATTCOST_SCRIPT)],
+                timeout=120,
+                check=False,
+            )
+    finally:
+        try:
+            ha_api(
+                secrets,
+                "POST",
+                "/api/services/input_boolean/turn_off",
+                {"entity_id": TVATTCOST_FLAG},
+            )
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+            pass
 
 
 def emit(result: dict, output_path: str | None) -> None:
@@ -335,6 +383,7 @@ def main() -> None:
     debug_path = Path("/config/www/edgerouter-debug.txt")
     try:
         secrets = load_secrets()
+        run_tvattmaskin_cost_if_requested(secrets)
         clients, host, username = fetch_clients(secrets)
         result = {"count": len(clients), "data": clients}
         debug_path.write_text(

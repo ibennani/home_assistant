@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Beräkna tvättmaskinens kostnad vid klar utifrån effekthistorik och Nord Pool-kvartar.
 
-Körs på HA-servern via shell_command när tvättmaskinen blir klar (aktiv av).
+Körs på HA-servern via EdgeRouter DHCP-sensor (update_entity) när tvättmaskinen blir klar (aktiv av).
 Sätter input_text.tvattmaskin_senaste_kostnaden (t.ex. "1,68") eller tom sträng vid fel.
 """
 from __future__ import annotations

@@ -205,3 +205,9 @@
     name: Verifiera blink badrum vid framsida-rörelse (engångs)
     icon: mdi:motion-sensor
     initial: on
+
+# Kö för tvättmaskin-kostnad (triggas via update_entity på EdgeRouter DHCP-sensor)
+  tvattmaskin_berakna_kostnad:
+    name: Tvättmaskin beräkna kostnad (kö)
+    icon: mdi:washing-machine
+    initial: off
