@@ -3466,12 +3466,12 @@ diskmaskin_korning_init:
       value: "{{ langd | int }}"
   - action: input_number.set_value
     target:
-      entity_id: input_number.diskmaskin_kwh_lopande
+      entity_id: input_number.diskmaskin_energy_vid_korningstart
     data:
       value: 0
   - action: input_number.set_value
     target:
-      entity_id: input_number.diskmaskin_kwh_vid_kvartstart
+      entity_id: input_number.diskmaskin_energy_vid_kvartstart
     data:
       value: 0
   - action: input_text.set_value
@@ -3488,8 +3488,8 @@ diskmaskin_kvart_kostnad_tick:
       start_raw: "{{ states('input_datetime.diskmaskin_korning_start') }}"
       dur: "{{ states('input_number.diskmaskin_korning_langd_min') | int(0) }}"
       completed: "{{ states('input_number.diskmaskin_korning_kvart_klar') | int(0) }}"
-      kwh: "{{ states('input_number.diskmaskin_kwh_lopande') | float(0) }}"
-      kwh_kvart: "{{ states('input_number.diskmaskin_kwh_vid_kvartstart') | float(0) }}"
+      kwh: "{{ states('input_number.diskmaskin_energy_vid_korningstart') | float(0) }}"
+      kwh_kvart: "{{ states('input_number.diskmaskin_energy_vid_kvartstart') | float(0) }}"
       lopande: "{{ states('input_number.diskmaskin_kostnad_lopande') | float(0) }}"
       np: sensor.nordpool_kwh_se3_sek_3_10_025
       slots: "{{ state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([]) if (state_attr(np, 'tomorrow_valid') | default(false)) in [true, 'true', 'True'] else []) }}"
@@ -3520,7 +3520,7 @@ diskmaskin_kvart_kostnad_tick:
       value: "{{ (lopande | float(0) + add_kr | float(0)) | round(2) }}"
   - action: input_number.set_value
     target:
-      entity_id: input_number.diskmaskin_kwh_vid_kvartstart
+      entity_id: input_number.diskmaskin_energy_vid_kvartstart
     data:
       value: "{{ kwh }}"
   - action: input_number.set_value
@@ -3538,13 +3538,13 @@ diskmaskin_kwh_minut_tick:
     state: 'true'
   - variables:
       p: "{{ states('sensor.diskmaskin_switch_power') | float(0) }}"
-      kwh: "{{ states('input_number.diskmaskin_kwh_lopande') | float(0) }}"
+      kwh: "{{ states('input_number.diskmaskin_energy_vid_korningstart') | float(0) }}"
       add: "{{ (p / 60000.0) }}"
   - condition: template
     value_template: "{{ p > 1 }}"
   - action: input_number.set_value
     target:
-      entity_id: input_number.diskmaskin_kwh_lopande
+      entity_id: input_number.diskmaskin_energy_vid_korningstart
     data:
       value: "{{ (kwh + add) | round(4) }}"
 
@@ -3561,7 +3561,7 @@ diskmaskin_korning_avsluta_kostnad:
       lopande: "{{ states('input_number.diskmaskin_kostnad_lopande') | float(0) }}"
       start_raw: "{{ states('input_datetime.diskmaskin_korning_start') }}"
       dur: "{{ states('input_number.diskmaskin_korning_langd_min') | int(0) }}"
-      total_kwh: "{{ states('input_number.diskmaskin_kwh_lopande') | float(0) }}"
+      total_kwh: "{{ states('input_number.diskmaskin_energy_vid_korningstart') | float(0) }}"
       program: "{{ states('sensor.bosch_sma67md06e_68a40e70cb46_selected_program') }}"
       np: sensor.nordpool_kwh_se3_sek_3_10_025
       slots: "{{ state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([]) if (state_attr(np, 'tomorrow_valid') | default(false)) in [true, 'true', 'True'] else []) }}"
