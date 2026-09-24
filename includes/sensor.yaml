@@ -156,3 +156,12 @@
   json_attributes:
     - departures
     - stop_deviations
+
+# kWh från effekt (W) — används för diskmaskinens kvartskostnad
+- platform: integration
+  source: sensor.diskmaskin_switch_power
+  name: Diskmaskin energi
+  unique_id: diskmaskin_energi_kwh_integration
+  unit_prefix: k
+  round: 4
+  method: trapezoidal

@@ -97,3 +97,8 @@
       has_date: true
       has_time: true
       icon: mdi:shower-head
+    diskmaskin_korning_start:
+      name: "Diskmaskin körning start"
+      has_date: true
+      has_time: true
+      icon: mdi:dishwasher
