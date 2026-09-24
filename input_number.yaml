@@ -236,17 +236,17 @@
     step: 1
     mode: box
 
-  diskmaskin_energy_vid_korningstart:
-    name: "Diskmaskin energi vid körningsstart"
+  diskmaskin_kwh_lopande:
+    name: "Diskmaskin kWh under pågående körning"
     min: 0
-    max: 1000
+    max: 10
     step: 0.0001
     mode: box
 
-  diskmaskin_energy_vid_kvartstart:
-    name: "Diskmaskin energi vid kvartstart"
+  diskmaskin_kwh_vid_kvartstart:
+    name: "Diskmaskin kWh vid kvartstart"
     min: 0
-    max: 1000
+    max: 10
     step: 0.0001
     mode: box
 

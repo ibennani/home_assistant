@@ -10483,4 +10483,5 @@
     entity_id: sensor.diskmaskinen_diskar
     state: 'true'
   actions:
+  - action: script.diskmaskin_kwh_minut_tick
   - action: script.diskmaskin_kvart_kostnad_tick
