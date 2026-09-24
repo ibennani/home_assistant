@@ -1,5 +1,5 @@
 ---
-description: Svenska citattecken — använd „ och ”, inte raka "
+description: Svenska citattecken — använd raka " i löpande svensk text
 globs:
 alwaysApply: true
 ---
@@ -10,15 +10,17 @@ alwaysApply: true
 
 I all svensk text (svar, dokumentation, commit-meddelanden, PR-beskrivningar, notiser, mallar med svensk copy):
 
-- Använd **„** (öppnande) och **”** (avslutande) som citattecken.
-- Använd **inte** raka ASCII-citat `"..."` eller engelska `"..."` för citat i löpande svensk text.
+- Använd **raka dubbla citattecken** `"` i både öppning och stängning: `"Detta är en text"`.
+- Använd **inte** typografiska/svenska citattecken som „ ” eller engelska curly quotes ” “ för citat i löpande svensk text.
+
+Gäller för alla agenter och modeller i detta projekt, om inget annat uttryckligen anges.
 
 ## Exempel
 
-- Rätt: Tvättmaskinen är klar med texten „… och körningen kostade 4,20 kr”.
-- Fel: Tvättmaskinen är klar med texten "... och körningen kostade 4,20 kr".
+- Rätt: Tvättmaskinen är klar med texten "… och körningen kostade 4,20 kr".
+- Fel: Tvättmaskinen är klar med texten „… och körningen kostade 4,20 kr”.
 
 ## Undantag
 
-- Kod, YAML, JSON, entity_id, shell och andra tekniska format där `"` är syntax — ändra inte.
+- Kod, YAML, JSON, entity_id, shell och andra tekniska format där `"` redan är syntax — ändra inte av citatskäl.
 - Citat **inuti** kodblock eller strängar som måste vara exakta för att fungera.
