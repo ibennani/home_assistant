@@ -333,16 +333,23 @@ def ha_api(
         return json.loads(raw) if raw else {}
 
 
-def run_tvattmaskin_cost_if_requested(secrets: dict[str, str]) -> None:
-    """Kör tvättmaskin-kostnad när script sätter kö-flaggan (undviker ny shell_command)."""
+def tvattmaskin_cost_requested(secrets: dict[str, str]) -> bool:
     try:
         state_obj = ha_api(secrets, "GET", f"/api/states/{TVATTCOST_FLAG}")
-        if not isinstance(state_obj, dict) or state_obj.get("state") != "on":
-            return
+        return isinstance(state_obj, dict) and state_obj.get("state") == "on"
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        return False
+
+
+def run_tvattmaskin_cost_if_requested(secrets: dict[str, str]) -> bool:
+    """Kör tvättmaskin-kostnad när script sätter kö-flaggan. Returnerar True om jobbet kördes."""
+    if not tvattmaskin_cost_requested(secrets):
+        return False
+    try:
         if TVATTCOST_SCRIPT.is_file():
             subprocess.run(
                 [sys.executable, str(TVATTCOST_SCRIPT)],
-                timeout=120,
+                timeout=110,
                 check=False,
             )
     finally:
@@ -355,6 +362,7 @@ def run_tvattmaskin_cost_if_requested(secrets: dict[str, str]) -> None:
             )
         except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
             pass
+    return True
 
 
 def emit(result: dict, output_path: str | None) -> None:
@@ -383,7 +391,12 @@ def main() -> None:
     debug_path = Path("/config/www/edgerouter-debug.txt")
     try:
         secrets = load_secrets()
-        run_tvattmaskin_cost_if_requested(secrets)
+        if run_tvattmaskin_cost_if_requested(secrets):
+            if LAST_DHCP_PATH.is_file():
+                emit(json.loads(LAST_DHCP_PATH.read_text(encoding="utf-8")), output_path)
+            else:
+                emit(empty_result(), output_path)
+            return
         clients, host, username = fetch_clients(secrets)
         result = {"count": len(clients), "data": clients}
         debug_path.write_text(
