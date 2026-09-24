@@ -3598,4 +3598,6 @@ tvattmaskin_kostnad_vid_klar:
   description: Läser effekthistorik bakåt, Nord Pool-kvartar, sätter input_text.tvattmaskin_senaste_kostnaden.
   mode: queued
   sequence:
-  - action: shell_command.tvattmaskin_berakna_kostnad_klar
+  - action: homeassistant.update_entity
+    target:
+      entity_id: sensor.tvattmaskin_kostnad_vid_klar_runner

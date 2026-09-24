@@ -17,3 +17,11 @@
     value_template: "{{ value_json.count | default(0) }}"
     json_attributes:
       - data
+
+- sensor:
+    name: Tvattmaskin kostnad vid klar runner
+    unique_id: tvattmaskin_kostnad_vid_klar_runner
+    command: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py
+    scan_interval: 864000
+    command_timeout: 45
+    value_template: "{{ value | default('ok') }}"
