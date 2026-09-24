@@ -96,6 +96,11 @@
       name: Priset för den senaste diskningen
       initial: ""
 
+  # Vad kostade den senaste tvätten (kr, visas i klar-notis)
+    tvattmaskin_senaste_kostnaden:
+      name: Priset för den senaste tvätten
+      initial: ""
+
 
   # När tryckte någon på lampknapparna i badrummet senast?
     wc_last_button_press:

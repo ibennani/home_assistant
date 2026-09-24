@@ -6084,6 +6084,7 @@
     from: 'on'
     to: 'off'
   action:
+  - action: script.tvattmaskin_kostnad_vid_klar
   - action: script.turn_on
     target:
       entity_id: script.las_text_i_valfri_device
@@ -6102,7 +6103,7 @@
       message: '{{ now().strftime(''%Y-%m-%d %T %A'') }},{{ states(''sensor.tvattmaskinen_switch_power'') }} *** KLART ***'
   - action: script.mobilnotis
     data:
-      meddelande: "HEMMET {{ now().strftime('%R') }}: \nTvättmaskinen har tvättat färdigt\n"
+      meddelande: "{% set k = states('input_text.tvattmaskin_senaste_kostnaden') | trim %}HEMMET {{ now().strftime('%R') }}:\nTvättmaskinen har tvättat färdigt{% if k %}, och körningen kostade {{ k }} kr{% endif %}.\n"
       mottagare: mobile_app_ilias_s23_ultra
       ikon: vitvaror
 - alias: 'Mobilnotis: Luftavfuktaren har stängts av'

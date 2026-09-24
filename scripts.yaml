@@ -3592,3 +3592,10 @@ diskmaskin_korning_avsluta_kostnad:
       entity_id: input_text.diskmaskin_senaste_kostnaden
     data:
       value: "{{ kr_text if (fallback_kr | float(0)) > 0.001 else '' }}"
+
+tvattmaskin_kostnad_vid_klar:
+  alias: "Tvättmaskin: beräkna kostnad vid klar"
+  description: Läser effekthistorik bakåt, Nord Pool-kvartar, sätter input_text.tvattmaskin_senaste_kostnaden.
+  mode: queued
+  sequence:
+  - action: shell_command.tvattmaskin_berakna_kostnad_klar
