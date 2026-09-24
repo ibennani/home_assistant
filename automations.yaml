@@ -5924,7 +5924,6 @@
       - action: button.press
         target:
           entity_id: button.bosch_sma67md06e_68a40e70cb46_start_pause
-      - action: script.diskmaskin_korning_init
       - action: script.mobilnotis
         data:
           meddelande: 'HEMMET {{ states(''sensor.time'') }}:
