@@ -20,7 +20,7 @@ POWER_ENTITY = "sensor.tvattmaskinen_switch_power"
 NORDPOOL_ENTITY = "sensor.nordpool_kwh_se3_sek_3_10_025"
 COST_ENTITY = "input_text.tvattmaskin_senaste_kostnaden"
 
-LOOKBACK_HOURS = 5
+LOOKBACK_HOURS = 12
 LOW_W = 5.0
 START_W = 50.0
 IDLE_MINUTES = 5.0
@@ -141,6 +141,21 @@ def find_last_run_start(
     return last_start
 
 
+def find_last_run_end(
+    points: list[tuple[datetime, float]],
+    start: datetime,
+    cap_end: datetime,
+) -> datetime:
+    """Senaste tidpunkt med märkbar effekt efter start (för sent manuellt test)."""
+    last_active = start
+    for t, v in points:
+        if t < start or t > cap_end:
+            continue
+        if v > LOW_W:
+            last_active = t
+    return min(cap_end, last_active + timedelta(minutes=2))
+
+
 def price_at(slots: list[tuple[datetime, datetime, float]], t: datetime) -> float | None:
     for s0, s1, price in slots:
         if s0 <= t < s1:
@@ -212,7 +227,8 @@ def main() -> int:
         if start is None or not slots:
             set_cost_text(secrets, "")
             return 0
-        kwh, kr = integrate_cost(points, start, end, slots)
+        run_end = find_last_run_end(points, start, end)
+        kwh, kr = integrate_cost(points, start, run_end, slots)
         if kr < 0.001 or kwh < 0.001:
             set_cost_text(secrets, "")
             return 0
