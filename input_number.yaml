@@ -229,6 +229,41 @@
     step: 0.01
     unit_of_measurement: "kr"
 
+  diskmaskin_korning_langd_min:
+    name: "Diskmaskin programlängd (min)"
+    min: 0
+    max: 180
+    step: 1
+    mode: box
+
+  diskmaskin_energy_vid_korningstart:
+    name: "Diskmaskin energi vid körningsstart"
+    min: 0
+    max: 1000
+    step: 0.0001
+    mode: box
+
+  diskmaskin_energy_vid_kvartstart:
+    name: "Diskmaskin energi vid kvartstart"
+    min: 0
+    max: 1000
+    step: 0.0001
+    mode: box
+
+  diskmaskin_korning_kvart_klar:
+    name: "Diskmaskin avslutade kvartar"
+    min: 0
+    max: 10
+    step: 1
+    mode: box
+
+  diskmaskin_kostnad_lopande:
+    name: "Diskmaskin kostnad pågående körning"
+    min: 0
+    max: 50
+    step: 0.01
+    unit_of_measurement: "kr"
+
 # Dessa behövs för att kunna dimma spegelskåpet och handfatet i WC
   wc_handfat_dimindex:
     name: WC Handfat Dim-index

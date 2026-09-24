@@ -3400,3 +3400,175 @@ spion_uppdatera_ilias_position:
   - action: browser_mod.notification
     data:
       message: Uppdaterar positioner
+
+diskmaskin_prognos_kostnad:
+  alias: "Diskmaskin: beräkna prognoskostnad"
+  description: Sätter input_number.diskmaskin_kostnad_fjarrstart från programprofil och Nord Pool-kvartspriser.
+  mode: queued
+  fields:
+    start_iso:
+      name: Starttid ISO
+      required: true
+      selector:
+        text:
+    program:
+      name: Bosch-program
+      required: true
+      selector:
+        text:
+  sequence:
+  - variables:
+      cost_kr: "{% set start = start_iso | as_datetime | as_local %} {% if 'Intensiv70' in program %}\n  {% set dur = 100\
+        \ %}\n  {% set prof = [0.331, 0.266, 0.273, 0.124, 0.017, 0.002, 0.0] %}\n{% else %}\n  {% set dur = 66 %}\n  {% set\
+        \ prof = [0.404, 0.271, 0.138, 0.171, 0.0] %}\n{% endif %} {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}\
+        \ {% set raw = state_attr(np, 'raw_today') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false)\
+        \ %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %} {% set raw_tm = state_attr(np,\
+        \ 'raw_tomorrow') | default([]) if tm_ok else [] %} {% set slots = raw + raw_tm %} {% set nseg = ((dur + 14) // 15)\
+        \ | int %} {% set ns = namespace(cost=0.0) %} {% set start_ts = as_timestamp(start) %} {% set run_end_ts = start_ts\
+        \ + dur * 60 %} {% for i in range(nseg) %}\n  {% set seg_start_ts = start_ts + i * 900 %}\n  {% set seg_end_ts =\
+        \ [seg_start_ts + 900, run_end_ts] | min %}\n  {% set frac = (seg_end_ts - seg_start_ts) / 900.0 %}\n  {% set kwh\
+        \ = (prof[i] if i < prof | length else 0) * frac %}\n  {% set p = namespace(v=0.0) %}\n  {% for s in slots %}\n \
+        \   {% set s0 = as_timestamp(as_datetime(s.start)) %}\n    {% set s1 = as_timestamp(as_datetime(s.end)) %}\n    {%\
+        \ if s0 <= seg_start_ts and seg_start_ts < s1 %}\n      {% set p.v = s.value | float %}\n    {% endif %}\n  {% endfor\
+        \ %}\n  {% set ns.cost = ns.cost + kwh * p.v %}\n{% endfor %} {{ ns.cost }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_kostnad_fjarrstart
+    data:
+      value: "{{ cost_kr | float(0) | round(2) }}"
+
+diskmaskin_korning_init:
+  alias: "Diskmaskin: starta kostnadsspårning"
+  mode: queued
+  sequence:
+  - variables:
+      program: "{{ states('sensor.bosch_sma67md06e_68a40e70cb46_selected_program') }}"
+      langd: "{% if 'Intensiv70' in program %}100{% else %}66{% endif %}"
+      energi: "{{ states('sensor.diskmaskin_energi') | float(0) }}"
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.diskmaskin_korning_start
+    data:
+      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_korning_kvart_klar
+    data:
+      value: 0
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_kostnad_lopande
+    data:
+      value: 0
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_korning_langd_min
+    data:
+      value: "{{ langd | int }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_energy_vid_korningstart
+    data:
+      value: "{{ energi }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_energy_vid_kvartstart
+    data:
+      value: "{{ energi }}"
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.diskmaskin_senaste_kostnaden
+    data:
+      value: ""
+
+diskmaskin_kvart_kostnad_tick:
+  alias: "Diskmaskin: uppdatera kvartskostnad"
+  mode: queued
+  sequence:
+  - variables:
+      start_raw: "{{ states('input_datetime.diskmaskin_korning_start') }}"
+      dur: "{{ states('input_number.diskmaskin_korning_langd_min') | int(0) }}"
+      completed: "{{ states('input_number.diskmaskin_korning_kvart_klar') | int(0) }}"
+      energi: "{{ states('sensor.diskmaskin_energi') | float(0) }}"
+      energi_kvart: "{{ states('input_number.diskmaskin_energy_vid_kvartstart') | float(0) }}"
+      lopande: "{{ states('input_number.diskmaskin_kostnad_lopande') | float(0) }}"
+      np: sensor.nordpool_kwh_se3_sek_3_10_025
+      slots: "{{ state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([]) if (state_attr(np, 'tomorrow_valid') | default(false)) in [true, 'true', 'True'] else []) }}"
+  - condition: template
+    value_template: "{{ start_raw not in ['', 'unknown', 'unavailable', none] and dur > 0 }}"
+  - variables:
+      start_ts: "{{ as_timestamp(as_datetime(start_raw)) }}"
+      run_end_ts: "{{ as_timestamp(as_datetime(start_raw)) + dur * 60 }}"
+      now_ts: "{{ as_timestamp(now()) }}"
+      nseg: "{{ ((dur + 14) // 15) | int }}"
+      elapsed: "{{ ([((now_ts - start_ts) / 900) | int + 1, nseg] | min) | int }}"
+  - condition: template
+    value_template: "{{ completed < elapsed and now_ts <= run_end_ts + 120 }}"
+  - variables:
+      i: "{{ completed }}"
+      seg_start_ts: "{{ start_ts + i * 900 }}"
+      delta_kwh: "{{ energi - energi_kvart }}"
+      price: "{% set p = namespace(v=0.0) %} {% for s in slots %}\n  {% set s0 = as_timestamp(as_datetime(s.start)) %}\n \
+        \ {% set s1 = as_timestamp(as_datetime(s.end)) %}\n  {% if s0 <= seg_start_ts and seg_start_ts < s1 %}\n    {% set\
+        \ p.v = s.value | float %}\n  {% endif %}\n{% endfor %} {{ p.v }}"
+      add_kr: "{{ (delta_kwh | float(0)) * (price | float(0)) }}"
+  - condition: template
+    value_template: "{{ add_kr | float(0) >= 0 }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_kostnad_lopande
+    data:
+      value: "{{ (lopande | float(0) + add_kr | float(0)) | round(2) }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_energy_vid_kvartstart
+    data:
+      value: "{{ energi }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_korning_kvart_klar
+    data:
+      value: "{{ (completed | int) + 1 }}"
+
+diskmaskin_korning_avsluta_kostnad:
+  alias: "Diskmaskin: avsluta och beräkna kostnad"
+  mode: queued
+  sequence:
+  - repeat:
+      count: 8
+      sequence:
+      - action: script.diskmaskin_kvart_kostnad_tick
+  - variables:
+      lopande: "{{ states('input_number.diskmaskin_kostnad_lopande') | float(0) }}"
+      start_raw: "{{ states('input_datetime.diskmaskin_korning_start') }}"
+      dur: "{{ states('input_number.diskmaskin_korning_langd_min') | int(0) }}"
+      energi: "{{ states('sensor.diskmaskin_energi') | float(0) }}"
+      e0: "{{ states('input_number.diskmaskin_energy_vid_korningstart') | float(0) }}"
+      program: "{{ states('sensor.bosch_sma67md06e_68a40e70cb46_selected_program') }}"
+      np: sensor.nordpool_kwh_se3_sek_3_10_025
+      slots: "{{ state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([]) if (state_attr(np, 'tomorrow_valid') | default(false)) in [true, 'true', 'True'] else []) }}"
+  - variables:
+      fallback_kr: "{% if lopande | float(0) > 0.001 %}\n  {{ lopande }}\n{% elif start_raw in ['', 'unknown', 'unavailable',\
+        \ none] or dur <= 0 %}\n  0\n{% else %}\n  {% set total_kwh = energi | float(0) - e0 | float(0) %}\n  {% if 'Intensiv70'\
+        \ in program %}\n    {% set durm = 100 %}\n    {% set prof = [0.331, 0.266, 0.273, 0.124, 0.017, 0.002, 0.0] %}\n\
+        \  {% else %}\n    {% set durm = 66 %}\n    {% set prof = [0.404, 0.271, 0.138, 0.171, 0.0] %}\n  {% endif %}\n\
+        \  {% set start = as_datetime(start_raw) | as_local %}\n  {% set start_ts = as_timestamp(start) %}\n  {% set run_end_ts\
+        \ = start_ts + durm * 60 %}\n  {% set nseg = ((durm + 14) // 15) | int %}\n  {% set wsum = prof[:nseg] | sum %}\n\
+        \  {% set ns = namespace(c=0.0) %}\n  {% for i in range(nseg) %}\n    {% set seg_start_ts = start_ts + i * 900 %}\n\
+        \    {% set seg_end_ts = [seg_start_ts + 900, run_end_ts] | min %}\n    {% set frac = (seg_end_ts - seg_start_ts)\
+        \ / 900.0 %}\n    {% set kwh = total_kwh * (prof[i] if i < prof | length else 0) * frac / wsum if wsum > 0 else 0\
+        \ %}\n    {% set p = namespace(v=0.0) %}\n    {% for s in slots %}\n      {% set s0 = as_timestamp(as_datetime(s.start))\
+        \ %}\n      {% set s1 = as_timestamp(as_datetime(s.end)) %}\n      {% if s0 <= seg_start_ts and seg_start_ts < s1\
+        \ %}\n        {% set p.v = s.value | float %}\n      {% endif %}\n    {% endfor %}\n    {% set ns.c = ns.c + kwh\
+        \ * p.v %}\n  {% endfor %}\n  {{ ns.c }}\n{% endif %}"
+      kr_text: "{{ ('%.2f' | format(fallback_kr | float(0) | round(2))) | replace('.', ',') }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.diskmaskin_kostnad_lopande
+    data:
+      value: "{{ fallback_kr | float(0) | round(2) }}"
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.diskmaskin_senaste_kostnaden
+    data:
+      value: "{{ kr_text if (fallback_kr | float(0)) > 0.001 else '' }}"
