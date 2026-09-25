@@ -10492,3 +10492,27 @@
   actions:
   - action: script.diskmaskin_kwh_minut_tick
   - action: script.diskmaskin_kvart_kostnad_tick
+- id: tvattmaskin_kostnad_init_vid_start
+  alias: 'Tvättmaskin: initiera kostnadsspårning vid start'
+  mode: single
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.tvattmaskinen_aktiv
+    to: 'on'
+    not_from:
+    - unknown
+    - unavailable
+  actions:
+  - action: script.tvattmaskin_korning_init
+- id: tvattmaskin_kostnad_minut_tick
+  alias: 'Tvättmaskin: uppdatera kostnad varje minut under tvätt'
+  mode: single
+  triggers:
+  - trigger: time_pattern
+    minutes: /1
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.tvattmaskinen_aktiv
+    state: 'on'
+  actions:
+  - action: script.tvattmaskin_kwh_minut_tick
