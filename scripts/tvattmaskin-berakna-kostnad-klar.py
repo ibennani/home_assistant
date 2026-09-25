@@ -17,6 +17,7 @@ from pathlib import Path
 
 SECRETS_PATH = Path("/config/secrets.yaml")
 POWER_ENTITY = "sensor.tvattmaskinen_switch_power"
+ACTIVE_ENTITY = "binary_sensor.tvattmaskinen_aktiv"
 NORDPOOL_ENTITY = "sensor.nordpool_kwh_se3_sek_3_10_025"
 COST_ENTITY = "input_text.tvattmaskin_senaste_kostnaden"
 
@@ -70,26 +71,41 @@ def parse_iso(ts: str) -> datetime:
     return dt
 
 
-def fetch_power_history(secrets: dict[str, str], end: datetime) -> list[tuple[datetime, float]]:
+def fetch_entity_history(
+    secrets: dict[str, str],
+    entity_id: str,
+    end: datetime,
+) -> list[tuple[datetime, str]]:
     end_param = urllib.parse.quote(end.isoformat())
     path = (
         f"/api/history/period/{end_param}"
-        f"?filter_entity_id={urllib.parse.quote(POWER_ENTITY)}"
+        f"?filter_entity_id={urllib.parse.quote(entity_id)}"
         f"&minimal_response=true"
         f"&no_attributes=true"
     )
     raw = api_request(secrets, "GET", path)
     if not raw or not isinstance(raw, list) or not raw[0]:
         return []
-    points: list[tuple[datetime, float]] = []
+    points: list[tuple[datetime, str]] = []
     for row in raw[0]:
         try:
-            points.append((parse_iso(row["last_changed"]), float(row["state"])))
+            points.append((parse_iso(row["last_changed"]), str(row["state"])))
         except (KeyError, TypeError, ValueError):
             continue
     points.sort(key=lambda x: x[0])
     cutoff = end - timedelta(hours=LOOKBACK_HOURS)
-    return [(t, v) for t, v in points if t >= cutoff]
+    return [(t, s) for t, s in points if t >= cutoff]
+
+
+def fetch_power_history(secrets: dict[str, str], end: datetime) -> list[tuple[datetime, float]]:
+    rows = fetch_entity_history(secrets, POWER_ENTITY, end)
+    out: list[tuple[datetime, float]] = []
+    for t, state in rows:
+        try:
+            out.append((t, float(state)))
+        except ValueError:
+            continue
+    return out
 
 
 def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
@@ -115,30 +131,81 @@ def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, dateti
     return slots
 
 
+def find_run_window_from_active(
+    active_points: list[tuple[datetime, str]],
+    end: datetime,
+) -> tuple[datetime, datetime] | None:
+    """Senaste avslutade tvätt: off→on (aktiv) till on→off (klar), före end."""
+    changes = [(t, s) for t, s in active_points if t <= end]
+    if not changes:
+        return None
+    changes.sort(key=lambda x: x[0])
+
+    run_end: datetime | None = None
+    for i in range(len(changes) - 1, -1, -1):
+        t, state = changes[i]
+        if state == "off" and i > 0 and changes[i - 1][1] == "on":
+            run_end = t
+            break
+    if run_end is None:
+        return None
+
+    run_start: datetime | None = None
+    for i in range(len(changes) - 1, -1, -1):
+        t, state = changes[i]
+        if t > run_end:
+            continue
+        if state == "on" and i > 0 and changes[i - 1][1] == "off":
+            run_start = t
+            break
+    if run_start is None:
+        return None
+    return run_start, run_end
+
+
+def refine_power_start(
+    power_points: list[tuple[datetime, float]],
+    active_on: datetime,
+    run_end: datetime,
+) -> datetime:
+    """binary_sensor.tvattmaskinen_aktiv har delay_on — backa till första märkbara effekt."""
+    search_from = active_on - timedelta(minutes=15)
+    first: datetime | None = None
+    for t, v in power_points:
+        if t < search_from or t > run_end:
+            continue
+        if v > LOW_W:
+            first = t if first is None else min(first, t)
+    return first if first is not None else active_on
+
+
 def find_last_run_start(
     points: list[tuple[datetime, float]],
     end: datetime,
 ) -> datetime | None:
-    """Senaste tvättstart: första >= START_W efter minst IDLE_MINUTES med <= LOW_W."""
+    """Reserv: första >= START_W efter minst IDLE_MINUTES med <= LOW_W före end."""
     if not points:
         return None
     idle_min_s = IDLE_MINUTES * 60
-    last_start: datetime | None = None
     last_low_at: datetime | None = None
+    in_run = False
+    run_start: datetime | None = None
 
     for t, v in points:
         if t > end:
             break
         if v <= LOW_W:
             last_low_at = t
+            in_run = False
         elif v >= START_W:
-            if last_low_at is not None and (t - last_low_at).total_seconds() >= idle_min_s:
-                last_start = t
-            elif last_start is None and last_low_at is not None:
-                # Kort vila före start (t.ex. 18:03 → 18:06) — räkna ändå som ny tvätt
-                last_start = t
-
-    return last_start
+            if not in_run:
+                if last_low_at is not None and (t - last_low_at).total_seconds() >= idle_min_s:
+                    run_start = t
+                    in_run = True
+                elif run_start is None and last_low_at is not None:
+                    run_start = t
+                    in_run = True
+    return run_start
 
 
 def find_last_run_end(
@@ -223,11 +290,20 @@ def main() -> int:
     try:
         points = fetch_power_history(secrets, end)
         slots = fetch_nordpool_slots(secrets)
-        start = find_last_run_start(points, end)
-        if start is None or not slots:
+        active_hist = fetch_entity_history(secrets, ACTIVE_ENTITY, end)
+        window = find_run_window_from_active(active_hist, end)
+        if window is not None:
+            active_on, run_end = window
+            start = refine_power_start(points, active_on, run_end)
+        else:
+            start = find_last_run_start(points, end)
+            if start is None:
+                set_cost_text(secrets, "")
+                return 0
+            run_end = find_last_run_end(points, start, end)
+        if not slots:
             set_cost_text(secrets, "")
             return 0
-        run_end = find_last_run_end(points, start, end)
         kwh, kr = integrate_cost(points, start, run_end, slots)
         if kr < 0.001 or kwh < 0.001:
             set_cost_text(secrets, "")
