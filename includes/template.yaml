@@ -968,6 +968,13 @@
       delay_off: "00:02:00"
       state: "{{ states('sensor.tvattmaskinen_switch_power') | float(0) > 5 }}"
 
+    - name: Diskmaskin program aktiv
+      unique_id: diskmaskin_program_aktiv
+      device_class: running
+      state: >-
+        {% set s = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_operationstate') %}
+        {{ 'OperationState.Run' in s or 'OperationState.Finished' in s }}
+
 # BEGIN hemma-borta-sensorer (generate-ilias-zone-automation.py)
     # ---- Hemma / borta (giltig aktiv_zon, ignorerar unavailable) ----
     - name: Anna hemma

@@ -3440,15 +3440,22 @@ diskmaskin_prognos_kostnad:
 diskmaskin_korning_init:
   alias: "Diskmaskin: starta kostnadsspårning"
   mode: queued
+  fields:
+    start_iso:
+      name: Starttid (lokal)
+      required: false
+      selector:
+        text:
   sequence:
   - variables:
       program: "{{ states('sensor.bosch_sma67md06e_68a40e70cb46_selected_program') }}"
       langd: "{% if 'Intensiv70' in program %}100{% else %}66{% endif %}"
+      start_dt: "{{ start_iso | default('', true) | trim if (start_iso | default('', true) | trim) != '' else now().strftime('%Y-%m-%d %H:%M:%S') }}"
   - action: input_datetime.set_datetime
     target:
       entity_id: input_datetime.diskmaskin_korning_start
     data:
-      datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+      datetime: "{{ start_dt }}"
   - action: input_number.set_value
     target:
       entity_id: input_number.diskmaskin_korning_kvart_klar
@@ -3535,19 +3542,19 @@ diskmaskin_kwh_minut_tick:
   mode: queued
   sequence:
   - condition: state
-    entity_id: sensor.diskmaskinen_diskar
-    state: 'true'
+    entity_id: binary_sensor.diskmaskin_program_aktiv
+    state: 'on'
   - variables:
       p: "{{ states('sensor.diskmaskin_switch_power') | float(0) }}"
       kwh: "{{ states('input_number.diskmaskin_energy_vid_korningstart') | float(0) }}"
-      add: "{{ (p / 60000.0) }}"
+      add: "{{ (p / 60000.0) | float(0) }}"
   - condition: template
     value_template: "{{ p > 1 }}"
   - action: input_number.set_value
     target:
       entity_id: input_number.diskmaskin_energy_vid_korningstart
     data:
-      value: "{{ (kwh + add) | round(4) }}"
+      value: "{{ (kwh | float(0) + add | float(0)) | round(4) }}"
 
 diskmaskin_korning_avsluta_kostnad:
   alias: "Diskmaskin: avsluta och beräkna kostnad"
@@ -3565,7 +3572,7 @@ diskmaskin_korning_avsluta_kostnad:
       total_kwh: "{{ states('input_number.diskmaskin_energy_vid_korningstart') | float(0) }}"
       program: "{{ states('sensor.bosch_sma67md06e_68a40e70cb46_selected_program') }}"
   - variables:
-      fallback_kr: "{% if lopande | float(0) > 0.001 %}\n  {{ lopande }}\n{% elif start_raw in ['', 'unknown', 'unavailable',\
+      fallback_kr: "{% if lopande | float(0) > 0.001 %}\n  {{ lopande | float(0) }}\n{% elif start_raw in ['', 'unknown', 'unavailable',\
         \ none] or dur <= 0 %}\n  0\n{% else %}\n  {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %} {% set tmr = state_attr(np,\
         \ 'tomorrow_valid') | default(false) %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower\
         \ == 'true') %} {% set slots = state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([])\
