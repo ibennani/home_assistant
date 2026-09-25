@@ -6032,48 +6032,19 @@
       value: ''
 - alias: 'Mobilnotis: Diskmaskinen är klar'
   id: '791834801065068674'
-  mode: single
+  mode: restart
   triggers:
   - trigger: state
-    id: disk_effekt_klar
-    entity_id: sensor.diskmaskinen_diskar
-    from: 'true'
-    to: 'false'
-    for:
-      minutes: 2
-  - trigger: state
-    id: bosch_prog_klar
     entity_id: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress
-    to: '0'
+    to: unavailable
     not_from:
     - unavailable
     - unknown
-    - '0'
-  - trigger: state
-    id: bosch_ready
-    entity_id: sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_operationstate
-    to: BSH.Common.EnumType.OperationState.Ready
-    not_from:
-    - unavailable
-    - unknown
-    - BSH.Common.EnumType.OperationState.Ready
-  conditions:
-  - condition: or
-    conditions:
-    - condition: trigger
-      id: disk_effekt_klar
-    - condition: and
-      conditions:
-      - condition: trigger
-        id: bosch_prog_klar
-      - condition: template
-        value_template: '{{ trigger.from_state is not none and trigger.from_state.state | int(0) > 80 }}'
-    - condition: and
-      conditions:
-      - condition: trigger
-        id: bosch_ready
-      - condition: template
-        value_template: "{{ trigger.from_state is not none and 'Run' in trigger.from_state.state }}"
+  condition:
+  - condition: template
+    value_template: '{{ trigger.from_state is not none and trigger.from_state.state | int > 90 }}
+
+      '
   action:
   - action: script.diskmaskin_korning_avsluta_kostnad
     continue_on_error: true
