@@ -3610,9 +3610,7 @@ tvattmaskin_kostnad_vid_klar:
       entity_id: input_boolean.tvattmaskin_berakna_kostnad
   - variables:
       kostnad_innan: "{{ states('input_text.tvattmaskin_senaste_kostnaden') | trim }}"
-  - action: homeassistant.update_entity
-    target:
-      entity_id: sensor.tvattmaskin_kostnad_vid_klar_runner
+  - action: shell_command.tvattmaskin_berakna_kostnad_klar
   - wait_template: "{{ (states('input_text.tvattmaskin_senaste_kostnaden') | trim) != kostnad_innan }}"
     timeout: 120
     continue_on_timeout: true
