@@ -264,6 +264,20 @@
     step: 0.01
     unit_of_measurement: "kr"
 
+  tvattmaskin_energy_lopande:
+    name: "Tvättmaskin kWh under pågående tvätt"
+    min: 0
+    max: 10
+    step: 0.0001
+    mode: box
+
+  tvattmaskin_kostnad_lopande:
+    name: "Tvättmaskin kostnad pågående tvätt"
+    min: 0
+    max: 50
+    step: 0.01
+    unit_of_measurement: "kr"
+
 # Dessa behövs för att kunna dimma spegelskåpet och handfatet i WC
   wc_handfat_dimindex:
     name: WC Handfat Dim-index

@@ -3600,27 +3600,62 @@ diskmaskin_korning_avsluta_kostnad:
     data:
       value: "{{ kr_text if (fallback_kr | float(0)) > 0.001 else '' }}"
 
-tvattmaskin_kostnad_vid_klar:
-  alias: "Tvättmaskin: beräkna kostnad vid klar"
-  description: Läser effekthistorik bakåt, Nord Pool-kvartar, sätter input_text.tvattmaskin_senaste_kostnaden.
+tvattmaskin_korning_init:
+  alias: "Tvättmaskin: starta kostnadsspårning"
   mode: queued
   sequence:
-  - action: input_boolean.turn_off
+  - action: input_number.set_value
     target:
-      entity_id: input_boolean.tvattmaskin_berakna_kostnad
-  - action: input_boolean.turn_on
+      entity_id: input_number.tvattmaskin_energy_lopande
+    data:
+      value: 0
+  - action: input_number.set_value
     target:
-      entity_id: input_boolean.tvattmaskin_berakna_kostnad
-  - delay:
-      seconds: 2
+      entity_id: input_number.tvattmaskin_kostnad_lopande
+    data:
+      value: 0
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.tvattmaskin_senaste_kostnaden
+    data:
+      value: ""
+
+tvattmaskin_kwh_minut_tick:
+  alias: "Tvättmaskin: räkna upp kWh och kostnad från effekt"
+  mode: queued
+  sequence:
   - variables:
-      kostnad_innan: "{{ states('input_text.tvattmaskin_senaste_kostnaden') | trim }}"
-  - action: homeassistant.update_entity
+      p: "{{ states('sensor.tvattmaskinen_switch_power') | float(0) }}"
+      kwh: "{{ states('input_number.tvattmaskin_energy_lopande') | float(0) }}"
+      lopande: "{{ states('input_number.tvattmaskin_kostnad_lopande') | float(0) }}"
+      add_kwh: "{{ (p / 60000.0) | float(0) }}"
+  - condition: template
+    value_template: "{{ p > 5 }}"
+  - variables:
+      price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %} {% set slots = state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else []) %} {% set ts = as_timestamp(now()) %} {% set p = namespace(v=0.0) %} {% for s in slots %}\n  {% set s0 = as_timestamp(as_datetime(s.start)) %}\n  {% set s1 = as_timestamp(as_datetime(s.end)) %}\n  {% if s0 <= ts and ts < s1 %}\n    {% set p.v = s.value | float %}\n  {% endif %}\n{% endfor %} {{ p.v }}"
+      add_kr: "{{ (add_kwh | float(0)) * (price | float(0)) }}"
+  - action: input_number.set_value
     target:
-      entity_id: sensor.edgerouter_dhcp_klienter
-  - wait_template: "{{ (states('input_text.tvattmaskin_senaste_kostnaden') | trim) != kostnad_innan }}"
-    timeout: 120
-    continue_on_timeout: true
-  - action: input_boolean.turn_off
+      entity_id: input_number.tvattmaskin_energy_lopande
+    data:
+      value: "{{ (kwh | float(0) + add_kwh | float(0)) | round(4) }}"
+  - action: input_number.set_value
     target:
-      entity_id: input_boolean.tvattmaskin_berakna_kostnad
+      entity_id: input_number.tvattmaskin_kostnad_lopande
+    data:
+      value: "{{ (lopande | float(0) + add_kr | float(0)) | round(4) }}"
+
+tvattmaskin_kostnad_vid_klar:
+  alias: "Tvättmaskin: beräkna kostnad vid klar"
+  description: Avslutar minuträkning och sätter input_text.tvattmaskin_senaste_kostnaden från pågående kostnad.
+  mode: queued
+  sequence:
+  - action: script.tvattmaskin_kwh_minut_tick
+  - variables:
+      lopande: "{{ states('input_number.tvattmaskin_kostnad_lopande') | float(0) }}"
+      kr_text: "{{ ('%.2f' | format(lopande | float(0) | round(2))) | replace('.', ',') }}"
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.tvattmaskin_senaste_kostnaden
+    data:
+      value: "{{ kr_text if lopande | float(0) > 0.001 else '' }}"
