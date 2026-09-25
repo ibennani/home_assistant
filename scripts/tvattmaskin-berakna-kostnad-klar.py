@@ -16,6 +16,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 SECRETS_PATH = Path("/config/secrets.yaml")
+LOG_PATH = Path("/config/www/tvattmaskin-kostnad-last.log")
 POWER_ENTITY = "sensor.tvattmaskinen_switch_power"
 ACTIVE_ENTITY = "binary_sensor.tvattmaskinen_aktiv"
 NORDPOOL_ENTITY = "sensor.nordpool_kwh_se3_sek_3_10_025"
@@ -284,6 +285,13 @@ def set_cost_text(secrets: dict[str, str], value: str) -> None:
     )
 
 
+def write_log(message: str) -> None:
+    try:
+        LOG_PATH.write_text(message, encoding="utf-8")
+    except OSError:
+        pass
+
+
 def main() -> int:
     secrets = load_secrets()
     end = datetime.now().astimezone()
@@ -306,12 +314,17 @@ def main() -> int:
             return 0
         kwh, kr = integrate_cost(points, start, run_end, slots)
         if kr < 0.001 or kwh < 0.001:
+            write_log(f"ingen kostnad start={start} end={run_end} kwh={kwh} kr={kr}")
             set_cost_text(secrets, "")
             return 0
-        set_cost_text(secrets, format_kr(kr))
-        print(f"tvattmaskin kostnad: {kwh:.3f} kWh, {format_kr(kr)} kr")
+        kr_text = format_kr(kr)
+        set_cost_text(secrets, kr_text)
+        msg = f"tvattmaskin kostnad: {kwh:.3f} kWh, {kr_text} kr (start={start.isoformat()}, end={run_end.isoformat()})"
+        write_log(msg)
+        print(msg)
         return 0
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError) as exc:
+        write_log(f"fel: {exc!r}")
         print(f"tvattmaskin kostnad: fel {exc}", file=sys.stderr)
         try:
             set_cost_text(secrets, "")
