@@ -356,14 +356,14 @@ def read_entity_state_local(entity_id: str) -> str | None:
 
 
 def tvattmaskin_cost_requested(secrets: dict[str, str]) -> bool:
-    local = read_entity_state_local(TVATTCOST_FLAG)
-    if local == "on":
-        return True
     try:
         state_obj = ha_api(secrets, "GET", f"/api/states/{TVATTCOST_FLAG}")
-        return isinstance(state_obj, dict) and state_obj.get("state") == "on"
+        if isinstance(state_obj, dict) and state_obj.get("state") == "on":
+            return True
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
-        return False
+        pass
+    local = read_entity_state_local(TVATTCOST_FLAG)
+    return local == "on"
 
 
 def run_tvattmaskin_cost_if_requested(secrets: dict[str, str]) -> bool:

@@ -3611,6 +3611,8 @@ tvattmaskin_kostnad_vid_klar:
   - action: input_boolean.turn_on
     target:
       entity_id: input_boolean.tvattmaskin_berakna_kostnad
+  - delay:
+      seconds: 2
   - variables:
       kostnad_innan: "{{ states('input_text.tvattmaskin_senaste_kostnaden') | trim }}"
   - action: homeassistant.update_entity
