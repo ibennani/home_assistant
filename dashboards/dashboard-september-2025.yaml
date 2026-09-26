@@ -389,11 +389,7 @@ views:
             \   return '#28fccf';\n  if (v < 1.50)   return '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)\
             \   return '#fcd228';\n  if (v < 4.00)   return '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)\
             \   return '#fc289d';\n  return '#af28fc';\n}\n"
-          data_generator: "const now = new Date();\nconst raw = entity.attributes.raw_today;\nconst arr = Array.isArray(raw)\
-            \ ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);\nconst current = arr.find(e => {\n  const start =\
-            \ new Date(e.start);\n  const end = new Date(e.end);\n  return now >= start && now < end;\n});\nif (current) {\n\
-            \  const valNum = Math.round(Number(current.value) * 100) / 100; // numeriskt värde\n  return [[now.getTime(),\
-            \ valNum]];\n}\nreturn [];\n"
+          data_generator: "const now = new Date();\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };\n  });\n};\nconst parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);\nlet arr = buildSlots(entity.attributes.today, 0);\nif (!arr.length) arr = parseRaw(entity.attributes.raw_today);\nconst current = arr.find(e => {\n  const start = e.start instanceof Date ? e.start : new Date(e.start);\n  const end = e.end instanceof Date ? e.end : new Date(e.end);\n  return now >= start && now < end;\n});\nif (current) {\n  const valNum = Math.round(Number(current.value) * 100) / 100;\n  return [[now.getTime(), valNum]];\n}\nreturn [];\n"
           show:
             legend_value: false
             in_header: true
@@ -421,13 +417,37 @@ views:
         - entity: sensor.elpris_marginal_kwh_se3
           name: Idag
           type: column
-          data_generator: "const raw = entity.attributes.raw_today; const arr = Array.isArray(raw) ? raw : (typeof raw ===\
-            \ 'string' ? JSON.parse(raw) : []); const colorFor = (v) => {\n  if (isNaN(v))   return '#888888';\n  if (v <\
-            \ 0)      return '#809fff';\n  if (v < 0.50)   return '#809fff';\n  if (v < 1.00)   return '#28fccf';\n  if (v\
-            \ < 1.50)   return '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)   return '#fcd228';\n  if\
-            \ (v < 4.00)   return '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)   return '#fc289d';\n \
-            \ return '#af28fc';\n}; return arr.map((e) => {\n  const val = Number(e.value);\n  const time = new Date(e.start);\n\
-            \  if (Number.isNaN(val) || !time) return null;\n  return { x: time, y: val, fillColor: colorFor(val) };\n}).filter(Boolean);\n"
+          data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
+const buildSlots = (prices, dayOff) => {
+  if (!Array.isArray(prices) || !prices.length) return [];
+  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);
+  return prices.map((val, i) => {
+    const start = new Date(base.getTime() + i * stepMin * 60000);
+    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };
+  });
+};
+const parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+let arr = buildSlots(entity.attributes.today, 0);
+if (!arr.length) arr = parseRaw(entity.attributes.raw_today);
+const colorFor = (v) => {
+  if (isNaN(v))   return '#888888';
+  if (v < 0)      return '#809fff';
+  if (v < 0.50)   return '#809fff';
+  if (v < 1.00)   return '#28fccf';
+  if (v < 1.50)   return '#28fc61';
+  if (v < 2.00)   return '#ebfc28';
+  if (v < 3.00)   return '#fcd228';
+  if (v < 4.00)   return '#fc9628';
+  if (v < 5.00)   return '#fc3e28';
+  if (v < 6.00)   return '#fc289d';
+  return '#af28fc';
+}; return arr.map((e) => {
+  const val = Number(e.value);
+  const time = e.start instanceof Date ? e.start : new Date(e.start);
+  if (Number.isNaN(val) || !time) return null;
+  return { x: time, y: val, fillColor: colorFor(val) };
+}).filter(Boolean);
+"
           show:
             legend_value: false
             in_header: false
@@ -437,16 +457,43 @@ views:
         - entity: sensor.elpris_marginal_kwh_se3
           name: Imorgon
           type: column
-          data_generator: "const raw = entity.attributes.raw_tomorrow; const arr = Array.isArray(raw) ? raw : (typeof raw\
-            \ === 'string' ? JSON.parse(raw) : []); const dim = (hex, alpha=0.75) => {\n  const h = hex.replace('#','');\n\
-            \  const r = parseInt(h.substring(0,2),16);\n  const g = parseInt(h.substring(2,4),16);\n  const b = parseInt(h.substring(4,6),16);\n\
-            \  return `rgba(${r},${g},${b},${alpha})`;\n}; const colorForBase = (v) => {\n  if (isNaN(v))   return '#888888';\n\
-            \  if (v < 0)      return '#809fff';\n  if (v < 0.50)   return '#809fff';\n  if (v < 1.00)   return '#28fccf';\n\
-            \  if (v < 1.50)   return '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)   return '#fcd228';\n\
-            \  if (v < 4.00)   return '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)   return '#fc289d';\n\
-            \  return '#af28fc';\n}; return arr.map((e) => {\n  const val = Number(e.value);\n  const time = new Date(e.start);\n\
-            \  if (Number.isNaN(val) || !time) return null;\n  return { x: time, y: val, fillColor: dim(colorForBase(val),\
-            \ 0.70) };\n}).filter(Boolean);\n"
+          data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
+const buildSlots = (prices, dayOff) => {
+  if (!Array.isArray(prices) || !prices.length) return [];
+  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);
+  return prices.map((val, i) => {
+    const start = new Date(base.getTime() + i * stepMin * 60000);
+    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };
+  });
+};
+const parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+let arr = buildSlots(entity.attributes.tomorrow, 1);
+if (!arr.length) arr = parseRaw(entity.attributes.raw_tomorrow);
+const dim = (hex, alpha=0.75) => {
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}; const colorForBase = (v) => {
+  if (isNaN(v))   return '#888888';
+  if (v < 0)      return '#809fff';
+  if (v < 0.50)   return '#809fff';
+  if (v < 1.00)   return '#28fccf';
+  if (v < 1.50)   return '#28fc61';
+  if (v < 2.00)   return '#ebfc28';
+  if (v < 3.00)   return '#fcd228';
+  if (v < 4.00)   return '#fc9628';
+  if (v < 5.00)   return '#fc3e28';
+  if (v < 6.00)   return '#fc289d';
+  return '#af28fc';
+}; return arr.map((e) => {
+  const val = Number(e.value);
+  const time = e.start instanceof Date ? e.start : new Date(e.start);
+  if (Number.isNaN(val) || !time) return null;
+  return { x: time, y: val, fillColor: dim(colorForBase(val), 0.70) };
+}).filter(Boolean);
+"
           show:
             legend_value: false
             in_header: false
@@ -469,24 +516,22 @@ views:
           \ s | replace('.', ':') }}\n{%- endmacro %}\n\n{# ---------- Utskrift: färgat pris + \" kr\" ---------- #}\n{% macro\
           \ price_span(v) -%}\n  {%- set v = (v | float(0)) -%}\n  <font color=\"{{ price_color(v) }}\">{{ fmt_price(v) }}\
           \ kr</font>\n{%- endmacro %}\n\n{%- set entity = 'sensor.elpris_marginal_kwh_se3' -%}\n{%- set day_start_hour\
-          \ = 10 -%}\n{%- set day_end_hour_exclusive = 20 -%}\n\n# Dagens el-pris:\n{% set raw = state_attr(entity, 'raw_today')\
-          \ -%}\n{%- set slots = (raw | from_json) if (raw is string) else (raw or []) -%}\n\n{%- set ns = namespace(\n  sum=0.0,\
+          \ = 10 -%}\n{%- set day_end_hour_exclusive = 20 -%}\n\n# Dagens el-pris:\n{%- set slots = state_attr(entity, 'today') | default([]) -%}\n\n{%- set ns = namespace(\n  sum=0.0,\
           \ cnt=0,\n  sum_night=0.0, cnt_night=0,\n  sum_day=0.0, cnt_day=0,\n\n  min_day=None, min_day_start=None, min_day_end=None,\n\
           \  max_day=None, max_day_start=None, max_day_end=None,\n\n  min_all=None, min_all_start=None, min_all_end=None,\n\
-          \  max_all=None, max_all_start=None, max_all_end=None\n) -%}\n\n{%- for s in slots %}\n  {%- set v = (s.value |\
-          \ float(0)) -%}\n  {%- set t = as_datetime(s.start) -%}\n\n  {%- set ns.sum = ns.sum + v -%}\n  {%- set ns.cnt =\
+          \  max_all=None, max_all_start=None, max_all_end=None\n) -%}\n\n{%- for v in slots %}\n  {%- set v = (v | float(0)) -%}\n  {%- set t = now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(minutes=loop.index0 * 15) -%}\n  {%- set t_end = t + timedelta(minutes=15) -%}\n\n  {%- set ns.sum = ns.sum + v -%}\n  {%- set ns.cnt =\
           \ ns.cnt + 1 -%}\n\n  {# Natt 00:00–05:59 #}\n  {%- if t and t.hour < 6 -%}\n    {%- set ns.sum_night = ns.sum_night\
           \ + v -%}\n    {%- set ns.cnt_night = ns.cnt_night + 1 -%}\n  {%- endif -%}\n\n  {# Dagtid 10:00–19:59 #}\n  {%-\
           \ if t and day_start_hour <= t.hour < day_end_hour_exclusive -%}\n    {%- set ns.sum_day = ns.sum_day + v -%}\n\
           \    {%- set ns.cnt_day = ns.cnt_day + 1 -%}\n\n    {%- if ns.min_day is none or v < ns.min_day -%}\n      {%- set\
-          \ ns.min_day = v -%}\n      {%- set ns.min_day_start = as_datetime(s.start) -%}\n      {%- set ns.min_day_end  \
-          \ = as_datetime(s.end) -%}\n    {%- endif -%}\n\n    {%- if ns.max_day is none or v > ns.max_day -%}\n      {%-\
-          \ set ns.max_day = v -%}\n      {%- set ns.max_day_start = as_datetime(s.start) -%}\n      {%- set ns.max_day_end\
-          \   = as_datetime(s.end) -%}\n    {%- endif -%}\n  {%- endif -%}\n\n  {# Billigast hela dygnet #}\n  {%- if ns.min_all\
-          \ is none or v < ns.min_all -%}\n    {%- set ns.min_all = v -%}\n    {%- set ns.min_all_start = as_datetime(s.start)\
-          \ -%}\n    {%- set ns.min_all_end   = as_datetime(s.end) -%}\n  {%- endif -%}\n\n  {# Dyrast hela dygnet #}\n  {%-\
-          \ if ns.max_all is none or v > ns.max_all -%}\n    {%- set ns.max_all = v -%}\n    {%- set ns.max_all_start = as_datetime(s.start)\
-          \ -%}\n    {%- set ns.max_all_end   = as_datetime(s.end) -%}\n  {%- endif -%}\n{%- endfor %}\n\n{%- set avg_all\
+          \ ns.min_day = v -%}\n      {%- set ns.min_day_start = t -%}\n      {%- set ns.min_day_end  \
+          \ = t_end -%}\n    {%- endif -%}\n\n    {%- if ns.max_day is none or v > ns.max_day -%}\n      {%-\
+          \ set ns.max_day = v -%}\n      {%- set ns.max_day_start = t -%}\n      {%- set ns.max_day_end\
+          \   = t_end -%}\n    {%- endif -%}\n  {%- endif -%}\n\n  {# Billigast hela dygnet #}\n  {%- if ns.min_all\
+          \ is none or v < ns.min_all -%}\n    {%- set ns.min_all = v -%}\n    {%- set ns.min_all_start = t\
+          \ -%}\n    {%- set ns.min_all_end   = t_end -%}\n  {%- endif -%}\n\n  {# Dyrast hela dygnet #}\n  {%-\
+          \ if ns.max_all is none or v > ns.max_all -%}\n    {%- set ns.max_all = v -%}\n    {%- set ns.max_all_start = t\
+          \ -%}\n    {%- set ns.max_all_end   = t_end -%}\n  {%- endif -%}\n{%- endfor %}\n\n{%- set avg_all\
           \ = (ns.sum / ns.cnt) if ns.cnt > 0 else 0 -%}\n{%- set avg_night = (ns.sum_night / ns.cnt_night) if ns.cnt_night\
           \ > 0 else 0 -%}\n{%- set avg_day = (ns.sum_day / ns.cnt_day) if ns.cnt_day > 0 else 0 -%}\n\nSnittpris hela dygnet:\
           \ {{ price_span(avg_all) }}.\nSnittpris på natten (00–06): {{ price_span(avg_night) }}.\nSnittpris på dagtid (10–20):\
@@ -498,23 +543,21 @@ views:
           \ }}–{{ ns.min_all_end.strftime('%H:%M') }}, {{ price_span(ns.min_all) }}.\n{%- endif %}\n{%- if ns.max_all_start\
           \ %}\nDyrast hela dygnet: Kl {{ ns.max_all_start.strftime('%H:%M') }}–{{ ns.max_all_end.strftime('%H:%M') }}, {{\
           \ price_span(ns.max_all) }}.\n{%- endif %}\n\n{%- if is_state_attr(entity, 'tomorrow_valid', true) %}\n\n# Morgondagens\
-          \ el-pris:\n{% set raw2 = state_attr(entity, 'raw_tomorrow') -%}\n{%- set slots2 = (raw2 | from_json) if (raw2 is\
-          \ string) else (raw2 or []) -%}\n\n{%- set ns2 = namespace(\n  sum=0.0, cnt=0,\n  sum_night=0.0, cnt_night=0,\n\
+          \ el-pris:\n{%- set slots2 = state_attr(entity, 'tomorrow') | default([]) -%}\n\n{%- set ns2 = namespace(\n  sum=0.0, cnt=0,\n  sum_night=0.0, cnt_night=0,\n\
           \  sum_day=0.0, cnt_day=0,\n\n  min_day=None, min_day_start=None, min_day_end=None,\n  max_day=None, max_day_start=None,\
           \ max_day_end=None,\n\n  min_all=None, min_all_start=None, min_all_end=None,\n  max_all=None, max_all_start=None,\
-          \ max_all_end=None\n) -%}\n\n{%- for s in slots2 %}\n  {%- set v = (s.value | float(0)) -%}\n  {%- set t = as_datetime(s.start)\
-          \ -%}\n\n  {%- set ns2.sum = ns2.sum + v -%}\n  {%- set ns2.cnt = ns2.cnt + 1 -%}\n\n  {%- if t and t.hour < 6 -%}\n\
+          \ max_all_end=None\n) -%}\n\n{%- for v in slots2 %}\n  {%- set v = (v | float(0)) -%}\n  {%- set t = (now() + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(minutes=loop.index0 * 15) -%}\n  {%- set t_end = t + timedelta(minutes=15) -%}\n\n  {%- set ns2.sum = ns2.sum + v -%}\n  {%- set ns2.cnt = ns2.cnt + 1 -%}\n\n  {%- if t and t.hour < 6 -%}\n\
           \    {%- set ns2.sum_night = ns2.sum_night + v -%}\n    {%- set ns2.cnt_night = ns2.cnt_night + 1 -%}\n  {%- endif\
           \ -%}\n\n  {%- if t and day_start_hour <= t.hour < day_end_hour_exclusive -%}\n    {%- set ns2.sum_day = ns2.sum_day\
           \ + v -%}\n    {%- set ns2.cnt_day = ns2.cnt_day + 1 -%}\n\n    {%- if ns2.min_day is none or v < ns2.min_day -%}\n\
-          \      {%- set ns2.min_day = v -%}\n      {%- set ns2.min_day_start = as_datetime(s.start) -%}\n      {%- set ns2.min_day_end\
-          \   = as_datetime(s.end) -%}\n    {%- endif -%}\n\n    {%- if ns2.max_day is none or v > ns2.max_day -%}\n     \
-          \ {%- set ns2.max_day = v -%}\n      {%- set ns2.max_day_start = as_datetime(s.start) -%}\n      {%- set ns2.max_day_end\
-          \   = as_datetime(s.end) -%}\n    {%- endif -%}\n  {%- endif -%}\n\n  {%- if ns2.min_all is none or v < ns2.min_all\
-          \ -%}\n    {%- set ns2.min_all = v -%}\n    {%- set ns2.min_all_start = as_datetime(s.start) -%}\n    {%- set ns2.min_all_end\
-          \   = as_datetime(s.end) -%}\n  {%- endif -%}\n\n  {%- if ns2.max_all is none or v > ns2.max_all -%}\n    {%- set\
-          \ ns2.max_all = v -%}\n    {%- set ns2.max_all_start = as_datetime(s.start) -%}\n    {%- set ns2.max_all_end   =\
-          \ as_datetime(s.end) -%}\n  {%- endif -%}\n{%- endfor %}\n\n{%- set avg2_all = (ns2.sum / ns2.cnt) if ns2.cnt >\
+          \      {%- set ns2.min_day = v -%}\n      {%- set ns2.min_day_start = t -%}\n      {%- set ns2.min_day_end\
+          \   = t_end -%}\n    {%- endif -%}\n\n    {%- if ns2.max_day is none or v > ns2.max_day -%}\n     \
+          \ {%- set ns2.max_day = v -%}\n      {%- set ns2.max_day_start = t -%}\n      {%- set ns2.max_day_end\
+          \   = t_end -%}\n    {%- endif -%}\n  {%- endif -%}\n\n  {%- if ns2.min_all is none or v < ns2.min_all\
+          \ -%}\n    {%- set ns2.min_all = v -%}\n    {%- set ns2.min_all_start = t -%}\n    {%- set ns2.min_all_end\
+          \   = t_end -%}\n  {%- endif -%}\n\n  {%- if ns2.max_all is none or v > ns2.max_all -%}\n    {%- set\
+          \ ns2.max_all = v -%}\n    {%- set ns2.max_all_start = t -%}\n    {%- set ns2.max_all_end   =\
+          \ t_end -%}\n  {%- endif -%}\n{%- endfor %}\n\n{%- set avg2_all = (ns2.sum / ns2.cnt) if ns2.cnt >\
           \ 0 else 0 -%}\n{%- set avg2_night = (ns2.sum_night / ns2.cnt_night) if ns2.cnt_night > 0 else 0 -%}\n{%- set avg2_day\
           \ = (ns2.sum_day / ns2.cnt_day) if ns2.cnt_day > 0 else 0 -%}\n\nSnittpris hela dygnet: {{ price_span(avg2_all)\
           \ }}.\nSnittpris på natten (00–06): {{ price_span(avg2_night) }}.\nSnittpris på dagtid (10–20): {{ price_span(avg2_day)\
@@ -4863,11 +4906,7 @@ views:
           \   return '#28fccf';\n  if (v < 1.50)   return '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)\
           \   return '#fcd228';\n  if (v < 4.00)   return '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)\
           \   return '#fc289d';\n  return '#af28fc';\n}\n"
-        data_generator: "const now = new Date();\nconst raw = entity.attributes.raw_today;\nconst arr = Array.isArray(raw)\
-          \ ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);\nconst current = arr.find(e => {\n  const start = new\
-          \ Date(e.start);\n  const end = new Date(e.end);\n  return now >= start && now < end;\n});\nif (current) {\n  const\
-          \ valNum = Math.round(Number(current.value) * 100) / 100; // numeriskt värde\n  return [[now.getTime(), valNum]];\n\
-          }\nreturn [];\n"
+        data_generator: "const now = new Date();\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };\n  });\n};\nconst parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);\nlet arr = buildSlots(entity.attributes.today, 0);\nif (!arr.length) arr = parseRaw(entity.attributes.raw_today);\nconst current = arr.find(e => {\n  const start = e.start instanceof Date ? e.start : new Date(e.start);\n  const end = e.end instanceof Date ? e.end : new Date(e.end);\n  return now >= start && now < end;\n});\nif (current) {\n  const valNum = Math.round(Number(current.value) * 100) / 100;\n  return [[now.getTime(), valNum]];\n}\nreturn [];\n"
         show:
           legend_value: false
           in_header: true
@@ -4895,13 +4934,37 @@ views:
       - entity: sensor.elpris_marginal_kwh_se3
         name: Idag
         type: column
-        data_generator: "const raw = entity.attributes.raw_today; const arr = Array.isArray(raw) ? raw : (typeof raw === 'string'\
-          \ ? JSON.parse(raw) : []); const colorFor = (v) => {\n  if (isNaN(v))   return '#888888';\n  if (v < 0)      return\
-          \ '#809fff';\n  if (v < 0.50)   return '#809fff';\n  if (v < 1.00)   return '#28fccf';\n  if (v < 1.50)   return\
-          \ '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)   return '#fcd228';\n  if (v < 4.00)   return\
-          \ '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)   return '#fc289d';\n  return '#af28fc';\n};\
-          \ return arr.map((e) => {\n  const val = Number(e.value);\n  const time = new Date(e.start);\n  if (Number.isNaN(val)\
-          \ || !time) return null;\n  return { x: time, y: val, fillColor: colorFor(val) };\n}).filter(Boolean);\n"
+        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
+const buildSlots = (prices, dayOff) => {
+  if (!Array.isArray(prices) || !prices.length) return [];
+  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);
+  return prices.map((val, i) => {
+    const start = new Date(base.getTime() + i * stepMin * 60000);
+    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };
+  });
+};
+const parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+let arr = buildSlots(entity.attributes.today, 0);
+if (!arr.length) arr = parseRaw(entity.attributes.raw_today);
+const colorFor = (v) => {
+  if (isNaN(v))   return '#888888';
+  if (v < 0)      return '#809fff';
+  if (v < 0.50)   return '#809fff';
+  if (v < 1.00)   return '#28fccf';
+  if (v < 1.50)   return '#28fc61';
+  if (v < 2.00)   return '#ebfc28';
+  if (v < 3.00)   return '#fcd228';
+  if (v < 4.00)   return '#fc9628';
+  if (v < 5.00)   return '#fc3e28';
+  if (v < 6.00)   return '#fc289d';
+  return '#af28fc';
+}; return arr.map((e) => {
+  const val = Number(e.value);
+  const time = e.start instanceof Date ? e.start : new Date(e.start);
+  if (Number.isNaN(val) || !time) return null;
+  return { x: time, y: val, fillColor: colorFor(val) };
+}).filter(Boolean);
+"
         show:
           legend_value: false
           in_header: false
@@ -4911,16 +4974,43 @@ views:
       - entity: sensor.elpris_marginal_kwh_se3
         name: Imorgon
         type: column
-        data_generator: "const raw = entity.attributes.raw_tomorrow; const arr = Array.isArray(raw) ? raw : (typeof raw ===\
-          \ 'string' ? JSON.parse(raw) : []); const dim = (hex, alpha=0.75) => {\n  const h = hex.replace('#','');\n  const\
-          \ r = parseInt(h.substring(0,2),16);\n  const g = parseInt(h.substring(2,4),16);\n  const b = parseInt(h.substring(4,6),16);\n\
-          \  return `rgba(${r},${g},${b},${alpha})`;\n}; const colorForBase = (v) => {\n  if (isNaN(v))   return '#888888';\n\
-          \  if (v < 0)      return '#809fff';\n  if (v < 0.50)   return '#809fff';\n  if (v < 1.00)   return '#28fccf';\n\
-          \  if (v < 1.50)   return '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)   return '#fcd228';\n\
-          \  if (v < 4.00)   return '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)   return '#fc289d';\n\
-          \  return '#af28fc';\n}; return arr.map((e) => {\n  const val = Number(e.value);\n  const time = new Date(e.start);\n\
-          \  if (Number.isNaN(val) || !time) return null;\n  return { x: time, y: val, fillColor: dim(colorForBase(val), 0.70)\
-          \ };\n}).filter(Boolean);\n"
+        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
+const buildSlots = (prices, dayOff) => {
+  if (!Array.isArray(prices) || !prices.length) return [];
+  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);
+  return prices.map((val, i) => {
+    const start = new Date(base.getTime() + i * stepMin * 60000);
+    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };
+  });
+};
+const parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
+let arr = buildSlots(entity.attributes.tomorrow, 1);
+if (!arr.length) arr = parseRaw(entity.attributes.raw_tomorrow);
+const dim = (hex, alpha=0.75) => {
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}; const colorForBase = (v) => {
+  if (isNaN(v))   return '#888888';
+  if (v < 0)      return '#809fff';
+  if (v < 0.50)   return '#809fff';
+  if (v < 1.00)   return '#28fccf';
+  if (v < 1.50)   return '#28fc61';
+  if (v < 2.00)   return '#ebfc28';
+  if (v < 3.00)   return '#fcd228';
+  if (v < 4.00)   return '#fc9628';
+  if (v < 5.00)   return '#fc3e28';
+  if (v < 6.00)   return '#fc289d';
+  return '#af28fc';
+}; return arr.map((e) => {
+  const val = Number(e.value);
+  const time = e.start instanceof Date ? e.start : new Date(e.start);
+  if (Number.isNaN(val) || !time) return null;
+  return { x: time, y: val, fillColor: dim(colorForBase(val), 0.70) };
+}).filter(Boolean);
+"
         show:
           legend_value: false
           in_header: false
@@ -4941,23 +5031,21 @@ views:
         {%- endmacro %}\n\n{# ---------- Utskrift: färgat pris + \" kr\" ---------- #}\n{% macro price_span(v) -%}\n  {%-\
         \ set v = (v | float(0)) -%}\n  <font color=\"{{ price_color(v) }}\">{{ fmt_price(v) }} kr</font>\n{%- endmacro %}\n\
         \n{%- set entity = 'sensor.elpris_marginal_kwh_se3' -%}\n{%- set day_start_hour = 10 -%}\n{%- set day_end_hour_exclusive\
-        \ = 20 -%}\n\n# Dagens el-pris:\n{% set raw = state_attr(entity, 'raw_today') -%}\n{%- set slots = (raw | from_json)\
-        \ if (raw is string) else (raw or []) -%}\n\n{%- set ns = namespace(\n  sum=0.0, cnt=0,\n  sum_night=0.0, cnt_night=0,\n\
+        \ = 20 -%}\n\n# Dagens el-pris:\n{%- set slots = state_attr(entity, 'today') | default([]) -%}\n\n{%- set ns = namespace(\n  sum=0.0, cnt=0,\n  sum_night=0.0, cnt_night=0,\n\
         \  sum_day=0.0, cnt_day=0,\n\n  min_day=None, min_day_start=None, min_day_end=None,\n  max_day=None, max_day_start=None,\
         \ max_day_end=None,\n\n  min_all=None, min_all_start=None, min_all_end=None,\n  max_all=None, max_all_start=None,\
-        \ max_all_end=None\n) -%}\n\n{%- for s in slots %}\n  {%- set v = (s.value | float(0)) -%}\n  {%- set t = as_datetime(s.start)\
-        \ -%}\n\n  {%- set ns.sum = ns.sum + v -%}\n  {%- set ns.cnt = ns.cnt + 1 -%}\n\n  {# Natt 00:00–05:59 #}\n  {%- if\
+        \ max_all_end=None\n) -%}\n\n{%- for v in slots %}\n  {%- set v = (v | float(0)) -%}\n  {%- set t = now().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(minutes=loop.index0 * 15) -%}\n  {%- set t_end = t + timedelta(minutes=15) -%}\n\n  {%- set ns.sum = ns.sum + v -%}\n  {%- set ns.cnt = ns.cnt + 1 -%}\n\n  {# Natt 00:00–05:59 #}\n  {%- if\
         \ t and t.hour < 6 -%}\n    {%- set ns.sum_night = ns.sum_night + v -%}\n    {%- set ns.cnt_night = ns.cnt_night +\
         \ 1 -%}\n  {%- endif -%}\n\n  {# Dagtid 10:00–19:59 #}\n  {%- if t and day_start_hour <= t.hour < day_end_hour_exclusive\
         \ -%}\n    {%- set ns.sum_day = ns.sum_day + v -%}\n    {%- set ns.cnt_day = ns.cnt_day + 1 -%}\n\n    {%- if ns.min_day\
-        \ is none or v < ns.min_day -%}\n      {%- set ns.min_day = v -%}\n      {%- set ns.min_day_start = as_datetime(s.start)\
-        \ -%}\n      {%- set ns.min_day_end   = as_datetime(s.end) -%}\n    {%- endif -%}\n\n    {%- if ns.max_day is none\
-        \ or v > ns.max_day -%}\n      {%- set ns.max_day = v -%}\n      {%- set ns.max_day_start = as_datetime(s.start) -%}\n\
-        \      {%- set ns.max_day_end   = as_datetime(s.end) -%}\n    {%- endif -%}\n  {%- endif -%}\n\n  {# Billigast hela\
+        \ is none or v < ns.min_day -%}\n      {%- set ns.min_day = v -%}\n      {%- set ns.min_day_start = t\
+        \ -%}\n      {%- set ns.min_day_end   = t_end -%}\n    {%- endif -%}\n\n    {%- if ns.max_day is none\
+        \ or v > ns.max_day -%}\n      {%- set ns.max_day = v -%}\n      {%- set ns.max_day_start = t -%}\n\
+        \      {%- set ns.max_day_end   = t_end -%}\n    {%- endif -%}\n  {%- endif -%}\n\n  {# Billigast hela\
         \ dygnet #}\n  {%- if ns.min_all is none or v < ns.min_all -%}\n    {%- set ns.min_all = v -%}\n    {%- set ns.min_all_start\
-        \ = as_datetime(s.start) -%}\n    {%- set ns.min_all_end   = as_datetime(s.end) -%}\n  {%- endif -%}\n\n  {# Dyrast\
+        \ = t -%}\n    {%- set ns.min_all_end   = t_end -%}\n  {%- endif -%}\n\n  {# Dyrast\
         \ hela dygnet #}\n  {%- if ns.max_all is none or v > ns.max_all -%}\n    {%- set ns.max_all = v -%}\n    {%- set ns.max_all_start\
-        \ = as_datetime(s.start) -%}\n    {%- set ns.max_all_end   = as_datetime(s.end) -%}\n  {%- endif -%}\n{%- endfor %}\n\
+        \ = t -%}\n    {%- set ns.max_all_end   = t_end -%}\n  {%- endif -%}\n{%- endfor %}\n\
         \n{%- set avg_all = (ns.sum / ns.cnt) if ns.cnt > 0 else 0 -%}\n{%- set avg_night = (ns.sum_night / ns.cnt_night)\
         \ if ns.cnt_night > 0 else 0 -%}\n{%- set avg_day = (ns.sum_day / ns.cnt_day) if ns.cnt_day > 0 else 0 -%}\n\nSnittpris\
         \ hela dygnet: {{ price_span(avg_all) }}.\nSnittpris på natten (00–06): {{ price_span(avg_night) }}.\nSnittpris på\
@@ -4968,23 +5056,21 @@ views:
         \ (inga dagtids-slotar).\n{%- endif %}\n{%- if ns.min_all_start %}\nBilligast hela dygnet: Kl {{ ns.min_all_start.strftime('%H:%M')\
         \ }}–{{ ns.min_all_end.strftime('%H:%M') }}, {{ price_span(ns.min_all) }}.\n{%- endif %}\n{%- if ns.max_all_start\
         \ %}\nDyrast hela dygnet: Kl {{ ns.max_all_start.strftime('%H:%M') }}–{{ ns.max_all_end.strftime('%H:%M') }}, {{ price_span(ns.max_all)\
-        \ }}.\n{%- endif %}\n\n{%- if is_state_attr(entity, 'tomorrow_valid', true) %}\n\n# Morgondagens el-pris:\n{% set\
-        \ raw2 = state_attr(entity, 'raw_tomorrow') -%}\n{%- set slots2 = (raw2 | from_json) if (raw2 is string) else (raw2\
-        \ or []) -%}\n\n{%- set ns2 = namespace(\n  sum=0.0, cnt=0,\n  sum_night=0.0, cnt_night=0,\n  sum_day=0.0, cnt_day=0,\n\
+        \ }}.\n{%- endif %}\n\n{%- if is_state_attr(entity, 'tomorrow_valid', true) %}\n\n# Morgondagens el-pris:\n{%- set slots2 = state_attr(entity, 'tomorrow') | default([]) -%}\n\n{%- set ns2 = namespace(\n  sum=0.0, cnt=0,\n  sum_night=0.0, cnt_night=0,\n  sum_day=0.0, cnt_day=0,\n\
         \n  min_day=None, min_day_start=None, min_day_end=None,\n  max_day=None, max_day_start=None, max_day_end=None,\n\n\
         \  min_all=None, min_all_start=None, min_all_end=None,\n  max_all=None, max_all_start=None, max_all_end=None\n) -%}\n\
-        \n{%- for s in slots2 %}\n  {%- set v = (s.value | float(0)) -%}\n  {%- set t = as_datetime(s.start) -%}\n\n  {%-\
+        \n{%- for v in slots2 %}\n  {%- set v = (v | float(0)) -%}\n  {%- set t = (now() + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(minutes=loop.index0 * 15) -%}\n  {%- set t_end = t + timedelta(minutes=15) -%}\n\n  {%-\
         \ set ns2.sum = ns2.sum + v -%}\n  {%- set ns2.cnt = ns2.cnt + 1 -%}\n\n  {%- if t and t.hour < 6 -%}\n    {%- set\
         \ ns2.sum_night = ns2.sum_night + v -%}\n    {%- set ns2.cnt_night = ns2.cnt_night + 1 -%}\n  {%- endif -%}\n\n  {%-\
         \ if t and day_start_hour <= t.hour < day_end_hour_exclusive -%}\n    {%- set ns2.sum_day = ns2.sum_day + v -%}\n\
         \    {%- set ns2.cnt_day = ns2.cnt_day + 1 -%}\n\n    {%- if ns2.min_day is none or v < ns2.min_day -%}\n      {%-\
-        \ set ns2.min_day = v -%}\n      {%- set ns2.min_day_start = as_datetime(s.start) -%}\n      {%- set ns2.min_day_end\
-        \   = as_datetime(s.end) -%}\n    {%- endif -%}\n\n    {%- if ns2.max_day is none or v > ns2.max_day -%}\n      {%-\
-        \ set ns2.max_day = v -%}\n      {%- set ns2.max_day_start = as_datetime(s.start) -%}\n      {%- set ns2.max_day_end\
-        \   = as_datetime(s.end) -%}\n    {%- endif -%}\n  {%- endif -%}\n\n  {%- if ns2.min_all is none or v < ns2.min_all\
-        \ -%}\n    {%- set ns2.min_all = v -%}\n    {%- set ns2.min_all_start = as_datetime(s.start) -%}\n    {%- set ns2.min_all_end\
-        \   = as_datetime(s.end) -%}\n  {%- endif -%}\n\n  {%- if ns2.max_all is none or v > ns2.max_all -%}\n    {%- set\
-        \ ns2.max_all = v -%}\n    {%- set ns2.max_all_start = as_datetime(s.start) -%}\n    {%- set ns2.max_all_end   = as_datetime(s.end)\
+        \ set ns2.min_day = v -%}\n      {%- set ns2.min_day_start = t -%}\n      {%- set ns2.min_day_end\
+        \   = t_end -%}\n    {%- endif -%}\n\n    {%- if ns2.max_day is none or v > ns2.max_day -%}\n      {%-\
+        \ set ns2.max_day = v -%}\n      {%- set ns2.max_day_start = t -%}\n      {%- set ns2.max_day_end\
+        \   = t_end -%}\n    {%- endif -%}\n  {%- endif -%}\n\n  {%- if ns2.min_all is none or v < ns2.min_all\
+        \ -%}\n    {%- set ns2.min_all = v -%}\n    {%- set ns2.min_all_start = t -%}\n    {%- set ns2.min_all_end\
+        \   = t_end -%}\n  {%- endif -%}\n\n  {%- if ns2.max_all is none or v > ns2.max_all -%}\n    {%- set\
+        \ ns2.max_all = v -%}\n    {%- set ns2.max_all_start = t -%}\n    {%- set ns2.max_all_end   = t_end\
         \ -%}\n  {%- endif -%}\n{%- endfor %}\n\n{%- set avg2_all = (ns2.sum / ns2.cnt) if ns2.cnt > 0 else 0 -%}\n{%- set\
         \ avg2_night = (ns2.sum_night / ns2.cnt_night) if ns2.cnt_night > 0 else 0 -%}\n{%- set avg2_day = (ns2.sum_day /\
         \ ns2.cnt_day) if ns2.cnt_day > 0 else 0 -%}\n\nSnittpris hela dygnet: {{ price_span(avg2_all) }}.\nSnittpris på natten\

@@ -111,7 +111,7 @@
           {% for s in slots %}
             {% set ns.out = ns.out + [{'start': s.start, 'end': s.end, 'value': (s.value | float(0)) + addon}] %}
           {% endfor %}
-          {{ ns.out }}
+          {{ ns.out | to_json }}
         raw_tomorrow: >-
           {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
           {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
@@ -124,7 +124,7 @@
           {% for s in slots %}
             {% set ns.out = ns.out + [{'start': s.start, 'end': s.end, 'value': (s.value | float(0)) + addon}] %}
           {% endfor %}
-          {{ ns.out }}
+          {{ ns.out | to_json }}
         today: >-
           {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
           {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
