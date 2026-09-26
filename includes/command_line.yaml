@@ -19,6 +19,16 @@
       - data
 
 - sensor:
+    name: El kostnad idag marginal runner
+    unique_id: el_kostnad_idag_marginal_runner
+    command: python3 /config/scripts/berakna-elkostnad-idag-marginal.py
+    scan_interval: 300
+    command_timeout: 90
+    value_template: "{{ value | float(0) | round(2) }}"
+    unit_of_measurement: SEK
+    device_class: monetary
+
+- sensor:
     name: Tvattmaskin kostnad vid klar runner
     unique_id: tvattmaskin_kostnad_vid_klar_runner
     command: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py
