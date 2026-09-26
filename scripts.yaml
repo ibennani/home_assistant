@@ -3447,9 +3447,9 @@ diskmaskin_prognos_kostnad:
       cost_kr: "{% set start = start_iso | as_datetime | as_local %} {% if 'Intensiv70' in program %}\n  {% set dur = 100\
         \ %}\n  {% set prof = [0.331, 0.266, 0.273, 0.124, 0.017, 0.002, 0.0] %}\n{% else %}\n  {% set dur = 66 %}\n  {% set\
         \ prof = [0.404, 0.271, 0.138, 0.171, 0.0] %}\n{% endif %} {% set np = 'sensor.elpris_marginal_kwh_se3' %}\
-        \ {% set raw = state_attr(np, 'raw_today') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false)\
+        \ {% set raw = state_attr(np, 'raw_today') | default([]) %} {% set raw_today = raw if raw is sequence and raw is not string else (raw | from_json if raw is string else []) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false)\
         \ %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %} {% set raw_tm = state_attr(np,\
-        \ 'raw_tomorrow') | default([]) if tm_ok else [] %} {% set slots = raw + raw_tm %} {% set nseg = ((dur + 14) // 15)\
+        \ 'raw_tomorrow') | default([]) if tm_ok else [] %} {% set raw_tomorrow = raw_tm if raw_tm is sequence and raw_tm is not string else (raw_tm | from_json if raw_tm is string else []) %} {% set slots = raw_today + raw_tomorrow %} {% set nseg = ((dur + 14) // 15)\
         \ | int %} {% set ns = namespace(cost=0.0) %} {% set start_ts = as_timestamp(start) %} {% set run_end_ts = start_ts\
         \ + dur * 60 %} {% for i in range(nseg) %}\n  {% set seg_start_ts = start_ts + i * 900 %}\n  {% set seg_end_ts =\
         \ [seg_start_ts + 900, run_end_ts] | min %}\n  {% set frac = (seg_end_ts - seg_start_ts) / 900.0 %}\n  {% set kwh\
