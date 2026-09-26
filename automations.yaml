@@ -10506,6 +10506,9 @@
     not_from:
     - unknown
     - unavailable
+  conditions:
+  - condition: template
+    value_template: "{{ states('input_number.tvattmaskin_energy_lopande') | float(0) < 0.001 }}"
   actions:
   - action: script.tvattmaskin_korning_init
 - id: tvattmaskin_kostnad_minut_tick
@@ -10515,8 +10518,8 @@
   - trigger: time_pattern
     minutes: /1
   conditions:
-  - condition: state
-    entity_id: binary_sensor.tvattmaskinen_aktiv
-    state: 'on'
+  - condition: template
+    value_template: "{{ is_state('binary_sensor.tvattmaskinen_aktiv', 'on')
+      or states('sensor.tvattmaskinen_switch_power') | float(0) > 1 }}"
   actions:
   - action: script.tvattmaskin_kwh_minut_tick

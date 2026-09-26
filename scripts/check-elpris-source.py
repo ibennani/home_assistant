@@ -24,6 +24,11 @@ SCAN = [
 
 PY_SCAN = list((ROOT / "scripts").glob("*.py"))
 
+# Python med spot endast som reserv (primär källa: marginal-sensor)
+PY_ALLOWED = {
+    "tvattmaskin-berakna-kostnad-klar.py",
+}
+
 
 def _strip_script_block(text: str, marker: str, next_markers: list[str]) -> str:
     start = text.find(marker)
