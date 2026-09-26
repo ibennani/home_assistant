@@ -249,8 +249,40 @@
 
     - name: El-kostnad denna timme
       unique_id: elkostnad_denna_timme
+      unit_of_measurement: SEK
+      device_class: monetary
       state: >-
-        {{ states('sensor.accumulated_consumption_current_hour_eksharadsgatan_6') | float(0) }}
+        {% set kwh = states('sensor.accumulated_consumption_current_hour_eksharadsgatan_6') | float(0) %}
+        {% set idx = ((now().hour * 60 + now().minute) // 15) %}
+        {% set prices = state_attr('sensor.elpris_marginal_kwh_se3', 'today') | default([]) %}
+        {% set p = (prices[idx] | float(0)) if prices | length > idx else (states('sensor.elpris_marginal_kwh_se3') | float(0)) %}
+        {{ (kwh * p) | round(2) }}
+
+    - name: El kostnad idag marginal SE3
+      unique_id: el_kostnad_idag_marginal_se3
+      unit_of_measurement: SEK
+      device_class: monetary
+      state: >-
+        {% set runner = states('sensor.el_kostnad_idag_marginal_runner') | trim %}
+        {% if runner not in ['unknown', 'unavailable', 'none', ''] and (runner | float(0)) > 0 %}
+          {{ runner | float(0) | round(2) }}
+        {% else %}
+          {% set kwh = states('sensor.accumulated_consumption_eksharadsgatan_6') | float(0) %}
+          {% set prices = state_attr('sensor.elpris_marginal_kwh_se3', 'today') | default([]) %}
+          {% set ns = namespace(s=0.0, c=0) %}
+          {% for v in prices %}
+            {% set ns.s = ns.s + (v | float(0)) %}
+            {% set ns.c = ns.c + 1 %}
+          {% endfor %}
+          {% set avg = (ns.s / ns.c) if ns.c > 0 else (states('sensor.elpris_marginal_kwh_se3') | float(0)) %}
+          {{ (kwh * avg) | round(2) }}
+        {% endif %}
+      attributes:
+        kwh_idag: "{{ states('sensor.accumulated_consumption_eksharadsgatan_6') }}"
+        tibber_kostnad_kr: "{{ states('sensor.accumulated_cost_eksharadsgatan_6') }}"
+        berakningsmetod: >-
+          {% set runner = states('sensor.el_kostnad_idag_marginal_runner') | trim %}
+          {{ 'forbrukning_per_kvart' if runner not in ['unknown', 'unavailable', 'none', ''] else 'uppskattning_snitt_marginal' }}
 
     - name: Lufttryck inomhus
       unique_id: indoor_pressure_mean_05s6df0a1sg0asg81asg8r00aaasdf

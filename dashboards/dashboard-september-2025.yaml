@@ -365,11 +365,6 @@ views:
             type: solid
           stroke:
             show: false
-          markers:
-            size: [0, 0, 0, 5, 5]
-            strokeWidth: [0, 0, 0, 1, 1]
-            strokeColors: '#333333'
-            colors: '#ffffff'
           colors:
           - '#888888'
         now:
@@ -505,31 +500,6 @@ const dim = (hex, alpha=0.75) => {
             extremas: false
             datalabels: false
           extend_to: end
-        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
-          name: Börs idag
-          type: line
-          stroke_width: 0
-          color: '#ffffff'
-          data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, value: Number(val) };\n  });\n};\nconst arr = buildSlots(entity.attributes.today, 0);\nreturn arr.map((e) => {\n  const val = Math.round(Number(e.value) * 100) / 100;\n  if (Number.isNaN(val) || !e.start) return null;\n  return [e.start.getTime(), val];\n}).filter(Boolean);\n"
-          show:
-            legend_value: false
-            in_header: false
-            extremas: false
-            datalabels: false
-            in_chart: true
-        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
-          name: Börs imorgon
-          type: line
-          stroke_width: 0
-          color: '#ffffff'
-          opacity: 0.9
-          data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, value: Number(val) };\n  });\n};\nconst arr = buildSlots(entity.attributes.tomorrow, 1);\nreturn arr.map((e) => {\n  const val = Math.round(Number(e.value) * 100) / 100;\n  if (Number.isNaN(val) || !e.start) return null;\n  return [e.start.getTime(), val];\n}).filter(Boolean);\n"
-          show:
-            legend_value: false
-            in_header: false
-            extremas: false
-            datalabels: false
-            in_chart: true
     - type: vertical-stack
       title: El-priset idag och imorgon
       cards:
@@ -4861,6 +4831,19 @@ const dim = (hex, alpha=0.75) => {
         color: '#ff26a5'
       - from: 4000
         color: '#9d26ff'
+    - type: entities
+      show_header_toggle: false
+      title: Prisdelar (kr/kWh)
+      entities:
+      - entity: sensor.elpris_marginal_kwh_se3
+        name: Marginal (det du betalar per kWh)
+      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        name: Börs (spot Nord Pool)
+      - entity: sensor.electricity_price_eksharadsgatan_6
+        name: Tibber elhandel
+      - entity: input_number.elpris_energiskatt_ore
+      - entity: input_number.elpris_ellevio_overforing_ore
+      - entity: input_number.elpris_tibber_paslag_ore
     - type: custom:apexcharts-card
       apex_config:
         chart:
@@ -4912,11 +4895,6 @@ const dim = (hex, alpha=0.75) => {
           type: solid
         stroke:
           show: false
-        markers:
-          size: [0, 0, 0, 5, 5]
-          strokeWidth: [0, 0, 0, 1, 1]
-          strokeColors: '#333333'
-          colors: '#ffffff'
         colors:
         - '#888888'
       now:
@@ -5052,31 +5030,6 @@ const dim = (hex, alpha=0.75) => {
           extremas: false
           datalabels: false
         extend_to: end
-      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
-        name: Börs idag
-        type: line
-        stroke_width: 0
-        color: '#ffffff'
-        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, value: Number(val) };\n  });\n};\nconst arr = buildSlots(entity.attributes.today, 0);\nreturn arr.map((e) => {\n  const val = Math.round(Number(e.value) * 100) / 100;\n  if (Number.isNaN(val) || !e.start) return null;\n  return [e.start.getTime(), val];\n}).filter(Boolean);\n"
-        show:
-          legend_value: false
-          in_header: false
-          extremas: false
-          datalabels: false
-          in_chart: true
-      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
-        name: Börs imorgon
-        type: line
-        stroke_width: 0
-        color: '#ffffff'
-        opacity: 0.9
-        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, value: Number(val) };\n  });\n};\nconst arr = buildSlots(entity.attributes.tomorrow, 1);\nreturn arr.map((e) => {\n  const val = Math.round(Number(e.value) * 100) / 100;\n  if (Number.isNaN(val) || !e.start) return null;\n  return [e.start.getTime(), val];\n}).filter(Boolean);\n"
-        show:
-          legend_value: false
-          in_header: false
-          extremas: false
-          datalabels: false
-          in_chart: true
     - type: markdown
       title: El-priset i sammandrag
       content: "{# =========================\n   Nordpool sammanfattning (Idag + Imorgon om publicerad)\n   - Intervall: Natt\
@@ -5158,10 +5111,10 @@ const dim = (hex, alpha=0.75) => {
       needle: true
       severity:
         green: 0
-        yellow: 25
-        red: 50
-      max: 75
-      entity: sensor.accumulated_cost_eksharadsgatan_6
+        yellow: 40
+        red: 70
+      max: 100
+      entity: sensor.el_kostnad_idag_marginal_se3
     - type: tile
       entity: sensor.monthly_net_consumption_eksharadsgatan_6
       name: Förbrukning denna månad
