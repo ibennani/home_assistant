@@ -92,17 +92,17 @@
         {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
         {% set f_state = states(faktisk) | trim %}
         {% if f_ok and f_state not in ['unknown', 'unavailable', 'none', ''] %}
-          {{ f_state | float(0) | round(3) }}
+          {{ f_state | float(0) | round(2) }}
         {% else %}
           {% set handel = states('sensor.electricity_price_eksharadsgatan_6') | float(0) %}
           {% set np = states('sensor.nordpool_kwh_se3_sek_3_10_025') | float(0) %}
           {% set net = (states('input_number.elpris_energiskatt_ore') | float(45)
             + states('input_number.elpris_ellevio_overforing_ore') | float(26)) / 100 %}
           {% if handel > 0.05 %}
-            {{ (handel + net) | round(3) }}
+            {{ (handel + net) | round(2) }}
           {% else %}
             {% set paslag = states('input_number.elpris_tibber_paslag_ore') | float(12) / 100 %}
-            {{ (np + paslag + net) | round(3) }}
+            {{ (np + paslag + net) | round(2) }}
           {% endif %}
         {% endif %}
       attributes:
@@ -127,7 +127,8 @@
           {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
           {% set f_sync = state_attr(faktisk, 'sync_ok') %}
           {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
-          {% set f_raw = state_attr(faktisk, 'raw_today') | default([]) %}
+          {% set f_raw_j = state_attr(faktisk, 'raw_today_json') | default('') %}
+          {% set f_raw = (f_raw_j | from_json) if f_raw_j is string and (f_raw_j | length) > 2 else (state_attr(faktisk, 'raw_today') | default([])) %}
           {% if f_ok and (f_raw | length) >= 90 %}
             {{ f_raw | to_json }}
           {% else %}
@@ -141,7 +142,7 @@
             {% set slots = state_attr(np, 'raw_today') | default([]) %}
             {% set ns = namespace(out=[]) %}
             {% for s in slots %}
-              {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': (s.value | float(0)) + addon}] %}
+              {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': ((s.value | float(0)) + addon) | round(2)}] %}
             {% endfor %}
             {{ ns.out | to_json }}
           {% endif %}
@@ -151,7 +152,8 @@
           {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
           {% set f_tmr = state_attr(faktisk, 'tomorrow_valid') %}
           {% set f_tm_ok = (f_tmr is boolean and f_tmr) or (f_tmr is string and f_tmr | lower == 'true') %}
-          {% set f_raw = state_attr(faktisk, 'raw_tomorrow') | default([]) %}
+          {% set f_raw_j = state_attr(faktisk, 'raw_tomorrow_json') | default('') %}
+          {% set f_raw = (f_raw_j | from_json) if f_raw_j is string and (f_raw_j | length) > 2 else (state_attr(faktisk, 'raw_tomorrow') | default([])) %}
           {% if f_ok and f_tm_ok and (f_raw | length) >= 90 %}
             {{ f_raw | to_json }}
           {% else %}
@@ -167,7 +169,7 @@
             {% set slots = state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else [] %}
             {% set ns = namespace(out=[]) %}
             {% for s in slots %}
-              {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': (s.value | float(0)) + addon}] %}
+              {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': ((s.value | float(0)) + addon) | round(2)}] %}
             {% endfor %}
             {{ ns.out | to_json }}
           {% endif %}
@@ -175,7 +177,8 @@
           {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
           {% set f_sync = state_attr(faktisk, 'sync_ok') %}
           {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
-          {% set f_tv = state_attr(faktisk, 'today') | default([]) %}
+          {% set f_tv_j = state_attr(faktisk, 'today_json') | default('') %}
+          {% set f_tv = (f_tv_j | from_json) if f_tv_j is string and (f_tv_j | length) > 2 else (state_attr(faktisk, 'today') | default([])) %}
           {% if f_ok and (f_tv | length) >= 90 %}
             {{ f_tv }}
           {% else %}
@@ -189,7 +192,7 @@
             {% set hours = state_attr(np, 'today') | default([]) %}
             {% set ns = namespace(out=[]) %}
             {% for v in hours %}
-              {% set ns.out = ns.out + [(v | float(0)) + addon] %}
+              {% set ns.out = ns.out + [((v | float(0)) + addon) | round(2)] %}
             {% endfor %}
             {{ ns.out }}
           {% endif %}
@@ -199,7 +202,8 @@
           {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
           {% set f_tmr = state_attr(faktisk, 'tomorrow_valid') %}
           {% set f_tm_ok = (f_tmr is boolean and f_tmr) or (f_tmr is string and f_tmr | lower == 'true') %}
-          {% set f_tm = state_attr(faktisk, 'tomorrow') | default([]) %}
+          {% set f_tm_j = state_attr(faktisk, 'tomorrow_json') | default('') %}
+          {% set f_tm = (f_tm_j | from_json) if f_tm_j is string and (f_tm_j | length) > 2 else (state_attr(faktisk, 'tomorrow') | default([])) %}
           {% if f_ok and f_tm_ok and (f_tm | length) >= 90 %}
             {{ f_tm }}
           {% else %}
@@ -215,7 +219,7 @@
             {% set hours = state_attr(np, 'tomorrow') | default([]) if tm_ok else [] %}
             {% set ns = namespace(out=[]) %}
             {% for v in hours %}
-              {% set ns.out = ns.out + [(v | float(0)) + addon] %}
+              {% set ns.out = ns.out + [((v | float(0)) + addon) | round(2)] %}
             {% endfor %}
             {{ ns.out }}
           {% endif %}
@@ -226,10 +230,22 @@
         {% set idx = ((now().hour * 60 + now().minute) // 15) %}
         {% set hours = state_attr('sensor.elpris_marginal_kwh_se3', 'today') | default([]) %}
         {% if hours | length > idx %}
-          {{ hours[idx] }}
+          {{ hours[idx] | float(0) | round(2) }}
         {% else %}
-          {{ states('sensor.elpris_marginal_kwh_se3') }}
+          {{ states('sensor.elpris_marginal_kwh_se3') | float(0) | round(2) }}
         {% endif %}
+
+    - name: Börs spot SE3 visning
+      unique_id: elpris_spot_visning_se3
+      unit_of_measurement: SEK/kWh
+      device_class: monetary
+      state: "{{ states('sensor.nordpool_kwh_se3_sek_3_10_025') | float(0) | round(2) }}"
+
+    - name: Tibber elhandel visning
+      unique_id: elpris_tibber_handel_visning
+      unit_of_measurement: SEK/kWh
+      device_class: monetary
+      state: "{{ states('sensor.electricity_price_eksharadsgatan_6') | float(0) | round(2) }}"
 
     - name: El-kostnad denna timme
       unique_id: elkostnad_denna_timme

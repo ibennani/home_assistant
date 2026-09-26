@@ -124,6 +124,10 @@ def floor_quarter(dt: datetime) -> datetime:
 
 
 def extract_prices_payload(resp: object) -> dict[str, list[dict]]:
+    if isinstance(resp, list) and resp:
+        first = resp[0]
+        if isinstance(first, dict):
+            resp = first
     if not isinstance(resp, dict):
         return {}
     if isinstance(resp.get("prices"), dict):
@@ -160,12 +164,12 @@ def build_day(
         price = price_map.get(floor_quarter(slot_start))
         if price is None:
             price = 0.0
-        values.append(round(price, 4))
+        values.append(round(price, 2))
         raw.append(
             {
                 "start": slot_start.isoformat(),
                 "end": slot_end.isoformat(),
-                "value": round(price, 4),
+                "value": round(price, 2),
             }
         )
     return values, raw
@@ -235,9 +239,9 @@ def main() -> int:
     nonzero_tomorrow = sum(1 for v in tomorrow_vals if v > 0.01)
     tomorrow_valid = nonzero_tomorrow >= 90
 
-    state_val = round(current_slot_price(price_map, now), 3)
+    state_val = round(current_slot_price(price_map, now), 2)
     if state_val <= 0:
-        state_val = round(float(today_vals[max(0, ((now.hour * 60 + now.minute) // 15))]), 3)
+        state_val = round(float(today_vals[max(0, ((now.hour * 60 + now.minute) // 15))]), 2)
 
     body = {
         "state": str(state_val),
