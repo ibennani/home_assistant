@@ -72,7 +72,7 @@ def api_request(
 ) -> object:
     base, token = ha_auth(secrets)
     if not token:
-        raise RuntimeError("saknar HA-token (secrets ha_long_lived_token eller SUPERVISOR_TOKEN)")
+        raise RuntimeError("saknar HA-token")
     data = None
     headers = {"Authorization": f"Bearer {token}"}
     if body is not None:
@@ -169,6 +169,39 @@ def parse_iso(ts: str) -> datetime:
     return dt
 
 
+def fetch_entity_history_ha_cli(entity_id: str, end: datetime) -> list[tuple[datetime, str]]:
+    try:
+        result = subprocess.run(
+            ["ha", "states", "history", entity_id],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return []
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+    points: list[tuple[datetime, str]] = []
+    try:
+        raw = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+    rows = raw[0] if isinstance(raw, list) and raw and isinstance(raw[0], list) else raw
+    if not isinstance(rows, list):
+        return []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        try:
+            points.append((parse_iso(row["last_changed"]), str(row["state"])))
+        except (KeyError, TypeError, ValueError):
+            continue
+    points.sort(key=lambda x: x[0])
+    cutoff = end - timedelta(hours=LOOKBACK_HOURS)
+    return [(t, s) for t, s in points if t >= cutoff]
+
+
 def fetch_entity_history(
     secrets: dict[str, str],
     entity_id: str,
@@ -192,6 +225,8 @@ def fetch_entity_history(
                     continue
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         points = []
+    if not points:
+        points = fetch_entity_history_ha_cli(entity_id, end)
     if not points:
         points = fetch_entity_history_db(entity_id, end)
     points.sort(key=lambda x: x[0])
@@ -426,14 +461,41 @@ def format_kr(kr: float) -> str:
     return f"{kr:.2f}".replace(".", ",")
 
 
+def fire_event(event_type: str, data: dict, secrets: dict[str, str]) -> bool:
+    try:
+        api_request(
+            secrets,
+            "POST",
+            f"/api/events/{event_type}",
+            data,
+        )
+        return True
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        pass
+    try:
+        result = subprocess.run(
+            ["ha", "events", "fire", event_type, json.dumps(data)],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        return result.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 def set_cost_text(secrets: dict[str, str], value: str) -> None:
-    if not ha_service_call(
+    if ha_service_call(
         secrets,
         "input_text",
         "set_value",
         {"entity_id": COST_ENTITY, "value": value},
     ):
-        raise RuntimeError("kunde inte sätta input_text.tvattmaskin_senaste_kostnaden")
+        return
+    if fire_event("tvattmaskin_kostnad_beraknad", {"kr_text": value}, secrets):
+        return
+    raise RuntimeError("kunde inte sätta input_text.tvattmaskin_senaste_kostnaden")
 
 
 def write_log(message: str) -> None:

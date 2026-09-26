@@ -10523,3 +10523,18 @@
       or states('sensor.tvattmaskinen_switch_power') | float(0) > 1 }}"
   actions:
   - action: script.tvattmaskin_kwh_minut_tick
+- id: tvattmaskin_kostnad_beraknad_event
+  alias: 'Tvättmaskin: sätt kostnad från Python-event'
+  mode: queued
+  triggers:
+  - trigger: event
+    event_type: tvattmaskin_kostnad_beraknad
+  conditions:
+  - condition: template
+    value_template: "{{ trigger.event.data.kr_text | default('', true) | trim | length > 0 }}"
+  actions:
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.tvattmaskin_senaste_kostnaden
+    data:
+      value: "{{ trigger.event.data.kr_text | trim }}"
