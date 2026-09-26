@@ -17,6 +17,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 RECORDER_DB = Path("/config/home-assistant_v2.db")
@@ -289,6 +290,23 @@ def _parse_slot_row(s: object, addon: float = 0.0) -> tuple[datetime, datetime, 
         return None
 
 
+def _coerce_slot_list(raw: object) -> list:
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, str):
+        text = raw.strip()
+        if not text:
+            return []
+        try:
+            parsed = json.loads(text)
+            return parsed if isinstance(parsed, list) else []
+        except json.JSONDecodeError:
+            return []
+    return []
+
+
 def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
     slots: list[tuple[datetime, datetime, float]] = []
     attrs: dict = {}
@@ -297,11 +315,11 @@ def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, dateti
         attrs = state.get("attributes", {}) if isinstance(state, dict) else {}
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         attrs = fetch_state_attributes_db(ELPRIS_MARGINAL_ENTITY)
-    slots_raw = list(attrs.get("raw_today") or [])
+    slots_raw = _coerce_slot_list(attrs.get("raw_today"))
     tmr = attrs.get("tomorrow_valid")
     tm_ok = tmr is True or (isinstance(tmr, str) and tmr.lower() == "true")
     if tm_ok:
-        slots_raw.extend(attrs.get("raw_tomorrow") or [])
+        slots_raw.extend(_coerce_slot_list(attrs.get("raw_tomorrow")))
     for s in slots_raw:
         row = _parse_slot_row(s, addon=0.0)
         if row:
@@ -330,10 +348,23 @@ def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, dateti
             tm_ok2 = tmr2 is True or (isinstance(tmr2, str) and str(tmr2).lower() == "true")
             if not tm_ok2:
                 continue
-        for s in np_attrs.get(key) or []:
+        for s in _coerce_slot_list(np_attrs.get(key)):
             row = _parse_slot_row(s, addon=addon)
             if row:
                 slots.append(row)
+    if not slots:
+        hours = _coerce_slot_list(attrs.get("today"))
+        if not hours:
+            hours = _coerce_slot_list(np_attrs.get("today"))
+        if hours:
+            base = datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
+            for hour_idx, price in enumerate(hours):
+                try:
+                    start = base + timedelta(hours=hour_idx)
+                    end = start + timedelta(hours=1)
+                    slots.append((start, end, float(price)))
+                except (TypeError, ValueError):
+                    continue
     return slots
 
 
@@ -529,10 +560,11 @@ def parse_ha_datetime_local(raw: str) -> datetime | None:
     text = raw.strip()
     if not text or text in ("unknown", "unavailable"):
         return None
+    tz = ZoneInfo("Europe/Stockholm")
     for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f"):
         try:
-            dt = datetime.strptime(text, fmt)
-            return dt.astimezone()
+            dt = datetime.strptime(text, fmt).replace(tzinfo=tz)
+            return dt
         except ValueError:
             continue
     try:

@@ -3615,6 +3615,8 @@ vitvaror_skicka_korrigerade_kostnadsnotiser:
   sequence:
   - action: shell_command.tvattmaskin_berakna_kostnad_klar
     continue_on_error: true
+  - delay:
+      seconds: 3
   - action: shell_command.diskmaskin_berakna_kostnad_klar
     continue_on_error: true
   - delay:
