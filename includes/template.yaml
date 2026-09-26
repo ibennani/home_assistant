@@ -109,7 +109,7 @@
           {% set slots = state_attr(np, 'raw_today') | default([]) %}
           {% set ns = namespace(out=[]) %}
           {% for s in slots %}
-            {% set ns.out = ns.out + [{'start': s.start, 'end': s.end, 'value': (s.value | float(0)) + addon}] %}
+            {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': (s.value | float(0)) + addon}] %}
           {% endfor %}
           {{ ns.out | to_json }}
         raw_tomorrow: >-
@@ -122,7 +122,7 @@
           {% set slots = state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else [] %}
           {% set ns = namespace(out=[]) %}
           {% for s in slots %}
-            {% set ns.out = ns.out + [{'start': s.start, 'end': s.end, 'value': (s.value | float(0)) + addon}] %}
+            {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': (s.value | float(0)) + addon}] %}
           {% endfor %}
           {{ ns.out | to_json }}
         today: >-
