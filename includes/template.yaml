@@ -127,7 +127,8 @@
           {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
           {% set f_sync = state_attr(faktisk, 'sync_ok') %}
           {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
-          {% set f_raw = state_attr(faktisk, 'raw_today') | default([]) %}
+          {% set f_raw_j = state_attr(faktisk, 'raw_today_json') | default('') %}
+          {% set f_raw = (f_raw_j | from_json) if f_raw_j is string and (f_raw_j | length) > 2 else (state_attr(faktisk, 'raw_today') | default([])) %}
           {% if f_ok and (f_raw | length) >= 90 %}
             {{ f_raw | to_json }}
           {% else %}
@@ -151,7 +152,8 @@
           {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
           {% set f_tmr = state_attr(faktisk, 'tomorrow_valid') %}
           {% set f_tm_ok = (f_tmr is boolean and f_tmr) or (f_tmr is string and f_tmr | lower == 'true') %}
-          {% set f_raw = state_attr(faktisk, 'raw_tomorrow') | default([]) %}
+          {% set f_raw_j = state_attr(faktisk, 'raw_tomorrow_json') | default('') %}
+          {% set f_raw = (f_raw_j | from_json) if f_raw_j is string and (f_raw_j | length) > 2 else (state_attr(faktisk, 'raw_tomorrow') | default([])) %}
           {% if f_ok and f_tm_ok and (f_raw | length) >= 90 %}
             {{ f_raw | to_json }}
           {% else %}
@@ -175,7 +177,8 @@
           {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
           {% set f_sync = state_attr(faktisk, 'sync_ok') %}
           {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
-          {% set f_tv = state_attr(faktisk, 'today') | default([]) %}
+          {% set f_tv_j = state_attr(faktisk, 'today_json') | default('') %}
+          {% set f_tv = (f_tv_j | from_json) if f_tv_j is string and (f_tv_j | length) > 2 else (state_attr(faktisk, 'today') | default([])) %}
           {% if f_ok and (f_tv | length) >= 90 %}
             {{ f_tv }}
           {% else %}
@@ -199,7 +202,8 @@
           {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
           {% set f_tmr = state_attr(faktisk, 'tomorrow_valid') %}
           {% set f_tm_ok = (f_tmr is boolean and f_tmr) or (f_tmr is string and f_tmr | lower == 'true') %}
-          {% set f_tm = state_attr(faktisk, 'tomorrow') | default([]) %}
+          {% set f_tm_j = state_attr(faktisk, 'tomorrow_json') | default('') %}
+          {% set f_tm = (f_tm_j | from_json) if f_tm_j is string and (f_tm_j | length) > 2 else (state_attr(faktisk, 'tomorrow') | default([])) %}
           {% if f_ok and f_tm_ok and (f_tm | length) >= 90 %}
             {{ f_tm }}
           {% else %}

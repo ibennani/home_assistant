@@ -124,6 +124,10 @@ def floor_quarter(dt: datetime) -> datetime:
 
 
 def extract_prices_payload(resp: object) -> dict[str, list[dict]]:
+    if isinstance(resp, list) and resp:
+        first = resp[0]
+        if isinstance(first, dict):
+            resp = first
     if not isinstance(resp, dict):
         return {}
     if isinstance(resp.get("prices"), dict):

@@ -2323,7 +2323,83 @@ elpris_synka_tibber_faktiska_priser:
   description: Hämtar tibber.get_prices och uppdaterar sensor.elpris_faktisk_kwh_se3 (marginal-sensorn läser detta).
   mode: single
   sequence:
+  - action: tibber.get_prices
+    data:
+      start: "{{ now().replace(hour=0, minute=0, second=0, microsecond=0).strftime('%Y-%m-%d %H:%M:%S') }}"
+      end: "{{ (now() + timedelta(days=2)).replace(hour=0, minute=0, second=0, microsecond=0).strftime('%Y-%m-%d %H:%M:%S') }}"
+    response_variable: tibber_resp
+  - variables:
+      nick: "{{ state_attr('sensor.electricity_price_eksharadsgatan_6', 'app_nickname') | default('Ekshäradsgatan 6') }}"
+      home_key: >-
+        {% set prices = tibber_resp.prices | default({}) %}
+        {% set nick_l = nick | lower %}
+        {% set ns = namespace(key='') %}
+        {% for k in prices %}
+          {% if k | lower == nick_l %}
+            {% set ns.key = k %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.key == '' and prices | count > 0 %}
+          {% set ns.key = (prices.keys() | list)[0] %}
+        {% endif %}
+        {{ ns.key }}
+      entries: "{{ tibber_resp.prices[home_key] | default([]) }}"
+      payload_json: >-
+        {% set ns = namespace(today=[], tomorrow=[], raw_today=[], raw_tomorrow=[], state=0.0) %}
+        {% set base = today_at('00:00') %}
+        {% set base2 = base + timedelta(days=1) %}
+        {% for day_offset in [0, 1] %}
+          {% set day_base = base + timedelta(days=day_offset) %}
+          {% for i in range(96) %}
+            {% set slot_start = day_base + timedelta(minutes=15 * i) %}
+            {% set slot_end = slot_start + timedelta(minutes=15) %}
+            {% set ts = as_timestamp(slot_start) | int %}
+            {% set p = namespace(v=0.0) %}
+            {% for e in entries %}
+              {% set ets = as_timestamp(as_datetime(e.start_time)) | int %}
+              {% if ets == ts %}
+                {% set p.v = e.price | float(0) %}
+              {% endif %}
+            {% endfor %}
+            {% set row = {'start': slot_start.isoformat(), 'end': slot_end.isoformat(), 'value': (p.v | round(4))} %}
+            {% if day_offset == 0 %}
+              {% set ns.today = ns.today + [(p.v | round(4))] %}
+              {% set ns.raw_today = ns.raw_today + [row] %}
+            {% else %}
+              {% set ns.tomorrow = ns.tomorrow + [(p.v | round(4))] %}
+              {% set ns.raw_tomorrow = ns.raw_tomorrow + [row] %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        {% set idx = ((now().hour * 60 + now().minute) // 15) %}
+        {% set ns.state = (ns.today[idx] | float(0)) if (ns.today | length) > idx else 0.0 %}
+        {{ {'state': ns.state, 'today': ns.today, 'tomorrow': ns.tomorrow, 'raw_today': ns.raw_today, 'raw_tomorrow': ns.raw_tomorrow, 'tomorrow_valid': ((ns.tomorrow | select('gt', 0.01) | list | count) >= 90)} | to_json }}
+      payload: "{{ payload_json | from_json }}"
+      state_now: "{{ payload.state | float(0) | round(3) }}"
+      tomorrow_valid: "{{ payload.tomorrow_valid }}"
+  - condition: template
+    value_template: "{{ (entries | count) > 0 and (payload.today | count) >= 90 }}"
+  - action: homeassistant.set_state
+    data:
+      entity_id: sensor.elpris_faktisk_kwh_se3
+      state: "{{ state_now }}"
+      attributes:
+        unit_of_measurement: SEK/kWh
+        device_class: monetary
+        friendly_name: Elpris faktisk kWh (Tibber)
+        source: tibber.get_prices
+        sync_ok: true
+        synced_at: "{{ now().isoformat() }}"
+        home: "{{ home_key }}"
+        today_json: "{{ payload.today | to_json }}"
+        tomorrow_json: "{{ payload.tomorrow | to_json }}"
+        raw_today_json: "{{ payload.raw_today | to_json }}"
+        raw_tomorrow_json: "{{ payload.raw_tomorrow | to_json }}"
+        tomorrow_valid: "{{ tomorrow_valid }}"
+        slots_tibber: "{{ entries | count }}"
+  - action: template.reload
   - action: shell_command.elpris_synka_tibber_faktiska
+    continue_on_error: true
 mobilnotis:
   alias: Mobilnotis
   description: "Central avsändare för alla mobilnotiser via Companion-appen. Android: icon_url (höger) + HA-ikon (vänster)."
