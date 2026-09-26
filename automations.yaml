@@ -6007,7 +6007,6 @@
         \ färdig klockan \" ~ sluttid ~ \".\"\n  )\n  if (sluttid and fordrojning_raw != '0:00')\n  else (\n    \"Nu startar\
         \ diskmaskinen, kommer vara färdig klockan \" ~ sluttid ~ \".\"\n  )\n  if sluttid\n  else\n    \"Tidsdata för diskmaskinen\
         \ är inte tillgänglig just nu.\"\n%}\n{{- diskmaskin_meddelande -}}\n"
-  - action: script.diskmaskin_uppdatera_start_meddelande
   - action: script.turn_on
     target:
       entity_id: script.las_text_i_valfri_device
@@ -6021,11 +6020,8 @@
           \ | float(default=0) / 100 }}\n{% else %}\n  {{ states('input_number.google_home_volume_setting_notiser') | float(default=0)\
           \ / 100 }}\n{% endif %}\n"
         voice: MattiasNeural
-  - action: script.mobilnotis
-    data:
-      meddelande: "{% set m = states('input_text.diskmaskin_mobil_startmeddelande') | trim %}{% set m = m if m else states('input_text.diskmaskin_meddelandetext') %}HEMMET {{ now().strftime('%R') }}:  {{ m }}\n"
-      mottagare: mobile_app_ilias_s23_ultra
-      ikon: vitvaror
+  - action: script.diskmaskin_uppdatera_start_meddelande
+    continue_on_error: true
   - action: input_text.set_value
     target:
       entity_id: input_text.diskmaskin_tid_fjarrstart
