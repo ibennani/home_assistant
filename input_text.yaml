@@ -81,6 +81,11 @@
       name: Meddelandetext om när diskmaskinen kommer vara klar
       initial: ""
 
+    diskmaskin_mobil_startmeddelande:
+      name: Diskmaskin mobilnotis vid start (program och prognos)
+      max: 255
+      initial: ""
+
   # När ska diskmaskinen starta? Avgörs vid fjärrstyrning
     diskmaskin_tid_fjarrstart:
       name: När ska diskmaskinen starta vid fjärrstart
