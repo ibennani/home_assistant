@@ -3401,9 +3401,43 @@ spion_uppdatera_ilias_position:
     data:
       message: Uppdaterar positioner
 
+diskmaskin_uppdatera_start_meddelande:
+  alias: "Diskmaskin: startmeddelande med program och prognoskostnad"
+  description: Beräknar marginal elpris-prognos för valt program och sätter input_text.diskmaskin_meddelandetext.
+  mode: queued
+  fields:
+    sluttid:
+      name: Sluttid HH:MM
+      required: false
+      selector:
+        text:
+  sequence:
+  - variables:
+      sluttid_val: "{{ (sluttid | default('', true) | trim) if (sluttid | default('', true) | trim) != '' else states('input_text.diskmaskin_sluttid') | trim }}"
+      dishwasher_program: "{% set sel = states('select.bosch_sma67md06e_68a40e70cb46_programs') %}{% set picked = states('sensor.bosch_sma67md06e_68a40e70cb46_selected_program') %}{{ sel if sel not in ['', 'unknown', 'unavailable'] else picked }}"
+      dishwasher_program_label: "{% if 'Intensiv70' in dishwasher_program %}Intensiv 70°{% elif 'Eco50' in dishwasher_program %}Eco 50°{% elif 'Auto' in dishwasher_program %}Auto{% elif 'Quick' in dishwasher_program or 'Speed' in dishwasher_program %}Snabb{% else %}{{ dishwasher_program.split('.')[-1] if dishwasher_program not in ['', 'unknown', 'unavailable'] else 'valt program' }}{% endif %}"
+      fordrojning_raw: "{{ states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative') }}"
+      fordrojning_timmar: "{{ fordrojning_raw.split(':')[0] | int(0) if fordrojning_raw and ':' in fordrojning_raw else 0 }}"
+      fordrojning_minuter: "{{ fordrojning_raw.split(':')[1] | int(0) if fordrojning_raw and ':' in fordrojning_raw else 0 }}"
+      start_dt: "{{ now() + timedelta(hours=fordrojning_timmar | int, minutes=fordrojning_minuter | int) }}"
+      prognos_start_iso: "{{ start_dt.strftime('%Y-%m-%d %H:%M:%S') }}"
+      starttid: "{{ start_dt.strftime('%H:%M') }}"
+  - action: script.diskmaskin_prognos_kostnad
+    data:
+      start_iso: "{{ prognos_start_iso }}"
+      program: "{{ dishwasher_program if dishwasher_program not in ['', 'unknown', 'unavailable'] else 'Dishcare.Dishwasher.Program.Eco50' }}"
+  - variables:
+      prognos_kr: "{{ ('%.2f' | format(states('input_number.diskmaskin_kostnad_fjarrstart') | float(0) | round(2))) | replace('.', ',') }}"
+      kostnad_del: "{% if prognos_kr and prognos_kr != '0,00' %}, beräknad kostnad {{ prognos_kr }} kr{% endif %}"
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.diskmaskin_meddelandetext
+    data:
+      value: "{% if sluttid_val %}{% if fordrojning_raw and fordrojning_raw != '0:00' %}Diskmaskinen kommer starta klockan {{ starttid }} med {{ dishwasher_program_label }}{{ kostnad_del }}, färdig klockan {{ sluttid_val }}.{% else %}Nu startar diskmaskinen med {{ dishwasher_program_label }}{{ kostnad_del }}, färdig klockan {{ sluttid_val }}.{% endif %}{% else %}Nu startar diskmaskinen med {{ dishwasher_program_label }}{{ kostnad_del }}.{% endif %}"
+
 diskmaskin_prognos_kostnad:
   alias: "Diskmaskin: beräkna prognoskostnad"
-  description: Sätter input_number.diskmaskin_kostnad_fjarrstart från programprofil och Nord Pool-kvartspriser.
+  description: Sätter input_number.diskmaskin_kostnad_fjarrstart från programprofil och marginal elpris.
   mode: queued
   fields:
     start_iso:
