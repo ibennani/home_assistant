@@ -3410,11 +3410,9 @@ diskmaskin_uppdatera_start_meddelande:
       sluttid_val: "{{ states('input_text.diskmaskin_sluttid') | trim }}"
       dishwasher_program: "{% set sel = states('select.bosch_sma67md06e_68a40e70cb46_programs') %}{% set picked = states('sensor.bosch_sma67md06e_68a40e70cb46_selected_program') %}{% set active = states('sensor.bosch_sma67md06e_68a40e70cb46_active_program') %}{{ sel if sel not in ['', 'unknown', 'unavailable'] else (picked if picked not in ['', 'unknown', 'unavailable'] else active) }}"
       dishwasher_program_label: "{% if 'Intensiv70' in dishwasher_program %}Intensiv 70°{% elif 'Eco50' in dishwasher_program %}Eco 50°{% elif 'Auto2' in dishwasher_program or 'Auto' in dishwasher_program %}Auto{% elif 'NightWash' in dishwasher_program %}Natt{% elif 'Kurz60' in dishwasher_program %}Kurz 60{% elif 'Glas40' in dishwasher_program %}Glas 40{% elif 'PreRinse' in dishwasher_program %}Förskölj{% elif 'MachineCare' in dishwasher_program %}Maskinvård{% else %}{{ dishwasher_program.split('.')[-1] if dishwasher_program not in ['', 'unknown', 'unavailable'] else 'valt program' }}{% endif %}"
+      prognos_start_iso: "{% set fr = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative') %}{% set h = fr.split(':')[0] | int(0) if fr and ':' in fr else 0 %}{% set m = fr.split(':')[1] | int(0) if fr and ':' in fr else 0 %}{% set ts = as_timestamp(now()) + h * 3600 + m * 60 %}{{ ts | timestamp_custom('%Y-%m-%d %H:%M:%S', true) }}"
+      starttid: "{% set fr = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative') %}{% set h = fr.split(':')[0] | int(0) if fr and ':' in fr else 0 %}{% set m = fr.split(':')[1] | int(0) if fr and ':' in fr else 0 %}{% set ts = as_timestamp(now()) + h * 3600 + m * 60 %}{{ ts | timestamp_custom('%H:%M', true) }}"
       fordrojning_raw: "{{ states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative') }}"
-      fordrojning_timmar: "{{ fordrojning_raw.split(':')[0] | int(0) if fordrojning_raw and ':' in fordrojning_raw else 0 }}"
-      fordrojning_minuter: "{{ fordrojning_raw.split(':')[1] | int(0) if fordrojning_raw and ':' in fordrojning_raw else 0 }}"
-      prognos_start_iso: "{{ (now() + timedelta(hours=fordrojning_timmar | int, minutes=fordrojning_minuter | int)).strftime('%Y-%m-%d %H:%M:%S') }}"
-      starttid: "{{ (now() + timedelta(hours=fordrojning_timmar | int, minutes=fordrojning_minuter | int)).strftime('%H:%M') }}"
   - action: script.diskmaskin_prognos_kostnad
     data:
       start_iso: "{{ prognos_start_iso }}"
