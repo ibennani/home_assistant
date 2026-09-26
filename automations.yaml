@@ -5730,7 +5730,7 @@
             %}  {% set floorm = (dt.minute // (slot_len_min | int)) * (slot_len_min | int) %}  {{ as_timestamp(dt.replace(minute=floorm,
             second=0, microsecond=0)) | float }}'
       - variables:
-          best_start_iso: "{# ---- 1) Läs priser robust ---- #}  {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {%\
+          best_start_iso: "{# ---- 1) Läs priser robust ---- #}  {% set np = 'sensor.elpris_marginal_kwh_se3' %}  {%\
             \ set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([])\
             \ %}  {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr)\
             \ or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is\
@@ -5757,7 +5757,7 @@
           eco50_best_start_iso: '{{ best_start_iso }}'
           eco50_next_deadline: '{{ next_deadline }}'
       - variables:
-          eco50_avg_run_price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {% set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is not string else (tv_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw is sequence and tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set vals = (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set slot_len = (slot_len_min | int) %}  {% set slot_secs = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0) %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set bi = (((as_timestamp(best_start_iso | as_datetime) | float) - base_ts) / slot_secs) | round(0,'floor') | int %}  {% set ns = namespace(s=0.0) %}  {% for k in range(bi, bi + (num_slots | int)) %}\n  {% set ns.s = ns.s + (vals[k] | float) %}\n{% endfor %}  {{ (ns.s / (num_slots | int)) | float }}"
+          eco50_avg_run_price: "{% set np = 'sensor.elpris_marginal_kwh_se3' %}  {% set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is not string else (tv_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw is sequence and tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set vals = (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set slot_len = (slot_len_min | int) %}  {% set slot_secs = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0) %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set bi = (((as_timestamp(best_start_iso | as_datetime) | float) - base_ts) / slot_secs) | round(0,'floor') | int %}  {% set ns = namespace(s=0.0) %}  {% for k in range(bi, bi + (num_slots | int)) %}\n  {% set ns.s = ns.s + (vals[k] | float) %}\n{% endfor %}  {{ (ns.s / (num_slots | int)) | float }}"
       - variables:
           cycle_duration_minutes: 100
           num_slots: '{{ (cycle_duration_minutes / slot_len_min) | round(0,''ceil'') | int }}'
@@ -5785,7 +5785,7 @@
             %}  {% set floorm = (dt.minute // (slot_len_min | int)) * (slot_len_min | int) %}  {{ as_timestamp(dt.replace(minute=floorm,
             second=0, microsecond=0)) | float }}'
       - variables:
-          best_start_iso: "{# ---- 1) Läs priser robust ---- #}  {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {%\
+          best_start_iso: "{# ---- 1) Läs priser robust ---- #}  {% set np = 'sensor.elpris_marginal_kwh_se3' %}  {%\
             \ set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([])\
             \ %}  {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr)\
             \ or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is\
@@ -5812,7 +5812,7 @@
           intensiv70_best_start_iso: '{{ best_start_iso }}'
           intensiv70_next_deadline: '{{ next_deadline }}'
       - variables:
-          intensiv70_avg_run_price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}  {% set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is not string else (tv_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw is sequence and tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set vals = (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set slot_len = (slot_len_min | int) %}  {% set slot_secs = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0) %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set bi = (((as_timestamp(best_start_iso | as_datetime) | float) - base_ts) / slot_secs) | round(0,'floor') | int %}  {% set ns = namespace(s=0.0) %}  {% for k in range(bi, bi + (num_slots | int)) %}\n  {% set ns.s = ns.s + (vals[k] | float) %}\n{% endfor %}  {{ (ns.s / (num_slots | int)) | float }}"
+          intensiv70_avg_run_price: "{% set np = 'sensor.elpris_marginal_kwh_se3' %}  {% set tv_raw = state_attr(np, 'today') | default([]) %}  {% set tm_raw = state_attr(np, 'tomorrow') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}  {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}  {% set tv_list = tv_raw if tv_raw is sequence and tv_raw is not string else (tv_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set tm_list = tm_raw if tm_raw is sequence and tm_raw is not string else (tm_raw | replace(' ','') | replace('\\n','') | split(',')) %}  {% set vals = (tv_list + (tm_list if tm_ok else [])) | map('float') | list %}  {% set slot_len = (slot_len_min | int) %}  {% set slot_secs = slot_len * 60 %}  {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0) %}  {% set base_ts = as_timestamp(base_midnight) | float %}  {% set bi = (((as_timestamp(best_start_iso | as_datetime) | float) - base_ts) / slot_secs) | round(0,'floor') | int %}  {% set ns = namespace(s=0.0) %}  {% for k in range(bi, bi + (num_slots | int)) %}\n  {% set ns.s = ns.s + (vals[k] | float) %}\n{% endfor %}  {{ (ns.s / (num_slots | int)) | float }}"
       - variables:
           use_intensiv70: "{{ intensiv70_best_start_iso != '' and intensiv70_avg_run_price | float(999) < (price_threshold_kr_kwh | float) }}"
       - variables:
@@ -6336,10 +6336,10 @@
   id: 000215dd59kbbqq
   triggers:
   - trigger: template
-    value_template: '{{ (state_attr(''sensor.nordpool_kwh_se3_sek_3_10_025'',''tomorrow'') | count) >= 92 }}'
+    value_template: '{{ (state_attr(''sensor.elpris_marginal_kwh_se3'',''tomorrow'') | count) >= 92 }}'
   action:
   - variables:
-      values: '{{ (state_attr(''sensor.nordpool_kwh_se3_sek_3_10_025'',''tomorrow'') or []) | map(''float'') | list }}'
+      values: '{{ (state_attr(''sensor.elpris_marginal_kwh_se3'',''tomorrow'') or []) | map(''float'') | list }}'
       n: '{{ values | count }}'
       avg_all: '{{ (values|sum / n) if n > 0 else 0 }}'
       avg_night: '{{ (values[:24]|sum / (values[:24]|count)) if (values|count) >= 24 else 0 }}'

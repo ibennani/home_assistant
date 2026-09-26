@@ -3420,7 +3420,7 @@ diskmaskin_prognos_kostnad:
   - variables:
       cost_kr: "{% set start = start_iso | as_datetime | as_local %} {% if 'Intensiv70' in program %}\n  {% set dur = 100\
         \ %}\n  {% set prof = [0.331, 0.266, 0.273, 0.124, 0.017, 0.002, 0.0] %}\n{% else %}\n  {% set dur = 66 %}\n  {% set\
-        \ prof = [0.404, 0.271, 0.138, 0.171, 0.0] %}\n{% endif %} {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}\
+        \ prof = [0.404, 0.271, 0.138, 0.171, 0.0] %}\n{% endif %} {% set np = 'sensor.elpris_marginal_kwh_se3' %}\
         \ {% set raw = state_attr(np, 'raw_today') | default([]) %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false)\
         \ %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %} {% set raw_tm = state_attr(np,\
         \ 'raw_tomorrow') | default([]) if tm_ok else [] %} {% set slots = raw + raw_tm %} {% set nseg = ((dur + 14) // 15)\
@@ -3512,7 +3512,7 @@ diskmaskin_kvart_kostnad_tick:
       i: "{{ completed }}"
       seg_start_ts: "{{ start_ts + i * 900 }}"
       delta_kwh: "{{ kwh - kwh_kvart }}"
-      price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false)\
+      price: "{% set np = 'sensor.elpris_marginal_kwh_se3' %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false)\
         \ %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %} {% set slots = state_attr(np,\
         \ 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else []) %} {% set p = namespace(v=0.0)\
         \ %} {% for s in slots %}\n  {% set s0 = as_timestamp(as_datetime(s.start)) %}\n  {% set s1 = as_timestamp(as_datetime(s.end))\
@@ -3573,7 +3573,7 @@ diskmaskin_korning_avsluta_kostnad:
       program: "{{ states('sensor.bosch_sma67md06e_68a40e70cb46_selected_program') }}"
   - variables:
       fallback_kr: "{% if lopande | float(0) > 0.001 %}\n  {{ lopande | float(0) }}\n{% elif start_raw in ['', 'unknown', 'unavailable',\
-        \ none] or dur <= 0 %}\n  0\n{% else %}\n  {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %} {% set tmr = state_attr(np,\
+        \ none] or dur <= 0 %}\n  0\n{% else %}\n  {% set np = 'sensor.elpris_marginal_kwh_se3' %} {% set tmr = state_attr(np,\
         \ 'tomorrow_valid') | default(false) %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower\
         \ == 'true') %} {% set slots = state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([])\
         \ if tm_ok else []) %} {% set total_kwh = total_kwh | float(0) %}\n  {% if 'Intensiv70'\
@@ -3632,7 +3632,7 @@ tvattmaskin_kwh_minut_tick:
   - condition: template
     value_template: "{{ p > 5 }}"
   - variables:
-      price: "{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %} {% set slots = state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else []) %} {% set ts = as_timestamp(now()) %} {% set p = namespace(v=0.0) %} {% for s in slots %}\n  {% set s0 = as_timestamp(as_datetime(s.start)) %}\n  {% set s1 = as_timestamp(as_datetime(s.end)) %}\n  {% if s0 <= ts and ts < s1 %}\n    {% set p.v = s.value | float %}\n  {% endif %}\n{% endfor %} {{ p.v }}"
+      price: "{% set np = 'sensor.elpris_marginal_kwh_se3' %} {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %} {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %} {% set slots = state_attr(np, 'raw_today') | default([]) + (state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else []) %} {% set ts = as_timestamp(now()) %} {% set p = namespace(v=0.0) %} {% for s in slots %}\n  {% set s0 = as_timestamp(as_datetime(s.start)) %}\n  {% set s1 = as_timestamp(as_datetime(s.end)) %}\n  {% if s0 <= ts and ts < s1 %}\n    {% set p.v = s.value | float %}\n  {% endif %}\n{% endfor %} {{ p.v }}"
       add_kr: "{{ (add_kwh | float(0)) * (price | float(0)) }}"
   - action: input_number.set_value
     target:

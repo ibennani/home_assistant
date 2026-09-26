@@ -278,6 +278,30 @@
     step: 0.01
     unit_of_measurement: "kr"
 
+  elpris_energiskatt_ore:
+    name: "Elpris energiskatt (öre/kWh inkl moms)"
+    min: 0
+    max: 200
+    step: 0.1
+    mode: box
+    initial: 45
+
+  elpris_ellevio_overforing_ore:
+    name: "Elpris Ellevio överföring (öre/kWh inkl moms)"
+    min: 0
+    max: 200
+    step: 0.1
+    mode: box
+    initial: 26
+
+  elpris_tibber_paslag_ore:
+    name: "Elpris Tibber påslag kvartsplan (öre/kWh inkl moms)"
+    min: 0
+    max: 100
+    step: 0.1
+    mode: box
+    initial: 12
+
 # Dessa behövs för att kunna dimma spegelskåpet och handfatet i WC
   wc_handfat_dimindex:
     name: WC Handfat Dim-index

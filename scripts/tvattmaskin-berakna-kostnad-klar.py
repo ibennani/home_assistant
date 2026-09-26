@@ -19,7 +19,8 @@ SECRETS_PATH = Path("/config/secrets.yaml")
 LOG_PATH = Path("/config/www/tvattmaskin-kostnad-last.log")
 POWER_ENTITY = "sensor.tvattmaskinen_switch_power"
 ACTIVE_ENTITY = "binary_sensor.tvattmaskinen_aktiv"
-NORDPOOL_ENTITY = "sensor.nordpool_kwh_se3_sek_3_10_025"
+# Marginalpris (spot + Tibber-påslag i plan + energiskatt + Ellevio) — se docs/elpris-marginal.md
+ELPRIS_MARGINAL_ENTITY = "sensor.elpris_marginal_kwh_se3"
 COST_ENTITY = "input_text.tvattmaskin_senaste_kostnaden"
 
 LOOKBACK_HOURS = 12
@@ -110,7 +111,7 @@ def fetch_power_history(secrets: dict[str, str], end: datetime) -> list[tuple[da
 
 
 def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
-    state = api_request(secrets, "GET", f"/api/states/{NORDPOOL_ENTITY}")
+    state = api_request(secrets, "GET", f"/api/states/{ELPRIS_MARGINAL_ENTITY}")
     attrs = state.get("attributes", {}) if isinstance(state, dict) else {}
     slots_raw = list(attrs.get("raw_today") or [])
     tmr = attrs.get("tomorrow_valid")
