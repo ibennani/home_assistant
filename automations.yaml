@@ -5976,11 +5976,14 @@
 - id: '791023035850948348674'
   alias: 'Mobilnotis: Diskmaskinen diskar'
   triggers:
-  - trigger: template
-    value_template: "{{\n  is_state('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress', '0') and\n \
-      \ states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_programprogress') not in ['unknown', 'unavailable']\
-      \ and\n  is_state('binary_sensor.diskmaskin_lucka', 'off') and\n  states('input_text.diskmaskin_sluttid').strip() ==\
-      \ '' \n}}\n"
+  - trigger: state
+    entity_id: binary_sensor.diskmaskin_program_aktiv
+    from: 'off'
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.diskmaskin_lucka
+    state: 'off'
   actions:
   - action: input_text.set_value
     target:
