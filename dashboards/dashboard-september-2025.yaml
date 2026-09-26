@@ -365,6 +365,10 @@ views:
             type: solid
           stroke:
             show: false
+          markers:
+            size: 5
+            strokeWidth: 1
+            strokeColors: '#333333'
           colors:
           - '#888888'
         now:
@@ -500,6 +504,31 @@ const dim = (hex, alpha=0.75) => {
             extremas: false
             datalabels: false
           extend_to: end
+        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+          name: Börs idag
+          type: line
+          stroke_width: 0
+          color: '#ffffff'
+          data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, value: Number(val) };\n  });\n};\nconst arr = buildSlots(entity.attributes.today, 0);\nreturn arr.map((e) => {\n  const val = Math.round(Number(e.value) * 100) / 100;\n  if (Number.isNaN(val) || !e.start) return null;\n  return [e.start.getTime(), val];\n}).filter(Boolean);\n"
+          show:
+            legend_value: false
+            in_header: false
+            extremas: false
+            datalabels: false
+            in_chart: true
+        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+          name: Börs imorgon
+          type: line
+          stroke_width: 0
+          color: '#ffffff'
+          opacity: 0.9
+          data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, value: Number(val) };\n  });\n};\nconst arr = buildSlots(entity.attributes.tomorrow, 1);\nreturn arr.map((e) => {\n  const val = Math.round(Number(e.value) * 100) / 100;\n  if (Number.isNaN(val) || !e.start) return null;\n  return [e.start.getTime(), val];\n}).filter(Boolean);\n"
+          show:
+            legend_value: false
+            in_header: false
+            extremas: false
+            datalabels: false
+            in_chart: true
     - type: vertical-stack
       title: El-priset idag och imorgon
       cards:
@@ -4882,6 +4911,10 @@ const dim = (hex, alpha=0.75) => {
           type: solid
         stroke:
           show: false
+        markers:
+          size: 5
+          strokeWidth: 1
+          strokeColors: '#333333'
         colors:
         - '#888888'
       now:
@@ -5017,6 +5050,31 @@ const dim = (hex, alpha=0.75) => {
           extremas: false
           datalabels: false
         extend_to: end
+      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        name: Börs idag
+        type: line
+        stroke_width: 0
+        color: '#ffffff'
+        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, value: Number(val) };\n  });\n};\nconst arr = buildSlots(entity.attributes.today, 0);\nreturn arr.map((e) => {\n  const val = Math.round(Number(e.value) * 100) / 100;\n  if (Number.isNaN(val) || !e.start) return null;\n  return [e.start.getTime(), val];\n}).filter(Boolean);\n"
+        show:
+          legend_value: false
+          in_header: false
+          extremas: false
+          datalabels: false
+          in_chart: true
+      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        name: Börs imorgon
+        type: line
+        stroke_width: 0
+        color: '#ffffff'
+        opacity: 0.9
+        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, value: Number(val) };\n  });\n};\nconst arr = buildSlots(entity.attributes.tomorrow, 1);\nreturn arr.map((e) => {\n  const val = Math.round(Number(e.value) * 100) / 100;\n  if (Number.isNaN(val) || !e.start) return null;\n  return [e.start.getTime(), val];\n}).filter(Boolean);\n"
+        show:
+          legend_value: false
+          in_header: false
+          extremas: false
+          datalabels: false
+          in_chart: true
     - type: markdown
       title: El-priset i sammandrag
       content: "{# =========================\n   Nordpool sammanfattning (Idag + Imorgon om publicerad)\n   - Intervall: Natt\
