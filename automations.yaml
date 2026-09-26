@@ -10506,9 +10506,6 @@
     not_from:
     - unknown
     - unavailable
-  conditions:
-  - condition: template
-    value_template: "{{ states('input_number.tvattmaskin_energy_lopande') | float(0) < 0.001 }}"
   actions:
   - action: script.tvattmaskin_korning_init
 - id: tvattmaskin_kostnad_minut_tick

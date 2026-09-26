@@ -3466,7 +3466,8 @@ diskmaskin_prognos_kostnad:
 vitvaror_el_kostnad_minut_tick:
   alias: "Vitvaror: minutkostnad (kWh × marginalpris nu)"
   description: Gemensam kostnadsspårning för disk och tvätt — pris för aktuell kvart vid tick, robust över midnatt.
-  mode: queued
+  mode: single
+  max_exceeded: silent
   fields:
     effekt_entity:
       name: Effektsensor
@@ -3498,7 +3499,7 @@ vitvaror_el_kostnad_minut_tick:
       kwh: "{{ states(energy_entity) | float(0) }}"
       lopande: "{{ states(kostnad_entity) | float(0) }}"
       add_kwh: "{{ (p / 60000.0) | float(0) }}"
-      marginalpris_kwh: "{{ states('sensor.elpris_marginal_kwh_se3') | float(0) }}"
+      marginalpris_kwh: "{% set m = states('sensor.elpris_marginal_kwh_se3') | trim %}{% if m in ['unknown', 'unavailable', 'none', ''] or (m | float(0)) < 0.05 %}{{ states('sensor.elpriset_denna_timme') | float(0) }}{% else %}{{ m | float(0) }}{% endif %}"
       add_kr: "{{ (add_kwh | float(0)) * (marginalpris_kwh | float(0)) }}"
   - condition: template
     value_template: "{{ p | float(0) >= (min_w | default(1) | float(0)) }}"
@@ -3579,11 +3580,21 @@ diskmaskin_kwh_minut_tick:
 
 diskmaskin_korning_avsluta_kostnad:
   alias: "Diskmaskin: avsluta och beräkna kostnad"
-  description: Sista minut-tick, sedan kostnad från lopande (ingen kvart-omräkning).
+  description: Sista minut-tick, historikberäkning (Python), fallback till minutsumma.
   mode: queued
   sequence:
   - action: script.diskmaskin_kwh_minut_tick
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.diskmaskin_senaste_kostnaden
+    data:
+      value: ""
+  - action: shell_command.diskmaskin_berakna_kostnad_klar
+    continue_on_error: true
+  - delay:
+      seconds: 2
   - variables:
+      fran_python: "{{ states('input_text.diskmaskin_senaste_kostnaden') | trim }}"
       lopande: "{{ states('input_number.diskmaskin_kostnad_lopande') | float(0) }}"
       kr_text: "{{ ('%.2f' | format(lopande | float(0) | round(2))) | replace('.', ',') }}"
   - action: input_number.set_value
@@ -3595,7 +3606,41 @@ diskmaskin_korning_avsluta_kostnad:
     target:
       entity_id: input_text.diskmaskin_senaste_kostnaden
     data:
-      value: "{{ kr_text if lopande | float(0) > 0.001 else '' }}"
+      value: "{{ fran_python if fran_python | length > 0 else (kr_text if lopande | float(0) > 0.001 else '') }}"
+
+vitvaror_skicka_korrigerade_kostnadsnotiser:
+  alias: "Vitvaror: korrigera senaste kostnad och notisera Ilias"
+  description: Kör historikberäkning för senaste tvätt och disk, skickar mobilnotiser med rätt belopp.
+  mode: single
+  sequence:
+  - action: shell_command.tvattmaskin_berakna_kostnad_klar
+    continue_on_error: true
+  - action: shell_command.diskmaskin_berakna_kostnad_klar
+    continue_on_error: true
+  - delay:
+      seconds: 2
+  - variables:
+      kt: "{{ states('input_text.tvattmaskin_senaste_kostnaden') | trim }}"
+      kd: "{{ states('input_text.diskmaskin_senaste_kostnaden') | trim }}"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ kt | length > 0 }}"
+      sequence:
+      - action: script.mobilnotis
+        data:
+          meddelande: "HEMMET {{ now().strftime('%R') }}:\nKorrigering: Tvättmaskinen kostade {{ kt }} kr (uppdaterad beräkning).\n"
+          mottagare: mobile_app_ilias_s23_ultra
+          ikon: vitvaror
+    - conditions:
+      - condition: template
+        value_template: "{{ kd | length > 0 }}"
+      sequence:
+      - action: script.mobilnotis
+        data:
+          meddelande: "HEMMET {{ now().strftime('%R') }}:\nKorrigering: Diskmaskinen kostade {{ kd }} kr (uppdaterad beräkning).\n"
+          mottagare: mobile_app_ilias_s23_ultra
+          ikon: vitvaror
 
 tvattmaskin_korning_init:
   alias: "Tvättmaskin: starta kostnadsspårning"
