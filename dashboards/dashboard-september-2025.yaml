@@ -334,7 +334,7 @@ views:
           dataLabels:
             enabled: false
           legend:
-            show: true
+            show: false
           xaxis:
             type: datetime
             tickAmount: 8
@@ -4813,7 +4813,7 @@ views:
         dataLabels:
           enabled: false
         legend:
-          show: true
+          show: false
         xaxis:
           type: datetime
           tickAmount: 8
