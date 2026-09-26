@@ -10485,7 +10485,7 @@
     data:
       start_iso: "{{ (trigger.to_state.last_changed | as_datetime | as_local).strftime('%Y-%m-%d %H:%M:%S') }}"
 - id: diskmaskin_kostnad_kvart_tick
-  alias: 'Diskmaskin: uppdatera kvartskostnad varje minut'
+  alias: 'Diskmaskin: uppdatera minutkostnad under körning'
   mode: single
   triggers:
   - trigger: time_pattern
@@ -10496,7 +10496,6 @@
     state: 'on'
   actions:
   - action: script.diskmaskin_kwh_minut_tick
-  - action: script.diskmaskin_kvart_kostnad_tick
 - id: tvattmaskin_kostnad_init_vid_start
   alias: 'Tvättmaskin: initiera kostnadsspårning vid start'
   mode: single
