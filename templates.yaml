@@ -97,7 +97,7 @@
     state: '{{ ((states(''sensor.utomhus_baksidan_ljusstyrka'') | int + states(''sensor.utomhus_framsidan_ljusstyrka'') | int) / 2) | int }}'
   - default_entity_id: sensor.elpriset_denna_timme
     name: Nordpool elpris SE3 denna timme
-    state: '{% set tid = now().strftime(''%H'') | int %} {{ state_attr("sensor.nordpool_kwh_se3_sek_3_10_025","today")[tid] }}'
+    state: '{% set tid = now().strftime(''%H'') | int %} {{ state_attr("sensor.elpris_marginal_kwh_se3","today")[tid] }}'
   - default_entity_id: sensor.elkostnad_denna_timme
     name: El-kostnad denna timme
     state: '{% set tid = now().strftime(''%H'') | int %} {{ (states(''sensor.accumulated_consumption_current_hour_eksharadsgatan_6'') | float) }}'
@@ -106,7 +106,7 @@
     state: >
       {% set run_time_minutes = states('input_number.dishwasher_run_time') | int %}
       {% set price_cap = 3 %}
-      {% set prices = state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'raw_today') %}
+      {% set prices = state_attr('sensor.elpris_marginal_kwh_se3', 'raw_today') %}
       {% set cheapest_interval = none %}
       {% set lowest_sum = float('inf') %}
 

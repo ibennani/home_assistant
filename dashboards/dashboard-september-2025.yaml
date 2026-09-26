@@ -302,6 +302,18 @@ views:
     - type: vertical-stack
       title: El-priset idag och imorgon
       cards:
+      - type: entities
+        show_header_toggle: false
+        entities:
+        - entity: sensor.elpris_marginal_kwh_se3
+          name: Marginal (det du betalar per kWh)
+        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+          name: Börs (spot Nord Pool)
+        - entity: sensor.electricity_price_eksharadsgatan_6
+          name: Tibber elhandel
+        - entity: input_number.elpris_energiskatt_ore
+        - entity: input_number.elpris_ellevio_overforing_ore
+        - entity: input_number.elpris_tibber_paslag_ore
       - type: custom:apexcharts-card
         apex_config:
           chart:
@@ -360,7 +372,7 @@ views:
           label: Nu
         header:
           show: true
-          title: El-priser idag och imorgon
+          title: Marginal elpris idag och imorgon
           show_states: true
           colorize_states: true
           standard_format: false
@@ -368,11 +380,11 @@ views:
         span:
           start: day
         series:
-        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        - entity: sensor.elpris_marginal_kwh_se3
           name: Nu
           unit: ' kr/kWh'
           float_precision: 2
-          color: "EVAL:() => {\n  const v = parseFloat(states['sensor.nordpool_kwh_se3_sek_3_10_025']?.state);\n  if (isNaN(v))\
+          color: "EVAL:() => {\n  const v = parseFloat(states['sensor.elpris_marginal_kwh_se3']?.state);\n  if (isNaN(v))\
             \   return '#888888';\n  if (v < 0)      return '#809fff';\n  if (v < 0.50)   return '#809fff';\n  if (v < 1.00)\
             \   return '#28fccf';\n  if (v < 1.50)   return '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)\
             \   return '#fcd228';\n  if (v < 4.00)   return '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)\
@@ -406,7 +418,7 @@ views:
             color: '#fc289d'
           - value: 6
             color: '#af28fc'
-        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        - entity: sensor.elpris_marginal_kwh_se3
           name: Idag
           type: column
           data_generator: "const raw = entity.attributes.raw_today; const arr = Array.isArray(raw) ? raw : (typeof raw ===\
@@ -422,7 +434,7 @@ views:
             extremas: false
             datalabels: false
           extend_to: end
-        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        - entity: sensor.elpris_marginal_kwh_se3
           name: Imorgon
           type: column
           data_generator: "const raw = entity.attributes.raw_tomorrow; const arr = Array.isArray(raw) ? raw : (typeof raw\
@@ -456,7 +468,7 @@ views:
           \ #}\n{% macro fmt_price(v) -%}\n  {%- set v = (v | float(0)) -%}\n  {%- set s = (\"%.2f\" | format(v)) -%}\n  {{\
           \ s | replace('.', ':') }}\n{%- endmacro %}\n\n{# ---------- Utskrift: färgat pris + \" kr\" ---------- #}\n{% macro\
           \ price_span(v) -%}\n  {%- set v = (v | float(0)) -%}\n  <font color=\"{{ price_color(v) }}\">{{ fmt_price(v) }}\
-          \ kr</font>\n{%- endmacro %}\n\n{%- set entity = 'sensor.nordpool_kwh_se3_sek_3_10_025' -%}\n{%- set day_start_hour\
+          \ kr</font>\n{%- endmacro %}\n\n{%- set entity = 'sensor.elpris_marginal_kwh_se3' -%}\n{%- set day_start_hour\
           \ = 10 -%}\n{%- set day_end_hour_exclusive = 20 -%}\n\n# Dagens el-pris:\n{% set raw = state_attr(entity, 'raw_today')\
           \ -%}\n{%- set slots = (raw | from_json) if (raw is string) else (raw or []) -%}\n\n{%- set ns = namespace(\n  sum=0.0,\
           \ cnt=0,\n  sum_night=0.0, cnt_night=0,\n  sum_day=0.0, cnt_day=0,\n\n  min_day=None, min_day_start=None, min_day_end=None,\n\
@@ -4842,11 +4854,11 @@ views:
       span:
         start: day
       series:
-      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+      - entity: sensor.elpris_marginal_kwh_se3
         name: Den här kvarten
         unit: ' kr/kWh'
         float_precision: 2
-        color: "EVAL:() => {\n  const v = parseFloat(states['sensor.nordpool_kwh_se3_sek_3_10_025']?.state);\n  if (isNaN(v))\
+        color: "EVAL:() => {\n  const v = parseFloat(states['sensor.elpris_marginal_kwh_se3']?.state);\n  if (isNaN(v))\
           \   return '#888888';\n  if (v < 0)      return '#809fff';\n  if (v < 0.50)   return '#809fff';\n  if (v < 1.00)\
           \   return '#28fccf';\n  if (v < 1.50)   return '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)\
           \   return '#fcd228';\n  if (v < 4.00)   return '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)\
@@ -4880,7 +4892,7 @@ views:
           color: '#fc289d'
         - value: 6
           color: '#af28fc'
-      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+      - entity: sensor.elpris_marginal_kwh_se3
         name: Idag
         type: column
         data_generator: "const raw = entity.attributes.raw_today; const arr = Array.isArray(raw) ? raw : (typeof raw === 'string'\
@@ -4896,7 +4908,7 @@ views:
           extremas: false
           datalabels: false
         extend_to: end
-      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+      - entity: sensor.elpris_marginal_kwh_se3
         name: Imorgon
         type: column
         data_generator: "const raw = entity.attributes.raw_tomorrow; const arr = Array.isArray(raw) ? raw : (typeof raw ===\
@@ -4928,7 +4940,7 @@ views:
         \ -%}\n  {%- set v = (v | float(0)) -%}\n  {%- set s = (\"%.2f\" | format(v)) -%}\n  {{ s | replace('.', ':') }}\n\
         {%- endmacro %}\n\n{# ---------- Utskrift: färgat pris + \" kr\" ---------- #}\n{% macro price_span(v) -%}\n  {%-\
         \ set v = (v | float(0)) -%}\n  <font color=\"{{ price_color(v) }}\">{{ fmt_price(v) }} kr</font>\n{%- endmacro %}\n\
-        \n{%- set entity = 'sensor.nordpool_kwh_se3_sek_3_10_025' -%}\n{%- set day_start_hour = 10 -%}\n{%- set day_end_hour_exclusive\
+        \n{%- set entity = 'sensor.elpris_marginal_kwh_se3' -%}\n{%- set day_start_hour = 10 -%}\n{%- set day_end_hour_exclusive\
         \ = 20 -%}\n\n# Dagens el-pris:\n{% set raw = state_attr(entity, 'raw_today') -%}\n{%- set slots = (raw | from_json)\
         \ if (raw is string) else (raw or []) -%}\n\n{%- set ns = namespace(\n  sum=0.0, cnt=0,\n  sum_night=0.0, cnt_night=0,\n\
         \  sum_day=0.0, cnt_day=0,\n\n  min_day=None, min_day_start=None, min_day_end=None,\n  max_day=None, max_day_start=None,\
@@ -5789,11 +5801,11 @@ views:
         \  {%- set v = price | float(0) -%}\n  {%- set sh = \"%02d:%02d\" % ( (idx*15)//60 , (idx*15)%60 ) -%}\n  {%- set\
         \ eh = \"%02d:%02d\" % ( ((idx+1)*15)//60 , ((idx+1)*15)%60 ) -%}\nKl {{ sh }}–{{ eh }}: <font color=\"{{ price_color(v)\
         \ }}\">{{ \"%.2f\" | format(v) }} kr</font>{% if mark_now %} ← Priset just nu{% endif %}\n{%- endmacro %}\n\n{# ----------\
-        \ Idag ---------- #}\n{%- set today = state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','today') or [] -%}\n{%- set\
+        \ Idag ---------- #}\n{%- set today = state_attr('sensor.elpris_marginal_kwh_se3','today') or [] -%}\n{%- set\
         \ now_idx = ((now().hour*60 + now().minute) // 15) -%}\n**Idag {{ now().strftime('%Y-%m-%d') }}**\n{% for v in today\
         \ %}\n{{ slot_row(v, loop.index0, loop.index0 == now_idx) }}\n{%- if (loop.index % 4) == 0 and not loop.last %}\n\n\
-        {% endif %}\n{%- endfor %}\n\n{# ---------- Imorgon ---------- #}\n{%- if is_state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','tomorrow_valid',\
-        \ true) -%}\n\n---\n\n{%- set tomorrow = state_attr('sensor.nordpool_kwh_se3_sek_3_10_025','tomorrow') or [] -%}\n\
+        {% endif %}\n{%- endfor %}\n\n{# ---------- Imorgon ---------- #}\n{%- if is_state_attr('sensor.elpris_marginal_kwh_se3','tomorrow_valid',\
+        \ true) -%}\n\n---\n\n{%- set tomorrow = state_attr('sensor.elpris_marginal_kwh_se3','tomorrow') or [] -%}\n\
         **Imorgon {{ (now() + timedelta(days=1)).strftime('%Y-%m-%d') }}**\n{% for v in tomorrow %}\n{{ slot_row(v, loop.index0,\
         \ false) }}\n{%- if (loop.index % 4) == 0 and not loop.last %}\n\n{% endif %}\n{%- endfor %}\n{%- else -%}\n\n---\n\
         \n*Morgondagens el-pris publiceras idag efter kl 13.*\n{%- endif -%}"

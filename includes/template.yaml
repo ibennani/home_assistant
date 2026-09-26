@@ -82,11 +82,84 @@
           {{ [framsidan, fonstret] | max }}
         {% endif %}
 
-    - name: Nordpool elpris SE3 denna timme
+    - name: Elpris marginal kWh SE3
+      unique_id: elpris_marginal_kwh_se3
+      unit_of_measurement: SEK/kWh
+      device_class: monetary
+      state: >-
+        {% set handel = states('sensor.electricity_price_eksharadsgatan_6') | float(0) %}
+        {% set np = states('sensor.nordpool_kwh_se3_sek_3_10_025') | float(0) %}
+        {% set net = (states('input_number.elpris_energiskatt_ore') | float(45)
+          + states('input_number.elpris_ellevio_overforing_ore') | float(26)) / 100 %}
+        {% if handel > 0 %}
+          {{ (handel + net) | round(3) }}
+        {% else %}
+          {% set paslag = states('input_number.elpris_tibber_paslag_ore') | float(12) / 100 %}
+          {{ (np + paslag + net) | round(3) }}
+        {% endif %}
+      attributes:
+        spot_kwh: "{{ states('sensor.nordpool_kwh_se3_sek_3_10_025') }}"
+        elhandel_kwh: "{{ states('sensor.electricity_price_eksharadsgatan_6') }}"
+        tomorrow_valid: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'tomorrow_valid') }}"
+        raw_today: >-
+          {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
+          {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
+            + states('input_number.elpris_ellevio_overforing_ore') | float(26)
+            + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}
+          {% set slots = state_attr(np, 'raw_today') | default([]) %}
+          {% set ns = namespace(out=[]) %}
+          {% for s in slots %}
+            {% set ns.out = ns.out + [{'start': s.start, 'end': s.end, 'value': (s.value | float(0)) + addon}] %}
+          {% endfor %}
+          {{ ns.out }}
+        raw_tomorrow: >-
+          {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
+          {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
+            + states('input_number.elpris_ellevio_overforing_ore') | float(26)
+            + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}
+          {% set tmr = state_attr(np, 'tomorrow_valid') %}
+          {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
+          {% set slots = state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else [] %}
+          {% set ns = namespace(out=[]) %}
+          {% for s in slots %}
+            {% set ns.out = ns.out + [{'start': s.start, 'end': s.end, 'value': (s.value | float(0)) + addon}] %}
+          {% endfor %}
+          {{ ns.out }}
+        today: >-
+          {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
+          {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
+            + states('input_number.elpris_ellevio_overforing_ore') | float(26)
+            + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}
+          {% set hours = state_attr(np, 'today') | default([]) %}
+          {% set ns = namespace(out=[]) %}
+          {% for v in hours %}
+            {% set ns.out = ns.out + [(v | float(0)) + addon] %}
+          {% endfor %}
+          {{ ns.out }}
+        tomorrow: >-
+          {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
+          {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
+            + states('input_number.elpris_ellevio_overforing_ore') | float(26)
+            + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}
+          {% set tmr = state_attr(np, 'tomorrow_valid') %}
+          {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
+          {% set hours = state_attr(np, 'tomorrow') | default([]) if tm_ok else [] %}
+          {% set ns = namespace(out=[]) %}
+          {% for v in hours %}
+            {% set ns.out = ns.out + [(v | float(0)) + addon] %}
+          {% endfor %}
+          {{ ns.out }}
+
+    - name: Marginal elpris SE3 denna timme
       unique_id: elpriset_denna_timme
       state: >-
         {% set tid = now().strftime('%H') | int %}
-        {{ state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'today')[tid] }}
+        {% set hours = state_attr('sensor.elpris_marginal_kwh_se3', 'today') | default([]) %}
+        {% if hours | length > tid %}
+          {{ hours[tid] }}
+        {% else %}
+          {{ states('sensor.elpris_marginal_kwh_se3') }}
+        {% endif %}
 
     - name: El-kostnad denna timme
       unique_id: elkostnad_denna_timme

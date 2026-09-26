@@ -135,6 +135,13 @@ else
   check_fail "HA YAML-validering" "kör: python3 scripts/check-ha-yaml.py"
 fi
 
+# 3b. Marginal elpris — ingen rå Nord Pool i kostnadsfiler
+if python3 "$SCRIPT_DIR/check-elpris-source.py"; then
+  check_ok "Elpris-källa (marginal, inte spot)"
+else
+  check_fail "Elpris-källa" "kör: python3 scripts/check-elpris-source.py"
+fi
+
 # 4. config_check mot live HA (valfritt)
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib/ha_api.sh" 2>/dev/null || true

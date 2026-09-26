@@ -1,0 +1,31 @@
+---
+description: Marginal elpris — obligatorisk källa för alla kWh-kostnader
+globs:
+  - "**/*.yaml"
+  - "**/*.py"
+alwaysApply: true
+---
+
+# Marginal elpris
+
+## Princip
+
+**All kostnad i kr som beror på förbrukad el** ska baseras på `sensor.elpris_marginal_kwh_se3` — inte på `sensor.nordpool_kwh_se3_sek_3_10_025` eller annan spot-sensor.
+
+Nord Pool är OK för **visning** av börspris (dashboard, analys).
+
+## Vid ny kod (automations, scripts, templates, Python)
+
+- Nuvarande pris: `states('sensor.elpris_marginal_kwh_se3')`
+- Kvartsvis kostnad under pågående cykel: `state_attr('sensor.elpris_marginal_kwh_se3', 'raw_today')` (+ `raw_tomorrow` om `tomorrow_valid`)
+- Timlistor: `today` / `tomorrow` på samma sensor
+- Justerbara tillägg: `input_number.elpris_*_ore` — ändra inte hårdkodade öre i flera filer
+
+## Förbjudet i kostnadslogik
+
+- `sensor.nordpool_kwh_se3_sek_3_10_025` som multiplikator för kWh → kr
+- Duplicerad beräkning av skatt/nät/Tibber i varje script
+
+## Referens
+
+Se [docs/elpris-marginal.md](../docs/elpris-marginal.md).
