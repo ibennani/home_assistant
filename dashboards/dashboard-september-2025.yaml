@@ -4820,10 +4820,13 @@ const dim = (hex, alpha=0.75) => {
       - from: 4000
         color: '#9d26ff'
     - type: custom:apexcharts-card
+      stacked: true
       apex_config:
         chart:
           animations:
             enabled: false
+          stacked: true
+          type: bar
         annotations:
           xaxis:
           - x: EVAL:new Date(new Date().setHours(24, 0, 0, 0))
@@ -4866,6 +4869,7 @@ const dim = (hex, alpha=0.75) => {
           bar:
             grouped: false
             columnWidth: 100%
+            stacked: true
         fill:
           type: solid
         stroke:
@@ -4919,40 +4923,11 @@ const dim = (hex, alpha=0.75) => {
           color: '#fc289d'
         - value: 6
           color: '#af28fc'
-      - entity: sensor.elpris_marginal_kwh_se3
-        name: Idag
+      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        name: Börs idag
         type: column
-        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
-const buildSlots = (prices, dayOff) => {
-  if (!Array.isArray(prices) || !prices.length) return [];
-  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);
-  return prices.map((val, i) => {
-    const start = new Date(base.getTime() + i * stepMin * 60000);
-    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };
-  });
-};
-const parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
-let arr = buildSlots(entity.attributes.today, 0);
-if (!arr.length) arr = parseRaw(entity.attributes.raw_today);
-const colorFor = (v) => {
-  if (isNaN(v))   return '#888888';
-  if (v < 0)      return '#809fff';
-  if (v < 0.50)   return '#809fff';
-  if (v < 1.00)   return '#28fccf';
-  if (v < 1.50)   return '#28fc61';
-  if (v < 2.00)   return '#ebfc28';
-  if (v < 3.00)   return '#fcd228';
-  if (v < 4.00)   return '#fc9628';
-  if (v < 5.00)   return '#fc3e28';
-  if (v < 6.00)   return '#fc289d';
-  return '#af28fc';
-}; return arr.map((e) => {
-  const val = Number(e.value);
-  const time = e.start instanceof Date ? e.start : new Date(e.start);
-  if (Number.isNaN(val) || !time) return null;
-  return { x: time, y: val, fillColor: colorFor(val) };
-}).filter(Boolean);
-"
+        stack_group: idag
+        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst margEnt = states['sensor.elpris_marginal_kwh_se3'];\nconst margArr = margEnt?.attributes?.today || [];\nconst spotArr = entity.attributes.today || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst toRgba = (hex, a) => {\n  const h = hex.replace('#', '');\n  const r = parseInt(h.substring(0, 2), 16);\n  const g = parseInt(h.substring(2, 4), 16);\n  const b = parseInt(h.substring(4, 6), 16);\n  return `rgba(${r},${g},${b},${a})`;\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, spot) * 100) / 100;\n  out.push({ x: slotTime(i, 0), y, fillColor: toRgba(colorFor(m), 0.92) });\n}\nreturn out;\n"
         show:
           legend_value: false
           in_header: false
@@ -4960,45 +4935,32 @@ const colorFor = (v) => {
           datalabels: false
         extend_to: end
       - entity: sensor.elpris_marginal_kwh_se3
-        name: Imorgon
+        name: Påslag idag
         type: column
-        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
-const buildSlots = (prices, dayOff) => {
-  if (!Array.isArray(prices) || !prices.length) return [];
-  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);
-  return prices.map((val, i) => {
-    const start = new Date(base.getTime() + i * stepMin * 60000);
-    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };
-  });
-};
-const parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);
-let arr = buildSlots(entity.attributes.tomorrow, 1);
-if (!arr.length) arr = parseRaw(entity.attributes.raw_tomorrow);
-const dim = (hex, alpha=0.75) => {
-  const h = hex.replace('#','');
-  const r = parseInt(h.substring(0,2),16);
-  const g = parseInt(h.substring(2,4),16);
-  const b = parseInt(h.substring(4,6),16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}; const colorForBase = (v) => {
-  if (isNaN(v))   return '#888888';
-  if (v < 0)      return '#809fff';
-  if (v < 0.50)   return '#809fff';
-  if (v < 1.00)   return '#28fccf';
-  if (v < 1.50)   return '#28fc61';
-  if (v < 2.00)   return '#ebfc28';
-  if (v < 3.00)   return '#fcd228';
-  if (v < 4.00)   return '#fc9628';
-  if (v < 5.00)   return '#fc3e28';
-  if (v < 6.00)   return '#fc289d';
-  return '#af28fc';
-}; return arr.map((e) => {
-  const val = Number(e.value);
-  const time = e.start instanceof Date ? e.start : new Date(e.start);
-  if (Number.isNaN(val) || !time) return null;
-  return { x: time, y: val, fillColor: dim(colorForBase(val), 0.70) };
-}).filter(Boolean);
-"
+        stack_group: idag
+        data_generator: "const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst spotEnt = states['sensor.nordpool_kwh_se3_sek_3_10_025'];\nconst spotArr = spotEnt?.attributes?.today || [];\nconst margArr = entity.attributes.today || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst toRgba = (hex, a) => {\n  const h = hex.replace('#', '');\n  const r = parseInt(h.substring(0, 2), 16);\n  const g = parseInt(h.substring(2, 4), 16);\n  const b = parseInt(h.substring(4, 6), 16);\n  return `rgba(${r},${g},${b},${a})`;\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, m - spot) * 100) / 100;\n  out.push({ x: slotTime(i, 0), y, fillColor: toRgba(colorFor(m), 0.48) });\n}\nreturn out;\n"
+        show:
+          legend_value: false
+          in_header: false
+          extremas: false
+          datalabels: false
+        extend_to: end
+      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        name: Börs imorgon
+        type: column
+        stack_group: imorgon
+        data_generator: "const tmOk = states['sensor.elpris_marginal_kwh_se3']?.attributes?.tomorrow_valid === true || String(states['sensor.elpris_marginal_kwh_se3']?.attributes?.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst margEnt = states['sensor.elpris_marginal_kwh_se3'];\nconst margArr = margEnt?.attributes?.tomorrow || [];\nconst spotArr = entity.attributes.tomorrow || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst toRgba = (hex, a) => {\n  const h = hex.replace('#', '');\n  const r = parseInt(h.substring(0, 2), 16);\n  const g = parseInt(h.substring(2, 4), 16);\n  const b = parseInt(h.substring(4, 6), 16);\n  return `rgba(${r},${g},${b},${a})`;\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, spot) * 100) / 100;\n  out.push({ x: slotTime(i, 1), y, fillColor: toRgba(colorFor(m), 0.65) });\n}\nreturn out;\n"
+        show:
+          legend_value: false
+          in_header: false
+          extremas: false
+          datalabels: false
+        extend_to: end
+      - entity: sensor.elpris_marginal_kwh_se3
+        name: Påslag imorgon
+        type: column
+        stack_group: imorgon
+        data_generator: "const tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst spotEnt = states['sensor.nordpool_kwh_se3_sek_3_10_025'];\nconst spotArr = spotEnt?.attributes?.tomorrow || [];\nconst margArr = entity.attributes.tomorrow || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst toRgba = (hex, a) => {\n  const h = hex.replace('#', '');\n  const r = parseInt(h.substring(0, 2), 16);\n  const g = parseInt(h.substring(2, 4), 16);\n  const b = parseInt(h.substring(4, 6), 16);\n  return `rgba(${r},${g},${b},${a})`;\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, m - spot) * 100) / 100;\n  out.push({ x: slotTime(i, 1), y, fillColor: toRgba(colorFor(m), 0.34) });\n}\nreturn out;\n"
         show:
           legend_value: false
           in_header: false
