@@ -307,9 +307,9 @@ views:
         entities:
         - entity: sensor.elpris_marginal_kwh_se3
           name: Marginal (det du betalar per kWh)
-        - entity: sensor.elpris_spot_visning_se3
+        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
           name: Börs (spot Nord Pool)
-        - entity: sensor.elpris_tibber_handel_visning
+        - entity: sensor.electricity_price_eksharadsgatan_6
           name: Tibber elhandel
         - entity: input_number.elpris_energiskatt_ore
         - entity: input_number.elpris_ellevio_overforing_ore
@@ -366,9 +366,10 @@ views:
           stroke:
             show: false
           markers:
-            size: 5
-            strokeWidth: 1
+            size: [0, 0, 0, 5, 5]
+            strokeWidth: [0, 0, 0, 1, 1]
             strokeColors: '#333333'
+            colors: '#ffffff'
           colors:
           - '#888888'
         now:
@@ -4912,9 +4913,10 @@ const dim = (hex, alpha=0.75) => {
         stroke:
           show: false
         markers:
-          size: 5
-          strokeWidth: 1
+          size: [0, 0, 0, 5, 5]
+          strokeWidth: [0, 0, 0, 1, 1]
           strokeColors: '#333333'
+          colors: '#ffffff'
         colors:
         - '#888888'
       now:
