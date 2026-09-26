@@ -25,20 +25,33 @@ SCAN = [
 PY_SCAN = list((ROOT / "scripts").glob("*.py"))
 
 
-def _strip_exempt_blocks(text: str, path: Path) -> str:
-    """diskmaskin_prognos_kostnad läser spot + samma öre-tillägg som marginal-sensorn."""
-    if path.name != "scripts.yaml":
-        return text
-    marker = "diskmaskin_prognos_kostnad:"
+def _strip_script_block(text: str, marker: str, next_markers: list[str]) -> str:
     start = text.find(marker)
     if start < 0:
         return text
-    end = text.find("\n\ndiskmaskin_", start + len(marker))
-    if end < 0:
-        end = text.find("\n\ntvattmaskin_", start + len(marker))
-    if end < 0:
-        end = len(text)
+    end = len(text)
+    for nm in next_markers:
+        pos = text.find(nm, start + len(marker))
+        if pos >= 0:
+            end = min(end, pos)
     return text[:start] + text[end:]
+
+
+def _strip_exempt_blocks(text: str, path: Path) -> str:
+    """Prognos och minut-tick läser spot + samma öre-tillägg som marginal-sensorn."""
+    if path.name != "scripts.yaml":
+        return text
+    text = _strip_script_block(
+        text,
+        "diskmaskin_prognos_kostnad:",
+        ["\n\ndiskmaskin_", "\n\ntvattmaskin_", "\n\nvitvaror_"],
+    )
+    text = _strip_script_block(
+        text,
+        "vitvaror_el_kostnad_minut_tick:",
+        ["\n\ndiskmaskin_", "\n\ntvattmaskin_"],
+    )
+    return text
 
 
 def check_file(path: Path) -> list[str]:
