@@ -3402,8 +3402,8 @@ spion_uppdatera_ilias_position:
       message: Uppdaterar positioner
 
 diskmaskin_uppdatera_start_meddelande:
-  alias: "Diskmaskin: startmeddelande med program och prognoskostnad"
-  description: Beräknar marginal elpris-prognos för valt program och sätter input_text.diskmaskin_meddelandetext.
+  alias: "Diskmaskin: mobilnotis vid start med program och prognoskostnad"
+  description: Beräknar marginal elpris-prognos och sätter input_text.diskmaskin_mobil_startmeddelande (endast mobil, inte Google Home).
   mode: queued
   fields:
     sluttid:
@@ -3431,7 +3431,7 @@ diskmaskin_uppdatera_start_meddelande:
       kostnad_del: "{% if prognos_kr and prognos_kr != '0,00' %}, beräknad kostnad {{ prognos_kr }} kr{% endif %}"
   - action: input_text.set_value
     target:
-      entity_id: input_text.diskmaskin_meddelandetext
+      entity_id: input_text.diskmaskin_mobil_startmeddelande
     data:
       value: "{% if sluttid_val %}{% if fordrojning_raw and fordrojning_raw != '0:00' %}Diskmaskinen kommer starta klockan {{ starttid }} med {{ dishwasher_program_label }}{{ kostnad_del }}, färdig klockan {{ sluttid_val }}.{% else %}Nu startar diskmaskinen med {{ dishwasher_program_label }}{{ kostnad_del }}, färdig klockan {{ sluttid_val }}.{% endif %}{% else %}Nu startar diskmaskinen med {{ dishwasher_program_label }}{{ kostnad_del }}.{% endif %}"
 
