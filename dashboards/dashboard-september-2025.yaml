@@ -307,9 +307,9 @@ views:
         entities:
         - entity: sensor.elpris_marginal_kwh_se3
           name: Marginal (det du betalar per kWh)
-        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+        - entity: sensor.elpris_spot_visning_se3
           name: Börs (spot Nord Pool)
-        - entity: sensor.electricity_price_eksharadsgatan_6
+        - entity: sensor.elpris_tibber_handel_visning
           name: Tibber elhandel
         - entity: input_number.elpris_energiskatt_ore
         - entity: input_number.elpris_ellevio_overforing_ore
@@ -5886,7 +5886,7 @@ const dim = (hex, alpha=0.75) => {
         {%- endmacro %}\n\n{# ---------- En rad per slot ---------- #}\n{% macro slot_row(price, idx, mark_now=false) -%}\n\
         \  {%- set v = price | float(0) -%}\n  {%- set sh = \"%02d:%02d\" % ( (idx*15)//60 , (idx*15)%60 ) -%}\n  {%- set\
         \ eh = \"%02d:%02d\" % ( ((idx+1)*15)//60 , ((idx+1)*15)%60 ) -%}\nKl {{ sh }}–{{ eh }}: <font color=\"{{ price_color(v)\
-        \ }}\">{{ \"%.2f\" | format(v) }} kr</font>{% if mark_now %} ← Priset just nu{% endif %}\n{%- endmacro %}\n\n{# ----------\
+        \ }}\">{{ (\"%.2f\" | format(v)) | replace('.', ':') }} kr</font>{% if mark_now %} ← Priset just nu{% endif %}\n{%- endmacro %}\n\n{# ----------\
         \ Idag ---------- #}\n{%- set today = state_attr('sensor.elpris_marginal_kwh_se3','today') or [] -%}\n{%- set\
         \ now_idx = ((now().hour*60 + now().minute) // 15) -%}\n**Idag {{ now().strftime('%Y-%m-%d') }}**\n{% for v in today\
         \ %}\n{{ slot_row(v, loop.index0, loop.index0 == now_idx) }}\n{%- if (loop.index % 4) == 0 and not loop.last %}\n\n\

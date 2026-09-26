@@ -2361,12 +2361,12 @@ elpris_synka_tibber_faktiska_priser:
                 {% set p.v = e.price | float(0) %}
               {% endif %}
             {% endfor %}
-            {% set row = {'start': slot_start.isoformat(), 'end': slot_end.isoformat(), 'value': (p.v | round(4))} %}
+            {% set row = {'start': slot_start.isoformat(), 'end': slot_end.isoformat(), 'value': (p.v | round(2))} %}
             {% if day_offset == 0 %}
-              {% set ns.today = ns.today + [(p.v | round(4))] %}
+              {% set ns.today = ns.today + [(p.v | round(2))] %}
               {% set ns.raw_today = ns.raw_today + [row] %}
             {% else %}
-              {% set ns.tomorrow = ns.tomorrow + [(p.v | round(4))] %}
+              {% set ns.tomorrow = ns.tomorrow + [(p.v | round(2))] %}
               {% set ns.raw_tomorrow = ns.raw_tomorrow + [row] %}
             {% endif %}
           {% endfor %}
@@ -2375,7 +2375,7 @@ elpris_synka_tibber_faktiska_priser:
         {% set ns.state = (ns.today[idx] | float(0)) if (ns.today | length) > idx else 0.0 %}
         {{ {'state': ns.state, 'today': ns.today, 'tomorrow': ns.tomorrow, 'raw_today': ns.raw_today, 'raw_tomorrow': ns.raw_tomorrow, 'tomorrow_valid': ((ns.tomorrow | select('gt', 0.01) | list | count) >= 90)} | to_json }}
       payload: "{{ payload_json | from_json }}"
-      state_now: "{{ payload.state | float(0) | round(3) }}"
+      state_now: "{{ payload.state | float(0) | round(2) }}"
       tomorrow_valid: "{{ payload.tomorrow_valid }}"
   - condition: template
     value_template: "{{ (entries | count) > 0 and (payload.today | count) >= 90 }}"
