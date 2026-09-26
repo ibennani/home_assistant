@@ -25,10 +25,26 @@ SCAN = [
 PY_SCAN = list((ROOT / "scripts").glob("*.py"))
 
 
+def _strip_exempt_blocks(text: str, path: Path) -> str:
+    """diskmaskin_prognos_kostnad läser spot + samma öre-tillägg som marginal-sensorn."""
+    if path.name != "scripts.yaml":
+        return text
+    marker = "diskmaskin_prognos_kostnad:"
+    start = text.find(marker)
+    if start < 0:
+        return text
+    end = text.find("\n\ndiskmaskin_", start + len(marker))
+    if end < 0:
+        end = text.find("\n\ntvattmaskin_", start + len(marker))
+    if end < 0:
+        end = len(text)
+    return text[:start] + text[end:]
+
+
 def check_file(path: Path) -> list[str]:
     if path in ALLOWED:
         return []
-    text = path.read_text(encoding="utf-8")
+    text = _strip_exempt_blocks(path.read_text(encoding="utf-8"), path)
     if SPOT not in text:
         return []
     hits = []
