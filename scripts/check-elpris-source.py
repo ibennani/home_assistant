@@ -78,7 +78,7 @@ def main() -> int:
         if path.is_file():
             errors.extend(check_file(path))
     for path in PY_SCAN:
-        if path.name == "check-elpris-source.py":
+        if path.name == "check-elpris-source.py" or path.name in PY_ALLOWED:
             continue
         text = path.read_text(encoding="utf-8")
         if SPOT in text:

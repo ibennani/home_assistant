@@ -7,13 +7,18 @@ Sätter input_text.tvattmaskin_senaste_kostnaden (t.ex. "1,68") eller tom strän
 from __future__ import annotations
 
 import json
+import os
 import re
+import sqlite3
+import subprocess
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+RECORDER_DB = Path("/config/home-assistant_v2.db")
 
 SECRETS_PATH = Path("/config/secrets.yaml")
 LOG_PATH = Path("/config/www/tvattmaskin-kostnad-last.log")
@@ -46,16 +51,28 @@ def load_secrets() -> dict[str, str]:
     return values
 
 
+def ha_auth(secrets: dict[str, str]) -> tuple[str, str]:
+    token = (
+        secrets.get("ha_long_lived_token", "").strip()
+        or os.environ.get("HA_TOKEN", "").strip()
+        or os.environ.get("SUPERVISOR_TOKEN", "").strip()
+        or os.environ.get("HASSIO_TOKEN", "").strip()
+    )
+    base = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
+    if token and not secrets.get("ha_long_lived_token") and os.environ.get("SUPERVISOR_TOKEN"):
+        base = "http://supervisor/core"
+    return base, token
+
+
 def api_request(
     secrets: dict[str, str],
     method: str,
     path: str,
     body: dict | None = None,
 ) -> object:
-    base = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
-    token = secrets.get("ha_long_lived_token", "")
+    base, token = ha_auth(secrets)
     if not token:
-        raise RuntimeError("ha_long_lived_token saknas i secrets.yaml")
+        raise RuntimeError("saknar HA-token (secrets ha_long_lived_token eller SUPERVISOR_TOKEN)")
     data = None
     headers = {"Authorization": f"Bearer {token}"}
     if body is not None:
@@ -63,7 +80,86 @@ def api_request(
         headers["Content-Type"] = "application/json"
     req = urllib.request.Request(f"{base}{path}", data=data, headers=headers, method=method)
     with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+        raw = resp.read().decode("utf-8")
+        return json.loads(raw) if raw else {}
+
+
+def ha_service_call(secrets: dict[str, str], domain: str, service: str, data: dict) -> bool:
+    try:
+        api_request(secrets, "POST", f"/api/services/{domain}/{service}", data)
+        return True
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        pass
+    try:
+        result = subprocess.run(
+            ["ha", "service", "call", f"{domain}.{service}", json.dumps(data)],
+            capture_output=True,
+            text=True,
+            timeout=45,
+            check=False,
+        )
+        return result.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def fetch_entity_history_db(
+    entity_id: str,
+    end: datetime,
+) -> list[tuple[datetime, str]]:
+    if not RECORDER_DB.is_file():
+        return []
+    cutoff = end - timedelta(hours=LOOKBACK_HOURS)
+    cutoff_ts = cutoff.timestamp()
+    try:
+        with sqlite3.connect(f"file:{RECORDER_DB}?mode=ro", uri=True, timeout=15) as conn:
+            rows = conn.execute(
+                """
+                SELECT s.last_updated_ts, s.state
+                FROM states s
+                INNER JOIN states_meta m ON s.metadata_id = m.metadata_id
+                WHERE m.entity_id = ? AND s.last_updated_ts >= ?
+                ORDER BY s.last_updated_ts
+                """,
+                (entity_id, cutoff_ts),
+            ).fetchall()
+    except sqlite3.Error:
+        return []
+    out: list[tuple[datetime, str]] = []
+    tz = end.tzinfo or timezone.utc
+    for ts, state in rows:
+        try:
+            out.append((datetime.fromtimestamp(float(ts), tz=tz), str(state)))
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+def fetch_state_attributes_db(entity_id: str) -> dict:
+    if not RECORDER_DB.is_file():
+        return {}
+    try:
+        with sqlite3.connect(f"file:{RECORDER_DB}?mode=ro", uri=True, timeout=15) as conn:
+            row = conn.execute(
+                """
+                SELECT s.attributes
+                FROM states s
+                INNER JOIN states_meta m ON s.metadata_id = m.metadata_id
+                WHERE m.entity_id = ?
+                ORDER BY s.last_updated_ts DESC
+                LIMIT 1
+                """,
+                (entity_id,),
+            ).fetchone()
+    except sqlite3.Error:
+        return {}
+    if not row or not row[0]:
+        return {}
+    try:
+        parsed = json.loads(row[0])
+        return parsed if isinstance(parsed, dict) else {}
+    except json.JSONDecodeError:
+        return {}
 
 
 def parse_iso(ts: str) -> datetime:
@@ -78,22 +174,26 @@ def fetch_entity_history(
     entity_id: str,
     end: datetime,
 ) -> list[tuple[datetime, str]]:
-    end_param = urllib.parse.quote(end.isoformat())
-    path = (
-        f"/api/history/period/{end_param}"
-        f"?filter_entity_id={urllib.parse.quote(entity_id)}"
-        f"&minimal_response=true"
-        f"&no_attributes=true"
-    )
-    raw = api_request(secrets, "GET", path)
-    if not raw or not isinstance(raw, list) or not raw[0]:
-        return []
     points: list[tuple[datetime, str]] = []
-    for row in raw[0]:
-        try:
-            points.append((parse_iso(row["last_changed"]), str(row["state"])))
-        except (KeyError, TypeError, ValueError):
-            continue
+    try:
+        end_param = urllib.parse.quote(end.isoformat())
+        path = (
+            f"/api/history/period/{end_param}"
+            f"?filter_entity_id={urllib.parse.quote(entity_id)}"
+            f"&minimal_response=true"
+            f"&no_attributes=true"
+        )
+        raw = api_request(secrets, "GET", path)
+        if raw and isinstance(raw, list) and raw[0]:
+            for row in raw[0]:
+                try:
+                    points.append((parse_iso(row["last_changed"]), str(row["state"])))
+                except (KeyError, TypeError, ValueError):
+                    continue
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        points = []
+    if not points:
+        points = fetch_entity_history_db(entity_id, end)
     points.sort(key=lambda x: x[0])
     cutoff = end - timedelta(hours=LOOKBACK_HOURS)
     return [(t, s) for t, s in points if t >= cutoff]
@@ -136,8 +236,12 @@ def _parse_slot_row(s: object, addon: float = 0.0) -> tuple[datetime, datetime, 
 
 def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
     slots: list[tuple[datetime, datetime, float]] = []
-    state = api_request(secrets, "GET", f"/api/states/{ELPRIS_MARGINAL_ENTITY}")
-    attrs = state.get("attributes", {}) if isinstance(state, dict) else {}
+    attrs: dict = {}
+    try:
+        state = api_request(secrets, "GET", f"/api/states/{ELPRIS_MARGINAL_ENTITY}")
+        attrs = state.get("attributes", {}) if isinstance(state, dict) else {}
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        attrs = fetch_state_attributes_db(ELPRIS_MARGINAL_ENTITY)
     slots_raw = list(attrs.get("raw_today") or [])
     tmr = attrs.get("tomorrow_valid")
     tm_ok = tmr is True or (isinstance(tmr, str) and tmr.lower() == "true")
@@ -323,12 +427,13 @@ def format_kr(kr: float) -> str:
 
 
 def set_cost_text(secrets: dict[str, str], value: str) -> None:
-    api_request(
+    if not ha_service_call(
         secrets,
-        "POST",
-        "/api/services/input_text/set_value",
+        "input_text",
+        "set_value",
         {"entity_id": COST_ENTITY, "value": value},
-    )
+    ):
+        raise RuntimeError("kunde inte sätta input_text.tvattmaskin_senaste_kostnaden")
 
 
 def write_log(message: str) -> None:
