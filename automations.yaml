@@ -10104,7 +10104,9 @@
   - trigger: event
     event_type: cursor_git_synk
   actions:
-  - action: script.git_synka_config
+  - action: script.turn_on
+    target:
+      entity_id: script.git_synka_config
 - alias: 'Cursor: Agent klar — mobilnotis'
   id: cursor_agent_klar
   description: Skickar mobilnotis till Elias S23 Ultra när en Cursor-agent är klar. Anropas via event cursor_agent_klar.
