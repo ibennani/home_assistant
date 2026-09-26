@@ -10081,6 +10081,21 @@
             data:
               notification_id: '{{ repeat.item }}'
             continue_on_error: true
+- alias: 'Elpris: synka Tibber faktiska priser'
+  id: elpris_synka_tibber_faktiska
+  description: Håller marginalpris-kurvor i fas med Tibber (faktiskt kr/kWh per kvart).
+  mode: single
+  triggers:
+  - trigger: homeassistant
+    event: start
+  - trigger: time_pattern
+    minutes: '5'
+  - trigger: time
+    at: '13:35:00'
+  - trigger: time
+    at: '14:05:00'
+  actions:
+  - action: script.elpris_synka_tibber_faktiska_priser
 - alias: 'System: Git-synk från GitHub'
   id: cursor_git_synk
   description: Synkar /config med GitHub main och laddar om YAML. Cursor Cloud anropar event cursor_git_synk.
