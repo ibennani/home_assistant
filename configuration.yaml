@@ -97,6 +97,7 @@ shell_command:
   zwave_usb_fix: bash /config/scripts/zwave-usb-fix.sh
   tvattmaskin_berakna_kostnad_klar: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare tvattmaskin
   diskmaskin_berakna_kostnad_klar: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare diskmaskin
+  elpris_synka_tibber_faktiska: python3 /config/scripts/elpris-synka-tibber-faktiska.py
 
 #######################################################
 # Media

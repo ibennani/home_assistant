@@ -87,76 +87,146 @@
       unit_of_measurement: SEK/kWh
       device_class: monetary
       state: >-
-        {% set handel = states('sensor.electricity_price_eksharadsgatan_6') | float(0) %}
-        {% set np = states('sensor.nordpool_kwh_se3_sek_3_10_025') | float(0) %}
-        {% set net = (states('input_number.elpris_energiskatt_ore') | float(45)
-          + states('input_number.elpris_ellevio_overforing_ore') | float(26)) / 100 %}
-        {% if handel > 0 %}
-          {{ (handel + net) | round(3) }}
+        {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
+        {% set f_sync = state_attr(faktisk, 'sync_ok') %}
+        {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
+        {% set f_state = states(faktisk) | trim %}
+        {% if f_ok and f_state not in ['unknown', 'unavailable', 'none', ''] %}
+          {{ f_state | float(0) | round(3) }}
         {% else %}
-          {% set paslag = states('input_number.elpris_tibber_paslag_ore') | float(12) / 100 %}
-          {{ (np + paslag + net) | round(3) }}
+          {% set handel = states('sensor.electricity_price_eksharadsgatan_6') | float(0) %}
+          {% set np = states('sensor.nordpool_kwh_se3_sek_3_10_025') | float(0) %}
+          {% set net = (states('input_number.elpris_energiskatt_ore') | float(45)
+            + states('input_number.elpris_ellevio_overforing_ore') | float(26)) / 100 %}
+          {% if handel > 0.05 %}
+            {{ (handel + net) | round(3) }}
+          {% else %}
+            {% set paslag = states('input_number.elpris_tibber_paslag_ore') | float(12) / 100 %}
+            {{ (np + paslag + net) | round(3) }}
+          {% endif %}
         {% endif %}
       attributes:
+        price_source: >-
+          {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
+          {% set f_sync = state_attr(faktisk, 'sync_ok') %}
+          {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
+          {{ 'tibber' if f_ok else 'fallback' }}
         spot_kwh: "{{ states('sensor.nordpool_kwh_se3_sek_3_10_025') }}"
         elhandel_kwh: "{{ states('sensor.electricity_price_eksharadsgatan_6') }}"
-        tomorrow_valid: "{{ state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'tomorrow_valid') }}"
+        synced_at: "{{ state_attr('sensor.elpris_faktisk_kwh_se3', 'synced_at') }}"
+        tomorrow_valid: >-
+          {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
+          {% set f_sync = state_attr(faktisk, 'sync_ok') %}
+          {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
+          {% if f_ok %}
+            {{ state_attr(faktisk, 'tomorrow_valid') }}
+          {% else %}
+            {{ state_attr('sensor.nordpool_kwh_se3_sek_3_10_025', 'tomorrow_valid') }}
+          {% endif %}
         raw_today: >-
-          {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
-          {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
-            + states('input_number.elpris_ellevio_overforing_ore') | float(26)
-            + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}
-          {% set slots = state_attr(np, 'raw_today') | default([]) %}
-          {% set ns = namespace(out=[]) %}
-          {% for s in slots %}
-            {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': (s.value | float(0)) + addon}] %}
-          {% endfor %}
-          {{ ns.out | to_json }}
+          {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
+          {% set f_sync = state_attr(faktisk, 'sync_ok') %}
+          {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
+          {% set f_raw = state_attr(faktisk, 'raw_today') | default([]) %}
+          {% if f_ok and (f_raw | length) >= 90 %}
+            {{ f_raw | to_json }}
+          {% else %}
+            {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
+            {% set net = (states('input_number.elpris_energiskatt_ore') | float(45)
+              + states('input_number.elpris_ellevio_overforing_ore') | float(26)) / 100 %}
+            {% set spot_now = states(np) | float(0) %}
+            {% set handel_now = states('sensor.electricity_price_eksharadsgatan_6') | float(0) %}
+            {% set handel_delta = (handel_now - spot_now) if handel_now > 0.05 else (states('input_number.elpris_tibber_paslag_ore') | float(12) / 100) %}
+            {% set addon = net + handel_delta %}
+            {% set slots = state_attr(np, 'raw_today') | default([]) %}
+            {% set ns = namespace(out=[]) %}
+            {% for s in slots %}
+              {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': (s.value | float(0)) + addon}] %}
+            {% endfor %}
+            {{ ns.out | to_json }}
+          {% endif %}
         raw_tomorrow: >-
-          {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
-          {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
-            + states('input_number.elpris_ellevio_overforing_ore') | float(26)
-            + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}
-          {% set tmr = state_attr(np, 'tomorrow_valid') %}
-          {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
-          {% set slots = state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else [] %}
-          {% set ns = namespace(out=[]) %}
-          {% for s in slots %}
-            {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': (s.value | float(0)) + addon}] %}
-          {% endfor %}
-          {{ ns.out | to_json }}
+          {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
+          {% set f_sync = state_attr(faktisk, 'sync_ok') %}
+          {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
+          {% set f_tmr = state_attr(faktisk, 'tomorrow_valid') %}
+          {% set f_tm_ok = (f_tmr is boolean and f_tmr) or (f_tmr is string and f_tmr | lower == 'true') %}
+          {% set f_raw = state_attr(faktisk, 'raw_tomorrow') | default([]) %}
+          {% if f_ok and f_tm_ok and (f_raw | length) >= 90 %}
+            {{ f_raw | to_json }}
+          {% else %}
+            {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
+            {% set net = (states('input_number.elpris_energiskatt_ore') | float(45)
+              + states('input_number.elpris_ellevio_overforing_ore') | float(26)) / 100 %}
+            {% set spot_now = states(np) | float(0) %}
+            {% set handel_now = states('sensor.electricity_price_eksharadsgatan_6') | float(0) %}
+            {% set handel_delta = (handel_now - spot_now) if handel_now > 0.05 else (states('input_number.elpris_tibber_paslag_ore') | float(12) / 100) %}
+            {% set addon = net + handel_delta %}
+            {% set tmr = state_attr(np, 'tomorrow_valid') %}
+            {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
+            {% set slots = state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else [] %}
+            {% set ns = namespace(out=[]) %}
+            {% for s in slots %}
+              {% set ns.out = ns.out + [{'start': as_datetime(s.start).isoformat(), 'end': as_datetime(s.end).isoformat(), 'value': (s.value | float(0)) + addon}] %}
+            {% endfor %}
+            {{ ns.out | to_json }}
+          {% endif %}
         today: >-
-          {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
-          {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
-            + states('input_number.elpris_ellevio_overforing_ore') | float(26)
-            + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}
-          {% set hours = state_attr(np, 'today') | default([]) %}
-          {% set ns = namespace(out=[]) %}
-          {% for v in hours %}
-            {% set ns.out = ns.out + [(v | float(0)) + addon] %}
-          {% endfor %}
-          {{ ns.out }}
+          {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
+          {% set f_sync = state_attr(faktisk, 'sync_ok') %}
+          {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
+          {% set f_tv = state_attr(faktisk, 'today') | default([]) %}
+          {% if f_ok and (f_tv | length) >= 90 %}
+            {{ f_tv }}
+          {% else %}
+            {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
+            {% set net = (states('input_number.elpris_energiskatt_ore') | float(45)
+              + states('input_number.elpris_ellevio_overforing_ore') | float(26)) / 100 %}
+            {% set spot_now = states(np) | float(0) %}
+            {% set handel_now = states('sensor.electricity_price_eksharadsgatan_6') | float(0) %}
+            {% set handel_delta = (handel_now - spot_now) if handel_now > 0.05 else (states('input_number.elpris_tibber_paslag_ore') | float(12) / 100) %}
+            {% set addon = net + handel_delta %}
+            {% set hours = state_attr(np, 'today') | default([]) %}
+            {% set ns = namespace(out=[]) %}
+            {% for v in hours %}
+              {% set ns.out = ns.out + [(v | float(0)) + addon] %}
+            {% endfor %}
+            {{ ns.out }}
+          {% endif %}
         tomorrow: >-
-          {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
-          {% set addon = (states('input_number.elpris_energiskatt_ore') | float(45)
-            + states('input_number.elpris_ellevio_overforing_ore') | float(26)
-            + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}
-          {% set tmr = state_attr(np, 'tomorrow_valid') %}
-          {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
-          {% set hours = state_attr(np, 'tomorrow') | default([]) if tm_ok else [] %}
-          {% set ns = namespace(out=[]) %}
-          {% for v in hours %}
-            {% set ns.out = ns.out + [(v | float(0)) + addon] %}
-          {% endfor %}
-          {{ ns.out }}
+          {% set faktisk = 'sensor.elpris_faktisk_kwh_se3' %}
+          {% set f_sync = state_attr(faktisk, 'sync_ok') %}
+          {% set f_ok = (f_sync is boolean and f_sync) or (f_sync is string and f_sync | lower == 'true') %}
+          {% set f_tmr = state_attr(faktisk, 'tomorrow_valid') %}
+          {% set f_tm_ok = (f_tmr is boolean and f_tmr) or (f_tmr is string and f_tmr | lower == 'true') %}
+          {% set f_tm = state_attr(faktisk, 'tomorrow') | default([]) %}
+          {% if f_ok and f_tm_ok and (f_tm | length) >= 90 %}
+            {{ f_tm }}
+          {% else %}
+            {% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}
+            {% set net = (states('input_number.elpris_energiskatt_ore') | float(45)
+              + states('input_number.elpris_ellevio_overforing_ore') | float(26)) / 100 %}
+            {% set spot_now = states(np) | float(0) %}
+            {% set handel_now = states('sensor.electricity_price_eksharadsgatan_6') | float(0) %}
+            {% set handel_delta = (handel_now - spot_now) if handel_now > 0.05 else (states('input_number.elpris_tibber_paslag_ore') | float(12) / 100) %}
+            {% set addon = net + handel_delta %}
+            {% set tmr = state_attr(np, 'tomorrow_valid') %}
+            {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
+            {% set hours = state_attr(np, 'tomorrow') | default([]) if tm_ok else [] %}
+            {% set ns = namespace(out=[]) %}
+            {% for v in hours %}
+              {% set ns.out = ns.out + [(v | float(0)) + addon] %}
+            {% endfor %}
+            {{ ns.out }}
+          {% endif %}
 
     - name: Marginal elpris SE3 denna timme
       unique_id: elpriset_denna_timme
       state: >-
-        {% set tid = now().strftime('%H') | int %}
+        {% set idx = ((now().hour * 60 + now().minute) // 15) %}
         {% set hours = state_attr('sensor.elpris_marginal_kwh_se3', 'today') | default([]) %}
-        {% if hours | length > tid %}
-          {{ hours[tid] }}
+        {% if hours | length > idx %}
+          {{ hours[idx] }}
         {% else %}
           {{ states('sensor.elpris_marginal_kwh_se3') }}
         {% endif %}
