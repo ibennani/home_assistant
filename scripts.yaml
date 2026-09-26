@@ -3498,7 +3498,7 @@ vitvaror_el_kostnad_minut_tick:
       kwh: "{{ states(energy_entity) | float(0) }}"
       lopande: "{{ states(kostnad_entity) | float(0) }}"
       add_kwh: "{{ (p / 60000.0) | float(0) }}"
-      marginalpris_kwh: "{% set ts = as_timestamp(now()) %}{% set np = 'sensor.nordpool_kwh_se3_sek_3_10_025' %}{% set addon = (states('input_number.elpris_energiskatt_ore') | float(45) + states('input_number.elpris_ellevio_overforing_ore') | float(26) + states('input_number.elpris_tibber_paslag_ore') | float(12)) / 100 %}{% set raw = state_attr(np, 'raw_today') | default([]) %}{% set raw_today = raw if raw is iterable and raw is not string and raw is not mapping else [] %}{% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}{% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}{% set raw_tm = state_attr(np, 'raw_tomorrow') | default([]) if tm_ok else [] %}{% set raw_tomorrow = raw_tm if raw_tm is iterable and raw_tm is not string and raw_tm is not mapping else [] %}{% set slots = raw_today + raw_tomorrow %}{% set pr = namespace(v=0.0) %}{% for s in slots %}{% set s0 = as_timestamp(as_datetime(s.start)) %}{% set s1 = as_timestamp(as_datetime(s.end)) %}{% if s0 <= ts and ts < s1 %}{% set pr.v = (s.value | float(0)) + addon %}{% endif %}{% endfor %}{{ pr.v if pr.v > 0 else states('sensor.elpris_marginal_kwh_se3') | float(0) }}"
+      marginalpris_kwh: "{{ states('sensor.elpris_marginal_kwh_se3') | float(0) }}"
       add_kr: "{{ (add_kwh | float(0)) * (marginalpris_kwh | float(0)) }}"
   - condition: template
     value_template: "{{ p | float(0) >= (min_w | default(1) | float(0)) }}"
@@ -3626,19 +3626,39 @@ tvattmaskin_kwh_minut_tick:
       effekt_entity: sensor.tvattmaskinen_switch_power
       energy_entity: input_number.tvattmaskin_energy_lopande
       kostnad_entity: input_number.tvattmaskin_kostnad_lopande
-      min_w: 5
+      min_w: 1
 
 tvattmaskin_kostnad_vid_klar:
   alias: "Tvättmaskin: beräkna kostnad vid klar"
-  description: Avslutar minuträkning och sätter input_text.tvattmaskin_senaste_kostnaden från pågående kostnad.
+  description: Effekthistorik (Python) vid klar; fallback till minutsumma om beräkning misslyckas.
   mode: queued
   sequence:
   - action: script.tvattmaskin_kwh_minut_tick
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.tvattmaskin_senaste_kostnaden
+    data:
+      value: ""
+  - action: shell_command.tvattmaskin_berakna_kostnad_klar
+    continue_on_error: true
+  - delay:
+      seconds: 2
   - variables:
+      fran_python: "{{ states('input_text.tvattmaskin_senaste_kostnaden') | trim }}"
       lopande: "{{ states('input_number.tvattmaskin_kostnad_lopande') | float(0) }}"
       kr_text: "{{ ('%.2f' | format(lopande | float(0) | round(2))) | replace('.', ',') }}"
   - action: input_text.set_value
     target:
       entity_id: input_text.tvattmaskin_senaste_kostnaden
     data:
-      value: "{{ kr_text if lopande | float(0) > 0.001 else '' }}"
+      value: "{{ fran_python if fran_python | length > 0 else (kr_text if lopande | float(0) > 0.001 else '') }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.tvattmaskin_energy_lopande
+    data:
+      value: 0
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.tvattmaskin_kostnad_lopande
+    data:
+      value: 0

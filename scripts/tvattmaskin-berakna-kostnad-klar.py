@@ -110,7 +110,32 @@ def fetch_power_history(secrets: dict[str, str], end: datetime) -> list[tuple[da
     return out
 
 
+def _parse_slot_row(s: object, addon: float = 0.0) -> tuple[datetime, datetime, float] | None:
+    if isinstance(s, dict):
+        start = s.get("start")
+        end = s.get("end")
+        val = s.get("value")
+    else:
+        try:
+            start = getattr(s, "start", None)
+            end = getattr(s, "end", None)
+            val = getattr(s, "value", None)
+        except (TypeError, AttributeError):
+            return None
+    if not start or not end or val is None:
+        return None
+    try:
+        return (
+            parse_iso(str(start)),
+            parse_iso(str(end)),
+            float(val) + addon,
+        )
+    except (TypeError, ValueError):
+        return None
+
+
 def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
+    slots: list[tuple[datetime, datetime, float]] = []
     state = api_request(secrets, "GET", f"/api/states/{ELPRIS_MARGINAL_ENTITY}")
     attrs = state.get("attributes", {}) if isinstance(state, dict) else {}
     slots_raw = list(attrs.get("raw_today") or [])
@@ -118,18 +143,38 @@ def fetch_nordpool_slots(secrets: dict[str, str]) -> list[tuple[datetime, dateti
     tm_ok = tmr is True or (isinstance(tmr, str) and tmr.lower() == "true")
     if tm_ok:
         slots_raw.extend(attrs.get("raw_tomorrow") or [])
-    slots: list[tuple[datetime, datetime, float]] = []
     for s in slots_raw:
-        try:
-            slots.append(
-                (
-                    parse_iso(s["start"]),
-                    parse_iso(s["end"]),
-                    float(s["value"]),
-                )
-            )
-        except (KeyError, TypeError, ValueError):
-            continue
+        row = _parse_slot_row(s, addon=0.0)
+        if row:
+            slots.append(row)
+    if slots:
+        return slots
+
+    np_entity = "sensor.nordpool_kwh_se3_sek_3_10_025"
+    np_state = api_request(secrets, "GET", f"/api/states/{np_entity}")
+    np_attrs = np_state.get("attributes", {}) if isinstance(np_state, dict) else {}
+    addon = 0.0
+    try:
+        ore = api_request(secrets, "GET", "/api/states/input_number.elpris_energiskatt_ore")
+        ore2 = api_request(secrets, "GET", "/api/states/input_number.elpris_ellevio_overforing_ore")
+        ore3 = api_request(secrets, "GET", "/api/states/input_number.elpris_tibber_paslag_ore")
+        addon = (
+            float(ore.get("state", 45))
+            + float(ore2.get("state", 26))
+            + float(ore3.get("state", 12))
+        ) / 100.0
+    except (TypeError, ValueError, AttributeError):
+        addon = (45 + 26 + 12) / 100.0
+    for key in ("raw_today", "raw_tomorrow"):
+        if key == "raw_tomorrow":
+            tmr2 = np_attrs.get("tomorrow_valid")
+            tm_ok2 = tmr2 is True or (isinstance(tmr2, str) and str(tmr2).lower() == "true")
+            if not tm_ok2:
+                continue
+        for s in np_attrs.get(key) or []:
+            row = _parse_slot_row(s, addon=addon)
+            if row:
+                slots.append(row)
     return slots
 
 
@@ -299,21 +344,37 @@ def main() -> int:
     try:
         points = fetch_power_history(secrets, end)
         slots = fetch_nordpool_slots(secrets)
-        active_hist = fetch_entity_history(secrets, ACTIVE_ENTITY, end)
+        active_hist = [
+            (t, s)
+            for t, s in fetch_entity_history(secrets, ACTIVE_ENTITY, end)
+            if s not in ("unavailable", "unknown")
+        ]
         window = find_run_window_from_active(active_hist, end)
+        kwh_act = 0.0
+        kr_act = 0.0
         if window is not None:
             active_on, run_end = window
-            start = refine_power_start(points, active_on, run_end)
+            start_act = refine_power_start(points, active_on, run_end)
+            if slots:
+                kwh_act, kr_act = integrate_cost(points, start_act, run_end, slots)
+
+        start_p = find_last_run_start(points, end)
+        kwh_p = 0.0
+        kr_p = 0.0
+        if start_p is not None and slots:
+            run_end_p = find_last_run_end(points, start_p, end)
+            kwh_p, kr_p = integrate_cost(points, start_p, run_end_p, slots)
+
+        if kwh_p > kwh_act:
+            kwh, kr = kwh_p, kr_p
         else:
-            start = find_last_run_start(points, end)
-            if start is None:
-                set_cost_text(secrets, "")
-                return 0
-            run_end = find_last_run_end(points, start, end)
+            kwh, kr = kwh_act, kr_act
         if not slots:
             set_cost_text(secrets, "")
             return 0
-        kwh, kr = integrate_cost(points, start, run_end, slots)
+        if kwh < 0.001 and kr < 0.001:
+            set_cost_text(secrets, "")
+            return 0
         if kr < 0.001 or kwh < 0.001:
             write_log(f"ingen kostnad start={start} end={run_end} kwh={kwh} kr={kr}")
             set_cost_text(secrets, "")
