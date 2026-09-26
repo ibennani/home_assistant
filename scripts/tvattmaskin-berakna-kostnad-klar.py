@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Beräkna tvättmaskinens kostnad vid klar utifrån effekthistorik och Nord Pool-kvartar.
+"""Beräkna vitvarors kostnad utifrån effekthistorik och marginalpris-kvartar.
 
-Körs på HA-servern via EdgeRouter DHCP-sensor (update_entity) när tvättmaskinen blir klar (aktiv av).
-Sätter input_text.tvattmaskin_senaste_kostnaden (t.ex. "1,68") eller tom sträng vid fel.
+Körs på HA-servern via shell_command vid klar (tvätt/disk).
+Sätter input_text.*_senaste_kostnaden (t.ex. "1,68") eller tom sträng vid fel.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import re
@@ -21,12 +22,31 @@ from pathlib import Path
 RECORDER_DB = Path("/config/home-assistant_v2.db")
 
 SECRETS_PATH = Path("/config/secrets.yaml")
-LOG_PATH = Path("/config/www/tvattmaskin-kostnad-last.log")
-POWER_ENTITY = "sensor.tvattmaskinen_switch_power"
-ACTIVE_ENTITY = "binary_sensor.tvattmaskinen_aktiv"
-# Marginalpris (spot + Tibber-påslag i plan + energiskatt + Ellevio) — se docs/elpris-marginal.md
+LOG_PATH = Path("/config/www/vitvaror-kostnad-last.log")
 ELPRIS_MARGINAL_ENTITY = "sensor.elpris_marginal_kwh_se3"
-COST_ENTITY = "input_text.tvattmaskin_senaste_kostnaden"
+
+VITARE_CONFIG = {
+    "tvattmaskin": {
+        "power": "sensor.tvattmaskinen_switch_power",
+        "active": "binary_sensor.tvattmaskinen_aktiv",
+        "cost": "input_text.tvattmaskin_senaste_kostnaden",
+        "start_helper": None,
+        "event": "tvattmaskin_kostnad_beraknad",
+    },
+    "diskmaskin": {
+        "power": "sensor.diskmaskin_switch_power",
+        "active": "binary_sensor.diskmaskin_program_aktiv",
+        "cost": "input_text.diskmaskin_senaste_kostnaden",
+        "start_helper": "input_datetime.diskmaskin_korning_start",
+        "event": "diskmaskin_kostnad_beraknad",
+    },
+}
+
+POWER_ENTITY = ""
+ACTIVE_ENTITY = ""
+COST_ENTITY = ""
+START_HELPER: str | None = None
+EVENT_TYPE = ""
 
 LOOKBACK_HOURS = 12
 LOW_W = 5.0
@@ -485,6 +505,73 @@ def fire_event(event_type: str, data: dict, secrets: dict[str, str]) -> bool:
         return False
 
 
+def configure_vitare(vitare: str) -> None:
+    global POWER_ENTITY, ACTIVE_ENTITY, COST_ENTITY, START_HELPER, EVENT_TYPE
+    cfg = VITARE_CONFIG[vitare]
+    POWER_ENTITY = cfg["power"]
+    ACTIVE_ENTITY = cfg["active"]
+    COST_ENTITY = cfg["cost"]
+    START_HELPER = cfg["start_helper"]
+    EVENT_TYPE = cfg["event"]
+
+
+def fetch_entity_state(secrets: dict[str, str], entity_id: str) -> str:
+    try:
+        state = api_request(secrets, "GET", f"/api/states/{entity_id}")
+        if isinstance(state, dict):
+            return str(state.get("state", "")).strip()
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        pass
+    return ""
+
+
+def parse_ha_datetime_local(raw: str) -> datetime | None:
+    text = raw.strip()
+    if not text or text in ("unknown", "unavailable"):
+        return None
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f"):
+        try:
+            dt = datetime.strptime(text, fmt)
+            return dt.astimezone()
+        except ValueError:
+            continue
+    try:
+        return parse_iso(text)
+    except (TypeError, ValueError):
+        return None
+
+
+def find_run_window_diskmaskin(
+    active_points: list[tuple[datetime, str]],
+    start_helper: datetime | None,
+    end: datetime,
+) -> tuple[datetime, datetime] | None:
+    changes = [(t, s) for t, s in active_points if t <= end and s not in ("unavailable", "unknown")]
+    if not changes:
+        return None
+    changes.sort(key=lambda x: x[0])
+    run_end: datetime | None = None
+    for i in range(len(changes) - 1, -1, -1):
+        t, state = changes[i]
+        if state == "off" and i > 0 and changes[i - 1][1] == "on":
+            run_end = t
+            break
+    if run_end is None:
+        run_end = end
+    run_start = start_helper
+    if run_start is None:
+        for i in range(len(changes) - 1, -1, -1):
+            t, state = changes[i]
+            if t > run_end:
+                continue
+            if state == "on" and i > 0 and changes[i - 1][1] == "off":
+                run_start = t
+                break
+    if run_start is None or run_start >= run_end:
+        return None
+    return run_start, run_end
+
+
 def set_cost_text(secrets: dict[str, str], value: str) -> None:
     if ha_service_call(
         secrets,
@@ -493,9 +580,9 @@ def set_cost_text(secrets: dict[str, str], value: str) -> None:
         {"entity_id": COST_ENTITY, "value": value},
     ):
         return
-    if fire_event("tvattmaskin_kostnad_beraknad", {"kr_text": value}, secrets):
+    if fire_event(EVENT_TYPE, {"kr_text": value}, secrets):
         return
-    raise RuntimeError("kunde inte sätta input_text.tvattmaskin_senaste_kostnaden")
+    raise RuntimeError(f"kunde inte sätta {COST_ENTITY}")
 
 
 def write_log(message: str) -> None:
@@ -506,6 +593,15 @@ def write_log(message: str) -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--vitare",
+        choices=tuple(VITARE_CONFIG.keys()),
+        default="tvattmaskin",
+    )
+    args = parser.parse_args()
+    configure_vitare(args.vitare)
+
     secrets = load_secrets()
     end = datetime.now().astimezone()
     try:
@@ -516,14 +612,27 @@ def main() -> int:
             for t, s in fetch_entity_history(secrets, ACTIVE_ENTITY, end)
             if s not in ("unavailable", "unknown")
         ]
-        window = find_run_window_from_active(active_hist, end)
         kwh_act = 0.0
         kr_act = 0.0
-        if window is not None:
-            active_on, run_end = window
-            start_act = refine_power_start(points, active_on, run_end)
-            if slots:
-                kwh_act, kr_act = integrate_cost(points, start_act, run_end, slots)
+        run_start_log: datetime | None = None
+        run_end_log: datetime | None = None
+
+        if args.vitare == "diskmaskin":
+            helper_start = None
+            if START_HELPER:
+                helper_start = parse_ha_datetime_local(fetch_entity_state(secrets, START_HELPER))
+            window = find_run_window_diskmaskin(active_hist, helper_start, end)
+            if window is not None and slots:
+                run_start_log, run_end_log = window
+                kwh_act, kr_act = integrate_cost(points, run_start_log, run_end_log, slots)
+        else:
+            window = find_run_window_from_active(active_hist, end)
+            if window is not None:
+                active_on, run_end = window
+                start_act = refine_power_start(points, active_on, run_end)
+                run_start_log, run_end_log = start_act, run_end
+                if slots:
+                    kwh_act, kr_act = integrate_cost(points, start_act, run_end, slots)
 
         start_p = find_last_run_start(points, end)
         kwh_p = 0.0
@@ -534,6 +643,8 @@ def main() -> int:
 
         if kwh_p > kwh_act:
             kwh, kr = kwh_p, kr_p
+            if run_start_log is None:
+                run_start_log, run_end_log = start_p, find_last_run_end(points, start_p, end)
         else:
             kwh, kr = kwh_act, kr_act
         if not slots:
@@ -543,18 +654,23 @@ def main() -> int:
             set_cost_text(secrets, "")
             return 0
         if kr < 0.001 or kwh < 0.001:
-            write_log(f"ingen kostnad start={start} end={run_end} kwh={kwh} kr={kr}")
+            write_log(
+                f"ingen kostnad vitare={args.vitare} start={run_start_log} end={run_end_log} kwh={kwh} kr={kr}"
+            )
             set_cost_text(secrets, "")
             return 0
         kr_text = format_kr(kr)
         set_cost_text(secrets, kr_text)
-        msg = f"tvattmaskin kostnad: {kwh:.3f} kWh, {kr_text} kr (start={start.isoformat()}, end={run_end.isoformat()})"
+        msg = (
+            f"{args.vitare} kostnad: {kwh:.3f} kWh, {kr_text} kr "
+            f"(start={run_start_log}, end={run_end_log})"
+        )
         write_log(msg)
         print(msg)
         return 0
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError) as exc:
-        write_log(f"fel: {exc!r}")
-        print(f"tvattmaskin kostnad: fel {exc}", file=sys.stderr)
+        write_log(f"fel {args.vitare}: {exc!r}")
+        print(f"{args.vitare} kostnad: fel {exc}", file=sys.stderr)
         try:
             set_cost_text(secrets, "")
         except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError):
