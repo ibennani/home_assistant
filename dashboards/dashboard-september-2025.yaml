@@ -4790,6 +4790,9 @@ views:
         color: '#ff26a5'
       - from: 4000
         color: '#9d26ff'
+    - type: heading
+      heading_style: title
+      heading: El-priser idag och imorgon
     - type: custom:apexcharts-card
       stacked: true
       all_series_config:
@@ -4857,7 +4860,6 @@ views:
         label: Nu
       header:
         show: true
-        title: El-priser idag och imorgon
         show_states: true
         colorize_states: true
         standard_format: false
