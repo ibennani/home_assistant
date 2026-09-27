@@ -98,6 +98,10 @@ shell_command:
   tvattmaskin_berakna_kostnad_klar: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare tvattmaskin
   diskmaskin_berakna_kostnad_klar: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare diskmaskin
   elpris_synka_tibber_faktiska: python3 /config/scripts/elpris-synka-tibber-faktiska.py
+  seerr_process_request: >-
+    python3 /config/custom_scripts/seerr_request_notify.py
+    --media-type "{{ media_type }}" --title "{{ title }}"
+    --tmdb-id "{{ tmdb_id }}" --tvdb-id "{{ tvdb_id }}"
 
 #######################################################
 # Media
