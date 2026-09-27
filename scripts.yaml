@@ -3487,8 +3487,8 @@ spion_uppdatera_ilias_position:
 
 diskmaskin_uppdatera_start_meddelande:
   alias: "Diskmaskin: mobilnotis vid start med program och prognoskostnad"
-  description: Beräknar prognos och skickar endast mobilnotis (Google Home använder diskmaskin_meddelandetext).
-  mode: queued
+  description: Anropas efter Google Home-uppläsning. Beräknar prognoskostnad och skickar sedan mobilnotis till Ilias.
+  mode: single
   sequence:
   - variables:
       sluttid_val: "{{ states('input_text.diskmaskin_sluttid') | trim }}"

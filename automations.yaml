@@ -6025,19 +6025,14 @@
         \ färdig klockan \" ~ sluttid ~ \".\"\n  )\n  if (sluttid and fordrojning_raw != '0:00')\n  else (\n    \"Nu startar\
         \ diskmaskinen, kommer vara färdig klockan \" ~ sluttid ~ \".\"\n  )\n  if sluttid\n  else\n    \"Tidsdata för diskmaskinen\
         \ är inte tillgänglig just nu.\"\n%}\n{{- diskmaskin_meddelande -}}\n"
-  - action: script.turn_on
-    target:
-      entity_id: script.las_text_i_valfri_device
+  - action: script.las_text_i_valfri_device
     data:
-      variables:
-        hogtalare: media_player.googlehome_infopuckarna
-        meddelande: '{{ states(''input_text.diskmaskin_meddelandetext'') }}
-
-          '
-        volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}\n  {{ states('input_number.google_home_volume_setting_dag')\
-          \ | float(default=0) / 100 }}\n{% else %}\n  {{ states('input_number.google_home_volume_setting_notiser') | float(default=0)\
-          \ / 100 }}\n{% endif %}\n"
-        voice: MattiasNeural
+      hogtalare: media_player.googlehome_infopuckarna
+      meddelande: '{{ states(''input_text.diskmaskin_meddelandetext'') }}'
+      volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}\n  {{ states('input_number.google_home_volume_setting_dag')\
+        \ | float(default=0) / 100 }}\n{% else %}\n  {{ states('input_number.google_home_volume_setting_notiser') | float(default=0)\
+        \ / 100 }}\n{% endif %}\n"
+      voice: MattiasNeural
   - action: script.diskmaskin_uppdatera_start_meddelande
     continue_on_error: true
   - action: input_text.set_value
