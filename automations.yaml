@@ -10519,3 +10519,44 @@
       entity_id: input_text.tvattmaskin_senaste_kostnaden
     data:
       value: "{{ trigger.event.data.kr_text | trim }}"
+- id: media_seerr_sok_och_notis
+  alias: 'Media: Seerr begäran – sök och notis'
+  description: 'När en film/serie begärs i Overseerr: sök i Radarr/Sonarr och skicka notis till Elias mobil (en gång per titel).'
+  triggers:
+  - trigger: webhook
+    webhook_id: seerr_media_bevakning
+    allowed_methods:
+    - POST
+    local_only: false
+  actions:
+  - variables:
+      media_type: "{{ trigger.json.media.mediaType | default(trigger.json.media.media_type | default('movie')) }}"
+      media_title: "{{ trigger.json.media.title | default(trigger.json.subject | default('Okänd titel')) }}"
+      tmdb_id: "{{ trigger.json.media.tmdbId | default(trigger.json.media.tmdb_id | default(0)) }}"
+      tvdb_id: "{{ trigger.json.media.tvdbId | default(trigger.json.media.tvdb_id | default(0)) }}"
+  - action: shell_command.seerr_process_request
+    data:
+      media_type: "{{ media_type }}"
+      title: "{{ media_title }}"
+      tmdb_id: "{{ tmdb_id }}"
+      tvdb_id: "{{ tvdb_id }}"
+  mode: queued
+- id: media_seerr_intern_notis
+  alias: 'Media: Seerr intern notis till Elias'
+  description: Skickar Plex-notis till Elias mobil efter sökresultat.
+  triggers:
+  - trigger: webhook
+    webhook_id: seerr_internal_notify
+    allowed_methods:
+    - POST
+    local_only: true
+  actions:
+  - action: notify.mobile_app_ilias_s23_ultra
+    data:
+      title: Plex
+      message: "{{ trigger.json.message }}"
+      data:
+        channel: Plex
+        notification_icon: https://imgbin.com/png/902kPvyX/plex-media-server-computer-icons-media-player-png
+        tag: seerr-media
+  mode: queued
