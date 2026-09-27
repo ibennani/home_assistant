@@ -5986,7 +5986,8 @@
       - condition: state
         entity_id: binary_sensor.diskmaskin_lucka
         state: 'off'
-      sequence: []
+      sequence:
+      - action: script.diskmaskin_skicka_startnotiser
     default:
     - wait_for_trigger:
       - trigger: state
@@ -5997,54 +5998,10 @@
         minutes: 0
         seconds: 20
         milliseconds: 0
-  - condition: state
-    entity_id: binary_sensor.diskmaskin_lucka
-    state: 'off'
-  - action: input_text.set_value
-    target:
-      entity_id: input_text.diskmaskin_sluttid
-    data:
-      value: "{% set sluttid_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime') %}\
-        \ {% set sluttid = sluttid_raw | as_datetime if sluttid_raw not in ['unknown', 'unavailable', None] else None %}\n\
-        {% set fordrojning_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative') %} {% if\
-        \ fordrojning_raw and ':' in fordrojning_raw %}\n  {% set fordrojning_parts = fordrojning_raw.split(':') %}\n  {%\
-        \ set fordrojning_timmar = fordrojning_parts[0] | int(default=0) %}\n  {% set fordrojning_minuter = fordrojning_parts[1]\
-        \ | int(default=0) %}\n  {% set fordrojning = timedelta(hours=fordrojning_timmar, minutes=fordrojning_minuter) %}\n\
-        {% else %}\n  {% set fordrojning = timedelta() %}\n{% endif %}\n{% set extra_timmar = 2 if now().utcoffset().total_seconds()\
-        \ == 7200 else 1 %}\n{% if fordrojning_raw == '0:00' %}\n  {{ states('input_text.diskmaskin_sluttid') if states('input_text.diskmaskin_sluttid')\
-        \ not in ['', 'unknown', None] else (sluttid + timedelta(hours=extra_timmar)).strftime('%H:%M') }}\n{% else %}\n \
-        \ {{ (sluttid + fordrojning + timedelta(hours=extra_timmar)).strftime('%H:%M') }}\n{% endif %}\n"
-  - action: input_text.set_value
-    target:
-      entity_id: input_text.diskmaskin_meddelandetext
-    data:
-      value: "{% set sluttid = states('input_text.diskmaskin_sluttid') %} {% set fordrojning_raw = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_startinrelative')\
-        \ %}\n{% set fordrojning_timmar = fordrojning_raw.split(':')[0] | int(0) %} {% set fordrojning_minuter = fordrojning_raw.split(':')[1]\
-        \ | int(0) %}\n{% set starttid = (now() + timedelta(hours=fordrojning_timmar, minutes=fordrojning_minuter)).strftime('%H:%M')\
-        \ %}\n{% set diskmaskin_meddelande =\n  (\n    \"Diskmaskinen kommer starta klockan \" ~ starttid ~\n    \" och vara\
-        \ färdig klockan \" ~ sluttid ~ \".\"\n  )\n  if (sluttid and fordrojning_raw != '0:00')\n  else (\n    \"Nu startar\
-        \ diskmaskinen, kommer vara färdig klockan \" ~ sluttid ~ \".\"\n  )\n  if sluttid\n  else\n    \"Tidsdata för diskmaskinen\
-        \ är inte tillgänglig just nu.\"\n%}\n{{- diskmaskin_meddelande -}}\n"
-  - action: script.las_text_i_valfri_device
-    data:
-      hogtalare: media_player.googlehome_infopuckarna
-      meddelande: '{{ states(''input_text.diskmaskin_meddelandetext'') }}'
-      volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}\n  {{ states('input_number.google_home_volume_setting_dag')\
-        \ | float(default=0) / 100 }}\n{% else %}\n  {{ states('input_number.google_home_volume_setting_notiser') | float(default=0)\
-        \ / 100 }}\n{% endif %}\n"
-      voice: MattiasNeural
-  - action: script.diskmaskin_uppdatera_start_meddelande
-    continue_on_error: true
-  - action: input_text.set_value
-    target:
-      entity_id: input_text.diskmaskin_tid_fjarrstart
-    data:
-      value: ''
-  - action: input_text.set_value
-    target:
-      entity_id: input_text.diskmaskin_program_fjarrstart
-    data:
-      value: ''
+    - condition: state
+      entity_id: binary_sensor.diskmaskin_lucka
+      state: 'off'
+    - action: script.diskmaskin_skicka_startnotiser
 - alias: 'Mobilnotis: Diskmaskinen är klar'
   id: '791834801065068674'
   mode: restart
