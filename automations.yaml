@@ -5980,11 +5980,26 @@
     entity_id: binary_sensor.diskmaskin_program_aktiv
     from: 'off'
     to: 'on'
-  conditions:
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: binary_sensor.diskmaskin_lucka
+        state: 'off'
+      sequence: []
+    default:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: binary_sensor.diskmaskin_lucka
+        to: 'off'
+      timeout:
+        hours: 0
+        minutes: 0
+        seconds: 20
+        milliseconds: 0
   - condition: state
     entity_id: binary_sensor.diskmaskin_lucka
     state: 'off'
-  actions:
   - action: input_text.set_value
     target:
       entity_id: input_text.diskmaskin_sluttid
