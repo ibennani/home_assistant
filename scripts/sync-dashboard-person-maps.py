@@ -38,7 +38,7 @@ def patch_person_blocks(content: str) -> tuple[str, int]:
     updated = content
     changes = 0
     for person in PERSON_MAP_DISPLAYS:
-        block = build_person_block(person.slug, person.spion_entity, person.initials)
+        block = build_person_block(person.slug, person.entity_for_map, person.initials)
         pattern = re.compile(
             re.escape(MAP_PERSON_BEGIN)
             + rf" {re.escape(person.slug)}\n.*?"
