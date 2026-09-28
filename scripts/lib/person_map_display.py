@@ -16,10 +16,12 @@ class PersonMapDisplay:
     first_name: str
     initials: str
     map_card_title: str | None = None
+    map_entity: str | None = None
+    spion_template: bool = True
 
     @property
-    def spion_entity(self) -> str:
-        return f"sensor.{self.slug}_spionkarta"
+    def entity_for_map(self) -> str:
+        return self.map_entity or f"sensor.{self.slug}_spionkarta"
 
     @property
     def title(self) -> str:
@@ -31,7 +33,14 @@ class PersonMapDisplay:
 PERSON_MAP_DISPLAYS: tuple[PersonMapDisplay, ...] = (
     PersonMapDisplay("ilias", "Ilias", "IB"),
     PersonMapDisplay("anna", "Anna", "AB"),
-    PersonMapDisplay("isabelle", "Asher", "AS", map_card_title="Asher"),
+    PersonMapDisplay(
+        "isabelle",
+        "Asher",
+        "AS",
+        map_card_title="Asher",
+        map_entity="sensor.asher",
+        spion_template=False,
+    ),
     PersonMapDisplay("erik", "Erik", "EB"),
 )
 

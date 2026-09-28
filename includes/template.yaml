@@ -1985,36 +1985,6 @@
           {% endif %}
         gps_accuracy: 25
 
-    - name: Asher
-      unique_id: isabelle_spionkarta
-      icon: mdi:map-marker-radius
-      state: >
-        {{ states('sensor.isabelle_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
-      attributes:
-        latitude: >
-          {% set az = states('sensor.isabelle_aktiv_zon') %}
-          {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-          {% set gps = 'person.isabelle_sovig' %}
-          {% if az not in bad and az != 'not_home' %}
-            {{ state_attr(az, 'latitude') }}
-          {% elif states(gps) not in bad and state_attr(gps, 'latitude') is not none %}
-            {{ state_attr(gps, 'latitude') }}
-          {% else %}
-            {{ none }}
-          {% endif %}
-        longitude: >
-          {% set az = states('sensor.isabelle_aktiv_zon') %}
-          {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-          {% set gps = 'person.isabelle_sovig' %}
-          {% if az not in bad and az != 'not_home' %}
-            {{ state_attr(az, 'longitude') }}
-          {% elif states(gps) not in bad and state_attr(gps, 'longitude') is not none %}
-            {{ state_attr(gps, 'longitude') }}
-          {% else %}
-            {{ none }}
-          {% endif %}
-        gps_accuracy: 25
-
     - name: Erik
       unique_id: erik_spionkarta
       icon: mdi:map-marker-radius

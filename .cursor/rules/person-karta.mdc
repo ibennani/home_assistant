@@ -7,7 +7,9 @@ Kartor som visar **var en person är** ska ha:
 - **Initialer** som markör (`label` på map-kortet), t.ex. `IB`
 - **Förnamn** i tooltip — via entitetens visningsnamn (`sensor.<slug>_spionkarta` ska heta bara förnamnet, t.ex. `Anna`)
 
-Använd **inte** `person.*` direkt på kartor om spionkarta-sensor finns.
+Använd **inte** `person.*` direkt på kartor — använd entitet från `person_map_display.py` (`entity_for_map`).
+
+Asher använder befintliga `sensor.asher` (UI-mall på HA), inte `person.*`.
 
 ## En källa
 

@@ -42,9 +42,9 @@ def check_dashboard(content: str, errors: list[str]) -> None:
             errors.append(f"dashboard: saknar map-person-block för {person.slug}")
             continue
         block = match.group(1)
-        if person.spion_entity not in block:
+        if person.entity_for_map not in block:
             errors.append(
-                f"dashboard: {person.slug} ska använda {person.spion_entity}, inte annan entitet"
+                f"dashboard: {person.slug} ska använda {person.entity_for_map}, inte annan entitet"
             )
         label_match = re.search(r"label:\s*(\S+)", block)
         if not label_match or label_match.group(1) != person.initials:
@@ -56,6 +56,8 @@ def check_dashboard(content: str, errors: list[str]) -> None:
 
 def check_spion_sensors(template_block: str, errors: list[str]) -> None:
     for person in PERSON_MAP_DISPLAYS:
+        if not person.spion_template:
+            continue
         slug_pat = rf"unique_id:\s*{re.escape(person.slug)}_spionkarta"
         if not re.search(slug_pat, template_block):
             errors.append(f"template: saknar sensor {person.spion_entity}")

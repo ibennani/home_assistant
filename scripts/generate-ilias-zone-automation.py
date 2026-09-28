@@ -416,6 +416,8 @@ def build_spion_map_sensors() -> str:
         "- sensor:",
     ]
     for person in PERSON_MAP_DISPLAYS:
+        if not person.spion_template:
+            continue
         slug = person.slug
         gps_tracker = SPION_GPS_TRACKERS[slug]
         aktiv_sensor = f"sensor.{slug}_aktiv_zon"
