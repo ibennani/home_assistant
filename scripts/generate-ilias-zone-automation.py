@@ -13,6 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_FILE = ROOT / "includes" / "template.yaml"
 AUTOMATIONS_FILE = ROOT / "automations.yaml"
 
+sys.path.insert(0, str(ROOT / "scripts"))
+from lib.person_map_display import PERSON_MAP_DISPLAYS, SPION_GPS_TRACKERS  # noqa: E402
+
 # tracker_entity, visningsnamn, sensor-slug (sensor.<slug>_aktiv_zon)
 AKTIV_ZON_PEOPLE = [
     ("person.anna_bennani", "Anna", "anna"),
@@ -409,15 +412,15 @@ def build_spion_map_sensors() -> str:
     """Spionfliken: kartmarkör (sensor + lat/lon) enligt aktiv_zon."""
     lines = [
         SPION_BEGIN,
-        "# Spionfliken — Anna/Erik/Ilias (Asher använder person på dashboarden; initialer via map label)",
+        "# Spionfliken — förnamn = tooltip, initialer = map label (scripts/lib/person_map_display.py)",
         "- sensor:",
     ]
-    display_by_slug = {slug: name for _t, name, slug in AKTIV_ZON_PEOPLE}
-    for slug, (gps_tracker, _ssid) in COMPANION_WIFI_PRESENCE.items():
-        display = display_by_slug[slug]
+    for person in PERSON_MAP_DISPLAYS:
+        slug = person.slug
+        gps_tracker = SPION_GPS_TRACKERS[slug]
         aktiv_sensor = f"sensor.{slug}_aktiv_zon"
         lat, lon = spion_map_coordinate_templates(gps_tracker, aktiv_sensor)
-        lines.append(f"    - name: {display} spionkarta")
+        lines.append(f"    - name: {person.first_name}")
         lines.append(f"      unique_id: {slug}_spionkarta")
         lines.append("      icon: mdi:map-marker-radius")
         lines.append("      state: >")

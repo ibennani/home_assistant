@@ -142,6 +142,13 @@ else
   check_fail "Elpris-källa" "kör: python3 scripts/check-elpris-source.py"
 fi
 
+# 3c. Personkartor — initialer + förnamn (tooltip)
+if python3 "$SCRIPT_DIR/check-person-map-display.py"; then
+  check_ok "Personkartor (initialer + förnamn)"
+else
+  check_fail "Personkartor" "kör: python3 scripts/check-person-map-display.py"
+fi
+
 # 4. config_check mot live HA (valfritt)
 # shellcheck disable=SC1091
 source "$SCRIPT_DIR/lib/ha_api.sh" 2>/dev/null || true

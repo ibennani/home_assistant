@@ -100,6 +100,26 @@ async def main() -> int:
     dump_dashboard_yaml(config, args.output)
     views = len(config.get("views", []))
     print(f"Exporterade {args.url_path} -> {args.output} ({views} vyer)")
+
+    import subprocess
+
+    sync_person = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "sync-dashboard-person-maps.py"), "--patch"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if sync_person.returncode == 0:
+        if sync_person.stderr.strip():
+            print(sync_person.stderr.strip(), file=sys.stderr)
+    else:
+        print(
+            "Varning: sync-dashboard-person-maps misslyckades — "
+            "kör manuellt efter export",
+            file=sys.stderr,
+        )
+        if sync_person.stderr:
+            print(sync_person.stderr, file=sys.stderr)
     return 0
 
 

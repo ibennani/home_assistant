@@ -6424,8 +6424,10 @@ views:
     - type: map
       title: Ilias senaste 24 timmarna
       entities:
+            # BEGIN map-person (scripts/sync-dashboard-person-maps.py) ilias
       - entity: sensor.ilias_spionkarta
         label: IB
+      # END map-person
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albins_hem
@@ -6481,8 +6483,10 @@ views:
     - type: map
       title: Anna senaste 24 timmarna
       entities:
+            # BEGIN map-person (scripts/sync-dashboard-person-maps.py) anna
       - entity: sensor.anna_spionkarta
         label: AB
+      # END map-person
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albins_hem
@@ -6538,8 +6542,10 @@ views:
     - type: map
       title: Asher senaste 24 timmarna
       entities:
-      - entity: person.isabelle_sovig
+            # BEGIN map-person (scripts/sync-dashboard-person-maps.py) isabelle
+      - entity: sensor.isabelle_spionkarta
         label: AS
+      # END map-person
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albins_hem
@@ -6595,8 +6601,10 @@ views:
     - type: map
       title: Erik senaste 24 timmarna
       entities:
+            # BEGIN map-person (scripts/sync-dashboard-person-maps.py) erik
       - entity: sensor.erik_spionkarta
         label: EB
+      # END map-person
       # BEGIN map-zones (scripts/sync-dashboard-map-zones.py)
       - zone.adrian
       - zone.albins_hem

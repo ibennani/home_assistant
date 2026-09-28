@@ -1,0 +1,28 @@
+# Personkartor (Spion m.fl.)
+
+## Regel
+
+Kartor som visar **var en person är** ska ha:
+
+- **Initialer** som markör (`label` på map-kortet), t.ex. `IB`
+- **Förnamn** i tooltip — via entitetens visningsnamn (`sensor.<slug>_spionkarta` ska heta bara förnamnet, t.ex. `Anna`)
+
+Använd **inte** `person.*` direkt på kartor om spionkarta-sensor finns.
+
+## En källa
+
+Allt definieras i `scripts/lib/person_map_display.py` (slug, förnamn, initialer, karttitel).
+
+Efter ändring där:
+
+1. `python3 scripts/generate-ilias-zone-automation.py --patch-templates`
+2. `python3 scripts/sync-dashboard-person-maps.py --patch`
+
+## Dashboard
+
+Spion-kartorna har markerade block `# BEGIN map-person` … `# END map-person`.  
+Exportera dashboard från HA körs **sync-dashboard-person-maps** automatiskt — men blocken måste finnas kvar.
+
+## Verifiering
+
+`python3 scripts/check-person-map-display.py` ( ingår i `scripts/verify-change.sh`).

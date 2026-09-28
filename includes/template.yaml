@@ -1923,9 +1923,39 @@
         {{ v if v not in ['unknown', 'unavailable', 'none', ''] else 11 }}
 
 # BEGIN spion-karta-sensorer (generate-ilias-zone-automation.py)
-# Spionfliken — Anna/Erik/Ilias (Asher använder person på dashboarden; initialer via map label)
+# Spionfliken — förnamn = tooltip, initialer = map label (scripts/lib/person_map_display.py)
 - sensor:
-    - name: Anna spionkarta
+    - name: Ilias
+      unique_id: ilias_spionkarta
+      icon: mdi:map-marker-radius
+      state: >
+        {{ states('sensor.ilias_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
+      attributes:
+        latitude: >
+          {% set az = states('sensor.ilias_aktiv_zon') %}
+          {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+          {% set gps = 'device_tracker.ilias_s23_ultra' %}
+          {% if az not in bad and az != 'not_home' %}
+            {{ state_attr(az, 'latitude') }}
+          {% elif states(gps) not in bad and state_attr(gps, 'latitude') is not none %}
+            {{ state_attr(gps, 'latitude') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+        longitude: >
+          {% set az = states('sensor.ilias_aktiv_zon') %}
+          {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+          {% set gps = 'device_tracker.ilias_s23_ultra' %}
+          {% if az not in bad and az != 'not_home' %}
+            {{ state_attr(az, 'longitude') }}
+          {% elif states(gps) not in bad and state_attr(gps, 'longitude') is not none %}
+            {{ state_attr(gps, 'longitude') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+        gps_accuracy: 25
+
+    - name: Anna
       unique_id: anna_spionkarta
       icon: mdi:map-marker-radius
       state: >
@@ -1955,7 +1985,37 @@
           {% endif %}
         gps_accuracy: 25
 
-    - name: Erik spionkarta
+    - name: Asher
+      unique_id: isabelle_spionkarta
+      icon: mdi:map-marker-radius
+      state: >
+        {{ states('sensor.isabelle_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
+      attributes:
+        latitude: >
+          {% set az = states('sensor.isabelle_aktiv_zon') %}
+          {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+          {% set gps = 'person.isabelle_sovig' %}
+          {% if az not in bad and az != 'not_home' %}
+            {{ state_attr(az, 'latitude') }}
+          {% elif states(gps) not in bad and state_attr(gps, 'latitude') is not none %}
+            {{ state_attr(gps, 'latitude') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+        longitude: >
+          {% set az = states('sensor.isabelle_aktiv_zon') %}
+          {% set bad = ['unknown', 'unavailable', 'none', ''] %}
+          {% set gps = 'person.isabelle_sovig' %}
+          {% if az not in bad and az != 'not_home' %}
+            {{ state_attr(az, 'longitude') }}
+          {% elif states(gps) not in bad and state_attr(gps, 'longitude') is not none %}
+            {{ state_attr(gps, 'longitude') }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+        gps_accuracy: 25
+
+    - name: Erik
       unique_id: erik_spionkarta
       icon: mdi:map-marker-radius
       state: >
@@ -1976,36 +2036,6 @@
           {% set az = states('sensor.erik_aktiv_zon') %}
           {% set bad = ['unknown', 'unavailable', 'none', ''] %}
           {% set gps = 'device_tracker.erik_s23' %}
-          {% if az not in bad and az != 'not_home' %}
-            {{ state_attr(az, 'longitude') }}
-          {% elif states(gps) not in bad and state_attr(gps, 'longitude') is not none %}
-            {{ state_attr(gps, 'longitude') }}
-          {% else %}
-            {{ none }}
-          {% endif %}
-        gps_accuracy: 25
-
-    - name: Ilias spionkarta
-      unique_id: ilias_spionkarta
-      icon: mdi:map-marker-radius
-      state: >
-        {{ states('sensor.ilias_aktiv_zon') | replace('zone.', '') | replace('not_home', 'Borta') }}
-      attributes:
-        latitude: >
-          {% set az = states('sensor.ilias_aktiv_zon') %}
-          {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-          {% set gps = 'device_tracker.ilias_s23_ultra' %}
-          {% if az not in bad and az != 'not_home' %}
-            {{ state_attr(az, 'latitude') }}
-          {% elif states(gps) not in bad and state_attr(gps, 'latitude') is not none %}
-            {{ state_attr(gps, 'latitude') }}
-          {% else %}
-            {{ none }}
-          {% endif %}
-        longitude: >
-          {% set az = states('sensor.ilias_aktiv_zon') %}
-          {% set bad = ['unknown', 'unavailable', 'none', ''] %}
-          {% set gps = 'device_tracker.ilias_s23_ultra' %}
           {% if az not in bad and az != 'not_home' %}
             {{ state_attr(az, 'longitude') }}
           {% elif states(gps) not in bad and state_attr(gps, 'longitude') is not none %}
