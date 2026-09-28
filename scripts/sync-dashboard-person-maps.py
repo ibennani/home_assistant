@@ -34,6 +34,16 @@ def build_person_block(slug: str, entity: str, initials: str) -> str:
     )
 
 
+def normalize_person_comment_indent(content: str) -> str:
+    """Rätta felindenterade map-person-kommentarer efter manuella dashboard-redigeringar."""
+    return re.sub(
+        rf"^[ \t]+({re.escape(MAP_PERSON_BEGIN)} .+)$",
+        r"      \1",
+        content,
+        flags=re.MULTILINE,
+    )
+
+
 def patch_person_blocks(content: str) -> tuple[str, int]:
     updated = content
     changes = 0
