@@ -38,8 +38,9 @@ PERSON_MAP_DISPLAYS: tuple[PersonMapDisplay, ...] = (
         "Asher",
         "AS",
         map_card_title="Asher",
-        map_entity="sensor.asher",
-        spion_template=False,
+        # Fallback tills sensor.isabelle_spionkarta finns i drift (person har GPS).
+        map_entity="person.isabelle_sovig",
+        spion_template=True,
     ),
     PersonMapDisplay("erik", "Erik", "EB"),
 )
