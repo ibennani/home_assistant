@@ -33,14 +33,7 @@ class PersonMapDisplay:
 PERSON_MAP_DISPLAYS: tuple[PersonMapDisplay, ...] = (
     PersonMapDisplay("ilias", "Ilias", "IB"),
     PersonMapDisplay("anna", "Anna", "AB"),
-    PersonMapDisplay(
-        "isabelle",
-        "Asher",
-        "AS",
-        map_card_title="Asher",
-        map_entity="sensor.asher",
-        spion_template=False,
-    ),
+    PersonMapDisplay("isabelle", "Asher", "AS", map_card_title="Asher"),
     PersonMapDisplay("erik", "Erik", "EB"),
 )
 
