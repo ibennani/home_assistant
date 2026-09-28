@@ -1926,6 +1926,7 @@
 # Spionfliken — förnamn = tooltip, initialer = map label (scripts/lib/person_map_display.py)
 - sensor:
     - name: Ilias
+      default_entity_id: sensor.ilias_spionkarta
       unique_id: ilias_spionkarta
       icon: mdi:map-marker-radius
       state: >
@@ -1956,6 +1957,7 @@
         gps_accuracy: 25
 
     - name: Anna
+      default_entity_id: sensor.anna_spionkarta
       unique_id: anna_spionkarta
       icon: mdi:map-marker-radius
       state: >
@@ -1986,6 +1988,7 @@
         gps_accuracy: 25
 
     - name: Asher
+      default_entity_id: sensor.isabelle_spionkarta
       unique_id: isabelle_spionkarta
       icon: mdi:map-marker-radius
       state: >
@@ -2016,6 +2019,7 @@
         gps_accuracy: 25
 
     - name: Erik
+      default_entity_id: sensor.erik_spionkarta
       unique_id: erik_spionkarta
       icon: mdi:map-marker-radius
       state: >

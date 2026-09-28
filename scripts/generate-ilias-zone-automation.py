@@ -423,6 +423,7 @@ def build_spion_map_sensors() -> str:
         aktiv_sensor = f"sensor.{slug}_aktiv_zon"
         lat, lon = spion_map_coordinate_templates(gps_tracker, aktiv_sensor)
         lines.append(f"    - name: {person.first_name}")
+        lines.append(f"      default_entity_id: sensor.{slug}_spionkarta")
         lines.append(f"      unique_id: {slug}_spionkarta")
         lines.append("      icon: mdi:map-marker-radius")
         lines.append("      state: >")

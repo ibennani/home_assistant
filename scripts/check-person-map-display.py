@@ -64,15 +64,9 @@ def check_spion_sensors(template_block: str, errors: list[str]) -> None:
             continue
         # name direkt efter unique_id-raden för den sensorn
         chunk = re.search(
-            rf"unique_id:\s*{re.escape(person.slug)}_spionkarta\n\s+- name:\s*(.+)\n",
+            rf"- name:\s*(.+)\n(?:\s+default_entity_id:.*\n)?\s+unique_id:\s*{re.escape(person.slug)}_spionkarta",
             template_block,
         )
-        if not chunk:
-            # HA YAML: name före unique_id
-            chunk = re.search(
-                rf"- name:\s*(.+)\n\s+unique_id:\s*{re.escape(person.slug)}_spionkarta",
-                template_block,
-            )
         if not chunk:
             errors.append(f"template: kunde inte läsa name för {person.slug}_spionkarta")
             continue
