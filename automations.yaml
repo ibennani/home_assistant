@@ -10198,8 +10198,7 @@
     - action: script.mobilnotis
       data:
         mottagare: mobile_app_ilias_s23_ultra
-        title: Badrummet under spegeln
-        meddelande: '{{ person }} blippade taggen {{ now().strftime(''%H:%M:%S'') }}'
+        meddelande: "HEMMET {{ now().strftime('%R') }}: \n{{ person }} blippade taggen {{ now().strftime('%H:%M:%S') }}\n"
 - id: badrum_editor_styr_lampor
   alias: 'Badrum: editor styr lampor live'
   description: När sliders eller spegel-toggle ändras på inställningssidan uppdateras motsvarande lampa direkt.
