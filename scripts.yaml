@@ -3422,9 +3422,8 @@ badrum_satt_besokare:
           person: '{{ person }}'
   - action: script.mobilnotis
     data:
-      meddelande: '{{ person }} är i badrummet, {{ metod }}.'
+      meddelande: "HEMMET {{ now().strftime('%R') }}: \n{{ person }} är i badrummet, {{ metod }}.\n"
       mottagare: mobile_app_ilias_s23_ultra
-      title: Badrummet
 badrum_synka_profil_flaggor:
   alias: Badrum synka profil-flaggor från sparade värden
   description: Återställer input_boolean profil-flaggor från input_number efter omstart.
