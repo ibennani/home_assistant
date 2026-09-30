@@ -5680,8 +5680,7 @@
     id: fjarrstarta_diskmaskinen
   - trigger: template
     id: avbruten_fjarrstart
-    value_template: "{{\n  is_state('binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed','off')\
-      \ and\n  not is_state('input_text.diskmaskin_tid_fjarrstart','')\n}}"
+    value_template: "{{\n  is_state('input_boolean.diskmaskin_fjarrstart_vantar', 'on') and\n  not is_state('binary_sensor.diskmaskin_program_aktiv', 'on') and\n  (\n    is_state('binary_sensor.diskmaskin_lucka', 'on') or\n    (\n      is_state('binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed','off') and\n      not is_state('input_text.diskmaskin_tid_fjarrstart','')\n    )\n  )\n}}"
   actions:
   - choose:
     - conditions:
@@ -5838,6 +5837,9 @@
               entity_id: input_text.diskmaskin_program_fjarrstart
             data:
               value: '{{ chosen_program }}'
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.diskmaskin_fjarrstart_vantar
           - action: script.diskmaskin_prognos_kostnad
             data:
               start_iso: '{{ best_start_iso }}'
@@ -5878,6 +5880,9 @@
               entity_id: input_text.diskmaskin_program_fjarrstart
             data:
               value: ''
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.diskmaskin_fjarrstart_vantar
           - action: script.mobilnotis
             data:
               meddelande: 'HEMMET {{ states(''sensor.time'') }}: Ingen lämplig starttid hittades (Eco 50° eller Intensiv 70°) innan respektive deadline.'
@@ -5944,6 +5949,9 @@
       - condition: template
         value_template: '{{ uptime() | float(0) > 60 }}'
       sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.diskmaskin_fjarrstart_vantar
       - action: input_text.set_value
         target:
           entity_id: input_text.diskmaskin_tid_fjarrstart
@@ -5981,6 +5989,9 @@
     from: 'off'
     to: 'on'
   actions:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.diskmaskin_fjarrstart_vantar
   - choose:
     - conditions:
       - condition: state
