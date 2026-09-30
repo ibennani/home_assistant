@@ -211,3 +211,9 @@
     name: Tvättmaskin beräkna kostnad (kö)
     icon: mdi:washing-machine
     initial: off
+
+# Pågående fjärrstart (planerad eller startknapp tryckt) tills program kör eller avbryts
+  diskmaskin_fjarrstart_vantar:
+    name: Diskmaskin fjärrstart väntar
+    icon: mdi:dishwasher
+    initial: off
