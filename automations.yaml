@@ -4044,10 +4044,9 @@
         entity_id: var.z_wave_is_ready
         state: 'true'
       sequence:
-      - action: '{% if states("input_select.house_time_modes") in ["Morgon","Dag"] %} script.styr_belysningen_nar_alla_gatt_hemifran
-          {% else %} script.do_nothing {% endif %}
-
-          '
+      - action: script.turn_on
+        target:
+          entity_id: script.styr_belysningen_nar_alla_gatt_hemifran
     default: []
   - action: script.turn_on
     target:
