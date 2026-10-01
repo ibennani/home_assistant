@@ -4015,15 +4015,15 @@
     value_template: '{{  is_state("zone.home","0") and is_state("input_boolean.stadning_pagar","off") }}
 
       '
-  condition:
-  - condition: state
-    entity_id: var.z_wave_is_ready
-    state: 'true'
   action:
   - action: lock.lock
     data:
       entity_id: lock.ytterdorr
       code: 998877
+  - action: media_player.media_stop
+    continue_on_error: true
+    target:
+      entity_id: media_player.hogtalarna_i_koket_mass
   - action: media_player.turn_off
     target:
       entity_id:
@@ -4031,6 +4031,7 @@
       - media_player.kd_65xd8505
       - media_player.denon_avr_x2800h
       - media_player.hogtalarna_i_koket
+      - media_player.hogtalarna_i_koket_mass
       - media_player.pucken_bakom_stereon_i_vardagsrummet
       - media_player.googlehome_koket
       - media_player.googlehome_eriks_rum
@@ -4038,10 +4039,17 @@
       - media_player.googlehome_ilias_rum
       - media_player.googlehome_vardagsrummet
       - media_player.googlehome_sovrummet
-  - action: '{% if states("input_select.house_time_modes") in ["Morgon","Dag"] %} script.styr_belysningen_nar_alla_gatt_hemifran
-      {% else %} script.do_nothing {% endif %}
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: var.z_wave_is_ready
+        state: 'true'
+      sequence:
+      - action: '{% if states("input_select.house_time_modes") in ["Morgon","Dag"] %} script.styr_belysningen_nar_alla_gatt_hemifran
+          {% else %} script.do_nothing {% endif %}
 
-      '
+          '
+    default: []
   - action: script.turn_on
     target:
       entity_id: script.koksflakten_stang_av_och_sla_pa
@@ -5281,7 +5289,7 @@
       entity_id: media_player.kd_65xd8505
 - alias: 'HA: Z-wave är igång'
   id: '348674'
-  description: Sätter var.z_wave_is_ready när Z-Wave JS har aktiva noder efter HA-start (ersätter OpenZWave-events).
+  description: Sätter var.z_wave_is_ready när Z-Wave JS-noden köksdimmer (sensor.dimmer_2_node_status) är alive efter HA-start.
   triggers:
   - trigger: homeassistant
     event: start
@@ -5290,19 +5298,32 @@
     data:
       entity_id: var.z_wave_is_ready
       value: 'false'
-  - wait_for_trigger:
-    - trigger: state
-      entity_id: lock.ytterdorr
-      from: unavailable
-    - trigger: state
-      entity_id: lock.ytterdorr
-      from: unknown
-    timeout: '00:15:00'
-    continue_on_timeout: false
-  - action: var.set
-    data:
-      entity_id: var.z_wave_is_ready
-      value: 'true'
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sensor.dimmer_2_node_status
+        state: alive
+      sequence:
+      - action: var.set
+        data:
+          entity_id: var.z_wave_is_ready
+          value: 'true'
+    default:
+    - wait_for_trigger:
+      - trigger: state
+        entity_id: sensor.dimmer_2_node_status
+        to: alive
+      timeout: '00:15:00'
+      continue_on_timeout: true
+    - if:
+      - condition: state
+        entity_id: sensor.dimmer_2_node_status
+        state: alive
+      then:
+      - action: var.set
+        data:
+          entity_id: var.z_wave_is_ready
+          value: 'true'
 - alias: 'HA: Home Assistant har stoppats'
   id: '86740501680602568'
   triggers:
