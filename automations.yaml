@@ -1878,9 +1878,8 @@
   mode: restart
 - id: badrum_dusch_fas3_dorr_cykel
   alias: 'Belysning: Duschsession dörrcykel (fas 3)'
-  description: 'Under bekräftad duschsession. Öppen duschdörr → besök/default. Stängd → 60 s → duschprofil om kort öppning
-    (ej klivit-ur), annars besök kvar vid klivit-ur. Klivit-ur (öppen ≥12 s med rörelse, eller ≥25 s) skyddar vid torkning
-    utanför duschen.
+  description: 'Under bekräftad duschsession för känd person (Anna/Erik/Ilias). Öppen duschdörr → besök/default. Stängd →
+    45 s → rörelse vid kontrolltid behåller besök, annars duschprofil (3 s). Okänd person påverkas inte.
 
     '
   triggers:
@@ -1901,7 +1900,7 @@
   conditions:
   - condition: template
     value_template: '{{ is_state(''input_select.nagon_duschar'', ''Någon duschar'') and is_state(''input_boolean.badrum_dusch_snapshot_finns'',
-      ''on'') }}'
+      ''on'') and is_state(''input_boolean.badrum_dusch_profil_session'', ''on'') }}'
   - condition: state
     entity_id: binary_sensor.badrum_stadninglage
     state: 'off'
@@ -1916,50 +1915,16 @@
           entity_id:
           - input_boolean.badrum_dusch_ljus_last
           - input_boolean.badrum_klivit_ur_dusch
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: '{{ is_state(''input_boolean.badrum_dusch_profil_session'', ''on'') }}'
-          sequence:
-          - action: input_boolean.turn_off
-            target:
-              entity_id: input_boolean.duschslackning_aktiv
-          - action: script.badrum_besok_eller_default
-            data:
-              transition: 0
-              transition_dusch: 1
-        default:
-        - action: input_boolean.turn_off
-          target:
-            entity_id: input_boolean.duschslackning_aktiv
+          - input_boolean.duschslackning_aktiv
+      - action: script.badrum_besok_eller_default
+        data:
+          transition: 0
+          transition_dusch: 1
     - conditions:
       - condition: template
         value_template: '{{ trigger.id == ''duschdorr_stangd'' }}'
-      - condition: state
-        entity_id: input_boolean.badrum_dusch_ljus_last
-        state: 'off'
       sequence:
-      - variables:
-          oppning_sek: '{% set raw = states(''input_datetime.duschdorr_oppnad_ts'') %} {% set open_ts = as_timestamp(raw)
-            if raw not in [''unknown'',''unavailable'',''none'',''None'',''''] else 0 %} {% if open_ts > 0 %}{{ (as_timestamp(now())
-            - open_ts) | int }}{% else %}0{% endif %}'
-          rorelse_efter_oppning: "{% set raw = states('input_datetime.duschdorr_oppnad_ts') %} {% set open_ts = as_timestamp(raw)\
-            \ if raw not in ['unknown','unavailable','none','None',''] else 0 %} {% if open_ts > 0 %}\n  {{ as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed)\
-            \ >= open_ts }}\n{% else %}false{% endif %}"
-      - choose:
-        - conditions:
-          - condition: template
-            value_template: "{{ (oppning_sek | int >= 12 and rorelse_efter_oppning | bool)\n   or oppning_sek | int >= 25\
-              \ }}"
-          sequence:
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.badrum_klivit_ur_dusch
-        default:
-        - action: input_boolean.turn_off
-          target:
-            entity_id: input_boolean.badrum_klivit_ur_dusch
-      - delay: 00:01:00
+      - delay: 00:00:45
       - condition: state
         entity_id: input_select.nagon_duschar
         state: Någon duschar
@@ -1967,50 +1932,33 @@
         entity_id: input_boolean.badrum_dusch_snapshot_finns
         state: 'on'
       - condition: state
-        entity_id: binary_sensor.duschdorren
-        state: 'off'
+        entity_id: input_boolean.badrum_dusch_profil_session
+        state: 'on'
       - condition: state
-        entity_id: input_boolean.badrum_dusch_ljus_last
+        entity_id: binary_sensor.duschdorren
         state: 'off'
       - choose:
         - conditions:
           - condition: state
-            entity_id: input_boolean.badrum_klivit_ur_dusch
+            entity_id: binary_sensor.badrummet_rorelse
             state: 'on'
           sequence:
-          - choose:
-            - conditions:
-              - condition: template
-                value_template: '{{ is_state(''input_boolean.badrum_dusch_profil_session'', ''on'') }}'
-              sequence:
-              - action: script.badrum_besok_eller_default
-                data:
-                  transition: 0
-                  transition_dusch: 1
           - action: input_boolean.turn_off
             target:
               entity_id: input_boolean.duschslackning_aktiv
-          - action: input_boolean.turn_on
-            target:
-              entity_id: input_boolean.badrum_dusch_ljus_last
         default:
-        - choose:
-          - conditions:
-            - condition: template
-              value_template: '{{ is_state(''input_boolean.badrum_dusch_profil_session'', ''on'') }}'
-            sequence:
-            - action: script.badrum_dusch_eller_default
-              data:
-                transition: 5
-                transition_dusch: 5
-            - action: input_boolean.turn_on
-              target:
-                entity_id: input_boolean.duschslackning_aktiv
+        - action: script.badrum_dusch_eller_default
+          data:
+            transition: 3
+            transition_dusch: 3
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.duschslackning_aktiv
   mode: restart
 - id: badrum_dusch_fas3_rorelse
   alias: 'Belysning: Duschsession rörelse utanför dusch (fas 3)'
   description: 'Under bekräftad duschsession: rörelse när duschsläckning var aktiv → besök/default eller snapshot. Separat
-    från dörrcykeln så 60 s-fördröjning inte avbryts.
+    från dörrcykeln så 45 s-fördröjning efter stängd duschdörr inte avbryts.
 
     '
   triggers:
