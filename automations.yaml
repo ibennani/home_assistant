@@ -5913,8 +5913,6 @@
     - conditions:
       - condition: trigger
         id: avbruten_fjarrstart
-      - condition: template
-        value_template: '{{ uptime() | float(0) > 60 }}'
       sequence:
       - action: input_boolean.turn_off
         target:
