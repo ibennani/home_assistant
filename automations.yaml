@@ -5669,7 +5669,7 @@
           intensiv70_program: Dishcare.Dishwasher.Program.Intensiv70
           eco50_cycle_minutes: 66
           intensiv70_cycle_minutes: 100
-          price_threshold_kr_kwh: 1
+          price_threshold_kr_kwh: 2
           use_speed_option: true
           speed_option_entity: switch.bosch_sma67md06e_68a40e70cb46_dishcare_dishwasher_option_variospeedplus
           weekday_morning_deadline: 6
