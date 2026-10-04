@@ -1878,8 +1878,9 @@
   mode: restart
 - id: badrum_dusch_fas3_dorr_cykel
   alias: 'Belysning: Duschsession dörrcykel (fas 3)'
-  description: 'Under bekräftad duschsession för känd person (Anna/Erik/Ilias). Öppen duschdörr → besök/default. Stängd →
-    45 s → ny rörelse efter stängning behåller besök, annars duschprofil (3 s). Okänd person påverkas inte.
+  description: 'Under bekräftad duschsession för känd person (Anna/Erik/Ilias). Öppen duschdörr → besök/default. Stängd i
+    45 s medan duschen pågår → ny rörelse efter stängning behåller besök, annars duschprofil (3 s). Okänd person påverkas
+    inte.
 
     '
   triggers:
@@ -1894,6 +1895,7 @@
     id: duschdorr_stangd
     entity_id: binary_sensor.duschdorren
     to: 'off'
+    for: '00:00:45'
     not_from:
     - unavailable
     - unknown
@@ -1924,7 +1926,6 @@
       - condition: template
         value_template: '{{ trigger.id == ''duschdorr_stangd'' }}'
       sequence:
-      - delay: 00:00:45
       - condition: state
         entity_id: input_select.nagon_duschar
         state: Någon duschar
@@ -1959,7 +1960,7 @@
 - id: badrum_dusch_fas3_rorelse
   alias: 'Belysning: Duschsession rörelse utanför dusch (fas 3)'
   description: 'Under bekräftad duschsession: rörelse när duschsläckning var aktiv → besök/default eller snapshot. Separat
-    från dörrcykeln så 45 s-fördröjning efter stängd duschdörr inte avbryts.
+    från dörrcykeln (dörr stängd i 45 s via state-for).
 
     '
   triggers:
