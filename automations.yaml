@@ -5637,10 +5637,16 @@
 - id: 5551111dasg5sg
   alias: 'Mobilnotis: Diskmaskinen fjärrstart'
   triggers:
-  - trigger: template
+  - trigger: state
+    entity_id: binary_sensor.diskmaskin_lucka
+    from: 'on'
+    to: 'off'
     id: rakna_ut_starttid
-    value_template: "{{\n  is_state('binary_sensor.diskmaskin_lucka', 'off') and\n  is_state('binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed',\
-      \ 'on')\n}}"
+  - trigger: state
+    entity_id: binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed
+    from: 'off'
+    to: 'on'
+    id: rakna_ut_starttid
   - trigger: time_pattern
     minutes: /1
     id: fjarrstarta_diskmaskinen
@@ -5662,6 +5668,8 @@
     - conditions:
       - condition: trigger
         id: rakna_ut_starttid
+      - condition: template
+        value_template: "{{ is_state('binary_sensor.diskmaskin_lucka', 'off') and is_state('binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed', 'on') and not is_state('binary_sensor.diskmaskin_program_aktiv', 'on') }}"
       sequence:
       - variables:
           slot_len_min: 15
@@ -5817,6 +5825,7 @@
             target:
               entity_id: input_boolean.diskmaskin_fjarrstart_vantar
           - action: script.diskmaskin_prognos_kostnad
+            continue_on_error: true
             data:
               start_iso: '{{ best_start_iso }}'
               program: '{{ chosen_program }}'
@@ -5836,11 +5845,7 @@
                 hogtalare: media_player.googlehome_infopuckarna
                 meddelande: Diskmaskinen kommer starta klockan {{ (best_start_iso | as_datetime | as_local).strftime('%H:%M')
                   }}.
-                volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}
-  {{ states('input_number.google_home_volume_setting_dag')                  \ | float(default=0) / 100 }}
-{% else %}
-  {{ states('input_number.google_home_volume_setting_notiser')                  \ | float(default=0) / 100 }}
-{% endif %}"
+                volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}\n  {{ states('input_number.google_home_volume_setting_dag') | float(default=0) / 100 }}\n{% else %}\n  {{ states('input_number.google_home_volume_setting_notiser') | float(default=0) / 100 }}\n{% endif %}"
                 voice: MattiasNeural
         - conditions:
           - condition: template
@@ -5906,6 +5911,7 @@
         target:
           entity_id: button.bosch_sma67md06e_68a40e70cb46_start_pause
       - action: script.diskmaskin_prognos_kostnad
+        continue_on_error: true
         data:
           start_iso: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
           program: "{{ dishwasher_program }}"
@@ -5919,6 +5925,15 @@
             Nu startar diskmaskinen (fjärrstart) med {{ dishwasher_program_label }}{{ kostnad_del }}.'
           mottagare: mobile_app_ilias_s23_ultra
           ikon: vitvaror
+      - action: script.turn_on
+        target:
+          entity_id: script.las_text_i_valfri_device
+        data:
+          variables:
+            hogtalare: media_player.googlehome_infopuckarna
+            meddelande: Nu startar diskmaskinen med {{ dishwasher_program_label }}.
+            volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}\n  {{ states('input_number.google_home_volume_setting_dag') | float(default=0) / 100 }}\n{% else %}\n  {{ states('input_number.google_home_volume_setting_notiser') | float(default=0) / 100 }}\n{% endif %}"
+            voice: MattiasNeural
     - conditions:
       - condition: trigger
         id: avbruten_fjarrstart
