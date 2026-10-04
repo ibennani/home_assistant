@@ -1879,7 +1879,7 @@
 - id: badrum_dusch_fas3_dorr_cykel
   alias: 'Belysning: Duschsession dörrcykel (fas 3)'
   description: 'Under bekräftad duschsession för känd person (Anna/Erik/Ilias). Öppen duschdörr → besök/default. Stängd →
-    45 s → rörelse vid kontrolltid behåller besök, annars duschprofil (3 s). Okänd person påverkas inte.
+    45 s → ny rörelse efter stängning behåller besök, annars duschprofil (3 s). Okänd person påverkas inte.
 
     '
   triggers:
@@ -1939,9 +1939,10 @@
         state: 'off'
       - choose:
         - conditions:
-          - condition: state
-            entity_id: binary_sensor.badrummet_rorelse
-            state: 'on'
+          - condition: template
+            value_template: "{% set door_ts = as_timestamp(states.binary_sensor.duschdorren.last_changed) %}\n{% set motion_ts\
+              \ = as_timestamp(states.binary_sensor.badrummet_rorelse.last_changed) %}\n{{ is_state('binary_sensor.badrummet_rorelse',\
+              \ 'on')\n   and motion_ts > door_ts }}\n"
           sequence:
           - action: input_boolean.turn_off
             target:
