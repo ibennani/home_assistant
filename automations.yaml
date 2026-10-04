@@ -5645,9 +5645,16 @@
   - trigger: homeassistant
     event: start
     id: fjarrstarta_diskmaskinen
-  - trigger: template
+  - trigger: state
+    entity_id: binary_sensor.diskmaskin_lucka
+    from: 'off'
+    to: 'on'
     id: avbruten_fjarrstart
-    value_template: "{{\n  is_state('input_boolean.diskmaskin_fjarrstart_vantar', 'on') and\n  not is_state('binary_sensor.diskmaskin_program_aktiv', 'on') and\n  (\n    is_state('binary_sensor.diskmaskin_lucka', 'on') or\n    (\n      is_state('binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed','off') and\n      not is_state('input_text.diskmaskin_tid_fjarrstart','')\n    )\n  )\n}}"
+  - trigger: state
+    entity_id: binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed
+    from: 'on'
+    to: 'off'
+    id: avbruten_fjarrstart
   actions:
   - choose:
     - conditions:
@@ -5913,6 +5920,8 @@
     - conditions:
       - condition: trigger
         id: avbruten_fjarrstart
+      - condition: template
+        value_template: "{% set remote = 'binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed' %}\n{% set remote_off_nyligen = (as_timestamp(now()) - as_timestamp(states[remote].last_changed)) < 120 %}\n{{ not is_state('binary_sensor.diskmaskin_program_aktiv', 'on')\n   and (\n     is_state('input_boolean.diskmaskin_fjarrstart_vantar', 'on')\n     or states('input_text.diskmaskin_tid_fjarrstart') | trim != ''\n     or (is_state('binary_sensor.diskmaskin_lucka', 'on') and remote_off_nyligen)\n   ) }}\n"
       sequence:
       - action: input_boolean.turn_off
         target:
