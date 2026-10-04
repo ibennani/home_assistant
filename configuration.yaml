@@ -97,6 +97,9 @@ shell_command:
   zwave_usb_fix: bash /config/scripts/zwave-usb-fix.sh
   tvattmaskin_berakna_kostnad_klar: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare tvattmaskin
   diskmaskin_berakna_kostnad_klar: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare diskmaskin
+  diskmaskin_prognos_kostnad: >-
+    python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare diskmaskin --prognos
+    --start-iso "{{ start_iso }}" --program "{{ program }}"
   elpris_synka_tibber_faktiska: python3 /config/scripts/elpris-synka-tibber-faktiska.py
   seerr_process_request: >-
     python3 /config/custom_scripts/seerr_request_notify.py

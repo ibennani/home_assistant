@@ -25,6 +25,31 @@ RECORDER_DB = Path("/config/home-assistant_v2.db")
 SECRETS_PATH = Path("/config/secrets.yaml")
 LOG_PATH = Path("/config/www/vitvaror-kostnad-last.log")
 ELPRIS_MARGINAL_ENTITY = "sensor.elpris_marginal_kwh_se3"
+DISKMASKIN_REMAINING_ENTITY = (
+    "sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_option_remainingprogramtime"
+)
+DISKMASKIN_PROGNOS_ENTITY = "input_number.diskmaskin_kostnad_fjarrstart"
+
+# kWh per 15-minut från programstart — kalibrerat mot faktiska körningar okt 2026
+# (integrerad effekt × marginalpris). Intensiv har fler uppvärmningsfaser än gamla profilen.
+DISKMASKIN_PROFILE_KWH: dict[str, list[float]] = {
+    "intensiv": [
+        0.40,
+        0.34,
+        0.30,
+        0.16,
+        0.06,
+        0.10,
+        0.22,
+        0.28,
+        0.26,
+        0.16,
+        0.08,
+        0.19,
+    ],
+    "eco": [0.32, 0.33, 0.16, 0.36, 0.02, 0.12, 0.14, 0.10],
+}
+DISKMASKIN_DEFAULT_DURATION_MIN = {"intensiv": 135, "eco": 115}
 
 VITARE_CONFIG = {
     "tvattmaskin": {
@@ -604,6 +629,89 @@ def find_run_window_diskmaskin(
     return run_start, run_end
 
 
+def diskmaskin_program_key(program: str) -> str:
+    if "Intensiv70" in program:
+        return "intensiv"
+    return "eco"
+
+
+def parse_bosch_remaining(raw: str) -> datetime | None:
+    text = raw.strip()
+    if not text or text in ("unknown", "unavailable"):
+        return None
+    try:
+        return parse_iso(text)
+    except (TypeError, ValueError):
+        return parse_ha_datetime_local(text)
+
+
+def diskmaskin_duration_minutes(
+    secrets: dict[str, str],
+    start: datetime,
+    program: str,
+) -> int:
+    key = diskmaskin_program_key(program)
+    default = DISKMASKIN_DEFAULT_DURATION_MIN[key]
+    raw = fetch_entity_state(secrets, DISKMASKIN_REMAINING_ENTITY)
+    end_dt = parse_bosch_remaining(raw) if raw else None
+    if end_dt is not None:
+        if end_dt.tzinfo is None:
+            end_dt = end_dt.replace(tzinfo=start.tzinfo or ZoneInfo("Europe/Stockholm"))
+        mins = int(round((end_dt.astimezone(start.tzinfo) - start).total_seconds() / 60.0))
+        if 45 <= mins <= 240:
+            return mins
+    return default
+
+
+def integrate_profile_cost(
+    start: datetime,
+    duration_min: int,
+    segment_kwh: list[float],
+    slots: list[tuple[datetime, datetime, float]],
+) -> float:
+    """Kostnad (kr) för fast kWh-fördelning per 15-minuterssegment."""
+    if duration_min <= 0 or not slots:
+        return 0.0
+    start_ts = start.timestamp()
+    run_end_ts = start_ts + duration_min * 60.0
+    nseg = int((duration_min + 14) // 15)
+    total_kr = 0.0
+    for i in range(nseg):
+        seg_start_ts = start_ts + i * 900.0
+        seg_end_ts = min(seg_start_ts + 900.0, run_end_ts)
+        if seg_end_ts <= seg_start_ts:
+            break
+        frac = (seg_end_ts - seg_start_ts) / 900.0
+        kwh = (segment_kwh[i] if i < len(segment_kwh) else segment_kwh[-1] * 0.35) * frac
+        seg_start = datetime.fromtimestamp(seg_start_ts, tz=start.tzinfo)
+        price = price_at(slots, seg_start)
+        if price is not None:
+            total_kr += kwh * price
+    return total_kr
+
+
+def set_input_number(secrets: dict[str, str], entity_id: str, value: float) -> None:
+    if ha_service_call(
+        secrets,
+        "input_number",
+        "set_value",
+        {"entity_id": entity_id, "value": round(value, 2)},
+    ):
+        return
+    raise RuntimeError(f"kunde inte sätta {entity_id}")
+
+
+def run_diskmaskin_prognos(secrets: dict[str, str], start_iso: str, program: str) -> float:
+    start = parse_ha_datetime_local(start_iso) or datetime.now().astimezone()
+    key = diskmaskin_program_key(program)
+    profile = DISKMASKIN_PROFILE_KWH[key]
+    duration = diskmaskin_duration_minutes(secrets, start, program)
+    slots = fetch_nordpool_slots(secrets)
+    if not slots:
+        return 0.0
+    return integrate_profile_cost(start, duration, profile, slots)
+
+
 def set_cost_text(secrets: dict[str, str], value: str) -> None:
     if ha_service_call(
         secrets,
@@ -631,10 +739,31 @@ def main() -> int:
         choices=tuple(VITARE_CONFIG.keys()),
         default="tvattmaskin",
     )
+    parser.add_argument(
+        "--prognos",
+        action="store_true",
+        help="Beräkna diskmaskinens prognoskostnad (sätter input_number.diskmaskin_kostnad_fjarrstart).",
+    )
+    parser.add_argument("--start-iso", default="", help="Lokal starttid för prognos.")
+    parser.add_argument("--program", default="", help="Bosch-program-id för prognos.")
     args = parser.parse_args()
     configure_vitare(args.vitare)
 
     secrets = load_secrets()
+    if args.prognos:
+        if args.vitare != "diskmaskin":
+            print("prognos stöds endast för diskmaskin", file=sys.stderr)
+            return 1
+        try:
+            program = args.program.strip() or "Dishcare.Dishwasher.Program.Eco50"
+            kr = run_diskmaskin_prognos(secrets, args.start_iso, program)
+            set_input_number(secrets, DISKMASKIN_PROGNOS_ENTITY, kr)
+            print(f"diskmaskin prognos: {kr:.2f} kr (program={program})")
+            return 0
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError) as exc:
+            print(f"diskmaskin prognos: fel {exc}", file=sys.stderr)
+            return 1
+
     end = datetime.now().astimezone()
     try:
         points = fetch_power_history(secrets, end)
