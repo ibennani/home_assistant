@@ -657,7 +657,9 @@ def diskmaskin_duration_minutes(
     if end_dt is not None:
         if end_dt.tzinfo is None:
             end_dt = end_dt.replace(tzinfo=start.tzinfo or ZoneInfo("Europe/Stockholm"))
-        mins = int(round((end_dt.astimezone(start.tzinfo) - start).total_seconds() / 60.0))
+        active_raw = fetch_entity_state(secrets, "binary_sensor.diskmaskin_program_aktiv")
+        ref = start if active_raw == "on" else datetime.now().astimezone(start.tzinfo)
+        mins = int(round((end_dt.astimezone(ref.tzinfo) - ref).total_seconds() / 60.0))
         if 45 <= mins <= 240:
             return mins
     return default
