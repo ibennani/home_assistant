@@ -30,8 +30,10 @@ DISKMASKIN_REMAINING_ENTITY = (
 )
 DISKMASKIN_PROGNOS_ENTITY = "input_number.diskmaskin_kostnad_fjarrstart"
 
-# kWh per 15-minut från programstart — kalibrerat mot faktiska körningar okt 2026
-# (integrerad effekt × marginalpris). Intensiv har fler uppvärmningsfaser än gamla profilen.
+# Prognosmodell (enda källan): kWh per 15-min från programstart × elpris_marginal_kwh_se3-kvartar.
+# Kalibrerat mot faktiska körningar (effekthistorik × marginalpris) — ska ligga nära
+# input_text.diskmaskin_senaste_kostnaden efter avslutad körning.
+# eco = Eco 50°, intensiv = Intensiv 70° (program-id innehåller Eco50 respektive Intensiv70).
 DISKMASKIN_PROFILE_KWH: dict[str, list[float]] = {
     "intensiv": [
         0.40,
@@ -586,14 +588,15 @@ def parse_ha_datetime_local(raw: str) -> datetime | None:
     if not text or text in ("unknown", "unavailable"):
         return None
     tz = ZoneInfo("Europe/Stockholm")
-    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f"):
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:00"):
         try:
             dt = datetime.strptime(text, fmt).replace(tzinfo=tz)
             return dt
         except ValueError:
             continue
     try:
-        return parse_iso(text)
+        dt = parse_iso(text)
+        return dt.astimezone(tz)
     except (TypeError, ValueError):
         return None
 
@@ -704,7 +707,7 @@ def set_input_number(secrets: dict[str, str], entity_id: str, value: float) -> N
 
 
 def run_diskmaskin_prognos(secrets: dict[str, str], start_iso: str, program: str) -> float:
-    start = parse_ha_datetime_local(start_iso) or datetime.now().astimezone()
+    start = parse_ha_datetime_local(start_iso.strip()) or datetime.now().astimezone()
     key = diskmaskin_program_key(program)
     profile = DISKMASKIN_PROFILE_KWH[key]
     duration = diskmaskin_duration_minutes(secrets, start, program)
