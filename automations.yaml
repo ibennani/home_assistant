@@ -5827,7 +5827,7 @@
           - action: script.diskmaskin_prognos_kostnad
             continue_on_error: true
             data:
-              start_iso: '{{ best_start_iso }}'
+              start_iso: '{{ (best_start_iso | as_datetime | as_local).strftime(''%Y-%m-%d %H:%M:%S'') }}'
               program: '{{ chosen_program }}'
           - variables:
               prognos_kr: "{{ ('%.2f' | format(states('input_number.diskmaskin_kostnad_fjarrstart') | float(0) | round(2))) | replace('.', ',') }}"
