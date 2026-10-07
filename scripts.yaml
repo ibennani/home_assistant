@@ -2311,6 +2311,7 @@ git_synka_config:
   - delay:
       seconds: 8
   - action: homeassistant.reload_core_config
+  - action: shell_command.reload
   - action: automation.reload
   - action: script.reload
   - action: template.reload
