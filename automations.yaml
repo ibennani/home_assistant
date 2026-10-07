@@ -5974,6 +5974,7 @@
   mode: queued
 - id: '791023035850948348674'
   alias: 'Mobilnotis: Diskmaskinen diskar'
+  description: Skickar startnotis när diskmaskinens program blir aktivt (via script.diskmaskin_skicka_startnotiser).
   triggers:
   - trigger: state
     entity_id: binary_sensor.diskmaskin_program_aktiv
