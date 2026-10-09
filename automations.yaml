@@ -2305,7 +2305,7 @@
         target:
           entity_id: input_select.nedre_trappan_belysning
         data:
-          option: "{% if trig_id == 'Städning' %}\n  Städning\n{% elif trig_id in ids_tand %}\n  Tänt\n{% elif trig_id in\
+          option: "{% if trig_id == 'Städning' %}\n  Städning\n{% elif trig_id in ids_tand %}\n  {% if current_mode == 'Släckt' %}Tänt{% else %}{{ current_mode }}{% endif %}\n{% elif trig_id in\
             \ ids_slack %}\n  Släckt\n{% else %}\n  {{ current_mode }}\n{% endif %}"
   - action: script.nedre_trappan_stall_in_belysningen
   mode: restart
