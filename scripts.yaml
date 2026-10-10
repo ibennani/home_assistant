@@ -1007,8 +1007,11 @@ nedre_trappan_stall_in_belysningen:
       eriks_rum: '{{ states(''input_select.eriks_rum_belysning'') }}'
       jul: '{{ is_state(''input_boolean.julbelysning'',''on'') }}'
       lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
-      ingen_rorelse_5min: '{{ is_state(''binary_sensor.nedre_trappan_rorelse'',''off'') and ((now() - (state_attr(''binary_sensor.nedre_trappan_rorelse'',
-        ''last_changed'') or now())).total_seconds() > 5 * 60) }}'
+      folk_hemma: '{{ states(''zone.home'') | int(0) }}'
+      inaktiv_grans_sek: '{{ 300 if folk_hemma <= 1 else 1800 }}'
+      rorelse_av_sek: '{{ (now() - (state_attr(''binary_sensor.nedre_trappan_rorelse'', ''last_changed'') or now())).total_seconds() }}'
+      max_belysning: '{{ state_attr(''light.taklampan_nedre_trappan_level'', ''brightness'') | int(0) >= 250 }}'
+      max_lux_skydd: '{{ max_belysning and rorelse_av_sek < inaktiv_grans_sek }}'
   - choose:
     - conditions:
       - condition: template
@@ -1102,6 +1105,15 @@ nedre_trappan_stall_in_belysningen:
                   entity_id: light.taklampan_nedre_trappan_level
                 data:
                   brightness_pct: 1
+            - conditions:
+              - condition: template
+                value_template: '{{ max_lux_skydd }}'
+              sequence:
+              - action: light.turn_on
+                target:
+                  entity_id: light.taklampan_nedre_trappan_level
+                data:
+                  brightness_pct: 100
             default:
             - action: light.turn_off
               target:
