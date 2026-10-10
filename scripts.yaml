@@ -425,13 +425,13 @@ dagsbelysning:
       entity_id: script.eriks_rum_satt_lage
     data:
       variables:
-        lage: "{% set nuvarande = states('input_select.eriks_rum_belysning') %}\n{% set rorelse_off_sec = (as_timestamp(now())\
+        lage: "{% set nuvarande = states('input_select.eriks_rum_belysning') %}\n{% set rorelse_sec = (as_timestamp(now())\
           \ - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now()) | int(0)) %}\n{% set\
-          \ inaktiv_30 = is_state('binary_sensor.eriks_rum_rorelse', 'off') and rorelse_off_sec >= 60 * 30 %}\n{% set inaktiv_3\
-          \ = is_state('binary_sensor.eriks_rum_rorelse', 'off') and rorelse_off_sec > 60 * 3 %}\n{% set lux_lag = states('sensor.utomhus_framsidan_ljusstyrka')\
-          \ | int(0) < 2000 %}\n{% if is_state('input_boolean.gaster_hemma', 'on') or is_state('input_boolean.stadning_pagar',\
-          \ 'on') %}\n  {{ nuvarande }}\n{% elif inaktiv_3 %}\n  Släckt\n{% elif lux_lag and inaktiv_30 %}\n  Mysigt\n{%\
-          \ elif nuvarande in ['Tänt', 'Taklamporna'] %}\n  Tänt\n{% else %}\n  Släckt\n{% endif %}\n"
+          \ rorelse_inom_30 = rorelse_sec < 60 * 30 %}\n{% set inaktiv_30 = is_state('binary_sensor.eriks_rum_rorelse',\
+          \ 'off') and rorelse_sec >= 60 * 30 %}\n{% set lux_lag = states('sensor.utomhus_framsidan_ljusstyrka') | int(0)\
+          \ < 2000 %}\n{% if is_state('input_boolean.gaster_hemma', 'on') or is_state('input_boolean.stadning_pagar', 'on')\
+          \ %}\n  {{ nuvarande }}\n{% elif rorelse_inom_30 %}\n  {{ nuvarande }}\n{% elif lux_lag and inaktiv_30 %}\n  Mysigt\n\
+          {% else %}\n  Släckt\n{% endif %}\n"
   - action: input_select.select_option
     entity_id: input_select.nedre_trappan_belysning
     data:
@@ -495,17 +495,18 @@ kvallsbelysning:
       entity_id: script.eriks_rum_satt_lage
     data:
       variables:
-        lage: "{% set nuvarande = states('input_select.eriks_rum_belysning') %}\n{% set rorelse_off_sec = (as_timestamp(now())\
+        lage: "{% set nuvarande = states('input_select.eriks_rum_belysning') %}\n{% set rorelse_sec = (as_timestamp(now())\
           \ - as_timestamp(state_attr('binary_sensor.eriks_rum_rorelse', 'last_changed') or now()) | int(0)) %}\n{% set\
-          \ inaktiv_30 = is_state('binary_sensor.eriks_rum_rorelse', 'off') and rorelse_off_sec >= 60 * 30 %}\n{% set lux_lag\
-          \ = states('sensor.utomhus_framsidan_ljusstyrka') | int(0) < 2000 %}\n{% set dag_till_kvall = eriks_dag_till_kvall\
-          \ | default(false) | bool %}\n{% if is_state('zone.home', '0') %}\n  Släckt\n{% elif is_state('input_boolean.gaster_hemma',\
-          \ 'on') or is_state('input_boolean.stadning_pagar', 'on') or is_state('var.morgoninfo_koket_redan_upplast', 'false')\
-          \ %}\n  {{ nuvarande }}\n{% elif dag_till_kvall %}\n  {% if nuvarande in ['Tänt', 'Taklamporna'] %}Tänt{% elif nuvarande\
-          \ in ['Mysigt', 'Släckt'] %}Mysigt{% else %}Mysigt{% endif %}\n{% elif is_state('input_select.house_time_modes',\
-          \ 'Dag') %}\n  {% if lux_lag and inaktiv_30 %}Mysigt{% elif nuvarande in ['Tänt', 'Taklamporna'] %}Tänt{% else\
-          \ %}Släckt{% endif %}\n{% elif nuvarande in ['Tänt', 'Taklamporna'] %}\n  Tänt\n{% elif nuvarande in ['Mysigt',\
-          \ 'Släckt'] %}\n  Mysigt\n{% else %}\n  Mysigt\n{% endif %}\n"
+          \ rorelse_inom_30 = rorelse_sec < 60 * 30 %}\n{% set inaktiv_30 = is_state('binary_sensor.eriks_rum_rorelse',\
+          \ 'off') and rorelse_sec >= 60 * 30 %}\n{% set lux_lag = states('sensor.utomhus_framsidan_ljusstyrka') | int(0)\
+          \ < 2000 %}\n{% set dag_till_kvall = eriks_dag_till_kvall | default(false) | bool %}\n{% if is_state('zone.home',\
+          \ '0') %}\n  Släckt\n{% elif is_state('input_boolean.gaster_hemma', 'on') or is_state('input_boolean.stadning_pagar',\
+          \ 'on') or is_state('var.morgoninfo_koket_redan_upplast', 'false') %}\n  {{ nuvarande }}\n{% elif dag_till_kvall\
+          \ %}\n  {% if nuvarande in ['Tänt', 'Taklamporna'] %}Tänt{% elif nuvarande in ['Mysigt', 'Släckt'] %}Mysigt{%\
+          \ else %}Mysigt{% endif %}\n{% elif is_state('input_select.house_time_modes', 'Dag') %}\n  {% if rorelse_inom_30\
+          \ %}{{ nuvarande }}{% elif lux_lag and inaktiv_30 %}Mysigt{% else %}Släckt{% endif %}\n{% elif nuvarande in ['Tänt',\
+          \ 'Taklamporna'] %}\n  Tänt\n{% elif nuvarande in ['Mysigt', 'Släckt'] %}\n  Mysigt\n{% else %}\n  Mysigt\n{%\
+          \ endif %}\n"
   - action: input_select.select_option
     entity_id: input_select.nedre_trappan_belysning
     data:
