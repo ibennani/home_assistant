@@ -332,6 +332,9 @@
   - action: script.turn_on
     target:
       entity_id: script.kvallsbelysning
+    data:
+      variables:
+        eriks_dag_till_kvall: "{{ trigger.from_state.state == 'Dag' }}"
   - action: script.mobilnotis
     data:
       meddelande: "HEMMET {{ now().strftime('%R') }}: \nHusläge till kväll.\nTemperatur {{ states('sensor.utomhus_baksidan_temperature')\
