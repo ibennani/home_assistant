@@ -1,0 +1,135 @@
+# Elpris idag + imorgon (apexcharts-card)
+#
+# Krav:
+# - HACS: apexcharts-card (lägg till /local/apexcharts-card.js som resurs)
+# - sensor.elpris_marginal_kwh_se3 med attributes today/tomorrow (+ tomorrow_valid)
+# - sensor.nordpool_kwh_se3_sek_3_10_025 (eller egen Nord Pool-sensor) med samma today/tomorrow
+#
+# Byt entity_id om du inte har SE3 / samma sensor-namn.
+# Klistra in som ett kort i dashboard (YAML-redigeraren).
+
+type: custom:apexcharts-card
+stacked: true
+all_series_config:
+  show:
+    in_legend: false
+    legend_value: false
+apex_config:
+  chart:
+    animations:
+      enabled: false
+    stacked: true
+    type: bar
+  annotations:
+    xaxis:
+      - x: EVAL:new Date(new Date().setHours(24, 0, 0, 0))
+        borderColor: '#ff4081'
+        strokeDashArray: 0
+        label:
+          text: Midnatt
+          style:
+            color: '#ffffff'
+            background: '#ff4081'
+  grid:
+    yaxis:
+      lines:
+        show: true
+    xaxis:
+      lines:
+        show: true
+    strokeDashArray: 0.5
+    strokeWidth: 0.5
+  tooltip:
+    enabled: true
+  dataLabels:
+    enabled: false
+  legend:
+    show: false
+    height: 0
+  xaxis:
+    type: datetime
+    tickAmount: 8
+    labels:
+      rotate: 0
+      formatter: "EVAL:(value) => {\n  const d = new Date(value);\n  const h = d.getHours();\n  return [0, 6, 12, 18].includes(h) ? ('0' + h).slice(-2) + ' ' : '';\n}\n"
+  yaxis:
+    forceNiceScale: true
+    decimalsInFloat: 2
+    labels:
+      formatter: "EVAL:(val) => {\n  const num = parseFloat(val);\n  return num.toFixed(2).replace('.', ':') + ' kr';\n}\n"
+  plotOptions:
+    bar:
+      grouped: false
+      columnWidth: 100%
+      stacked: true
+  fill:
+    type: solid
+  stroke:
+    show: false
+  colors:
+    - '#888888'
+now:
+  show: true
+  label: Nu
+header:
+  show: true
+  title: Marginal elpris idag och imorgon
+  show_states: true
+  colorize_states: true
+  standard_format: false
+graph_span: 2d
+span:
+  start: day
+series:
+  - entity: sensor.elpris_marginal_kwh_se3
+    name: Nu
+    unit: ' kr/kWh'
+    float_precision: 2
+    color: "EVAL:() => {\n  const v = parseFloat(states['sensor.elpris_marginal_kwh_se3']?.state);\n  if (isNaN(v))   return '#888888';\n  if (v < 0)      return '#809fff';\n  if (v < 0.50)   return '#809fff';\n  if (v < 1.00)   return '#28fccf';\n  if (v < 1.50)   return '#28fc61';\n  if (v < 2.00)   return '#ebfc28';\n  if (v < 3.00)   return '#fcd228';\n  if (v < 4.00)   return '#fc9628';\n  if (v < 5.00)   return '#fc3e28';\n  if (v < 6.00)   return '#fc289d';\n  return '#af28fc';\n}\n"
+    data_generator: "const now = new Date();\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst buildSlots = (prices, dayOff) => {\n  if (!Array.isArray(prices) || !prices.length) return [];\n  const base = new Date(); base.setHours(0,0,0,0); if (dayOff) base.setDate(base.getDate() + dayOff);\n  return prices.map((val, i) => {\n    const start = new Date(base.getTime() + i * stepMin * 60000);\n    return { start, end: new Date(start.getTime() + stepMin * 60000), value: Number(val) };\n  });\n};\nconst parseRaw = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw) : []);\nlet arr = buildSlots(entity.attributes.today, 0);\nif (!arr.length) arr = parseRaw(entity.attributes.raw_today);\nconst current = arr.find(e => {\n  const start = e.start instanceof Date ? e.start : new Date(e.start);\n  const end = e.end instanceof Date ? e.end : new Date(e.end);\n  return now >= start && now < end;\n});\nif (current) {\n  const valNum = Math.round(Number(current.value) * 100) / 100;\n  return [[now.getTime(), valNum]];\n}\nreturn [];\n"
+    show:
+      legend_value: false
+      in_header: true
+      header_color_threshold: false
+      in_chart: false
+    color_threshold:
+      - value: -999
+        color: '#809fff'
+      - value: 0.5
+        color: '#28fccf'
+      - value: 1
+        color: '#28fc61'
+      - value: 1.5
+        color: '#ebfc28'
+      - value: 2
+        color: '#fcd228'
+      - value: 3
+        color: '#fc9628'
+      - value: 4
+        color: '#fc3e28'
+      - value: 5
+        color: '#fc289d'
+      - value: 6
+        color: '#af28fc'
+  - entity: sensor.nordpool_kwh_se3_sek_3_10_025
+    name: Börs
+    type: column
+    stack_group: elpris
+    data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst margEnt = ST['sensor.elpris_marginal_kwh_se3'];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst pushDay = (out, margArr, spotArr, dayOff) => {\n  const n = Math.min((margArr || []).length, (spotArr || []).length);\n  for (let i = 0; i < n; i++) {\n    const m = Number(margArr[i]);\n    const spot = Number(spotArr[i]);\n    if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n    const base = new Date();\n    base.setHours(0, 0, 0, 0);\n    if (dayOff) base.setDate(base.getDate() + dayOff);\n    const x = base.getTime() + i * stepMin * 60000;\n    const y = Math.round(Math.max(0, spot) * 100) / 100;\n    out.push({ x, y, fillColor: colorFor(m) });\n  }\n};\nconst out = [];\npushDay(out, margEnt?.attributes?.today, entity.attributes.today, 0);\nconst tmOk = margEnt?.attributes?.tomorrow_valid === true || String(margEnt?.attributes?.tomorrow_valid).toLowerCase() === 'true';\nif (tmOk) pushDay(out, margEnt?.attributes?.tomorrow, entity.attributes.tomorrow, 1);\nreturn out;"
+    show:
+      legend_value: false
+      in_legend: false
+      in_header: false
+      extremas: false
+      datalabels: false
+  - entity: sensor.elpris_marginal_kwh_se3
+    name: Påslag
+    type: column
+    stack_group: elpris
+    data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst spotEnt = ST['sensor.nordpool_kwh_se3_sek_3_10_025'];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst colorAlpha50 = (hex) => {\n  const h = String(hex).replace('#', '');\n  if (h.length !== 6) return '#6a6a6a';\n  const r = parseInt(h.slice(0, 2), 16);\n  const g = parseInt(h.slice(2, 4), 16);\n  const b = parseInt(h.slice(4, 6), 16);\n  const f = 0.5;\n  const bg = 18;\n  return `rgb(${Math.round(r * f + bg * (1 - f))},${Math.round(g * f + bg * (1 - f))},${Math.round(b * f + bg * (1 - f))})`;\n};\nconst pushDay = (out, margArr, spotArr, dayOff) => {\n  const n = Math.min((margArr || []).length, (spotArr || []).length);\n  for (let i = 0; i < n; i++) {\n    const m = Number(margArr[i]);\n    const spot = Number(spotArr[i]);\n    if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n    const base = new Date();\n    base.setHours(0, 0, 0, 0);\n    if (dayOff) base.setDate(base.getDate() + dayOff);\n    const x = base.getTime() + i * stepMin * 60000;\n    const y = Math.round(Math.max(0, m - spot) * 100) / 100;\n    out.push({ x, y, fillColor: colorAlpha50(colorFor(m)) });\n  }\n};\nconst out = [];\npushDay(out, entity.attributes.today, spotEnt?.attributes?.today, 0);\nconst tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';\nif (tmOk) pushDay(out, entity.attributes.tomorrow, spotEnt?.attributes?.tomorrow, 1);\nreturn out;"
+    show:
+      legend_value: false
+      in_legend: false
+      in_header: false
+      extremas: false
+      datalabels: false
