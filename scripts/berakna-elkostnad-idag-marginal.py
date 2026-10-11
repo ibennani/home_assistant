@@ -213,24 +213,21 @@ def main() -> int:
     secrets = load_secrets()
     now = datetime.now(TZ)
     midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    cost = 0.0
     try:
         slots = fetch_marginal_slots(secrets)
         points = fetch_consumption_history(secrets, midnight - timedelta(minutes=5), now)
-        if not slots or not points:
-            print(f"{fallback_estimate(secrets):.2f}")
-            return 0
-        cost = compute_cost(slots, points, now)
+        if slots and points:
+            cost = compute_cost(slots, points, now)
         if cost <= 0:
             cost = fallback_estimate(secrets)
-        print(f"{cost:.2f}")
-        return 0
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         try:
-            print(f"{fallback_estimate(secrets):.2f}")
-            return 0
+            cost = fallback_estimate(secrets)
         except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
-            print("0.00")
-            return 1
+            cost = 0.0
+    print(f"{cost:.2f}")
+    return 0
 
 
 if __name__ == "__main__":

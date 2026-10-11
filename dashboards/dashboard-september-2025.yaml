@@ -4988,7 +4988,7 @@ views:
       grid_options:
         rows: 3
     - type: gauge
-      name: Kostnad hittills idag (marginal)
+      name: Kostnad hittills idag
       unit: Kr
       min: 0
       needle: true
