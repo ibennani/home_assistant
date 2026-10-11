@@ -7411,20 +7411,29 @@
 
       '
   - trigger: state
-    id: ingen_hemma
+    id: narvaro_andrad
     entity_id: zone.home
-    to: '0'
     not_from:
     - unavailable
     - unknown
-  - trigger: state
-    id: nagon_hemma
-    entity_id: zone.home
-    from: '0'
     not_to:
-    - '0'
     - unavailable
     - unknown
+  - trigger: state
+    id: person_plats_andrad
+    entity_id:
+    - person.anna_bennani
+    - person.erik_bennani
+    - person.ilias_bennani
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  - trigger: time_pattern
+    id: periodisk_30min
+    minutes: /30
   - trigger: state
     id: semesterlage_andrat
     entity_id: input_boolean.vacation_mode
@@ -7444,15 +7453,33 @@
       antal_hemma: "{% set s = states('zone.home') %}  {% if s in ['unknown','unavailable','none',''] %}\n  0\n{% else %}\n\
         \  {{ s | int(0) }}\n{% endif %}\n"
   - variables:
-      maltemperatur: "{% if antal_hemma == 0 %}\n  20.0\n{% elif semester_aktiv %}\n  {{ 24.0 if (tid_minuter >= 420 and\
-        \ tid_minuter < 1380) else 20.0 }}\n{% else %}\n  {% if veckodag in [0,1,2,3] %}\n    {% if tid_minuter >= 300 and\
-        \ tid_minuter < 480 %}\n      24.0\n    {% elif tid_minuter >= 480 and tid_minuter < 900 %}\n      20.0\n    {% elif\
-        \ tid_minuter >= 900 and tid_minuter < 1320 %}\n      24.0\n    {% else %}\n      20.0\n    {% endif %}\n  {% elif\
-        \ veckodag == 4 %}\n    {% if tid_minuter >= 300 and tid_minuter < 480 %}\n      24.0\n    {% elif tid_minuter >= 480\
-        \ and tid_minuter < 900 %}\n      20.0\n    {% elif tid_minuter >= 900 and tid_minuter < 1380 %}\n      24.0\n   \
-        \ {% else %}\n      20.0\n    {% endif %}\n  {% elif veckodag == 5 %}\n    {{ 24.0 if (tid_minuter >= 420 and tid_minuter\
-        \ < 1380) else 20.0 }}\n  {% else %}\n    {{ 24.0 if (tid_minuter >= 420 and tid_minuter < 1320) else 20.0 }}\n  {%\
-        \ endif %}\n{% endif %}\n"
+      schema_maltemperatur: "{% if semester_aktiv %}\n  {{ 24.0 if (tid_minuter >= 420 and tid_minuter < 1380) else 20.0 }}\n\
+        {% else %}\n  {% if veckodag in [0,1,2,3] %}\n    {% if tid_minuter >= 300 and tid_minuter < 480 %}\n      24.0\n\
+        \    {% elif tid_minuter >= 480 and tid_minuter < 900 %}\n      20.0\n    {% elif tid_minuter >= 900 and tid_minuter\
+        \ < 1320 %}\n      24.0\n    {% else %}\n      20.0\n    {% endif %}\n  {% elif veckodag == 4 %}\n    {% if tid_minuter\
+        \ >= 300 and tid_minuter < 480 %}\n      24.0\n    {% elif tid_minuter >= 480 and tid_minuter < 900 %}\n      20.0\n\
+        \    {% elif tid_minuter >= 900 and tid_minuter < 1380 %}\n      24.0\n    {% else %}\n      20.0\n    {% endif %}\n\
+        \  {% elif veckodag == 5 %}\n    {{ 24.0 if (tid_minuter >= 420 and tid_minuter < 1380) else 20.0 }}\n  {% else %}\n\
+        \    {{ 24.0 if (tid_minuter >= 420 and tid_minuter < 1320) else 20.0 }}\n  {% endif %}\n{% endif %}\n"
+  - variables:
+      familj_alla_minst_30km: "{% set persons = ['person.anna_bennani', 'person.erik_bennani', 'person.ilias_bennani'] %}\n\
+        {% set ns = namespace(all_far=true) %}\n{% for p in persons %}\n  {% if states(p) in ['unknown', 'unavailable',\
+        \ 'none', ''] %}\n    {% set ns.all_far = false %}\n  {% elif states(p) == 'home' %}\n    {% set ns.all_far = false\
+        \ %}\n  {% else %}\n    {% set tr = state_attr(p, 'source') %}\n    {% if tr is none or states(tr) in ['unknown',\
+        \ 'unavailable', 'none', ''] %}\n      {% set ns.all_far = false %}\n    {% elif state_attr(tr, 'latitude') is none\
+        \ or state_attr(tr, 'longitude') is none %}\n      {% set ns.all_far = false %}\n    {% else %}\n      {% set d_km\
+        \ = distance(tr, 'zone.home') %}\n      {% if d_km | float(999) < 30 %}\n        {% set ns.all_far = false %}\n \
+        \     {% endif %}\n    {% endif %}\n  {% endif %}\n{% endfor %}\n{{ ns.all_far }}\n"
+  - variables:
+      maltemperatur: "{% set schema = schema_maltemperatur | float(20) %}\n{% if schema == 24 and antal_hemma | int == 0\
+        \ and familj_alla_minst_30km | bool %}\n  20.0\n{% else %}\n  {{ schema }}\n{% endif %}\n"
+  - condition: or
+    conditions:
+    - condition: template
+      value_template: '{{ trigger.id != ''periodisk_30min'' }}'
+    - condition: template
+      value_template: '{{ maltemperatur | float | round(1) != state_attr(''climate.golvvarmen_i_badrummet'',''temperature'')
+        | float(-999) | round(1) }}'
   - action: climate.set_hvac_mode
     target:
       entity_id: climate.golvvarmen_i_badrummet
