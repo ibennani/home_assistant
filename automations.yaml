@@ -2271,18 +2271,10 @@
     value_template: "{{\n  states('input_select.eriks_rum_belysning') in ['Minimalt','Släckt']\n  and now().isoweekday() in\
       \ [7,1,2,3,4]\n  and now().hour >= 22\n  and is_state('input_boolean.vacation_mode', 'off')\n}}"
   - trigger: state
-    id: Inaktiv5
+    id: Inaktiv15
     entity_id: binary_sensor.nedre_trappan_rorelse
     to: 'off'
-    for: 00:05:00
-    not_from:
-    - unavailable
-    - unknown
-  - trigger: state
-    id: Inaktiv30
-    entity_id: binary_sensor.nedre_trappan_rorelse
-    to: 'off'
-    for: 00:30:00
+    for: 00:15:00
     not_from:
     - unavailable
     - unknown
@@ -2290,32 +2282,35 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.entity_id != ''input_select.nedre_trappan_belysning'' }}'
+        value_template: "{{ trigger.id == 'TändHusläge'\n   or trigger.id == 'TändRörelseNärHemma'\n   or (trigger.entity_id == 'input_select.nedre_trappan_belysning' and trigger.context.user_id\
+          \ is not none)\n   or (is_state('binary_sensor.nedre_trappan_rorelse','off') and (now() - (state_attr('binary_sensor.nedre_trappan_rorelse', 'last_changed') or now())).total_seconds() >= 15 *\
+          \ 60) }}\n"
       sequence:
-      - variables:
-          trig_id: '{{ trigger.id | default('''') }}'
-          current_mode: '{{ states(''input_select.nedre_trappan_belysning'') }}'
-          ids_tand:
-          - TändLuxLåg
-          - TändRörelseNärHemma
-          - TändZone
-          - TändHusläge
-          - TändJul
-          ids_slack:
-          - SläcktLuxHög
-          - SläckAlbin
-      - action: input_select.select_option
-        target:
-          entity_id: input_select.nedre_trappan_belysning
-        data:
-          option: "{% if trig_id == 'Städning' %}\n  Städning\n{% elif trig_id == 'Inaktiv5' %}\n  {% if states('zone.home') | int > 1 %}\n    {{ current_mode }}\n  {% elif state_attr('light.taklampan_nedre_trappan_level',\
-            \ 'brightness') | int(0) >= 250 %}\n    Släckt\n  {% else %}\n    {{ current_mode }}\n  {% endif %}\n{% elif trig_id == 'Inaktiv30' %}\n  {% if state_attr('light.taklampan_nedre_trappan_level',\
-            \ 'brightness') | int(0) >= 250 %}\n    Släckt\n  {% else %}\n    {{ current_mode }}\n  {% endif %}\n{% elif trig_id in ids_tand %}\n  {% if current_mode == 'Släckt' %}Tänt{% else %}{{ current_mode\
-            \ }}{% endif %}\n{% elif trig_id in ids_slack %}\n  {% if trig_id == 'SläcktLuxHög' %}\n    {% set br = state_attr('light.taklampan_nedre_trappan_level', 'brightness') | int(0) %}\n    {% set\
-            \ folk = states('zone.home') | int(0) %}\n    {% set grans = 300 if folk <= 1 else 1800 %}\n    {% set av = (now() - (state_attr('binary_sensor.nedre_trappan_rorelse', 'last_changed') or now())).total_seconds()\
-            \ %}\n    {% if br >= 250 and av < grans %}\n      {{ current_mode }}\n    {% else %}\n      Släckt\n    {% endif %}\n  {% else %}\n    Släckt\n  {% endif %}\n{% else %}\n  {{ current_mode }}\n\
-            {% endif %}"
-  - action: script.nedre_trappan_stall_in_belysningen
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ trigger.entity_id != ''input_select.nedre_trappan_belysning'' }}'
+          sequence:
+          - variables:
+              trig_id: '{{ trigger.id | default('''') }}'
+              current_mode: '{{ states(''input_select.nedre_trappan_belysning'') }}'
+              ids_tand:
+              - TändLuxLåg
+              - TändRörelseNärHemma
+              - TändZone
+              - TändHusläge
+              - TändJul
+              ids_slack:
+              - SläcktLuxHög
+              - SläckAlbin
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.nedre_trappan_belysning
+            data:
+              option: "{% if trig_id == 'Städning' %}\n  Städning\n{% elif trig_id == 'Inaktiv15' and state_attr('light.taklampan_nedre_trappan_level', 'brightness') | int(0) >= 250\
+                \ %}\n  Släckt\n{% elif trig_id in ids_tand %}\n  {% if current_mode == 'Släckt' %}Tänt{% else %}{{ current_mode }}{% endif %}\n{% elif trig_id in ids_slack %}\n  Släckt\n{% else %}\n\
+                \  {{ current_mode }}\n{% endif %}"
+      - action: script.nedre_trappan_stall_in_belysningen
   mode: restart
 - alias: 'Belysning: Styr taklamporna i skafferiet'
   id: '791867408901608'

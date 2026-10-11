@@ -1021,11 +1021,9 @@ nedre_trappan_stall_in_belysningen:
       eriks_rum: '{{ states(''input_select.eriks_rum_belysning'') }}'
       jul: '{{ is_state(''input_boolean.julbelysning'',''on'') }}'
       lux: '{{ states(''sensor.utomhus_framsidan_ljusstyrka'') | int(0) }}'
-      folk_hemma: '{{ states(''zone.home'') | int(0) }}'
-      inaktiv_grans_sek: '{{ 300 if folk_hemma <= 1 else 1800 }}'
       rorelse_av_sek: '{{ (now() - (state_attr(''binary_sensor.nedre_trappan_rorelse'', ''last_changed'') or now())).total_seconds() }}'
       max_belysning: '{{ state_attr(''light.taklampan_nedre_trappan_level'', ''brightness'') | int(0) >= 250 }}'
-      max_lux_skydd: '{{ max_belysning and rorelse_av_sek < inaktiv_grans_sek }}'
+      max_lux_skydd: '{{ max_belysning and rorelse_av_sek < (15 * 60) }}'
   - choose:
     - conditions:
       - condition: template
