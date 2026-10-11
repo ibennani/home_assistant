@@ -142,6 +142,12 @@ else
   check_fail "Elpris-källa" "kör: python3 scripts/check-elpris-source.py"
 fi
 
+if python3 "$SCRIPT_DIR/verify-elprisgraf-colors.py"; then
+  check_ok "Elprisgraf färger (kvart + dashboard)"
+else
+  check_fail "Elprisgraf färger" "kör: python3 scripts/verify-elprisgraf-colors.py"
+fi
+
 # 3c. Personkartor — initialer + förnamn (tooltip)
 if python3 "$SCRIPT_DIR/check-person-map-display.py"; then
   check_ok "Personkartor (initialer + förnamn)"
