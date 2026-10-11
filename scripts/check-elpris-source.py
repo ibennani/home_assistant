@@ -27,6 +27,7 @@ PY_SCAN = list((ROOT / "scripts").glob("*.py"))
 # Python med spot endast som reserv (primär källa: marginal-sensor)
 PY_ALLOWED = {
     "tvattmaskin-berakna-kostnad-klar.py",
+    "verify-elprisgraf-colors.py",
 }
 
 
