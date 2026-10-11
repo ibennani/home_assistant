@@ -348,7 +348,9 @@ views:
               formatter: "EVAL:(value) => {\n  const d = new Date(value);\n  const h = d.getHours();\n  return [0, 6, 12,\
                 \ 18].includes(h) ? ('0' + h).slice(-2) + ' ' : '';\n}\n"
           yaxis:
-            forceNiceScale: true
+            forceNiceScale: false
+            min: 0
+            max: "EVAL:(() => { const v = parseFloat(hass.states['sensor.elpris_marginal_kwh_se3']?.attributes?.disk_graf_max_y); return Number.isFinite(v) && v > 0 ? v : 8; })()"
             decimalsInFloat: 2
             labels:
               formatter: "EVAL:(val) => {\n  const num = parseFloat(val);\n  return num.toFixed(2).replace('.', ':') + ' kr';\n\
@@ -380,11 +382,15 @@ views:
         - entity: sensor.elpris_marginal_kwh_se3
           name: Diskfönster
           type: column
-          data_generator: "const bm=String(entity.attributes.disk_graf_marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(entity.attributes.disk_graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
+          stack_group: disk_bg
+          data_generator: "const bm=String(entity.attributes.disk_graf_marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(entity.attributes.disk_graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const fill='rgba(155,235,190,0.78)';const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:fill});}return o;"
           show:
             in_legend: false
             in_header: false
             in_chart: true
+            extremas: false
+            datalabels: false
+            tooltip: false
         - entity: sensor.elpris_marginal_kwh_se3
           name: Nu
           unit: ' kr/kWh'
@@ -4821,7 +4827,9 @@ views:
             formatter: "EVAL:(value) => {\n  const d = new Date(value);\n  const h = d.getHours();\n  return [0, 6, 12, 18].includes(h)\
               \ ? ('0' + h).slice(-2) + ' ' : '';\n}\n"
         yaxis:
-          forceNiceScale: true
+          forceNiceScale: false
+          min: 0
+          max: "EVAL:(() => { const v = parseFloat(hass.states['sensor.elpris_marginal_kwh_se3']?.attributes?.disk_graf_max_y); return Number.isFinite(v) && v > 0 ? v : 8; })()"
           decimalsInFloat: 2
           labels:
             formatter: "EVAL:(val) => {\n  const num = parseFloat(val);\n  return num.toFixed(2).replace('.', ':') + ' kr';\n\
@@ -4852,11 +4860,15 @@ views:
       - entity: sensor.elpris_marginal_kwh_se3
         name: Diskfönster
         type: column
-        data_generator: "const bm=String(entity.attributes.disk_graf_marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(entity.attributes.disk_graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
+        stack_group: disk_bg
+        data_generator: "const bm=String(entity.attributes.disk_graf_marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(entity.attributes.disk_graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const fill='rgba(155,235,190,0.78)';const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:fill});}return o;"
         show:
           in_legend: false
           in_header: false
           in_chart: true
+          extremas: false
+          datalabels: false
+          tooltip: false
       - entity: sensor.elpris_marginal_kwh_se3
         name: Den här kvarten
         unit: ' kr/kWh'
