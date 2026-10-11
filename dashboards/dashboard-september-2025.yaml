@@ -390,7 +390,6 @@ views:
             in_chart: true
             extremas: false
             datalabels: false
-            tooltip: false
         - entity: sensor.elpris_marginal_kwh_se3
           name: Nu
           unit: ' kr/kWh'
@@ -4868,7 +4867,6 @@ views:
           in_chart: true
           extremas: false
           datalabels: false
-          tooltip: false
       - entity: sensor.elpris_marginal_kwh_se3
         name: Den här kvarten
         unit: ' kr/kWh'
