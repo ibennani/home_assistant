@@ -377,10 +377,10 @@ views:
         span:
           start: day
         series:
-        - entity: sensor.diskmaskin_elpris_graf_markering
+        - entity: sensor.elpris_marginal_kwh_se3
           name: Diskfönster
           type: column
-          data_generator: "const a=hass.states['sensor.diskmaskin_elpris_graf_markering']?.attributes||{};const bm=String(a.marked_bitmap||'');const maxY=parseFloat(a.graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
+          data_generator: "const ST=(typeof states!=='undefined'&&states)?states:hass.states;const a=ST['sensor.diskmaskin_elpris_graf_markering']?.attributes||{};const bm=String(a.marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(a.graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
           show:
             in_legend: false
             in_header: false
@@ -4849,10 +4849,10 @@ views:
       span:
         start: day
       series:
-      - entity: sensor.diskmaskin_elpris_graf_markering
+      - entity: sensor.elpris_marginal_kwh_se3
         name: Diskfönster
         type: column
-        data_generator: "const a=hass.states['sensor.diskmaskin_elpris_graf_markering']?.attributes||{};const bm=String(a.marked_bitmap||'');const maxY=parseFloat(a.graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
+        data_generator: "const ST=(typeof states!=='undefined'&&states)?states:hass.states;const a=ST['sensor.diskmaskin_elpris_graf_markering']?.attributes||{};const bm=String(a.marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(a.graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
         show:
           in_legend: false
           in_header: false
