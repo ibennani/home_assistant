@@ -2253,13 +2253,21 @@
                 {% endif %}
               {% endfor %}
               {% set use_int = ns_int.bi >= 0 and (ns_int.avg | float) < price_thr %}
-              {% set pick = ns_int if use_int else ns_eco %}
-              {% set p_ns = pick.num_slots | int %}
-              {% set p_nh = pick.nh | int %}
-              {% set p_hf = pick.hf | float %}
-              {% set p_lf = pick.lf | float %}
-              {% set p_si = pick.start_i | int %}
-              {% set p_ei = pick.end_i | int %}
+              {% if use_int %}
+                {% set p_ns = ns_int.num_slots | int %}
+                {% set p_nh = ns_int.nh | int %}
+                {% set p_hf = ns_int.hf | float %}
+                {% set p_lf = ns_int.lf | float %}
+                {% set p_si = ns_int.start_i | int %}
+                {% set p_ei = ns_int.end_i | int %}
+              {% else %}
+                {% set p_ns = ns_eco.num_slots | int %}
+                {% set p_nh = ns_eco.nh | int %}
+                {% set p_hf = ns_eco.hf | float %}
+                {% set p_lf = ns_eco.lf | float %}
+                {% set p_si = ns_eco.start_i | int %}
+                {% set p_ei = ns_eco.end_i | int %}
+              {% endif %}
               {% set ns_min = namespace(min_c=none) %}
               {% for i in range(p_si, p_ei + 1) %}
                 {% set ns_c = namespace(hs=0.0, ls=0.0) %}
