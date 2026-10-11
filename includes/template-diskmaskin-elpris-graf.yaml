@@ -1,0 +1,162 @@
+# Markering av billiga diskfönster för elprisgraf (samma logik som fjärrstart-automationen).
+- triggers:
+    - trigger: state
+      entity_id:
+        - sensor.elpris_marginal_kwh_se3
+        - input_boolean.diskmaskin_fjarrstart_vantar
+        - input_text.diskmaskin_tid_fjarrstart
+        - input_text.diskmaskin_program_fjarrstart
+    - trigger: time_pattern
+      minutes: "/1"
+    - trigger: homeassistant
+      event: start
+  sensor:
+    - name: Diskmaskin elprisgraf markering
+      unique_id: diskmaskin_elpris_graf_markering
+      icon: mdi:dishwasher
+      state: >-
+        {% set bm = state_attr('sensor.diskmaskin_elpris_graf_markering', 'marked_bitmap') | default('') %}
+        {{ bm | count('1') }}
+      attributes:
+        marked_bitmap: >-
+          {% set slot_len = 15 %}
+          {% set eco_min = 66 %}
+          {% set int_min = 100 %}
+          {% set price_thr = 2.0 %}
+          {% set wkd_morn = 6 %}
+          {% set wkd_aft = 16 %}
+          {% set wkd_end = 8 %}
+          {% set heavy_pct = 0.75 %}
+          {% set heavy_w = 1.0 %}
+          {% set light_w = 0.5 %}
+          {% set np = 'sensor.elpris_marginal_kwh_se3' %}
+          {% set tv = state_attr(np, 'today') | default([]) %}
+          {% set tm = state_attr(np, 'tomorrow') | default([]) %}
+          {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}
+          {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
+          {% set vals = (tv + (tm if tm_ok else [])) | map('float') | list %}
+          {% set n = vals | count %}
+          {% set nsb = namespace(bits=[]) %}
+          {% for _ in range(n) %}{% set nsb.bits = nsb.bits + ['0'] %}{% endfor %}
+          {% if n >= 4 %}
+            {% set base_midnight = (now() | as_datetime).replace(hour=0, minute=0, second=0, microsecond=0) %}
+            {% set base_ts = as_timestamp(base_midnight) | float %}
+            {% set slot_secs = slot_len * 60 %}
+            {% if is_state('input_boolean.diskmaskin_fjarrstart_vantar', 'on') %}
+              {% set prog = states('input_text.diskmaskin_program_fjarrstart') | default('') %}
+              {% set dur = int_min if 'Intensiv70' in prog else eco_min %}
+              {% set num_slots = ((dur / slot_len) | round(0, 'ceil')) | int %}
+              {% set start_raw = states('input_text.diskmaskin_tid_fjarrstart') | trim %}
+              {% if start_raw not in ['', 'unknown', 'unavailable'] %}
+                {% set start_dt = start_raw | as_datetime %}
+                {% if start_dt %}
+                  {% set bi = (((as_timestamp(start_dt) - base_ts) / slot_secs) | round(0)) | int %}
+                  {% for j in range(num_slots) %}
+                    {% set k = bi + j %}
+                    {% if k >= 0 and k < n %}{% set nsb.bits = nsb.bits[:k] + ['1'] + nsb.bits[k + 1:] %}{% endif %}
+                  {% endfor %}
+                {% endif %}
+              {% endif %}
+            {% else %}
+              {% set ns_eco = namespace(min_c=none, bi=-1, start_i=0, end_i=-1, num_slots=1, nh=1, hf=1.0, lf=1.0) %}
+              {% set ns_int = namespace(min_c=none, bi=-1, start_i=0, end_i=-1, num_slots=1, nh=1, hf=1.0, lf=1.0, avg=999.0) %}
+              {% for cycle_min in [eco_min, int_min] %}
+                {% set num_slots = ((cycle_min / slot_len) | round(0, 'ceil')) | int %}
+                {% set nh = ((num_slots * heavy_pct) | round(0, 'ceil')) | int %}
+                {% set nl = num_slots - nh %}
+                {% set tw = nh * heavy_w + nl * light_w %}
+                {% set hf = heavy_w / tw %}
+                {% set lf = light_w / tw %}
+                {% set current = now() %}
+                {% set finish_time = current + timedelta(minutes=cycle_min) %}
+                {% set is_weekday = current.weekday() < 5 %}
+                {% if is_weekday %}
+                  {% set morning = current.replace(hour=wkd_morn, minute=0, second=0, microsecond=0) %}
+                  {% set afternoon = current.replace(hour=wkd_aft, minute=0, second=0, microsecond=0) %}
+                  {% if finish_time <= morning %}{% set deadline = morning %}
+                  {% elif finish_time <= afternoon %}{% set deadline = afternoon %}
+                  {% else %}
+                    {% set nd = current + timedelta(days=1) %}
+                    {% set deadline = nd.replace(hour=(wkd_morn if nd.weekday() < 5 else wkd_end), minute=0, second=0, microsecond=0) %}
+                  {% endif %}
+                {% else %}
+                  {% set today_deadline = current.replace(hour=wkd_end, minute=0, second=0, microsecond=0) %}
+                  {% if finish_time <= today_deadline %}{% set deadline = today_deadline %}
+                  {% else %}
+                    {% set nd = current + timedelta(days=1) %}
+                    {% set deadline = nd.replace(hour=(wkd_morn if nd.weekday() < 5 else wkd_end), minute=0, second=0, microsecond=0) %}
+                  {% endif %}
+                {% endif %}
+                {% set base = (now() | as_datetime).replace(second=0, microsecond=0) %}
+                {% set m = base.minute % slot_len %}
+                {% set first_ts = as_timestamp(base if m == 0 else (base + timedelta(minutes=slot_len - m))) | float %}
+                {% set latest_dt = ((deadline | as_datetime) - timedelta(minutes=cycle_min)) | as_datetime %}
+                {% set floorm = (latest_dt.minute // slot_len) * slot_len %}
+                {% set latest_ts = as_timestamp(latest_dt.replace(minute=floorm, second=0, microsecond=0)) | float %}
+                {% set fi = (((first_ts - base_ts) / slot_secs) | round(0, 'ceil')) | int %}
+                {% set li = (((latest_ts - base_ts) / slot_secs) | round(0, 'floor')) | int %}
+                {% set max_start = n - num_slots %}
+                {% set start_i = 0 if fi < 0 else fi %}
+                {% set end_i = (max_start if li > max_start else li) %}
+                {% if cycle_min == eco_min %}{% set ns_eco = namespace(min_c=none, bi=-1, start_i=start_i, end_i=end_i, num_slots=num_slots, nh=nh, hf=hf, lf=lf) %}{% endif %}
+                {% if cycle_min == int_min %}{% set ns_int = namespace(min_c=none, bi=-1, start_i=start_i, end_i=end_i, num_slots=num_slots, nh=nh, hf=hf, lf=lf, avg=999.0) %}{% endif %}
+                {% for i in range(start_i, end_i + 1) %}
+                  {% set ns_c = namespace(hs=0.0, ls=0.0) %}
+                  {% for j in range(0, nh) %}{% set ns_c.hs = ns_c.hs + (vals[i + j] | float) %}{% endfor %}
+                  {% for j in range(nh, num_slots) %}{% set ns_c.ls = ns_c.ls + (vals[i + j] | float) %}{% endfor %}
+                  {% set cost = ns_c.hs * hf + ns_c.ls * lf %}
+                  {% if cycle_min == eco_min %}
+                    {% if ns_eco.min_c is none or cost < ns_eco.min_c %}{% set ns_eco.min_c = cost %}{% set ns_eco.bi = i %}{% endif %}
+                  {% else %}
+                    {% if ns_int.min_c is none or cost < ns_int.min_c %}{% set ns_int.min_c = cost %}{% set ns_int.bi = i %}{% endif %}
+                  {% endif %}
+                {% endfor %}
+                {% if cycle_min == int_min and ns_int.bi >= 0 %}
+                  {% set ns_avg = namespace(s=0.0) %}
+                  {% for k in range(ns_int.bi, ns_int.bi + num_slots) %}{% set ns_avg.s = ns_avg.s + (vals[k] | float) %}{% endfor %}
+                  {% set ns_int.avg = (ns_avg.s / num_slots) | float %}
+                {% endif %}
+              {% endfor %}
+              {% set use_int = ns_int.bi >= 0 and (ns_int.avg | float) < price_thr %}
+              {% set pick = ns_int if use_int else ns_eco %}
+              {% set p_ns = pick.num_slots | int %}
+              {% set p_nh = pick.nh | int %}
+              {% set p_hf = pick.hf | float %}
+              {% set p_lf = pick.lf | float %}
+              {% set p_si = pick.start_i | int %}
+              {% set p_ei = pick.end_i | int %}
+              {% set ns_min = namespace(min_c=none) %}
+              {% for i in range(p_si, p_ei + 1) %}
+                {% set ns_c = namespace(hs=0.0, ls=0.0) %}
+                {% for j in range(0, p_nh) %}{% set ns_c.hs = ns_c.hs + (vals[i + j] | float) %}{% endfor %}
+                {% for j in range(p_nh, p_ns) %}{% set ns_c.ls = ns_c.ls + (vals[i + j] | float) %}{% endfor %}
+                {% set cost = ns_c.hs * p_hf + ns_c.ls * p_lf %}
+                {% if ns_min.min_c is none or cost < ns_min.min_c %}{% set ns_min.min_c = cost %}{% endif %}
+              {% endfor %}
+              {% if ns_min.min_c is not none %}
+                {% set thr = (ns_min.min_c | float) * 1.02 + 0.000001 %}
+                {% for i in range(p_si, p_ei + 1) %}
+                  {% set ns_c = namespace(hs=0.0, ls=0.0) %}
+                  {% for j in range(0, p_nh) %}{% set ns_c.hs = ns_c.hs + (vals[i + j] | float) %}{% endfor %}
+                  {% for j in range(p_nh, p_ns) %}{% set ns_c.ls = ns_c.ls + (vals[i + j] | float) %}{% endfor %}
+                  {% set cost = ns_c.hs * p_hf + ns_c.ls * p_lf %}
+                  {% if cost <= thr %}
+                    {% for j in range(p_ns) %}
+                      {% set k = i + j %}
+                      {% if k < n %}{% set nsb.bits = nsb.bits[:k] + ['1'] + nsb.bits[k + 1:] %}{% endif %}
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+          {{ nsb.bits | join('') }}
+        graf_max_y: >-
+          {% set np = 'sensor.elpris_marginal_kwh_se3' %}
+          {% set tv = state_attr(np, 'today') | default([]) %}
+          {% set tm = state_attr(np, 'tomorrow') | default([]) %}
+          {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}
+          {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
+          {% set vals = (tv + (tm if tm_ok else [])) | map('float') | list %}
+          {% set mx = (vals | max) if vals | length > 0 else 1 %}
+          {{ ((mx | float) * 1.12 + 0.05) | round(2) }}
