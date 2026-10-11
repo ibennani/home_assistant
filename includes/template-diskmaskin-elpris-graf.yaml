@@ -15,8 +15,8 @@
       unique_id: diskmaskin_elpris_graf_markering
       icon: mdi:dishwasher
       state: >-
-        {% set bm = state_attr('sensor.diskmaskin_elpris_graf_markering', 'marked_bitmap') | default('') %}
-        {{ bm | count('1') }}
+        {% set bm = this.attributes.marked_bitmap | default('') %}
+        {{ (bm | replace('0', '') | length) | int }}
       attributes:
         marked_bitmap: >-
           {% set slot_len = 15 %}
