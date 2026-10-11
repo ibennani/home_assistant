@@ -380,7 +380,7 @@ views:
         - entity: sensor.elpris_marginal_kwh_se3
           name: Diskfönster
           type: column
-          data_generator: "const ST=(typeof states!=='undefined'&&states)?states:hass.states;const a=ST['sensor.diskmaskin_elpris_graf_markering']?.attributes||{};const bm=String(a.marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(a.graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
+          data_generator: "const bm=String(entity.attributes.disk_graf_marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(entity.attributes.disk_graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
           show:
             in_legend: false
             in_header: false
@@ -4852,7 +4852,7 @@ views:
       - entity: sensor.elpris_marginal_kwh_se3
         name: Diskfönster
         type: column
-        data_generator: "const ST=(typeof states!=='undefined'&&states)?states:hass.states;const a=ST['sensor.diskmaskin_elpris_graf_markering']?.attributes||{};const bm=String(a.marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(a.graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
+        data_generator: "const bm=String(entity.attributes.disk_graf_marked_bitmap||'');if(!bm)return[];const maxY=parseFloat(entity.attributes.disk_graf_max_y)||8;const step=15;const b=new Date();b.setHours(0,0,0,0);const t=b.getTime();const o=[];for(let i=0;i<bm.length;i++){if(bm[i]!=='1')continue;o.push({x:t+i*step*60000,y:maxY,fillColor:'rgba(42,107,79,0.26)'});}return o;"
         show:
           in_legend: false
           in_header: false
@@ -4988,7 +4988,7 @@ views:
       grid_options:
         rows: 3
     - type: gauge
-      name: Kostnad hittills idag
+      name: Kostnad hittills idag (marginal)
       unit: Kr
       min: 0
       needle: true
