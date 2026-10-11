@@ -7391,6 +7391,16 @@
 
       '
   - trigger: template
+    id: lordag_0700
+    value_template: '{{ now().weekday() == 5 and now().strftime(''%H:%M'') == ''07:00'' }}
+
+      '
+  - trigger: template
+    id: sondag_0700
+    value_template: '{{ now().weekday() == 6 and now().strftime(''%H:%M'') == ''07:00'' }}
+
+      '
+  - trigger: template
     id: semester_0700
     value_template: '{{ is_state(''input_boolean.vacation_mode'',''on'') and now().strftime(''%H:%M'') == ''07:00'' }}
 
@@ -7401,12 +7411,18 @@
 
       '
   - trigger: state
-    id: narvaro_andrad
+    id: ingen_hemma
     entity_id: zone.home
+    to: '0'
     not_from:
     - unavailable
     - unknown
+  - trigger: state
+    id: nagon_hemma
+    entity_id: zone.home
+    from: '0'
     not_to:
+    - '0'
     - unavailable
     - unknown
   - trigger: state
@@ -7425,27 +7441,18 @@
       timme: '{{ now().hour }}'
       minut: '{{ now().minute }}'
       tid_minuter: '{{ timme * 60 + minut }}'
-      helg: '{{ veckodag in [5,6] }}'
-      sondag: '{{ veckodag == 6 }}'
       antal_hemma: "{% set s = states('zone.home') %}  {% if s in ['unknown','unavailable','none',''] %}\n  0\n{% else %}\n\
         \  {{ s | int(0) }}\n{% endif %}\n"
   - variables:
-      narvaro_override_aktiv: "{{ semester_aktiv and (tid_minuter >= 420 and tid_minuter < 1380) or\n   (helg and not semester_aktiv\
-        \ and ((sondag and tid_minuter >= 420 and tid_minuter < 1320) or \n                                      (not sondag\
-        \ and tid_minuter >= 420 and tid_minuter < 1380))) }}\n"
-  - variables:
-      maltemperatur: "{% if narvaro_override_aktiv %}\n  {{ 20.0 if antal_hemma == 0 else 24.0 }}\n{% elif semester_aktiv\
-        \ %}\n  {{ 24.0 if (tid_minuter >= 420 and tid_minuter < 1380) else 20.0 }}\n{% else %}\n  {% if veckodag in [0,1,2,3]\
-        \ %}\n    {% if tid_minuter >= 300 and tid_minuter < 480 %}\n      24.0\n    {% elif tid_minuter >= 480 and tid_minuter\
-        \ < 900 %}\n      20.0\n    {% elif tid_minuter >= 900 and tid_minuter < 1320 %}\n      24.0\n    {% else %}\n   \
-        \   20.0\n    {% endif %}\n  {% elif veckodag == 4 %}\n    {% if tid_minuter >= 300 and tid_minuter < 480 %}\n   \
-        \   24.0\n    {% elif tid_minuter >= 480 and tid_minuter < 900 %}\n      20.0\n    {% elif tid_minuter >= 900 and\
-        \ tid_minuter < 1380 %}\n      24.0\n    {% else %}\n      20.0\n    {% endif %}\n  {% elif veckodag == 5 %}\n   \
-        \ {{ 24.0 if (tid_minuter >= 420 and tid_minuter < 1380) else 20.0 }}\n  {% else %}\n    {{ 24.0 if (tid_minuter >=\
-        \ 420 and tid_minuter < 1320) else 20.0 }}\n  {% endif %}\n{% endif %}\n"
-      aktuell_setpoint: '{{ state_attr(''climate.golvvarmen_i_badrummet'',''temperature'') | float(20.0) }}
-
-        '
+      maltemperatur: "{% if antal_hemma == 0 %}\n  20.0\n{% elif semester_aktiv %}\n  {{ 24.0 if (tid_minuter >= 420 and\
+        \ tid_minuter < 1380) else 20.0 }}\n{% else %}\n  {% if veckodag in [0,1,2,3] %}\n    {% if tid_minuter >= 300 and\
+        \ tid_minuter < 480 %}\n      24.0\n    {% elif tid_minuter >= 480 and tid_minuter < 900 %}\n      20.0\n    {% elif\
+        \ tid_minuter >= 900 and tid_minuter < 1320 %}\n      24.0\n    {% else %}\n      20.0\n    {% endif %}\n  {% elif\
+        \ veckodag == 4 %}\n    {% if tid_minuter >= 300 and tid_minuter < 480 %}\n      24.0\n    {% elif tid_minuter >= 480\
+        \ and tid_minuter < 900 %}\n      20.0\n    {% elif tid_minuter >= 900 and tid_minuter < 1380 %}\n      24.0\n   \
+        \ {% else %}\n      20.0\n    {% endif %}\n  {% elif veckodag == 5 %}\n    {{ 24.0 if (tid_minuter >= 420 and tid_minuter\
+        \ < 1380) else 20.0 }}\n  {% else %}\n    {{ 24.0 if (tid_minuter >= 420 and tid_minuter < 1320) else 20.0 }}\n  {%\
+        \ endif %}\n{% endif %}\n"
   - action: climate.set_hvac_mode
     target:
       entity_id: climate.golvvarmen_i_badrummet
