@@ -98,8 +98,27 @@
                 {% set max_start = n - num_slots %}
                 {% set start_i = 0 if fi < 0 else fi %}
                 {% set end_i = (max_start if li > max_start else li) %}
-                {% if cycle_min == eco_min %}{% set ns_eco = namespace(min_c=none, bi=-1, start_i=start_i, end_i=end_i, num_slots=num_slots, nh=nh, hf=hf, lf=lf) %}{% endif %}
-                {% if cycle_min == int_min %}{% set ns_int = namespace(min_c=none, bi=-1, start_i=start_i, end_i=end_i, num_slots=num_slots, nh=nh, hf=hf, lf=lf, avg=999.0) %}{% endif %}
+                {% if cycle_min == eco_min %}
+                  {% set ns_eco.min_c = none %}
+                  {% set ns_eco.bi = -1 %}
+                  {% set ns_eco.start_i = start_i %}
+                  {% set ns_eco.end_i = end_i %}
+                  {% set ns_eco.num_slots = num_slots %}
+                  {% set ns_eco.nh = nh %}
+                  {% set ns_eco.hf = hf %}
+                  {% set ns_eco.lf = lf %}
+                {% endif %}
+                {% if cycle_min == int_min %}
+                  {% set ns_int.min_c = none %}
+                  {% set ns_int.bi = -1 %}
+                  {% set ns_int.start_i = start_i %}
+                  {% set ns_int.end_i = end_i %}
+                  {% set ns_int.num_slots = num_slots %}
+                  {% set ns_int.nh = nh %}
+                  {% set ns_int.hf = hf %}
+                  {% set ns_int.lf = lf %}
+                  {% set ns_int.avg = 999.0 %}
+                {% endif %}
                 {% for i in range(start_i, end_i + 1) %}
                   {% set ns_c = namespace(hs=0.0, ls=0.0) %}
                   {% for j in range(0, nh) %}{% set ns_c.hs = ns_c.hs + (vals[i + j] | float) %}{% endfor %}
