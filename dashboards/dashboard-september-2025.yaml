@@ -356,7 +356,7 @@ views:
           plotOptions:
             bar:
               grouped: false
-              columnWidth: 100%
+              columnWidth: "EVAL:() => {\n  const ent = (typeof states !== 'undefined' && states) ? states['sensor.nordpool_kwh_se3_sek_3_10_025'] : null;\n  const today = ent?.attributes?.today;\n  const slotsPerDay = Array.isArray(today) ? today.length : 24;\n  const bars = slotsPerDay * 2;\n  const w = (typeof window !== 'undefined' && window.innerWidth) ? window.innerWidth : 420;\n  const chartW = Math.min(Math.max(w, 320), 1200) * 0.88;\n  return Math.max(2, Math.ceil(chartW / bars));\n}\n"
               stacked: true
           fill:
             type: solid
@@ -4847,7 +4847,7 @@ views:
         plotOptions:
           bar:
             grouped: false
-            columnWidth: 100%
+            columnWidth: "EVAL:() => {\n  const ent = (typeof states !== 'undefined' && states) ? states['sensor.nordpool_kwh_se3_sek_3_10_025'] : null;\n  const today = ent?.attributes?.today;\n  const slotsPerDay = Array.isArray(today) ? today.length : 24;\n  const bars = slotsPerDay * 2;\n  const w = (typeof window !== 'undefined' && window.innerWidth) ? window.innerWidth : 420;\n  const chartW = Math.min(Math.max(w, 320), 1200) * 0.88;\n  return Math.max(2, Math.ceil(chartW / bars));\n}\n"
             stacked: true
         fill:
           type: solid
