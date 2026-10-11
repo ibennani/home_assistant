@@ -224,9 +224,9 @@
             {{ ns.out }}
           {% endif %}
         disk_graf_marked_bitmap: >-
-          {{ state_attr('sensor.diskmaskin_elpris_graf_markering', 'marked_bitmap') | default('') }}
+          {{ state_attr('sensor.diskmaskin_elprisgraf_markering', 'marked_bitmap') | default('') }}
         disk_graf_max_y: >-
-          {{ state_attr('sensor.diskmaskin_elpris_graf_markering', 'graf_max_y') | default(8) | float(8) }}
+          {{ state_attr('sensor.diskmaskin_elprisgraf_markering', 'graf_max_y') | default(8) | float(8) }}
 
     - name: Marginal elpris SE3 denna timme
       unique_id: elpriset_denna_timme
