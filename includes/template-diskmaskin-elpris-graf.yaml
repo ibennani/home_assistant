@@ -34,7 +34,7 @@
           {% set tm = state_attr(np, 'tomorrow') | default([]) %}
           {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}
           {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
-          {% set vals = (tv + (tm if tm_ok else [])) | map('float') | list %}
+          {% set vals = ((tv if tv is iterable and tv is not string else []) + ((tm if tm is iterable and tm is not string else []) if tm_ok else [])) | map('float') | list %}
           {% set n = vals | count %}
           {% set nsb = namespace(bits=[]) %}
           {% for _ in range(n) %}{% set nsb.bits = nsb.bits + ['0'] %}{% endfor %}
@@ -157,6 +157,6 @@
           {% set tm = state_attr(np, 'tomorrow') | default([]) %}
           {% set tmr = state_attr(np, 'tomorrow_valid') | default(false) %}
           {% set tm_ok = (tmr is boolean and tmr) or (tmr is string and tmr | lower == 'true') %}
-          {% set vals = (tv + (tm if tm_ok else [])) | map('float') | list %}
+          {% set vals = ((tv if tv is iterable and tv is not string else []) + ((tm if tm is iterable and tm is not string else []) if tm_ok else [])) | map('float') | list %}
           {% set mx = (vals | max) if vals | length > 0 else 1 %}
           {{ ((mx | float) * 1.12 + 0.05) | round(2) }}
