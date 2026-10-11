@@ -313,7 +313,7 @@ views:
             animations:
               enabled: false
             stacked: true
-            type: bar
+            type: area
           annotations:
             xaxis:
             - x: EVAL:new Date(new Date().setHours(24, 0, 0, 0))
@@ -354,10 +354,8 @@ views:
               formatter: "EVAL:(val) => {\n  const num = parseFloat(val);\n  return num.toFixed(2).replace('.', ':') + ' kr';\n\
                 }\n"
           plotOptions:
-            bar:
-              grouped: false
-              columnWidth: "EVAL:() => {\n  const ent = (typeof states !== 'undefined' && states) ? states['sensor.nordpool_kwh_se3_sek_3_10_025'] : null;\n  const today = ent?.attributes?.today;\n  const slotsPerDay = Array.isArray(today) ? today.length : 24;\n  const bars = slotsPerDay * 2;\n  const w = (typeof window !== 'undefined' && window.innerWidth) ? window.innerWidth : 420;\n  const chartW = Math.min(Math.max(w, 320), 1200) * 0.88;\n  return Math.max(2, Math.ceil(chartW / bars));\n}\n"
-              stacked: true
+            area:
+              fillTo: end
           fill:
             type: solid
           stroke:
@@ -412,53 +410,111 @@ views:
           - value: 6
             color: '#af28fc'
         - entity: sensor.nordpool_kwh_se3_sek_3_10_025
-          name: Börs idag
-          type: column
-          stack_group: idag
-          data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst margEnt = ST['sensor.elpris_marginal_kwh_se3'];\nconst margArr = margEnt?.attributes?.today || [];\nconst spotArr = entity.attributes.today || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, spot) * 100) / 100;\n  out.push({ x: slotTime(i, 0), y, fillColor: colorFor(m) });\n}\nreturn out;\n"
+          name: Börs
+          type: area
+          curve: stepline
+          stroke_width: 0
+          opacity: 1
+          stack_group: elpris
+          data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;
+const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
+const margEnt = ST['sensor.elpris_marginal_kwh_se3'];
+const colorFor = (v) => {
+  if (isNaN(v)) return '#888888';
+  if (v < 0) return '#809fff';
+  if (v < 0.50) return '#809fff';
+  if (v < 1.00) return '#28fccf';
+  if (v < 1.50) return '#28fc61';
+  if (v < 2.00) return '#ebfc28';
+  if (v < 3.00) return '#fcd228';
+  if (v < 4.00) return '#fc9628';
+  if (v < 5.00) return '#fc3e28';
+  if (v < 6.00) return '#fc289d';
+  return '#af28fc';
+};
+const pushDay = (out, margArr, spotArr, dayOff) => {
+  const n = Math.min((margArr || []).length, (spotArr || []).length);
+  for (let i = 0; i < n; i++) {
+    const m = Number(margArr[i]);
+    const spot = Number(spotArr[i]);
+    if (Number.isNaN(m) || Number.isNaN(spot)) continue;
+    const base = new Date();
+    base.setHours(0, 0, 0, 0);
+    if (dayOff) base.setDate(base.getDate() + dayOff);
+    const x = base.getTime() + i * stepMin * 60000;
+    const y = Math.round(Math.max(0, spot) * 100) / 100;
+    out.push({ x, y, fillColor: colorFor(m) });
+  }
+};
+const out = [];
+pushDay(out, margEnt?.attributes?.today, entity.attributes.today, 0);
+const tmOk = margEnt?.attributes?.tomorrow_valid === true || String(margEnt?.attributes?.tomorrow_valid).toLowerCase() === 'true';
+if (tmOk) pushDay(out, margEnt?.attributes?.tomorrow, entity.attributes.tomorrow, 1);
+return out;
+"
           show:
             legend_value: false
             in_legend: false
             in_header: false
             extremas: false
             datalabels: false
-          extend_to: end
         - entity: sensor.elpris_marginal_kwh_se3
-          name: Påslag idag
-          type: column
-          stack_group: idag
-          data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst spotEnt = ST['sensor.nordpool_kwh_se3_sek_3_10_025'];\nconst spotArr = spotEnt?.attributes?.today || [];\nconst margArr = entity.attributes.today || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst colorAlpha50 = (hex) => {\n  const h = String(hex).replace('#', '');\n  if (h.length !== 6) return 'rgba(136,136,136,0.5)';\n  const r = parseInt(h.slice(0, 2), 16);\n  const g = parseInt(h.slice(2, 4), 16);\n  const b = parseInt(h.slice(4, 6), 16);\n  return `rgba(${r},${g},${b},0.5)`;\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, m - spot) * 100) / 100;\n  out.push({ x: slotTime(i, 0), y, fillColor: colorAlpha50(colorFor(m)) });\n}\nreturn out;\n"
+          name: Påslag
+          type: area
+          curve: stepline
+          stroke_width: 0
+          opacity: 1
+          stack_group: elpris
+          data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;
+const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
+const spotEnt = ST['sensor.nordpool_kwh_se3_sek_3_10_025'];
+const colorFor = (v) => {
+  if (isNaN(v)) return '#888888';
+  if (v < 0) return '#809fff';
+  if (v < 0.50) return '#809fff';
+  if (v < 1.00) return '#28fccf';
+  if (v < 1.50) return '#28fc61';
+  if (v < 2.00) return '#ebfc28';
+  if (v < 3.00) return '#fcd228';
+  if (v < 4.00) return '#fc9628';
+  if (v < 5.00) return '#fc3e28';
+  if (v < 6.00) return '#fc289d';
+  return '#af28fc';
+};
+const colorAlpha50 = (hex) => {
+  const h = String(hex).replace('#', '');
+  if (h.length !== 6) return 'rgba(136,136,136,0.5)';
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},0.5)`;
+};
+const pushDay = (out, margArr, spotArr, dayOff) => {
+  const n = Math.min((margArr || []).length, (spotArr || []).length);
+  for (let i = 0; i < n; i++) {
+    const m = Number(margArr[i]);
+    const spot = Number(spotArr[i]);
+    if (Number.isNaN(m) || Number.isNaN(spot)) continue;
+    const base = new Date();
+    base.setHours(0, 0, 0, 0);
+    if (dayOff) base.setDate(base.getDate() + dayOff);
+    const x = base.getTime() + i * stepMin * 60000;
+    const y = Math.round(Math.max(0, m - spot) * 100) / 100;
+    out.push({ x, y, fillColor: colorAlpha50(colorFor(m)) });
+  }
+};
+const out = [];
+pushDay(out, entity.attributes.today, spotEnt?.attributes?.today, 0);
+const tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';
+if (tmOk) pushDay(out, entity.attributes.tomorrow, spotEnt?.attributes?.tomorrow, 1);
+return out;
+"
           show:
             legend_value: false
             in_legend: false
             in_header: false
             extremas: false
             datalabels: false
-          extend_to: end
-        - entity: sensor.nordpool_kwh_se3_sek_3_10_025
-          name: Börs imorgon
-          type: column
-          stack_group: imorgon
-          data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst tmOk = ST['sensor.elpris_marginal_kwh_se3']?.attributes?.tomorrow_valid === true || String(ST['sensor.elpris_marginal_kwh_se3']?.attributes?.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst margEnt = ST['sensor.elpris_marginal_kwh_se3'];\nconst margArr = margEnt?.attributes?.tomorrow || [];\nconst spotArr = entity.attributes.tomorrow || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, spot) * 100) / 100;\n  out.push({ x: slotTime(i, 1), y, fillColor: colorFor(m) });\n}\nreturn out;\n"
-          show:
-            legend_value: false
-            in_legend: false
-            in_header: false
-            extremas: false
-            datalabels: false
-          extend_to: end
-        - entity: sensor.elpris_marginal_kwh_se3
-          name: Påslag imorgon
-          type: column
-          stack_group: imorgon
-          data_generator: "const tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst spotEnt = ST['sensor.nordpool_kwh_se3_sek_3_10_025'];\nconst spotArr = spotEnt?.attributes?.tomorrow || [];\nconst margArr = entity.attributes.tomorrow || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst colorAlpha50 = (hex) => {\n  const h = String(hex).replace('#', '');\n  if (h.length !== 6) return 'rgba(136,136,136,0.5)';\n  const r = parseInt(h.slice(0, 2), 16);\n  const g = parseInt(h.slice(2, 4), 16);\n  const b = parseInt(h.slice(4, 6), 16);\n  return `rgba(${r},${g},${b},0.5)`;\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, m - spot) * 100) / 100;\n  out.push({ x: slotTime(i, 1), y, fillColor: colorAlpha50(colorFor(m)) });\n}\nreturn out;\n"
-          show:
-            legend_value: false
-            in_legend: false
-            in_header: false
-            extremas: false
-            datalabels: false
-          extend_to: end
     - type: vertical-stack
       title: El-priset idag och imorgon
       cards:
@@ -4804,7 +4860,7 @@ views:
           animations:
             enabled: false
           stacked: true
-          type: bar
+          type: area
         annotations:
           xaxis:
           - x: EVAL:new Date(new Date().setHours(24, 0, 0, 0))
@@ -4845,10 +4901,8 @@ views:
             formatter: "EVAL:(val) => {\n  const num = parseFloat(val);\n  return num.toFixed(2).replace('.', ':') + ' kr';\n\
               }\n"
         plotOptions:
-          bar:
-            grouped: false
-            columnWidth: "EVAL:() => {\n  const ent = (typeof states !== 'undefined' && states) ? states['sensor.nordpool_kwh_se3_sek_3_10_025'] : null;\n  const today = ent?.attributes?.today;\n  const slotsPerDay = Array.isArray(today) ? today.length : 24;\n  const bars = slotsPerDay * 2;\n  const w = (typeof window !== 'undefined' && window.innerWidth) ? window.innerWidth : 420;\n  const chartW = Math.min(Math.max(w, 320), 1200) * 0.88;\n  return Math.max(2, Math.ceil(chartW / bars));\n}\n"
-            stacked: true
+          area:
+            fillTo: end
         fill:
           type: solid
         stroke:
@@ -4902,53 +4956,111 @@ views:
         - value: 6
           color: '#af28fc'
       - entity: sensor.nordpool_kwh_se3_sek_3_10_025
-        name: Börs idag
-        type: column
-        stack_group: idag
-        data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst margEnt = ST['sensor.elpris_marginal_kwh_se3'];\nconst margArr = margEnt?.attributes?.today || [];\nconst spotArr = entity.attributes.today || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, spot) * 100) / 100;\n  out.push({ x: slotTime(i, 0), y, fillColor: colorFor(m) });\n}\nreturn out;\n"
+        name: Börs
+        type: area
+        curve: stepline
+        stroke_width: 0
+        opacity: 1
+        stack_group: elpris
+        data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;
+const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
+const margEnt = ST['sensor.elpris_marginal_kwh_se3'];
+const colorFor = (v) => {
+  if (isNaN(v)) return '#888888';
+  if (v < 0) return '#809fff';
+  if (v < 0.50) return '#809fff';
+  if (v < 1.00) return '#28fccf';
+  if (v < 1.50) return '#28fc61';
+  if (v < 2.00) return '#ebfc28';
+  if (v < 3.00) return '#fcd228';
+  if (v < 4.00) return '#fc9628';
+  if (v < 5.00) return '#fc3e28';
+  if (v < 6.00) return '#fc289d';
+  return '#af28fc';
+};
+const pushDay = (out, margArr, spotArr, dayOff) => {
+  const n = Math.min((margArr || []).length, (spotArr || []).length);
+  for (let i = 0; i < n; i++) {
+    const m = Number(margArr[i]);
+    const spot = Number(spotArr[i]);
+    if (Number.isNaN(m) || Number.isNaN(spot)) continue;
+    const base = new Date();
+    base.setHours(0, 0, 0, 0);
+    if (dayOff) base.setDate(base.getDate() + dayOff);
+    const x = base.getTime() + i * stepMin * 60000;
+    const y = Math.round(Math.max(0, spot) * 100) / 100;
+    out.push({ x, y, fillColor: colorFor(m) });
+  }
+};
+const out = [];
+pushDay(out, margEnt?.attributes?.today, entity.attributes.today, 0);
+const tmOk = margEnt?.attributes?.tomorrow_valid === true || String(margEnt?.attributes?.tomorrow_valid).toLowerCase() === 'true';
+if (tmOk) pushDay(out, margEnt?.attributes?.tomorrow, entity.attributes.tomorrow, 1);
+return out;
+"
         show:
           legend_value: false
           in_legend: false
           in_header: false
           extremas: false
           datalabels: false
-        extend_to: end
       - entity: sensor.elpris_marginal_kwh_se3
-        name: Påslag idag
-        type: column
-        stack_group: idag
-        data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst spotEnt = ST['sensor.nordpool_kwh_se3_sek_3_10_025'];\nconst spotArr = spotEnt?.attributes?.today || [];\nconst margArr = entity.attributes.today || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst colorAlpha50 = (hex) => {\n  const h = String(hex).replace('#', '');\n  if (h.length !== 6) return 'rgba(136,136,136,0.5)';\n  const r = parseInt(h.slice(0, 2), 16);\n  const g = parseInt(h.slice(2, 4), 16);\n  const b = parseInt(h.slice(4, 6), 16);\n  return `rgba(${r},${g},${b},0.5)`;\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, m - spot) * 100) / 100;\n  out.push({ x: slotTime(i, 0), y, fillColor: colorAlpha50(colorFor(m)) });\n}\nreturn out;\n"
+        name: Påslag
+        type: area
+        curve: stepline
+        stroke_width: 0
+        opacity: 1
+        stack_group: elpris
+        data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;
+const stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;
+const spotEnt = ST['sensor.nordpool_kwh_se3_sek_3_10_025'];
+const colorFor = (v) => {
+  if (isNaN(v)) return '#888888';
+  if (v < 0) return '#809fff';
+  if (v < 0.50) return '#809fff';
+  if (v < 1.00) return '#28fccf';
+  if (v < 1.50) return '#28fc61';
+  if (v < 2.00) return '#ebfc28';
+  if (v < 3.00) return '#fcd228';
+  if (v < 4.00) return '#fc9628';
+  if (v < 5.00) return '#fc3e28';
+  if (v < 6.00) return '#fc289d';
+  return '#af28fc';
+};
+const colorAlpha50 = (hex) => {
+  const h = String(hex).replace('#', '');
+  if (h.length !== 6) return 'rgba(136,136,136,0.5)';
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},0.5)`;
+};
+const pushDay = (out, margArr, spotArr, dayOff) => {
+  const n = Math.min((margArr || []).length, (spotArr || []).length);
+  for (let i = 0; i < n; i++) {
+    const m = Number(margArr[i]);
+    const spot = Number(spotArr[i]);
+    if (Number.isNaN(m) || Number.isNaN(spot)) continue;
+    const base = new Date();
+    base.setHours(0, 0, 0, 0);
+    if (dayOff) base.setDate(base.getDate() + dayOff);
+    const x = base.getTime() + i * stepMin * 60000;
+    const y = Math.round(Math.max(0, m - spot) * 100) / 100;
+    out.push({ x, y, fillColor: colorAlpha50(colorFor(m)) });
+  }
+};
+const out = [];
+pushDay(out, entity.attributes.today, spotEnt?.attributes?.today, 0);
+const tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';
+if (tmOk) pushDay(out, entity.attributes.tomorrow, spotEnt?.attributes?.tomorrow, 1);
+return out;
+"
         show:
           legend_value: false
           in_legend: false
           in_header: false
           extremas: false
           datalabels: false
-        extend_to: end
-      - entity: sensor.nordpool_kwh_se3_sek_3_10_025
-        name: Börs imorgon
-        type: column
-        stack_group: imorgon
-        data_generator: "const ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst tmOk = ST['sensor.elpris_marginal_kwh_se3']?.attributes?.tomorrow_valid === true || String(ST['sensor.elpris_marginal_kwh_se3']?.attributes?.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst margEnt = ST['sensor.elpris_marginal_kwh_se3'];\nconst margArr = margEnt?.attributes?.tomorrow || [];\nconst spotArr = entity.attributes.tomorrow || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, spot) * 100) / 100;\n  out.push({ x: slotTime(i, 1), y, fillColor: colorFor(m) });\n}\nreturn out;\n"
-        show:
-          legend_value: false
-          in_legend: false
-          in_header: false
-          extremas: false
-          datalabels: false
-        extend_to: end
-      - entity: sensor.elpris_marginal_kwh_se3
-        name: Påslag imorgon
-        type: column
-        stack_group: imorgon
-        data_generator: "const tmOk = entity.attributes.tomorrow_valid === true || String(entity.attributes.tomorrow_valid).toLowerCase() === 'true';\nif (!tmOk) return [];\nconst ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst stepMin = (Array.isArray(entity.attributes.today) && entity.attributes.today.length > 24) ? 15 : 60;\nconst spotEnt = ST['sensor.nordpool_kwh_se3_sek_3_10_025'];\nconst spotArr = spotEnt?.attributes?.tomorrow || [];\nconst margArr = entity.attributes.tomorrow || [];\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nconst colorAlpha50 = (hex) => {\n  const h = String(hex).replace('#', '');\n  if (h.length !== 6) return 'rgba(136,136,136,0.5)';\n  const r = parseInt(h.slice(0, 2), 16);\n  const g = parseInt(h.slice(2, 4), 16);\n  const b = parseInt(h.slice(4, 6), 16);\n  return `rgba(${r},${g},${b},0.5)`;\n};\nconst slotTime = (i, dayOff) => {\n  const base = new Date();\n  base.setHours(0, 0, 0, 0);\n  if (dayOff) base.setDate(base.getDate() + dayOff);\n  return new Date(base.getTime() + i * stepMin * 60000);\n};\nconst n = Math.min(margArr.length, spotArr.length);\nconst out = [];\nfor (let i = 0; i < n; i++) {\n  const m = Number(margArr[i]);\n  const spot = Number(spotArr[i]);\n  if (Number.isNaN(m) || Number.isNaN(spot)) continue;\n  const y = Math.round(Math.max(0, m - spot) * 100) / 100;\n  out.push({ x: slotTime(i, 1), y, fillColor: colorAlpha50(colorFor(m)) });\n}\nreturn out;\n"
-        show:
-          legend_value: false
-          in_legend: false
-          in_header: false
-          extremas: false
-          datalabels: false
-        extend_to: end
     - type: markdown
       title: El-priset i sammandrag
       content: "{# =========================\n   Nordpool sammanfattning (Idag + Imorgon om publicerad)\n   - Intervall: Natt\
