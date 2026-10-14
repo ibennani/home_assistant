@@ -5839,6 +5839,7 @@
             data:
               start_iso: '{{ (best_start_iso | as_datetime | as_local).strftime(''%Y-%m-%d %H:%M:%S'') }}'
               program: '{{ chosen_program }}'
+              duration_min: '{{ cycle_duration_minutes | int }}'
           - variables:
               prognos_kr: "{{ ('%.2f' | format(states('input_number.diskmaskin_kostnad_fjarrstart') | float(0) | round(2))) | replace('.', ',') }}"
           - action: script.mobilnotis
@@ -5920,30 +5921,6 @@
       - action: button.press
         target:
           entity_id: button.bosch_sma67md06e_68a40e70cb46_start_pause
-      - action: script.diskmaskin_prognos_kostnad
-        continue_on_error: true
-        data:
-          start_iso: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
-          program: "{{ dishwasher_program }}"
-      - variables:
-          prognos_kr: "{{ ('%.2f' | format(states('input_number.diskmaskin_kostnad_fjarrstart') | float(0) | round(2))) | replace('.', ',') }}"
-          kostnad_del: "{% if prognos_kr and prognos_kr != '0,00' %}, beräknad kostnad {{ prognos_kr }} kr{% endif %}"
-      - action: script.mobilnotis
-        data:
-          meddelande: 'HEMMET {{ states(''sensor.time'') }}:
-
-            Nu startar diskmaskinen (fjärrstart) med {{ dishwasher_program_label }}{{ kostnad_del }}.'
-          mottagare: mobile_app_ilias_s23_ultra
-          ikon: vitvaror
-      - action: script.turn_on
-        target:
-          entity_id: script.las_text_i_valfri_device
-        data:
-          variables:
-            hogtalare: media_player.googlehome_infopuckarna
-            meddelande: Nu startar diskmaskinen med {{ dishwasher_program_label }}.
-            volym: "{% if is_state('media_player.sony_tv_i_vardagsrummet', 'playing') %}\n  {{ states('input_number.google_home_volume_setting_dag') | float(default=0) / 100 }}\n{% else %}\n  {{ states('input_number.google_home_volume_setting_notiser') | float(default=0) / 100 }}\n{% endif %}"
-            voice: MattiasNeural
     - conditions:
       - condition: trigger
         id: avbruten_fjarrstart

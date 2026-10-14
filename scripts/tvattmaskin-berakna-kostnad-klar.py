@@ -51,7 +51,7 @@ DISKMASKIN_PROFILE_KWH: dict[str, list[float]] = {
     ],
     "eco": [0.32, 0.33, 0.16, 0.36, 0.02, 0.12, 0.14, 0.10],
 }
-DISKMASKIN_DEFAULT_DURATION_MIN = {"intensiv": 135, "eco": 115}
+DISKMASKIN_DEFAULT_DURATION_MIN = {"intensiv": 110, "eco": 67}
 
 VITARE_CONFIG = {
     "tvattmaskin": {
@@ -706,11 +706,31 @@ def set_input_number(secrets: dict[str, str], entity_id: str, value: float) -> N
     raise RuntimeError(f"kunde inte sätta {entity_id}")
 
 
-def run_diskmaskin_prognos(secrets: dict[str, str], start_iso: str, program: str) -> float:
+def parse_duration_min_arg(raw: str) -> int | None:
+    text = raw.strip()
+    if not text:
+        return None
+    try:
+        mins = int(round(float(text.replace(",", "."))))
+    except (TypeError, ValueError):
+        return None
+    if 45 <= mins <= 240:
+        return mins
+    return None
+
+
+def run_diskmaskin_prognos(
+    secrets: dict[str, str],
+    start_iso: str,
+    program: str,
+    duration_min: int | None = None,
+) -> float:
     start = parse_ha_datetime_local(start_iso.strip()) or datetime.now().astimezone()
     key = diskmaskin_program_key(program)
     profile = DISKMASKIN_PROFILE_KWH[key]
-    duration = diskmaskin_duration_minutes(secrets, start, program)
+    duration = duration_min if duration_min is not None else diskmaskin_duration_minutes(
+        secrets, start, program
+    )
     slots = fetch_nordpool_slots(secrets)
     if not slots:
         return 0.0
@@ -751,6 +771,11 @@ def main() -> int:
     )
     parser.add_argument("--start-iso", default="", help="Lokal starttid för prognos.")
     parser.add_argument("--program", default="", help="Bosch-program-id för prognos.")
+    parser.add_argument(
+        "--duration-min",
+        default="",
+        help="Programlängd (min) för diskmaskinens prognos; tom = Bosch kvar-tid eller standard.",
+    )
     args = parser.parse_args()
     configure_vitare(args.vitare)
 
@@ -761,9 +786,12 @@ def main() -> int:
             return 1
         try:
             program = args.program.strip() or "Dishcare.Dishwasher.Program.Eco50"
-            kr = run_diskmaskin_prognos(secrets, args.start_iso, program)
+            dur = parse_duration_min_arg(args.duration_min)
+            kr = run_diskmaskin_prognos(secrets, args.start_iso, program, duration_min=dur)
             set_input_number(secrets, DISKMASKIN_PROGNOS_ENTITY, kr)
-            print(f"diskmaskin prognos: {kr:.2f} kr (program={program})")
+            print(
+                f"diskmaskin prognos: {kr:.2f} kr (program={program}, duration_min={dur})"
+            )
             return 0
         except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError) as exc:
             print(f"diskmaskin prognos: fel {exc}", file=sys.stderr)
