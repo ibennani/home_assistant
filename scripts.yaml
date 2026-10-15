@@ -149,11 +149,6 @@ koket_stall_in_belysningen:
       entity_id:
       - light.lampan_vid_fotoljen
       - light.elljusstaken_i_koksfonstret
-  - action: "{% if front_section <= 5 and scene in [\"Normalt\",\"Måltid\",\"Buffé\",\"Maxbelysning\",\"Spelkväll\",\"Mysigt\"\
-      ] %}\n  light.turn_on\n{% elif scene in [\"Släckt\",\"Dämpat\"] %}\n  light.turn_off\n{% else %}\n  script.do_nothing\n\
-      {% endif %}\n"
-    target:
-      entity_id:
       - light.hoga_skapet_i_koket
   - action: light.turn_on
     target:
