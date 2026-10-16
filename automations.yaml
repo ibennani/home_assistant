@@ -4080,15 +4080,6 @@
       '
     target:
       entity_id: media_player.playstation_4
-  - action: remote.turn_off
-    target:
-      entity_id: remote.appletv
-  - action: media_player.turn_off
-    target:
-      entity_id:
-      - media_player.appletv
-      - media_player.sony_tv_i_vardagsrummet
-      - media_player.denon_avr_x2800h
 - id: 79183401610860586sdfsagdgr4574
   alias: 'Media: Styr mediacentret i vardagsrummet (TV, PS4, AppleTV, Chromecast audio, Chromecast i Sony-TV och receivern)'
   triggers:
@@ -6422,14 +6413,14 @@
   alias: 'Rullgardiner: Styr rullgardinerna i vardagsrummet (Solskydd)'
   description: Hanterar rena solskyddsgardiner baserat på solinsläpp, TV-status, ljusstyrka och husläge. TV måste vara aktiv
     i minst 30 sekunder innan gardiner dras ner. Lux under 300 i 10 minuter öppnar gardinerna även med TV på. TV av öppnar
-    direkt om solskydd inte gäller, eller direkt när det redan är mörkt ute (lux under 300).
+    direkt om solskydd inte gäller.
   triggers:
   - id: rullgardiner_ner_tv
     trigger: template
-    value_template: "{% set lux = states('sensor.utomhus_framsidan_ljusstyrka') | float(-1) %}\n{% set sony_aktiv = states('media_player.sony_tv_i_vardagsrummet')\n\
-      \  in ['playing', 'on', 'idle', 'paused'] %}\n{% set appletv_aktiv = states('media_player.appletv')\n  not in ['off',\
-      \ 'standby', 'unavailable', 'unknown'] %}\n{% set tv_aktiv = sony_aktiv or appletv_aktiv %}\n{{ tv_aktiv and lux >=\
-      \ 300 }}\n"
+    value_template: '{% set lux = states(''sensor.utomhus_framsidan_ljusstyrka'') | float(-1) %} {% set tv_aktiv = states(''media_player.sony_tv_i_vardagsrummet'')
+      in [''playing'', ''on'', ''idle'', ''paused''] %} {{ tv_aktiv and lux >= 300 }}
+
+      '
     for: 00:00:30
   - id: rullgardiner_ner_sol_framsidan
     trigger: state
@@ -6447,18 +6438,18 @@
     - unknown
   - id: rullgardiner_upp_lux
     trigger: template
-    value_template: "{% set lux = states('sensor.utomhus_framsidan_ljusstyrka') | float(-1) %}\n{% set sony_aktiv = states('media_player.sony_tv_i_vardagsrummet')\n\
-      \  in ['playing', 'on', 'idle', 'paused'] %}\n{% set appletv_aktiv = states('media_player.appletv')\n  not in ['off',\
-      \ 'standby', 'unavailable', 'unknown'] %}\n{% set tv_aktiv = sony_aktiv or appletv_aktiv %}\n{{ lux < 300 and not tv_aktiv\
-      \ and lux >= 0 }}\n"
+    value_template: '{% set lux = states(''sensor.utomhus_framsidan_ljusstyrka'') | float(-1) %} {% set tv_aktiv = states(''media_player.sony_tv_i_vardagsrummet'')
+      in [''playing'', ''on'', ''idle'', ''paused''] %} {{ lux < 300 and not tv_aktiv and lux >= 0 }}
+
+      '
     for:
       minutes: 10
   - id: rullgardiner_upp_lux_tv
     trigger: template
-    value_template: "{% set lux = states('sensor.utomhus_framsidan_ljusstyrka') | float(-1) %}\n{% set sony_aktiv = states('media_player.sony_tv_i_vardagsrummet')\n\
-      \  in ['playing', 'on', 'idle', 'paused'] %}\n{% set appletv_aktiv = states('media_player.appletv')\n  not in ['off',\
-      \ 'standby', 'unavailable', 'unknown'] %}\n{% set tv_aktiv = sony_aktiv or appletv_aktiv %}\n{{ lux < 300 and tv_aktiv\
-      \ and lux >= 0 }}\n"
+    value_template: '{% set lux = states(''sensor.utomhus_framsidan_ljusstyrka'') | float(-1) %} {% set tv_aktiv = states(''media_player.sony_tv_i_vardagsrummet'')
+      in [''playing'', ''on'', ''idle'', ''paused''] %} {{ lux < 300 and tv_aktiv and lux >= 0 }}
+
+      '
     for:
       minutes: 10
   - id: rullgardiner_upp_sol_framsidan
@@ -6488,17 +6479,6 @@
     not_to:
     - unavailable
     - unknown
-  - id: rullgardiner_upp_tv_av
-    trigger: state
-    entity_id: media_player.appletv
-    from:
-    - playing
-    - paused
-    - idle
-    to:
-    - 'off'
-    - standby
-    for: 00:00:05
   - id: rullgardiner_upp_huslage
     trigger: state
     entity_id: input_select.house_time_modes
@@ -6510,9 +6490,7 @@
     - unknown
   actions:
   - variables:
-      tv_aktiv: "{% set sony_aktiv = states('media_player.sony_tv_i_vardagsrummet')\n  in ['playing', 'on', 'idle', 'paused']\
-        \ %}\n{% set appletv_aktiv = states('media_player.appletv')\n  not in ['off', 'standby', 'unavailable', 'unknown']\
-        \ %}\n{{ sony_aktiv or appletv_aktiv }}\n"
+      tv_aktiv: '{{ states(''media_player.sony_tv_i_vardagsrummet'') in [''playing'', ''on'', ''idle'', ''paused''] }}'
       sol_framsidan: '{{ is_state(''binary_sensor.solen_lyser_in_genom_fonstren_pa_framsidan'', ''on'') }}'
       sol_vinter: '{{ is_state(''binary_sensor.ljust_pa_framsidan_dagtid_pa_vintern'', ''on'') }}'
       solskydd: '{{ sol_framsidan or sol_vinter }}'
@@ -6534,9 +6512,8 @@
     - conditions:
       - condition: template
         value_template: "{% if trigger.id in ['rullgardiner_upp_lux', 'rullgardiner_upp_lux_tv', 'rullgardiner_upp_huslage']\
-          \ %}\n  true\n{% elif trigger.id == 'rullgardiner_upp_tv_av' %}\n  {% set lux = states('sensor.utomhus_framsidan_ljusstyrka')\
-          \ | float(-1) %}\n  {{ not tv_aktiv and (not solskydd or lux < 300) }}\n{% elif trigger.id in ['rullgardiner_upp_sol_framsidan',\
-          \ 'rullgardiner_upp_sol_vinter'] %}\n  {{ not tv_aktiv and not solskydd }}\n{% else %}\n  false\n{% endif %}\n"
+          \ %}\n  true\n{% elif trigger.id in ['rullgardiner_upp_sol_framsidan', 'rullgardiner_upp_sol_vinter', 'rullgardiner_upp_tv_av']\
+          \ %}\n  {{ not tv_aktiv and not solskydd }}\n{% else %}\n  false\n{% endif %}\n"
       sequence:
       - condition: template
         value_template: '{{ gardiner_att_opena | length > 0 }}'
