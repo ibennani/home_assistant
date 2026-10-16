@@ -1170,6 +1170,16 @@
         {% set s = states('sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_operationstate') %}
         {{ 'OperationState.Run' in s or 'OperationState.Finished' in s }}
 
+    - name: Apple TV aktiv i vardagsrummet
+      unique_id: appletv_aktiv_i_vardagsrummet
+      device_class: power
+      delay_on: "00:00:05"
+      delay_off: "00:00:05"
+      state: >-
+        {% set mp = states('media_player.appletv') %}
+        {% set mp_aktiv = mp not in ['off', 'standby', 'unavailable', 'unknown'] %}
+        {{ mp_aktiv or is_state('remote.appletv', 'on') }}
+
 # BEGIN hemma-borta-sensorer (generate-ilias-zone-automation.py)
     # ---- Hemma / borta (giltig aktiv_zon, ignorerar unavailable) ----
     - name: Anna hemma

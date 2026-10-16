@@ -4085,25 +4085,25 @@
   triggers:
   - trigger: state
     id: appletv_stangd
-    entity_id: media_player.appletv
-    from:
-    - playing
-    - paused
-    - idle
-    to:
-    - 'off'
-    - standby
-    for: 00:00:05
+    entity_id: binary_sensor.apple_tv_aktiv_i_vardagsrummet
+    from: 'on'
+    to: 'off'
   - trigger: state
     id: appletv_aktiv
-    entity_id: media_player.appletv
-    from:
-    - 'off'
-    - standby
-    to:
-    - playing
-    - paused
-    - idle
+    entity_id: binary_sensor.apple_tv_aktiv_i_vardagsrummet
+    from: 'off'
+    to: 'on'
+  - trigger: state
+    id: appletv_aktiv
+    entity_id: remote.appletv
+    from: 'off'
+    to: 'on'
+    for: 00:00:03
+  - trigger: state
+    id: appletv_stangd
+    entity_id: remote.appletv
+    from: 'on'
+    to: 'off'
     for: 00:00:05
   - trigger: template
     id: ps4_aktiv
@@ -4131,9 +4131,8 @@
   actions:
   - variables:
       trigger_id: '{{ trigger.id if trigger is defined else ''manuell'' }}'
-      appletv_av: "{{\n  states(\"media_player.appletv\") in [\"standby\", \"off\", \"unavailable\", \"unknown\"]\n}}\n"
-      appletv_aktiv: "{{\n  states(\"media_player.appletv\") not in [\"standby\", \"off\", \"unavailable\", \"unknown\"]\n\
-        }}\n"
+      appletv_aktiv: '{{ is_state(''binary_sensor.apple_tv_aktiv_i_vardagsrummet'', ''on'') }}'
+      appletv_av: '{{ not is_state(''binary_sensor.apple_tv_aktiv_i_vardagsrummet'', ''on'') }}'
       ps4_aktiv: "{{\n  states(\"media_player.playstation_4\")\n  not in [\"standby\", \"off\", \"unavailable\", \"unknown\"\
         ]\n}}\n"
       chromecast_audio_aktiv: "{{\n  states(\"media_player.pucken_bakom_stereon_i_vardagsrummet\")\n  not in [\"off\", \"\
@@ -4149,12 +4148,17 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger_id == ''appletv_stangd'' }}'
+        value_template: '{{ trigger_id == ''appletv_stangd'' and appletv_av }}'
       - condition: template
         value_template: "{{\n  states(\"media_player.playstation_4\")\n  in [\"standby\", \"off\", \"unavailable\", \"unknown\"\
           ]\n  and states(\"media_player.pucken_bakom_stereon_i_vardagsrummet\")\n  in [\"off\", \"unavailable\", \"unknown\"\
           ]\n}}\n"
       sequence:
+      - action: homeassistant.update_entity
+        target:
+          entity_id:
+          - media_player.appletv
+          - remote.appletv
       - action: input_select.select_option
         target:
           entity_id: input_select.vardagsrummet_belysning
@@ -4170,8 +4174,13 @@
           - media_player.denon_avr_x2800h
     - conditions:
       - condition: template
-        value_template: '{{ trigger_id == ''appletv_aktiv'' }}'
+        value_template: '{{ trigger_id == ''appletv_aktiv'' and appletv_aktiv }}'
       sequence:
+      - action: homeassistant.update_entity
+        target:
+          entity_id:
+          - media_player.appletv
+          - remote.appletv
       - action: input_select.select_option
         target:
           entity_id: input_select.vardagsrummet_belysning
@@ -4324,8 +4333,7 @@
           - action: light.turn_off
             target:
               entity_id: light.taklampa_vardagsrummet
-  mode: queued
-  max: 5
+  mode: restart
 - alias: 'Media: Starta Sony-TV på kvällen när ingen är hemma'
   id: '79183401601231086058674'
   triggers:
