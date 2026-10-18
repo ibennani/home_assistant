@@ -7509,7 +7509,7 @@
       threshold_minutes: '{{ 20*60 if wd in [0,1,2,3,6] else 22*60 }}'
       is_after_threshold: '{{ now_minutes >= threshold_minutes }}'
       is_night_mode: '{{ is_after_threshold or morninginfo == ''false'' }}'
-      outdoor_ok: '{{ outdoor_temp is not none and outdoor_temp > -5 }}'
+      outdoor_ok: '{{ outdoor_temp is none or outdoor_temp > -5 }}'
       away_seconds: '{{ (as_timestamp(now()) - as_timestamp(states.zone.home.last_changed)) | int(0) }}'
       away_long_enough: '{{ home_count == 0 and away_seconds >= 15*60 }}'
       current_setpoint: '{{ state_attr(''climate.elementet_i_sovrummet'', ''temperature'') | float(25) }}'
