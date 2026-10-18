@@ -52,6 +52,13 @@ DISKMASKIN_PROFILE_KWH: dict[str, list[float]] = {
     "eco": [0.32, 0.33, 0.16, 0.36, 0.02, 0.12, 0.14, 0.10],
 }
 DISKMASKIN_DEFAULT_DURATION_MIN = {"intensiv": 110, "eco": 67}
+DISKMASKIN_CALIBRATION_PATH = Path("/config/www/diskmaskin-kostnad-kalibrering.json")
+DISKMASKIN_ACTIVE_PROGRAM_ENTITY = (
+    "sensor.bosch_sma67md06e_68a40e70cb46_active_program"
+)
+CALIBRATION_SHAPE_BUCKETS = 100
+CALIBRATION_MAX_RUNS = 30
+CALIBRATION_MIN_RUNS_FOR_SHAPE = 2
 
 VITARE_CONFIG = {
     "tvattmaskin": {
@@ -668,6 +675,292 @@ def diskmaskin_duration_minutes(
     return default
 
 
+def load_diskmaskin_calibration() -> dict:
+    if not DISKMASKIN_CALIBRATION_PATH.is_file():
+        return {"version": 1, "runs": []}
+    try:
+        data = json.loads(DISKMASKIN_CALIBRATION_PATH.read_text(encoding="utf-8"))
+        if isinstance(data, dict) and isinstance(data.get("runs"), list):
+            return data
+    except (OSError, json.JSONDecodeError, TypeError):
+        pass
+    return {"version": 1, "runs": []}
+
+
+def save_diskmaskin_calibration(data: dict) -> None:
+    try:
+        DISKMASKIN_CALIBRATION_PATH.parent.mkdir(parents=True, exist_ok=True)
+        DISKMASKIN_CALIBRATION_PATH.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
+
+
+def _median(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    s = sorted(values)
+    mid = len(s) // 2
+    if len(s) % 2:
+        return s[mid]
+    return (s[mid - 1] + s[mid]) / 2.0
+
+
+def profile_kwh_for_duration(segment_kwh: list[float], duration_min: int) -> float:
+    if duration_min <= 0:
+        return 0.0
+    start_ts = 0.0
+    run_end_ts = duration_min * 60.0
+    nseg = int((duration_min + 14) // 15)
+    total = 0.0
+    for i in range(nseg):
+        seg_start_ts = i * 900.0
+        seg_end_ts = min(seg_start_ts + 900.0, run_end_ts)
+        if seg_end_ts <= seg_start_ts:
+            break
+        frac = (seg_end_ts - seg_start_ts) / 900.0
+        kwh = (segment_kwh[i] if i < len(segment_kwh) else segment_kwh[-1] * 0.35) * frac
+        total += kwh
+    return total
+
+
+def kwh_per_minute_buckets(
+    points: list[tuple[datetime, float]],
+    start: datetime,
+    end: datetime,
+) -> list[float]:
+    """kWh per hel minut (samma effektmodell som integrate_cost)."""
+    if end <= start:
+        return []
+    duration_min = max(1, int(round((end - start).total_seconds() / 60.0)))
+    dummy_slot = [(start - timedelta(days=1), end + timedelta(days=1), 1.0)]
+    buckets: list[float] = []
+    for m in range(duration_min):
+        t0 = start + timedelta(minutes=m)
+        t1 = min(start + timedelta(minutes=m + 1), end)
+        if t1 <= t0:
+            buckets.append(0.0)
+            continue
+        kwh, _ = integrate_cost(points, t0, t1, dummy_slot)
+        buckets.append(kwh)
+    return buckets
+
+
+def kwh_per_min_to_avg_w(kwh_per_min: list[float]) -> list[float]:
+    return [k * 60000.0 for k in kwh_per_min]
+
+
+def w_per_min_to_shape(w_per_min: list[float], buckets: int = CALIBRATION_SHAPE_BUCKETS) -> list[float]:
+    n = len(w_per_min)
+    if n == 0:
+        return [0.0] * buckets
+    shape: list[float] = []
+    for b in range(buckets):
+        i0 = int(b / buckets * n)
+        i1 = max(i0 + 1, int((b + 1) / buckets * n))
+        chunk = w_per_min[i0:i1]
+        shape.append(sum(chunk) / len(chunk) if chunk else 0.0)
+    return shape
+
+
+def shape_to_w_per_min(shape: list[float], duration_min: int) -> list[float]:
+    if duration_min <= 0 or not shape:
+        return []
+    buckets = len(shape)
+    out: list[float] = []
+    for m in range(duration_min):
+        idx = min(buckets - 1, int(m / duration_min * buckets))
+        out.append(shape[idx])
+    return out
+
+
+def profile_to_w_per_min(duration_min: int, segment_kwh: list[float]) -> list[float]:
+    kwh_min = []
+    for m in range(duration_min):
+        t0 = m * 60.0
+        t1 = (m + 1) * 60.0
+        seg_i = int(t0 // 900)
+        seg_end = min((seg_i + 1) * 900.0, duration_min * 60.0)
+        seg_start = seg_i * 900.0
+        if seg_end <= seg_start:
+            kwh_min.append(0.0)
+            continue
+        seg_kwh = segment_kwh[seg_i] if seg_i < len(segment_kwh) else segment_kwh[-1] * 0.35
+        frac = (min(t1, seg_end) - max(t0, seg_start)) / 900.0
+        kwh_min.append(seg_kwh * frac)
+    return kwh_per_min_to_avg_w(kwh_min)
+
+
+def median_w_shape_for_program(cal: dict, program_key: str) -> list[float] | None:
+    shapes: list[list[float]] = []
+    for run in cal.get("runs", []):
+        if run.get("program_key") != program_key:
+            continue
+        shape = run.get("w_shape")
+        if isinstance(shape, list) and len(shape) == CALIBRATION_SHAPE_BUCKETS:
+            shapes.append([float(x) for x in shape])
+    if len(shapes) < CALIBRATION_MIN_RUNS_FOR_SHAPE:
+        return None
+    med: list[float] = []
+    for b in range(CALIBRATION_SHAPE_BUCKETS):
+        med.append(_median([s[b] for s in shapes if b < len(s)]))
+    return med
+
+
+def median_kwh_scale(cal: dict, program_key: str) -> float:
+    ratios: list[float] = []
+    for run in cal.get("runs", []):
+        if run.get("program_key") != program_key:
+            continue
+        actual = float(run.get("kwh", 0))
+        prof = float(run.get("profile_kwh", 0))
+        if actual > 0.05 and prof > 0.05:
+            ratios.append(actual / prof)
+    if not ratios:
+        return 1.0
+    return _median(ratios[-12:])
+
+
+def synthetic_power_points(start: datetime, w_per_min: list[float]) -> list[tuple[datetime, float]]:
+    if not w_per_min:
+        return [(start, 0.0)]
+    pts: list[tuple[datetime, float]] = []
+    for i, w in enumerate(w_per_min):
+        pts.append((start + timedelta(minutes=i), w))
+    pts.append((start + timedelta(minutes=len(w_per_min)), w_per_min[-1]))
+    return pts
+
+
+def record_diskmaskin_calibration_run(
+    secrets: dict[str, str],
+    program: str,
+    start: datetime,
+    end: datetime,
+    kwh: float,
+    kr: float,
+    power_points: list[tuple[datetime, float]],
+) -> None:
+    if kwh < 0.08 or kr < 0.05:
+        return
+    program_key = diskmaskin_program_key(program)
+    duration_min = max(1, int(round((end - start).total_seconds() / 60.0)))
+    kwh_min = kwh_per_minute_buckets(power_points, start, end)
+    w_per_min = kwh_per_min_to_avg_w(kwh_min)
+    if not w_per_min:
+        return
+    profile = DISKMASKIN_PROFILE_KWH[program_key]
+    profile_kwh = profile_kwh_for_duration(profile, duration_min)
+    start_key = start.strftime("%Y-%m-%d %H:%M:%S")
+    cal = load_diskmaskin_calibration()
+    runs: list[dict] = cal.get("runs", [])
+    runs = [r for r in runs if r.get("start") != start_key]
+    runs.append(
+        {
+            "start": start_key,
+            "program_key": program_key,
+            "duration_min": duration_min,
+            "kwh": round(kwh, 4),
+            "kr": round(kr, 2),
+            "profile_kwh": round(profile_kwh, 4),
+            "w_shape": w_per_min_to_shape(w_per_min),
+        }
+    )
+    runs.sort(key=lambda r: r.get("start", ""))
+    cal["runs"] = runs[-CALIBRATION_MAX_RUNS:]
+    save_diskmaskin_calibration(cal)
+
+
+def fetch_entity_history_days(
+    secrets: dict[str, str],
+    entity_id: str,
+    end: datetime,
+    days: float,
+) -> list[tuple[datetime, str]]:
+    start = end - timedelta(days=days)
+    points: list[tuple[datetime, str]] = []
+    try:
+        start_param = urllib.parse.quote(start.isoformat())
+        end_param = urllib.parse.quote(end.isoformat())
+        path = (
+            f"/api/history/period/{start_param}"
+            f"?end_time={end_param}"
+            f"&filter_entity_id={urllib.parse.quote(entity_id)}"
+            f"&minimal_response=true"
+            f"&no_attributes=true"
+        )
+        raw = api_request(secrets, "GET", path)
+        if raw and isinstance(raw, list) and raw[0]:
+            for row in raw[0]:
+                try:
+                    points.append((parse_iso(row["last_changed"]), str(row["state"])))
+                except (KeyError, TypeError, ValueError):
+                    continue
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        points = []
+    points.sort(key=lambda x: x[0])
+    return points
+
+
+def fetch_power_history_days(
+    secrets: dict[str, str],
+    end: datetime,
+    days: float,
+) -> list[tuple[datetime, float]]:
+    rows = fetch_entity_history_days(secrets, POWER_ENTITY, end, days)
+    out: list[tuple[datetime, float]] = []
+    for t, state in rows:
+        try:
+            out.append((t, float(state)))
+        except ValueError:
+            continue
+    return out
+
+
+def iter_diskmaskin_completed_runs(
+    active_points: list[tuple[datetime, str]],
+) -> list[tuple[datetime, datetime]]:
+    changes = [(t, s) for t, s in active_points if s not in ("unavailable", "unknown")]
+    changes.sort(key=lambda x: x[0])
+    windows: list[tuple[datetime, datetime]] = []
+    for i in range(1, len(changes)):
+        t_prev, s_prev = changes[i - 1]
+        t, state = changes[i]
+        if s_prev == "on" and state == "off":
+            windows.append((t_prev, t))
+    return windows
+
+
+def backfill_diskmaskin_calibration(secrets: dict[str, str], days: float = 14.0) -> int:
+    configure_vitare("diskmaskin")
+    end = datetime.now().astimezone()
+    active_hist = fetch_entity_history_days(secrets, ACTIVE_ENTITY, end, days)
+    power = fetch_power_history_days(secrets, end, days)
+    slots = fetch_nordpool_slots(secrets)
+    if not slots:
+        return 0
+    cal = load_diskmaskin_calibration()
+    known = {r.get("start") for r in cal.get("runs", [])}
+    added = 0
+    for run_start, run_end in iter_diskmaskin_completed_runs(active_hist):
+        start_key = run_start.strftime("%Y-%m-%d %H:%M:%S")
+        if start_key in known:
+            continue
+        kwh, kr = integrate_cost(power, run_start, run_end, slots)
+        if kwh < 0.08:
+            continue
+        program = fetch_entity_state(secrets, DISKMASKIN_ACTIVE_PROGRAM_ENTITY)
+        if not program or program in ("unknown", "unavailable"):
+            program = "Dishcare.Dishwasher.Program.Eco50"
+        record_diskmaskin_calibration_run(
+            secrets, program, run_start, run_end, kwh, kr, power
+        )
+        known.add(start_key)
+        added += 1
+    return added
+
+
 def integrate_profile_cost(
     start: datetime,
     duration_min: int,
@@ -725,6 +1018,11 @@ def run_diskmaskin_prognos(
     program: str,
     duration_min: int | None = None,
 ) -> float:
+    """Prognos med samma integrate_cost som slutberäkningen.
+
+    Effektkurva: median av normaliserade körningar (kalibrering) annars
+    basprofil skalad med median faktisk/profil-kWh från senaste körningar.
+    """
     start = parse_ha_datetime_local(start_iso.strip()) or datetime.now().astimezone()
     key = diskmaskin_program_key(program)
     profile = DISKMASKIN_PROFILE_KWH[key]
@@ -732,9 +1030,23 @@ def run_diskmaskin_prognos(
         secrets, start, program
     )
     slots = fetch_nordpool_slots(secrets)
-    if not slots:
+    if not slots or duration <= 0:
         return 0.0
-    return integrate_profile_cost(start, duration, profile, slots)
+
+    cal = load_diskmaskin_calibration()
+    median_shape = median_w_shape_for_program(cal, key)
+    if median_shape is not None:
+        w_per_min = shape_to_w_per_min(median_shape, duration)
+    else:
+        scale = median_kwh_scale(cal, key)
+        w_per_min = profile_to_w_per_min(duration, profile)
+        if scale > 0.05:
+            w_per_min = [w * scale for w in w_per_min]
+
+    run_end = start + timedelta(minutes=duration)
+    points = synthetic_power_points(start, w_per_min)
+    _, kr = integrate_cost(points, start, run_end, slots)
+    return kr
 
 
 def set_cost_text(secrets: dict[str, str], value: str) -> None:
@@ -776,10 +1088,37 @@ def main() -> int:
         default="",
         help="Programlängd (min) för diskmaskinens prognos; tom = Bosch kvar-tid eller standard.",
     )
+    parser.add_argument(
+        "--backfill-calibration",
+        action="store_true",
+        help="Fyll diskmaskinens kostnadskalibrering från historik (endast diskmaskin).",
+    )
+    parser.add_argument(
+        "--calibration-days",
+        default="14",
+        help="Dagar historik för --backfill-calibration.",
+    )
     args = parser.parse_args()
     configure_vitare(args.vitare)
 
     secrets = load_secrets()
+    if args.backfill_calibration:
+        if args.vitare != "diskmaskin":
+            print("backfill-calibration stöds endast för diskmaskin", file=sys.stderr)
+            return 1
+        try:
+            days = float(args.calibration_days.replace(",", "."))
+        except (TypeError, ValueError):
+            days = 14.0
+        try:
+            added = backfill_diskmaskin_calibration(secrets, days=days)
+            total = len(load_diskmaskin_calibration().get("runs", []))
+            print(f"diskmaskin kalibrering: lade till {added} körningar, totalt {total}")
+            return 0
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError) as exc:
+            print(f"diskmaskin kalibrering: fel {exc}", file=sys.stderr)
+            return 1
+
     if args.prognos:
         if args.vitare != "diskmaskin":
             print("prognos stöds endast för diskmaskin", file=sys.stderr)
@@ -855,6 +1194,23 @@ def main() -> int:
             return 0
         kr_text = format_kr(kr)
         set_cost_text(secrets, kr_text)
+        if args.vitare == "diskmaskin" and run_start_log and run_end_log:
+            program = fetch_entity_state(secrets, DISKMASKIN_ACTIVE_PROGRAM_ENTITY)
+            if not program or program in ("unknown", "unavailable"):
+                program = fetch_entity_state(
+                    secrets, "sensor.bosch_sma67md06e_68a40e70cb46_selected_program"
+                )
+            if not program or program in ("unknown", "unavailable"):
+                program = "Dishcare.Dishwasher.Program.Eco50"
+            record_diskmaskin_calibration_run(
+                secrets,
+                program,
+                run_start_log,
+                run_end_log,
+                kwh,
+                kr,
+                points,
+            )
         msg = (
             f"{args.vitare} kostnad: {kwh:.3f} kWh, {kr_text} kr "
             f"(start={run_start_log}, end={run_end_log})"

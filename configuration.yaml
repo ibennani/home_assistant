@@ -101,6 +101,9 @@ shell_command:
     python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare diskmaskin --prognos
     --start-iso "{{ start_iso }}" --program "{{ program }}"
     --duration-min "{{ duration_min | default('') }}"
+  diskmaskin_kalibrera_kostnad_profil: >-
+    python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare diskmaskin
+    --backfill-calibration --calibration-days "{{ days | default('14') }}"
   elpris_synka_tibber_faktiska: python3 /config/scripts/elpris-synka-tibber-faktiska.py
   seerr_process_request: >-
     python3 /config/custom_scripts/seerr_request_notify.py

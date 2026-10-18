@@ -3569,7 +3569,7 @@ diskmaskin_uppdatera_start_meddelande:
 
 diskmaskin_prognos_kostnad:
   alias: "Diskmaskin: beräkna prognoskostnad"
-  description: "Anropar scripts/tvattmaskin-berakna-kostnad-klar.py --prognos: en modell för Eco 50° och en för Intensiv 70° (kWh-profil × marginalpris per kvart), samma vid fjärrstart och vid start. Målet är att ligga nära slutkostnaden från effektmätning."
+  description: "Anropar scripts/tvattmaskin-berakna-kostnad-klar.py --prognos: samma integrate_cost som vid klar, med effektkurva från kalibrering (median av tidigare körningar) eller skalad basprofil. Målet är att ligga nära slutkostnaden från effektmätning."
   mode: queued
   fields:
     start_iso:
