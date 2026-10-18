@@ -30,9 +30,8 @@ DISKMASKIN_REMAINING_ENTITY = (
 )
 DISKMASKIN_PROGNOS_ENTITY = "input_number.diskmaskin_kostnad_fjarrstart"
 
-# Prognosmodell (enda källan): kWh per 15-min från programstart × elpris_marginal_kwh_se3-kvartar.
-# Kalibrerat mot faktiska körningar (effekthistorik × marginalpris) — ska ligga nära
-# input_text.diskmaskin_senaste_kostnaden efter avslutad körning.
+# Prognos: integrate_cost på syntetisk effektkurva (kalibrering i www/diskmaskin-kostnad-kalibrering.json).
+# Basprofil nedan används som fallback tills kalibrering finns (skalas med median faktisk/profil-kWh).
 # eco = Eco 50°, intensiv = Intensiv 70° (program-id innehåller Eco50 respektive Intensiv70).
 DISKMASKIN_PROFILE_KWH: dict[str, list[float]] = {
     "intensiv": [
