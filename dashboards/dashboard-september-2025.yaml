@@ -4697,7 +4697,9 @@ views:
         entities:
         - input_button.las_upp_texten
   - type: custom:state-switch
-    entity: group
+    entity: template
+    template: "{% if user.is_admin %}admin{% else %}user{% endif %}"
+    default: user
     states:
       admin:
         type: vertical-stack
@@ -4727,6 +4729,9 @@ views:
               layout:
                 name: header
                 align_controls: center
+      user:
+        type: markdown
+        content: ' '
 - type: sections
   max_columns: 4
   title: El-förbrukning
@@ -6360,7 +6365,9 @@ views:
                 data:
                   message: Uppdaterar positioner
     - type: custom:state-switch
-      entity: group
+      entity: template
+      template: "{% if user.is_admin %}admin{% else %}user{% endif %}"
+      default: user
       states:
         admin:
           type: entities
@@ -6369,6 +6376,9 @@ views:
           - device_tracker.anna_s22_ultra
           - device_tracker.annelies_iphone
           - device_tracker.erik_s23
+        user:
+          type: markdown
+          content: ' '
     - type: map
       title: Ilias senaste 24 timmarna
       entities:
