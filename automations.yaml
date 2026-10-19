@@ -7503,7 +7503,7 @@
   - variables:
       home_count: '{{ states(''zone.home'') | int(0) }}'
       morninginfo: '{{ states(''var.morgoninfo_koket_redan_upplast'') | lower }}'
-      outdoor_temp: '{{ states(''sensor.framsidan_temperatur'') | float(none) }}'
+      outdoor_temp: '{{ states(''sensor.utomhus_baksidan_temperature'') | float(none) }}'
       wd: '{{ now().weekday() }}'
       now_minutes: '{{ now().hour * 60 + now().minute }}'
       threshold_minutes: '{{ 20*60 if wd in [0,1,2,3,6] else 22*60 }}'
