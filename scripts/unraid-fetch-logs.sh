@@ -19,13 +19,15 @@ uptime
 echo "=== last boot ==="
 who -b 2>/dev/null || true
 echo "=== syslog (senaste rader) ==="
-if [[ -f /boot/logs/syslog ]]; then
-  tail -n 1200 /boot/logs/syslog
-elif [[ -f /var/log/syslog ]]; then
-  tail -n 1200 /var/log/syslog
+if [[ -f /var/log/syslog ]]; then
+  tail -n 2000 /var/log/syslog
+elif [[ -f /boot/logs/syslog ]]; then
+  tail -n 2000 /boot/logs/syslog
 else
   echo "ingen syslog hittades"
 fi
+echo "=== ata-crc-monitor (senaste) ==="
+tail -n 40 /var/log/ata-crc-monitor.log 2>/dev/null || true
 echo "=== dmesg (senaste) ==="
 if dmesg -T >/dev/null 2>&1; then
   dmesg -T | tail -n 500
