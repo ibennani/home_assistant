@@ -10371,6 +10371,32 @@
     event: start
   actions:
   - action: script.badrum_synka_profil_flaggor
+- id: badrum_rorelse_duration_30_vid_start
+  alias: 'Badrum: rörelse Duration 30 s vid HA-start'
+  description: Sätter deCONZ Duration på badrumsrörelsen till 30 s efter omstart (sensorn rapporterar ibland 90 s igen).
+  mode: single
+  triggers:
+  - trigger: homeassistant
+    event: start
+  actions:
+  - delay: 00:02:00
+  - repeat:
+      count: 12
+      until:
+      - condition: template
+        value_template: '{{ states(''number.badrummet_rorelse_duration'') not in [''unavailable'', ''unknown''] }}'
+      sequence:
+      - delay: 00:00:10
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ states(''number.badrummet_rorelse_duration'') | int(0) != 30 }}'
+      sequence:
+      - action: number.set_value
+        target:
+          entity_id: number.badrummet_rorelse_duration
+        data:
+          value: 30
 - id: pendeltag_farsta_strand_morgon_forsening
   alias: 'Mobilnotis: Pendeltåg Farsta strand förseningar vardag morgon'
   description: 'Vardagar kl 07:25 — notis om minst två norrgående pendeltåg har försening på 2 minuter eller mer. Enstaka
