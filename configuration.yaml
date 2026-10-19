@@ -109,6 +109,11 @@ shell_command:
     python3 /config/custom_scripts/seerr_request_notify.py
     --media-type "{{ media_type }}" --title "{{ title }}"
     --tmdb-id "{{ tmdb_id }}" --tvdb-id "{{ tvdb_id }}"
+  unraid_fetch_logs: >-
+    UNRAID_HOST=192.168.0.234 UNRAID_USER=root
+    UNRAID_SSH_PASSWORD=!secret unraid_ssh_password
+    bash /config/scripts/unraid-fetch-logs.sh
+  unraid_show_logs: tail -c 120000 /config/unraid-log-latest.txt 2>&1 || true
 
 #######################################################
 # Media
