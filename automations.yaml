@@ -10380,17 +10380,17 @@
     event: start
   actions:
   - delay: 00:02:00
-  - repeat:
-      count: 12
-      until:
-      - condition: template
-        value_template: '{{ states(''number.badrummet_rorelse_duration'') not in [''unavailable'', ''unknown''] }}'
-      sequence:
-      - delay: 00:00:10
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ states(''number.badrummet_rorelse_duration'') | int(0) != 30 }}'
+        value_template: '{{ states(''number.badrummet_rorelse_duration'') in [''unavailable'', ''unknown''] }}'
+      sequence:
+      - delay: 00:01:00
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ states(''number.badrummet_rorelse_duration'') not in [''unavailable'', ''unknown'']
+          and states(''number.badrummet_rorelse_duration'') | int(0) != 30 }}'
       sequence:
       - action: number.set_value
         target:
