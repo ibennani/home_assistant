@@ -9577,11 +9577,26 @@
       - condition: template
         value_template: '{{ not is_state(''zone.home'',''0'') }}'
       sequence:
-      - action: input_select.select_option
-        target:
-          entity_id: input_select.house_alarm_modes
-        data:
-          option: Nattlarm
+      - delay: '00:00:15'
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: input_select.house_time_modes
+            state: Natt
+          - condition: state
+            entity_id: input_boolean.night_alarm_on
+            state: 'on'
+          - condition: state
+            entity_id: input_select.house_alarm_modes
+            state: Larmet är avstängt
+          - condition: template
+            value_template: '{{ not is_state(''zone.home'',''0'') }}'
+          sequence:
+          - action: input_select.select_option
+            target:
+              entity_id: input_select.house_alarm_modes
+            data:
+              option: Nattlarm
     - conditions:
       - condition: template
         value_template: '{{ trigger.entity_id == ''input_select.house_time_modes'' and trigger.from_state is not none and
