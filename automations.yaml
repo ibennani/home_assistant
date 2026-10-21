@@ -6999,7 +6999,7 @@
     target:
       entity_id: input_select.koket_belysning
     data:
-      option: "{% if states(\"input_select.house_time_modes\") in [\"Morgon\",\"Dag\"] %} Släckt {% else %} {{ state(\"input_select.koket_belysning\"\
+      option: "{% if states(\"input_select.house_time_modes\") in [\"Morgon\",\"Dag\"] %} Mysigt {% else %} {{ state(\"input_select.koket_belysning\"\
         ) }} {% endif %}  \n"
   - action: script.turn_on
     target:
