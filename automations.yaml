@@ -6865,28 +6865,32 @@
       - cover.rullgardin_annas_rum
   condition:
   - condition: template
-    value_template: '{{ trigger.event.data.id in cover_map and trigger.event.data.event in [1002, 2002] }}
-
-      '
+    value_template: "{% set ev = trigger.event.data.event | int(0) %}\n{{ trigger.event.data.id in cover_map\n   and ev in\
+      \ [1001, 1002, 2001, 2002] }}\n"
   action:
   - variables:
       targets: '{{ cover_map[trigger.event.data.id] }}'
-      covers_att_aktivera: "{% if trigger.event.data.event == 1002 %}\n  {{ expand(targets) | selectattr('state', 'ne', 'open')\
-        \ | map(attribute='entity_id') | list }}\n{% else %}\n  {{ expand(targets) | selectattr('state', 'ne', 'closed') |\
-        \ map(attribute='entity_id') | list }}\n{% endif %}\n"
+      remote_event: '{{ trigger.event.data.event | int(0) }}'
+      covers_att_aktivera: "{% set ev = remote_event | int(0) %}\n{% set ns = namespace(ids=[]) %}\n{% for cover in expand(targets)\
+        \ %}\n  {% set pos = cover.attributes.current_position | int(none) %}\n  {% if ev in [1001, 1002] and pos is number\
+        \ and pos < 100 %}\n    {% set ns.ids = ns.ids + [cover.entity_id] %}\n  {% elif ev in [2001, 2002] and pos is number\
+        \ and pos > 0 %}\n    {% set ns.ids = ns.ids + [cover.entity_id] %}\n  {% elif ev in [1001, 1002] and pos is not number\
+        \ and cover.state != 'open' %}\n    {% set ns.ids = ns.ids + [cover.entity_id] %}\n  {% elif ev in [2001, 2002] and\
+        \ pos is not number and cover.state != 'closed' %}\n    {% set ns.ids = ns.ids + [cover.entity_id] %}\n  {% endif %}\n\
+        {% endfor %}\n{{ ns.ids }}\n"
   - condition: template
     value_template: '{{ covers_att_aktivera | length > 0 }}'
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ trigger.event.data.event == 1002 }}'
+        value_template: '{{ remote_event in [1001, 1002] }}'
       sequence:
       - action: cover.open_cover
         target:
           entity_id: '{{ covers_att_aktivera }}'
     - conditions:
       - condition: template
-        value_template: '{{ trigger.event.data.event == 2002 }}'
+        value_template: '{{ remote_event in [2001, 2002] }}'
       sequence:
       - action: cover.close_cover
         target:
