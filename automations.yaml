@@ -5022,12 +5022,6 @@
     trigger: state
     entity_id: input_select.badrummet_vem
     to: Erik
-    not_from:
-    - unavailable
-    - unknown
-    not_to:
-    - unavailable
-    - unknown
   actions:
   - variables:
       house_mode: '{{ states(''input_select.house_time_modes'') }}'
