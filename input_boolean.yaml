@@ -115,6 +115,9 @@
   eriks_rum_vagg_blockera_enkeltryck:
     name: Eriks rum vägg — blockera enkeltryck efter dubbeltryck
     initial: off
+  eriks_rum_morgon_mys_gjort:
+    name: Eriks rum morgon-mys gjort idag
+    initial: off
 
 
 # Toggle som avgör om vattenspridaren ska stara automatiskt

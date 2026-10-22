@@ -4997,6 +4997,8 @@
       entity_id: script.sovrummet_stall_in_belysningen
 - id: 015091598558904098dg498dgfsfa000dddsaaage0
   alias: 'Belysning: Styr belysningen och rullgardinen i Eriks rum'
+  description: Fjärr/rullgardin, Erik hemma/borta, samt morgon-mys (Erik i badrummet vardag 06:30–09:00) när morgoninfo
+    körts och rummet är Släckt.
   triggers:
   - id: remote_event
     trigger: event
@@ -5016,6 +5018,16 @@
     trigger: state
     entity_id: sensor.erik_aktiv_zon
     from: zone.home
+  - id: badrum_erik_morgon
+    trigger: state
+    entity_id: input_select.badrummet_vem
+    to: Erik
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
   actions:
   - variables:
       house_mode: '{{ states(''input_select.house_time_modes'') }}'
@@ -5094,6 +5106,47 @@
           variables:
             lage: "{% if trigger.id == 'erik_home' %}\n  {{ default_mode_when_erik_home }}\n{% else %}\n  {{ default_mode_when_erik_away\
               \ }}\n{% endif %}"
+    - conditions:
+      - condition: trigger
+        id: badrum_erik_morgon
+      - condition: state
+        entity_id: input_boolean.vacation_mode
+        state: 'off'
+      - condition: state
+        entity_id: var.morgoninfo_koket_redan_upplast
+        state: 'true'
+      - condition: state
+        entity_id: input_select.eriks_rum_belysning
+        state: Släckt
+      - condition: state
+        entity_id: input_boolean.eriks_rum_morgon_mys_gjort
+        state: 'off'
+      - condition: template
+        value_template: "{{ now().isoweekday() in [1, 2, 3, 4, 5]\n   and now() >= today_at('06:30:00')\n   and now() <\
+          \ today_at('09:00:00') }}\n"
+      sequence:
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ not is_state(''cover.rullgardin_eriks_rum'', ''open'') }}'
+          sequence:
+          - action: cover.open_cover
+            target:
+              entity_id: cover.rullgardin_eriks_rum
+          - wait_template: '{{ is_state(''cover.rullgardin_eriks_rum'', ''open'') }}'
+            timeout: 00:01:30
+            continue_on_timeout: true
+        default: []
+      - action: script.turn_on
+        target:
+          entity_id: script.eriks_rum_satt_lage
+        data:
+          variables:
+            force: true
+            lage: Mysigt
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.eriks_rum_morgon_mys_gjort
     default: []
   mode: restart
 - alias: 'Belysning: Kör script som styr belysningen i Eriks rum'
@@ -6409,6 +6462,9 @@
     data:
       entity_id: var.morgoninfo_koket_redan_upplast
       value: 'false'
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.eriks_rum_morgon_mys_gjort
 - id: automation_vardagsrum_rullgardiner_automatic_logic
   alias: 'Rullgardiner: Styr rullgardinerna i vardagsrummet (Solskydd)'
   description: Hanterar rena solskyddsgardiner baserat på solinsläpp, TV-status, ljusstyrka och husläge. TV måste vara aktiv
