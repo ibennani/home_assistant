@@ -5706,17 +5706,21 @@
     entity_id: binary_sensor.diskmaskin_lucka
     from: 'off'
     to: 'on'
-    id: avbruten_fjarrstart
+    id: avbruten_fjarrstart_lucka
   - trigger: state
     entity_id: binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed
     from: 'on'
     to: 'off'
-    id: avbruten_fjarrstart
+    for: 00:02:00
+    id: avbruten_fjarrstart_remote
   actions:
   - choose:
     - conditions:
       - condition: trigger
         id: rakna_ut_starttid
+      - condition: state
+        entity_id: input_boolean.diskmaskin_fjarrstart_vantar
+        state: 'off'
       - condition: template
         value_template: "{{ is_state('binary_sensor.diskmaskin_lucka', 'off') and is_state('binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed', 'on') and not is_state('binary_sensor.diskmaskin_program_aktiv', 'on') }}"
       sequence:
@@ -5923,26 +5927,18 @@
       - condition: trigger
         id: fjarrstarta_diskmaskinen
       - condition: template
-        value_template: "{{\n  states('input_text.diskmaskin_tid_fjarrstart') != '' and\n  is_state('binary_sensor.diskmaskin_lucka','off')\
-          \ and\n  is_state('binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed','on')\
-          \ and\n  now() >= states('input_text.diskmaskin_tid_fjarrstart') | as_datetime | as_local\n}}"
+        value_template: "{{\n  states('input_text.diskmaskin_tid_fjarrstart') | trim != '' and\n  is_state('input_boolean.diskmaskin_fjarrstart_vantar', 'on') and\n  is_state('binary_sensor.diskmaskin_lucka','off') and\n  is_state('binary_sensor.bosch_sma67md06e_68a40e70cb46_bsh_common_status_remotecontrolstartallowed','on') and\n  not is_state('binary_sensor.diskmaskin_program_aktiv', 'on') and\n  now() >= (states('input_text.diskmaskin_tid_fjarrstart') | trim | as_datetime | as_local)\n}}"
       sequence:
       - variables:
           dishwasher_program: "{% set p = states('input_text.diskmaskin_program_fjarrstart') %}{{ p if p not in ['', 'unknown', 'unavailable'] else 'Dishcare.Dishwasher.Program.Eco50' }}"
           use_speed_option: true
           speed_option_entity: switch.bosch_sma67md06e_68a40e70cb46_dishcare_dishwasher_option_variospeedplus
-      - variables:
-          dishwasher_program_label: "{% if 'Intensiv70' in dishwasher_program %}Intensiv 70°{% else %}Eco 50°{% endif %}"
-      - action: input_text.set_value
-        target:
-          entity_id: input_text.diskmaskin_tid_fjarrstart
-        data:
-          value: ''
-      - action: input_text.set_value
-        target:
-          entity_id: input_text.diskmaskin_program_fjarrstart
-        data:
-          value: ''
+          start_button: button.bosch_sma67md06e_68a40e70cb46_start_pause
+      - wait_template: "{{ not is_state(start_button, 'unavailable') }}"
+        timeout: '00:10:00'
+        continue_on_timeout: true
+      - condition: template
+        value_template: "{{ not is_state(start_button, 'unavailable') }}"
       - action: select.select_option
         data:
           entity_id: select.bosch_sma67md06e_68a40e70cb46_programs
@@ -5959,10 +5955,37 @@
           - delay: 00:00:05
       - action: button.press
         target:
-          entity_id: button.bosch_sma67md06e_68a40e70cb46_start_pause
+          entity_id: '{{ start_button }}'
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: binary_sensor.diskmaskin_program_aktiv
+          to: 'on'
+        timeout: '00:03:00'
+        continue_on_timeout: true
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.diskmaskin_program_aktiv
+            state: 'on'
+          sequence:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.diskmaskin_fjarrstart_vantar
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.diskmaskin_tid_fjarrstart
+            data:
+              value: ''
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.diskmaskin_program_fjarrstart
+            data:
+              value: ''
     - conditions:
       - condition: trigger
-        id: avbruten_fjarrstart
+        id:
+        - avbruten_fjarrstart_lucka
+        - avbruten_fjarrstart_remote
       - condition: template
         value_template: "{{ not is_state('binary_sensor.diskmaskin_program_aktiv', 'on')\n   and (\n     is_state('sensor.diskmaskin_current_operation_mode', 'Ready')\n     or is_state('input_boolean.diskmaskin_fjarrstart_vantar', 'on')\n   ) }}\n"
       sequence:
@@ -6010,6 +6033,16 @@
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.diskmaskin_fjarrstart_vantar
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.diskmaskin_tid_fjarrstart
+    data:
+      value: ''
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.diskmaskin_program_fjarrstart
+    data:
+      value: ''
   - choose:
     - conditions:
       - condition: state
