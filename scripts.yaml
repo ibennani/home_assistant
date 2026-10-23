@@ -1810,7 +1810,7 @@ om_huslarmet_triggas:
         \ {% endif %} {{- ns.triggered_sensors_str }}"
       mottagare: foraldrar
 spela_tv_stream_pa_appletv:
-  alias: Spela upp TF1 på Apple TV i VLC
+  alias: Spela lång tågresa på YouTube (Apple TV)
   mode: single
   sequence:
   - action: media_player.turn_on
@@ -1822,7 +1822,7 @@ spela_tv_stream_pa_appletv:
       entity_id: media_player.appletv
     data:
       media_content_type: url
-      media_content_id: vlc://https://raw.githubusercontent.com/Paradise-91/ParaTV/main/streams/tf1plus/tf1.m3u8
+      media_content_id: https://www.youtube.com/watch?v=3rDjPLvOShM
   - delay: 00:00:15
   - action: media_player.volume_set
     target:
@@ -1835,7 +1835,7 @@ spela_tv_stream_pa_appletv:
       entity_id: media_player.appletv
     data:
       media_content_type: url
-      media_content_id: vlc://https://raw.githubusercontent.com/Paradise-91/ParaTV/main/streams/tf1plus/tf1.m3u8
+      media_content_id: https://www.youtube.com/watch?v=3rDjPLvOShM
 test_fraga_om_att_tanda_en_lampa:
   alias: Fråga om att tända en lampa
   sequence:
