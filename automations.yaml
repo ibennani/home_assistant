@@ -6663,12 +6663,6 @@
     to:
     - 'off'
     - standby
-    not_from:
-    - unavailable
-    - unknown
-    not_to:
-    - unavailable
-    - unknown
   - id: rullgardiner_upp_huslage
     trigger: state
     entity_id: input_select.house_time_modes
