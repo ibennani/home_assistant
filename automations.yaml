@@ -1396,19 +1396,19 @@
               continue_on_error: true
               target:
                 entity_id: light.taklampa_wc
-- id: ring_reload_motion_event_8c5c
-  alias: 'Ring: Ladda om integration vid trasigt motion-event'
-  description: 'Ring push (FCM) kan tystna. Reload när event unavailable, dagligen 04:00/10:00, eller när last_activity visar
-    motion men MQTT/event hänger kvar på gammal tid.
+- id: ha_integration_reload_samlad
+  alias: 'HA: Starta om integration vid fel eller unavailable'
+  description: 'Samlad integrationsvård. Ring: unavailable 2 min, daglig reload 04:00/10:00, hängande motion-event. Övriga:
+    vakthund unavailable 2 min. Utöka watchdog-triggern och entry_ids/integration_namn; lägg Ring-triggers i ring_trigger_ids.
 
     '
-  mode: single
+  mode: queued
   triggers:
   - trigger: state
+    id: ring_unavailable
     entity_id: event.front_door_motion
     to: unavailable
-    for:
-      minutes: 2
+    for: 00:02:00
     not_from:
     - unavailable
     - unknown
@@ -1427,6 +1427,16 @@
   - trigger: time
     at: '10:00:00'
     id: daglig_reload_morgon
+  - trigger: state
+    id: watchdog_unavailable
+    entity_id:
+    - media_player.appletv
+    - sensor.netatmo_bennani_vs_inomhus_temperature
+    to: unavailable
+    for: 00:02:00
+    not_from:
+    - unavailable
+    - unknown
   conditions:
   - condition: template
     value_template: "{% if trigger.id == 'stale_motion_event' %}\n  {% set mqtt_ts = as_timestamp(states.binary_sensor.front_door_motion_2.last_changed)\
@@ -1436,38 +1446,27 @@
       \ 'unknown', 'none', '']\n     and latest > 0\n     and (as_timestamp(trigger.to_state.state) - latest) > 300 }}\n{%\
       \ else %}\n  true\n{% endif %}\n"
   actions:
-  - action: homeassistant.reload_config_entry
-    data:
-      entry_id: 01K8XPBX3QCW9K57MHCF2T84MY
-- id: ha_integration_reload_unavailable
-  alias: 'HA: Starta om integration vid unavailable (2 min)'
-  description: 'Bevakar vakthund-entiteter per integration. Vid unavailable i 2 min laddas om motsvarande config entry. Utöka
-    entity_id i trigger samt entry_ids/integration_namn i variables.
-
-    '
-  mode: queued
-  triggers:
-  - trigger: state
-    entity_id:
-    - media_player.appletv
-    - sensor.netatmo_bennani_vs_inomhus_temperature
-    to: unavailable
-    for: 00:02:00
-    not_from:
-    - unavailable
-    - unknown
-  actions:
   - variables:
+      ring_entry_id: 01K8XPBX3QCW9K57MHCF2T84MY
+      ring_trigger_ids:
+      - ring_unavailable
+      - stale_motion_event
+      - daglig_reload
+      - daglig_reload_morgon
       entry_ids:
         media_player.appletv: 01KV3QT5KVRZS03XJ7Y03VVSP4
         sensor.netatmo_bennani_vs_inomhus_temperature: 221e7869256521bbbd499124948ea588
       integration_namn:
         media_player.appletv: Apple TV
         sensor.netatmo_bennani_vs_inomhus_temperature: Netatmo
-      entry_id: '{{ entry_ids.get(trigger.entity_id, '''') }}'
-      integration_label: '{{ integration_namn.get(trigger.entity_id, trigger.entity_id) }}'
+        ring_unavailable: Ring
+        stale_motion_event: Ring
+        daglig_reload: Ring
+        daglig_reload_morgon: Ring
+      entry_id: "{% if trigger.id in ring_trigger_ids %}\n  {{ ring_entry_id }}\n{% elif trigger.id == 'watchdog_unavailable'\
+        \ %}\n  {{ entry_ids.get(trigger.entity_id, '') }}\n{% else %}\n  \n{% endif %}\n"
   - condition: template
-    value_template: '{{ entry_id != '''' }}'
+    value_template: '{{ entry_id | trim != '''' }}'
   - action: homeassistant.reload_config_entry
     data:
       entry_id: '{{ entry_id }}'
