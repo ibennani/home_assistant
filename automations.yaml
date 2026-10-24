@@ -1439,6 +1439,38 @@
   - action: homeassistant.reload_config_entry
     data:
       entry_id: 01K8XPBX3QCW9K57MHCF2T84MY
+- id: ha_integration_reload_unavailable
+  alias: 'HA: Starta om integration vid unavailable (2 min)'
+  description: 'Bevakar vakthund-entiteter per integration. Vid unavailable i 2 min laddas om motsvarande config entry. Utöka
+    entity_id i trigger samt entry_ids/integration_namn i variables.
+
+    '
+  mode: queued
+  triggers:
+  - trigger: state
+    entity_id:
+    - media_player.appletv
+    - sensor.netatmo_bennani_vs_inomhus_temperature
+    to: unavailable
+    for: 00:02:00
+    not_from:
+    - unavailable
+    - unknown
+  actions:
+  - variables:
+      entry_ids:
+        media_player.appletv: 01KV3QT5KVRZS03XJ7Y03VVSP4
+        sensor.netatmo_bennani_vs_inomhus_temperature: 221e7869256521bbbd499124948ea588
+      integration_namn:
+        media_player.appletv: Apple TV
+        sensor.netatmo_bennani_vs_inomhus_temperature: Netatmo
+      entry_id: '{{ entry_ids.get(trigger.entity_id, '''') }}'
+      integration_label: '{{ integration_namn.get(trigger.entity_id, trigger.entity_id) }}'
+  - condition: template
+    value_template: '{{ entry_id != '''' }}'
+  - action: homeassistant.reload_config_entry
+    data:
+      entry_id: '{{ entry_id }}'
 - id: ring_blink_verifiering_8c5c
   alias: 'Test: Verifiera blink i badrum vid framsida-rörelse (engångs)'
   mode: single
