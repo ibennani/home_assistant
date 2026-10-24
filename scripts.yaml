@@ -1830,12 +1830,6 @@ spela_tv_stream_pa_appletv:
       - media_player.denon_avr_x2800h
     data:
       volume_level: 0.4
-  - action: media_player.play_media
-    target:
-      entity_id: media_player.appletv
-    data:
-      media_content_type: url
-      media_content_id: youtube://watch/3rDjPLvOShM
 test_fraga_om_att_tanda_en_lampa:
   alias: Fråga om att tända en lampa
   sequence:
