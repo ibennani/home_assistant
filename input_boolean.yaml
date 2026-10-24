@@ -226,3 +226,9 @@
     name: Apple TV borta-uppspelning aktiv
     icon: mdi:television-play
     initial: off
+
+# På under HA-avstängning/omstart så mediacentrum inte släcker TV/receiver på felaktig Apple TV-off
+  ha_omstart_pagar:
+    name: HA omstart pågår (mediacentrum paus)
+    icon: mdi:restart
+    initial: off
