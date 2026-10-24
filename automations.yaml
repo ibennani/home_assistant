@@ -6655,13 +6655,17 @@
   - id: rullgardiner_upp_tv_av
     trigger: state
     entity_id: media_player.sony_tv_i_vardagsrummet
-    not_from:
-    - unavailable
-    - unknown
+    from:
     - playing
     - 'on'
     - idle
     - paused
+    to:
+    - 'off'
+    - standby
+    not_from:
+    - unavailable
+    - unknown
     not_to:
     - unavailable
     - unknown
@@ -6700,6 +6704,9 @@
         value_template: "{% if trigger.id in ['rullgardiner_upp_lux', 'rullgardiner_upp_lux_tv', 'rullgardiner_upp_huslage']\
           \ %}\n  true\n{% elif trigger.id in ['rullgardiner_upp_sol_framsidan', 'rullgardiner_upp_sol_vinter', 'rullgardiner_upp_tv_av']\
           \ %}\n  {{ not tv_aktiv and not solskydd }}\n{% else %}\n  false\n{% endif %}\n"
+      - condition: template
+        value_template: "{% if trigger.id == 'rullgardiner_upp_tv_av' %}\n  {{ is_state('input_boolean.ha_omstart_pagar',\
+          \ 'off') }}\n{% else %}\n  true\n{% endif %}\n"
       sequence:
       - condition: template
         value_template: '{{ gardiner_att_opena | length > 0 }}'
