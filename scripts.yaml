@@ -1809,27 +1809,100 @@ om_huslarmet_triggas:
         \ == 1 -%} {{- ns.triggered_count }} sensor har triggats: {% else %} {{- ns.triggered_count }} sensorer har triggats:\
         \ {% endif %} {{- ns.triggered_sensors_str }}"
       mottagare: foraldrar
-spela_tv_stream_pa_appletv:
-  alias: Spela lång tågresa på YouTube (Apple TV)
+appletv_borta_starta_kedja:
+  alias: 'Apple TV borta: starta filmkedja från film 1'
   mode: single
   sequence:
-  - action: media_player.turn_on
+  - action: input_boolean.turn_on
     target:
-      entity_id: media_player.appletv
-  - delay: 00:00:30
-  - action: media_player.play_media
+      entity_id: input_boolean.appletv_borta_uppspelning_aktiv
+  - action: input_number.set_value
     target:
-      entity_id: media_player.appletv
+      entity_id: input_number.appletv_borta_film_index
     data:
-      media_content_type: url
-      media_content_id: youtube://watch/3rDjPLvOShM
-  - delay: 00:00:15
-  - action: media_player.volume_set
+      value: 0
+  - action: script.turn_on
     target:
-      entity_id:
-      - media_player.denon_avr_x2800h
-    data:
-      volume_level: 0.4
+      entity_id: script.appletv_borta_spela_aktuell_film
+appletv_borta_spela_aktuell_film:
+  alias: 'Apple TV borta: spela film enligt index'
+  mode: single
+  sequence:
+  - variables:
+      filmer:
+      - n-J5UN2cAgs
+      - Xug66XHYTZ8
+      film_index: '{{ states(''input_number.appletv_borta_film_index'') | int(0) }}'
+      video_id: "{% set ids = ['n-J5UN2cAgs', 'Xug66XHYTZ8'] %}\n{% set i = states('input_number.appletv_borta_film_index') | int(0) %}\n{{ ids[i] if i < ids | length else '' }}\n"
+      forsta_film: '{{ (states(''input_number.appletv_borta_film_index'') | int(0)) == 0 }}'
+  - condition: template
+    value_template: '{{ video_id | trim != '''' }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ forsta_film }}'
+      sequence:
+      - action: media_player.turn_on
+        target:
+          entity_id: media_player.appletv
+      - delay: 00:00:30
+      - action: media_player.play_media
+        target:
+          entity_id: media_player.appletv
+        data:
+          media_content_type: url
+          media_content_id: youtube://watch/{{ video_id }}
+      - delay: 00:00:15
+      - action: media_player.volume_set
+        target:
+          entity_id:
+          - media_player.denon_avr_x2800h
+        data:
+          volume_level: 0.4
+    default:
+    - delay: 00:00:10
+    - action: media_player.play_media
+      target:
+        entity_id: media_player.appletv
+      data:
+        media_content_type: url
+        media_content_id: youtube://watch/{{ video_id }}
+appletv_borta_spela_nasta_film:
+  alias: 'Apple TV borta: nästa film i kedjan'
+  mode: single
+  sequence:
+  - condition: state
+    entity_id: input_boolean.appletv_borta_uppspelning_aktiv
+    state: 'on'
+  - condition: template
+    value_template: '{{ is_state(''zone.home'', ''0'') }}'
+  - variables:
+      max_index: 1
+      film_index: '{{ states(''input_number.appletv_borta_film_index'') | int(0) }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ film_index < max_index }}'
+      sequence:
+      - action: input_number.set_value
+        target:
+          entity_id: input_number.appletv_borta_film_index
+        data:
+          value: '{{ film_index + 1 }}'
+      - action: script.turn_on
+        target:
+          entity_id: script.appletv_borta_spela_aktuell_film
+    default:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.appletv_borta_uppspelning_aktiv
+spela_tv_stream_pa_appletv:
+  alias: Spela borta-TV på Apple TV (100 platser, från film 1)
+  mode: single
+  sequence:
+  - action: script.turn_on
+    target:
+      entity_id: script.appletv_borta_starta_kedja
 test_fraga_om_att_tanda_en_lampa:
   alias: Fråga om att tända en lampa
   sequence:
