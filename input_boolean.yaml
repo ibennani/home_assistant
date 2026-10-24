@@ -220,3 +220,9 @@
     name: Diskmaskin fjärrstart väntar
     icon: mdi:dishwasher
     initial: off
+
+# På när borta-kedjan (100 platser del 1→2) kör; av vid hemma eller efter sista filmen
+  appletv_borta_uppspelning_aktiv:
+    name: Apple TV borta-uppspelning aktiv
+    icon: mdi:television-play
+    initial: off

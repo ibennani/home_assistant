@@ -4085,6 +4085,9 @@
       - condition: template
         value_template: "{{ is_state('input_select.house_time_modes', 'Kväll')\n  and states('media_player.appletv') not in ['standby', 'off', 'unavailable', 'unknown'] }}\n"
       sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.appletv_borta_uppspelning_aktiv
       - action: media_player.media_stop
         continue_on_error: true
         target:
@@ -4095,6 +4098,26 @@
       - action: remote.turn_off
         target:
           entity_id: remote.appletv
+- id: appletv_borta_nasta_film_vid_slut
+  alias: 'Media: Apple TV borta – nästa film när uppspelning slutar'
+  triggers:
+  - trigger: state
+    entity_id: media_player.appletv
+    from: playing
+    to: idle
+    for: 00:02:00
+  conditions:
+  - condition: state
+    entity_id: input_boolean.appletv_borta_uppspelning_aktiv
+    state: 'on'
+  - condition: state
+    entity_id: zone.home
+    state: '0'
+  actions:
+  - action: script.turn_on
+    target:
+      entity_id: script.appletv_borta_spela_nasta_film
+  mode: single
 - id: 79183401610860586sdfsagdgr4574
   alias: 'Media: Styr mediacentret i vardagsrummet (TV, PS4, AppleTV, Chromecast audio, Chromecast i Sony-TV och receivern)'
   triggers:
