@@ -1822,7 +1822,7 @@ spela_tv_stream_pa_appletv:
       entity_id: media_player.appletv
     data:
       media_content_type: url
-      media_content_id: https://www.youtube.com/watch?v=3rDjPLvOShM
+      media_content_id: youtube://watch/3rDjPLvOShM
   - delay: 00:00:15
   - action: media_player.volume_set
     target:
@@ -1835,7 +1835,7 @@ spela_tv_stream_pa_appletv:
       entity_id: media_player.appletv
     data:
       media_content_type: url
-      media_content_id: https://www.youtube.com/watch?v=3rDjPLvOShM
+      media_content_id: youtube://watch/3rDjPLvOShM
 test_fraga_om_att_tanda_en_lampa:
   alias: Fråga om att tända en lampa
   sequence:
