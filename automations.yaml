@@ -830,7 +830,7 @@
       option: "{% if states(\"sensor.time\") == \"07:00\" \n  and now().strftime('%u') | int(default=0) in [1,2,3,4,5] \n\
         \  and states(\"sensor.utomhus_baksidan_ljusstyrka\") | int(default = 0) < 2000%} Tänt\n{% else %} {{ states('input_select.annas_rum_belysning')\
         \ }} {% endif %}\n"
-  initial_state: true
+  initial_state: false
 - id: lgksajgsgj324
   alias: 'Belysning: Släck i sovrummet när vi öppnar rullgardinen'
   triggers:
