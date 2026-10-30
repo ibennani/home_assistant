@@ -6,14 +6,17 @@ from __future__ import annotations
 import json
 import os
 import re
+import sqlite3
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
-SECRETS_PATH = __import__("pathlib").Path("/config/secrets.yaml")
+SECRETS_PATH = Path("/config/secrets.yaml")
+RECORDER_DB = Path("/config/home-assistant_v2.db")
 STATE_ENTITY = "sensor.el_kostnad_24h_kvartar_runner"
 POWER_ENTITY = "sensor.power_eksharadsgatan_6"
 ELPRIS_ENTITY = "sensor.elpris_marginal_kwh_se3"
@@ -57,20 +60,26 @@ def load_supervisor_token() -> str:
 
 
 def ha_auth(secrets: dict[str, str]) -> tuple[str, str]:
-    supervisor = load_supervisor_token()
+    long_lived = secrets.get("ha_long_lived_token", "").strip()
     token = (
-        supervisor
-        or secrets.get("ha_long_lived_token", "").strip()
+        long_lived
         or os.environ.get("HA_TOKEN", "").strip()
+        or os.environ.get("SUPERVISOR_TOKEN", "").strip()
+        or os.environ.get("HASSIO_TOKEN", "").strip()
+        or load_supervisor_token()
     )
     if not token:
         raise RuntimeError("saknar HA-token")
-    if supervisor:
-        return "http://supervisor/core", token
-    internal = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
-    if "ui.nabu.casa" in internal or internal.startswith("https://"):
-        return "http://127.0.0.1:8123", token
-    return internal, token
+    base = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
+    if Path("/config/configuration.yaml").exists() and (
+        "ui.nabu.casa" in base or base.startswith("https://")
+    ):
+        base = "http://127.0.0.1:8123"
+    elif token and not long_lived and (
+        os.environ.get("SUPERVISOR_TOKEN") or os.environ.get("HASSIO_TOKEN")
+    ):
+        base = "http://supervisor/core"
+    return base, token
 
 
 def api_request(
@@ -255,6 +264,40 @@ def merge_price_slots(
     return sorted(by_start.values(), key=lambda x: x[0])
 
 
+def fetch_power_history_db(
+    start: datetime, end: datetime
+) -> list[tuple[datetime, float]]:
+    if not RECORDER_DB.is_file():
+        return []
+    cutoff_ts = start.timestamp()
+    try:
+        with sqlite3.connect(f"file:{RECORDER_DB}?mode=ro", uri=True, timeout=30) as conn:
+            rows = conn.execute(
+                """
+                SELECT s.last_updated_ts, s.state
+                FROM states s
+                INNER JOIN states_meta m ON s.metadata_id = m.metadata_id
+                WHERE m.entity_id = ? AND s.last_updated_ts >= ?
+                ORDER BY s.last_updated_ts
+                """,
+                (POWER_ENTITY, cutoff_ts),
+            ).fetchall()
+    except sqlite3.Error:
+        return []
+    points: list[tuple[datetime, float]] = []
+    tz = start.tzinfo or TZ
+    for ts, state in rows:
+        try:
+            t = datetime.fromtimestamp(float(ts), tz=tz)
+            v = float(state)
+        except (TypeError, ValueError):
+            continue
+        if t > end or v < 0:
+            continue
+        points.append((t, v))
+    return points
+
+
 def fetch_power_history(
     secrets: dict[str, str], start: datetime, end: datetime
 ) -> list[tuple[datetime, float]]:
@@ -283,6 +326,8 @@ def fetch_power_history(
                 points.append((t, v))
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         points = []
+    if not points:
+        points = fetch_power_history_db(start, end)
     points.sort(key=lambda x: x[0])
     return points
 
@@ -458,16 +503,20 @@ def main() -> int:
     secrets = load_secrets()
     try:
         payload = compute_payload(secrets)
-        if payload.get("method") != "fel":
-            publish_state(secrets, payload)
-    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+    except Exception as exc:
         payload = {
             "total": 0.0,
             "total_kr": 0.0,
             "slots": [],
             "updated_at": datetime.now(TZ).isoformat(),
             "method": "fel",
+            "error": str(exc)[:240],
         }
+    else:
+        try:
+            publish_state(secrets, payload)
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+            pass
     print(json.dumps(payload, ensure_ascii=False))
     return 0
 
