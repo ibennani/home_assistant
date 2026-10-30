@@ -5243,10 +5243,10 @@ views:
         - type: markdown
           content: |
             ### 3. Enkelt betyg
-            **{{ states('sensor.el_smart_andel_24h_pct') | default('—') }} %** av elen (kWh) förbrukades när priset låg **på eller under snittet** för perioden.
+            **{{ states('sensor.el_smart_andel_24h') | default('—') }} %** av elen (kWh) förbrukades när priset låg **på eller under snittet** för perioden.
             *Grön = smart, röd = mycket el när det var dyrare — se graf 2.*
         - type: gauge
-          entity: sensor.el_smart_andel_24h_pct
+          entity: sensor.el_smart_andel_24h
           name: Smart el (24 h)
           min: 0
           max: 100
