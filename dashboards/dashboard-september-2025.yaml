@@ -5158,8 +5158,8 @@ views:
         show: true
         show_states: false
         standard_format: false
-        title: El-kostnad senaste 48 timmarna
-      graph_span: 48h
+        title: El-kostnad senaste 24 timmarna
+      graph_span: 24h
       all_series_config:
         type: column
         show:

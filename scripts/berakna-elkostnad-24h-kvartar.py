@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Beräkna elkostnad per kvart för rullande 48 timmar (kr + kWh per 15 min)."""
+"""Beräkna elkostnad per kvart för rullande 24 timmar (kr + kWh per 15 min)."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ POWER_ENTITY = "sensor.power_eksharadsgatan_6"
 ELPRIS_ENTITY = "sensor.elpris_marginal_kwh_se3"
 TIBBER_PRICE_ENTITY = "sensor.electricity_price_eksharadsgatan_6"
 TZ = ZoneInfo("Europe/Stockholm")
-HOURS_BACK = 48
+HOURS_BACK = 24
 QUARTERS = HOURS_BACK * 4
 
 
