@@ -5158,16 +5158,10 @@ views:
         show: true
         show_states: false
         standard_format: false
-        title: El-kostnad senaste 24 timmarna
-      graph_span: 24h
-      span:
-        end: minute
-      now:
-        show: true
-        label: Nu
+        title: El-kostnad senaste 48 timmarna
+      graph_span: 48h
       all_series_config:
         type: column
-        extend_to: now
         show:
           legend_value: false
       apex_config:
@@ -5195,10 +5189,11 @@ views:
           show: false
         xaxis:
           type: datetime
-          tickAmount: 8
+          tickAmount: 16
           labels:
             rotate: 0
-            formatter: "EVAL:(value) => {\n  const d = new Date(value);\n  const h = d.getHours();\n  return [0, 6, 12, 18].includes(h) ? ('0' + h).slice(-2) + ' ' : '';\n}\n"
+            datetimeUTC: false
+            formatter: "EVAL:(value) => {\n  const d = new Date(value);\n  if (d.getMinutes() !== 0) return '';\n  const h = d.getHours();\n  if (![0, 6, 12, 18].includes(h)) return '';\n  return ('0' + h).slice(-2);\n}\n"
         yaxis:
           forceNiceScale: true
           decimalsInFloat: 2
