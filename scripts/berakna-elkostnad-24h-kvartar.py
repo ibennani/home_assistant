@@ -239,12 +239,20 @@ def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, dateti
         if isinstance(resp, dict):
             state = resp
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
-        state = fetch_state_db(ELPRIS_ENTITY)
-    if not state:
-        state = fetch_state_db(ELPRIS_ENTITY)
-    attrs = state.get("attributes") or {}
+        state = {}
+    attrs = state.get("attributes") if isinstance(state, dict) else None
     if not isinstance(attrs, dict):
-        attrs = fetch_state_attributes_db(ELPRIS_ENTITY)
+        attrs = {}
+    has_raw = bool(coerce_slot_list(attrs.get("raw_today"))) or bool(
+        coerce_slot_list(attrs.get("today"))
+    )
+    if not has_raw:
+        db_attrs = fetch_state_attributes_db(ELPRIS_ENTITY)
+        if db_attrs:
+            attrs = db_attrs
+    if not attrs:
+        db_state = fetch_state_db(ELPRIS_ENTITY)
+        attrs = db_state.get("attributes") if isinstance(db_state.get("attributes"), dict) else {}
     return marginal_slots_from_attrs(attrs)
 
 

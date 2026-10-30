@@ -5187,7 +5187,8 @@ views:
         tooltip:
           enabled: true
           y:
-            formatter: "EVAL:(val) => parseFloat(val).toFixed(2).replace('.', ':') + ' kr'"
+            formatter: "EVAL:(val) => parseFloat(val).toFixed(2).replace('.', ':') + ' kr/kWh'"
+          custom: "EVAL:function({ seriesIndex, dataPointIndex, w }) {\n  const pt = w.config.series[seriesIndex].data[dataPointIndex];\n  const price = pt && pt.y != null ? Number(pt.y) : NaN;\n  const cost = pt && pt.cost != null ? Number(pt.cost) : NaN;\n  const kwh = pt && pt.kwh != null ? Number(pt.kwh) : NaN;\n  const fmt = (n, u) => (Number.isFinite(n) ? n.toFixed(2).replace('.', ':') + ' ' + u : '—');\n  const when = pt && pt.x ? new Date(pt.x).toLocaleString('sv-SE', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';\n  return '<div class=\"apexcharts-tooltip-title\" style=\"font-family: inherit;\">' + when + '</div>' +\n    '<div style=\"padding: 4px 10px;\">Pris: <b>' + fmt(price, 'kr/kWh') + '</b><br/>Kostnad: <b>' + fmt(cost, 'kr') + '</b><br/>Förbrukning: <b>' + fmt(kwh, 'kWh') + '</b></div>';\n}\n"
         dataLabels:
           enabled: false
         legend:
@@ -5203,7 +5204,7 @@ views:
           decimalsInFloat: 2
           min: 0
           labels:
-            formatter: "EVAL:(val) => parseFloat(val).toFixed(2).replace('.', ':') + ' kr'"
+            formatter: "EVAL:(val) => parseFloat(val).toFixed(2).replace('.', ':') + ' kr/kWh'"
         plotOptions:
           bar:
             columnWidth: 95%
@@ -5211,15 +5212,15 @@ views:
           show: false
       series:
       - entity: sensor.el_kostnad_24h_kvartar_runner
-        name: Kostnad per kvart
+        name: Pris per kvart
         type: column
-        unit: ' kr'
+        unit: ' kr/kWh'
         float_precision: 2
         show:
           in_chart: true
           in_header: true
           legend_value: false
-        data_generator: "try {\nconst parse = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' && raw.length ? JSON.parse(raw) : []);\nconst rows = parse(entity.attributes.slots);\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nreturn rows.map((row) => {\n  const start = new Date(row.start);\n  const cost = Number(row.cost);\n  const price = Number(row.price);\n  return {\n    x: start.getTime(),\n    y: cost,\n    fillColor: colorFor(price),\n  };\n});\n} catch (e) { return []; }\n"
+        data_generator: "try {\nconst parse = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' && raw.length ? JSON.parse(raw) : []);\nconst rows = parse(entity.attributes.slots);\nconst colorForCost = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0.30) return '#809fff';\n  if (v < 0.50) return '#28fccf';\n  if (v < 0.70) return '#28fc61';\n  if (v < 0.90) return '#ebfc28';\n  if (v < 1.15) return '#fcd228';\n  if (v < 1.45) return '#fc9628';\n  if (v < 1.80) return '#fc3e28';\n  if (v < 2.20) return '#fc289d';\n  return '#af28fc';\n};\nreturn rows.map((row) => {\n  const start = new Date(row.start);\n  const cost = Number(row.cost);\n  const price = Number(row.price);\n  const kwh = Number(row.kwh);\n  return {\n    x: start.getTime(),\n    y: price,\n    cost,\n    kwh,\n    fillColor: colorForCost(cost),\n  };\n});\n} catch (e) { return []; }\n"
   - type: grid
     cards:
     - type: entities
