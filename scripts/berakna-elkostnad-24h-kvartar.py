@@ -326,7 +326,7 @@ def merge_price_slots(
     by_start: dict[datetime, tuple[datetime, datetime, float]] = {
         s0: (s0, s1, p) for s0, s1, p in marginal
     }
-    last_price = fallback
+    last_price = fallback_price
     t = floor_quarter(window_start)
     while t < window_end + timedelta(minutes=15):
         if t in by_start:
@@ -340,7 +340,7 @@ def merge_price_slots(
                         price = tibber_map[key]
                         break
             if price is None or price <= 0:
-                price = last_price if last_price > 0 else fallback
+                price = last_price if last_price > 0 else fallback_price
             by_start[t] = (t, t + timedelta(minutes=15), float(price))
             last_price = float(price)
         t += timedelta(minutes=15)
@@ -565,6 +565,15 @@ def run_self_test() -> int:
     assert floor_quarter(datetime(2026, 3, 4, 13, 7, 30, tzinfo=TZ)) == datetime(
         2026, 3, 4, 13, 0, 0, tzinfo=TZ
     )
+    merged = merge_price_slots(
+        [],
+        {},
+        datetime(2026, 3, 4, 12, 0, tzinfo=TZ),
+        datetime(2026, 3, 4, 12, 30, tzinfo=TZ),
+        2.5,
+    )
+    assert len(merged) >= 2
+    assert merged[0][2] == 2.5
     return 0
 
 
@@ -582,6 +591,7 @@ def publish_state(secrets: dict[str, str], payload: dict) -> None:
             "window_end": payload.get("window_end"),
             "updated_at": payload.get("updated_at"),
             "method": payload.get("method"),
+            "error": payload.get("error"),
         },
     }
     entity = urllib.parse.quote(STATE_ENTITY, safe="")
