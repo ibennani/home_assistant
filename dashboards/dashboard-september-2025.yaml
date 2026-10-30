@@ -5154,14 +5154,12 @@ views:
           color: '#9d26ff'
       state_color: true
     - type: custom:apexcharts-card
-      chart_type: bar
       header:
         show: true
         show_states: true
         standard_format: false
+        title: El-kostnad senaste 24 timmarna
       graph_span: 24h
-      span:
-        end: latest
       now:
         show: true
         label: Nu

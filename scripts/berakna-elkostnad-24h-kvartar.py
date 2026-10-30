@@ -225,7 +225,7 @@ def merge_price_slots(
                     if key in tibber_map:
                         price = tibber_map[key]
                         break
-            if price is None:
+            if price is None or price <= 0:
                 price = fallback_price
             by_start[t] = (t, t + timedelta(minutes=15), float(price))
         t += timedelta(minutes=15)
