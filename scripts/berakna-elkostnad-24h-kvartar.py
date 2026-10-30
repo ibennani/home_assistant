@@ -144,11 +144,66 @@ def parse_slot_row(s: object) -> tuple[datetime, datetime, float] | None:
     return start, end, price
 
 
-def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
-    state = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
-    if not isinstance(state, dict):
-        return []
-    attrs = state.get("attributes") or {}
+def fetch_state_attributes_db(entity_id: str) -> dict:
+    if not RECORDER_DB.is_file():
+        return {}
+    try:
+        with sqlite3.connect(f"file:{RECORDER_DB}?mode=ro", uri=True, timeout=15) as conn:
+            row = conn.execute(
+                """
+                SELECT s.attributes
+                FROM states s
+                INNER JOIN states_meta m ON s.metadata_id = m.metadata_id
+                WHERE m.entity_id = ?
+                ORDER BY s.last_updated_ts DESC
+                LIMIT 1
+                """,
+                (entity_id,),
+            ).fetchone()
+    except sqlite3.Error:
+        return {}
+    if not row or not row[0]:
+        return {}
+    try:
+        parsed = json.loads(row[0])
+        return parsed if isinstance(parsed, dict) else {}
+    except json.JSONDecodeError:
+        return {}
+
+
+def fetch_state_db(entity_id: str) -> dict:
+    if not RECORDER_DB.is_file():
+        return {}
+    try:
+        with sqlite3.connect(f"file:{RECORDER_DB}?mode=ro", uri=True, timeout=15) as conn:
+            row = conn.execute(
+                """
+                SELECT s.state, s.attributes
+                FROM states s
+                INNER JOIN states_meta m ON s.metadata_id = m.metadata_id
+                WHERE m.entity_id = ?
+                ORDER BY s.last_updated_ts DESC
+                LIMIT 1
+                """,
+                (entity_id,),
+            ).fetchone()
+    except sqlite3.Error:
+        return {}
+    if not row:
+        return {}
+    state, attrs_raw = row[0], row[1]
+    attrs: dict = {}
+    if attrs_raw:
+        try:
+            parsed = json.loads(attrs_raw)
+            if isinstance(parsed, dict):
+                attrs = parsed
+        except json.JSONDecodeError:
+            attrs = {}
+    return {"state": state, "attributes": attrs}
+
+
+def marginal_slots_from_attrs(attrs: dict) -> list[tuple[datetime, datetime, float]]:
     slots: list[tuple[datetime, datetime, float]] = []
     for key in ("raw_today", "raw_tomorrow"):
         if key == "raw_tomorrow":
@@ -175,6 +230,22 @@ def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, dateti
         except (TypeError, ValueError):
             continue
     return sorted(slots, key=lambda x: x[0])
+
+
+def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
+    state: dict = {}
+    try:
+        resp = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
+        if isinstance(resp, dict):
+            state = resp
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        state = fetch_state_db(ELPRIS_ENTITY)
+    if not state:
+        state = fetch_state_db(ELPRIS_ENTITY)
+    attrs = state.get("attributes") or {}
+    if not isinstance(attrs, dict):
+        attrs = fetch_state_attributes_db(ELPRIS_ENTITY)
+    return marginal_slots_from_attrs(attrs)
 
 
 def extract_prices_payload(resp: object) -> dict[str, list]:
@@ -402,7 +473,11 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         if isinstance(st, dict):
             fallback = float(st.get("state") or 0)
     except (TypeError, ValueError, urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError):
-        fallback = 0.0
+        db_st = fetch_state_db(ELPRIS_ENTITY)
+        try:
+            fallback = float(db_st.get("state") or 0)
+        except (TypeError, ValueError):
+            fallback = 0.0
     tibber_map: dict[datetime, float] = {}
     try:
         tibber_map = fetch_tibber_price_map(
