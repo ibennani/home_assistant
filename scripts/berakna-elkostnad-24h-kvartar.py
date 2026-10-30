@@ -233,26 +233,25 @@ def marginal_slots_from_attrs(attrs: dict) -> list[tuple[datetime, datetime, flo
 
 
 def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
-    state: dict = {}
-    try:
-        resp = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
-        if isinstance(resp, dict):
-            state = resp
-    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
-        state = {}
-    attrs = state.get("attributes") if isinstance(state, dict) else None
-    if not isinstance(attrs, dict):
-        attrs = {}
+    attrs: dict = {}
+    if Path("/config/configuration.yaml").exists():
+        attrs = fetch_state_attributes_db(ELPRIS_ENTITY)
     has_raw = bool(coerce_slot_list(attrs.get("raw_today"))) or bool(
         coerce_slot_list(attrs.get("today"))
     )
     if not has_raw:
-        db_attrs = fetch_state_attributes_db(ELPRIS_ENTITY)
-        if db_attrs:
-            attrs = db_attrs
+        try:
+            resp = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
+            if isinstance(resp, dict):
+                api_attrs = resp.get("attributes")
+                if isinstance(api_attrs, dict):
+                    attrs = api_attrs
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+            pass
     if not attrs:
         db_state = fetch_state_db(ELPRIS_ENTITY)
-        attrs = db_state.get("attributes") if isinstance(db_state.get("attributes"), dict) else {}
+        if isinstance(db_state.get("attributes"), dict):
+            attrs = db_state["attributes"]
     return marginal_slots_from_attrs(attrs)
 
 
