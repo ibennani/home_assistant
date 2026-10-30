@@ -105,6 +105,9 @@ shell_command:
     python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py --vitare diskmaskin
     --backfill-calibration --calibration-days "{{ days | default('14') }}"
   elpris_synka_tibber_faktiska: python3 /config/scripts/elpris-synka-tibber-faktiska.py
+  elpris_arkiv_kvartar: python3 /config/scripts/elpris-arkiv-kvartar.py
+  elpris_arkiv_kvartar_tick: python3 /config/scripts/elpris-arkiv-kvartar.py --tick
+  elpris_arkiv_las_gardagen: python3 /config/scripts/elpris-arkiv-kvartar.py --lock-yesterday
   seerr_process_request: >-
     python3 /config/custom_scripts/seerr_request_notify.py
     --media-type "{{ media_type }}" --title "{{ title }}"

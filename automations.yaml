@@ -10298,6 +10298,40 @@
     at: '14:05:00'
   actions:
   - action: script.elpris_synka_tibber_faktiska_priser
+- alias: 'Elpris: arkiv kvartpriser (efter Tibber-synk)'
+  id: elpris_arkiv_efter_synk
+  description: Fyller prisbok på disk från marginal-sensorn efter Tibber-synk.
+  mode: single
+  triggers:
+  - trigger: homeassistant
+    event: start
+  actions:
+  - delay:
+      seconds: 45
+  - action: shell_command.elpris_arkiv_kvartar
+    continue_on_error: true
+- alias: 'Elpris: arkiv kvartpris tick'
+  id: elpris_arkiv_kvart_tick
+  description: Säkerställer aktuellt kvart i prisbok var 15:e minut.
+  mode: single
+  triggers:
+  - trigger: time_pattern
+    minutes: '3,18,33,48'
+  actions:
+  - action: shell_command.elpris_arkiv_kvartar_tick
+    continue_on_error: true
+- alias: 'Elpris: lås gårdagens kvartpriser'
+  id: elpris_arkiv_las_gardagen
+  description: Låser gårdagens prisfil efter midnatt så den inte skrivs över.
+  mode: single
+  triggers:
+  - trigger: time
+    at: '00:12:00'
+  actions:
+  - action: shell_command.elpris_arkiv_las_gardagen
+    continue_on_error: true
+  - action: shell_command.elpris_arkiv_kvartar
+    continue_on_error: true
 - alias: 'System: Git-synk från GitHub'
   id: cursor_git_synk
   description: Synkar /config med GitHub main och laddar om YAML. Cursor Cloud anropar event cursor_git_synk.

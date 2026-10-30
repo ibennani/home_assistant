@@ -2486,6 +2486,8 @@ elpris_synka_tibber_faktiska_priser:
   - action: template.reload
   - action: shell_command.elpris_synka_tibber_faktiska
     continue_on_error: true
+  - action: shell_command.elpris_arkiv_kvartar
+    continue_on_error: true
 mobilnotis:
   alias: Mobilnotis
   description: "Central avsändare för alla mobilnotiser via Companion-appen. Android: icon_url (höger) + HA-ikon (vänster)."
