@@ -11,6 +11,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 SECRETS_PATH = __import__("pathlib").Path("/config/secrets.yaml")
@@ -68,7 +69,9 @@ def ha_auth(secrets: dict[str, str]) -> tuple[str, str]:
     if supervisor:
         return "http://supervisor/core", token
     internal = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
-    if "ui.nabu.casa" in internal or internal.startswith("https://"):
+    if Path("/config/configuration.yaml").exists() and (
+        "ui.nabu.casa" in internal or internal.startswith("https://")
+    ):
         return "http://127.0.0.1:8123", token
     return internal, token
 
@@ -458,8 +461,6 @@ def main() -> int:
     secrets = load_secrets()
     try:
         payload = compute_payload(secrets)
-        if payload.get("method") != "fel":
-            publish_state(secrets, payload)
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         payload = {
             "total": 0.0,
@@ -468,6 +469,11 @@ def main() -> int:
             "updated_at": datetime.now(TZ).isoformat(),
             "method": "fel",
         }
+    else:
+        try:
+            publish_state(secrets, payload)
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+            pass
     print(json.dumps(payload, ensure_ascii=False))
     return 0
 
