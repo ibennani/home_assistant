@@ -10316,7 +10316,8 @@
   mode: single
   triggers:
   - trigger: time_pattern
-    minutes: '3,18,33,48'
+    minutes: '/15'
+    seconds: 10
   actions:
   - action: shell_command.elpris_arkiv_kvartar_tick
     continue_on_error: true
