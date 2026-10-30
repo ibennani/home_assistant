@@ -288,6 +288,32 @@
           {% set runner = states('sensor.el_kostnad_idag_marginal_runner') | trim %}
           {{ 'forbrukning_per_kvart' if runner not in ['unknown', 'unavailable', 'none', ''] and (runner | float(0)) > 0 else 'uppskattning_snitt_marginal' }}
 
+    - name: El smart andel 24h
+      unique_id: el_smart_andel_24h_pct
+      unit_of_measurement: "%"
+      icon: mdi:leaf-circle-outline
+      state: >-
+        {% set slots = state_attr('sensor.el_kostnad_24h_kvartar_runner', 'slots') or [] %}
+        {% set ns = namespace(total=0, sum_p=0, n=0, smart=0) %}
+        {% for s in slots %}
+          {% set k = s.kwh | default(0) | float(0) %}
+          {% set p = s.price | default(0) | float(0) %}
+          {% if k > 0.001 and p > 0 %}
+            {% set ns.total = ns.total + k %}
+            {% set ns.sum_p = ns.sum_p + p %}
+            {% set ns.n = ns.n + 1 %}
+          {% endif %}
+        {% endfor %}
+        {% set avg_p = (ns.sum_p / ns.n) if ns.n > 0 else 0 %}
+        {% for s in slots %}
+          {% set k = s.kwh | default(0) | float(0) %}
+          {% set p = s.price | default(0) | float(0) %}
+          {% if k > 0.05 and p > 0 and avg_p > 0 and p <= avg_p %}
+            {% set ns.smart = ns.smart + k %}
+          {% endif %}
+        {% endfor %}
+        {{ ((ns.smart / ns.total * 100) | round(0)) if ns.total > 0 else 0 }}
+
     - name: Lufttryck inomhus
       unique_id: indoor_pressure_mean_05s6df0a1sg0asg81asg8r00aaasdf
       unit_of_measurement: hPa

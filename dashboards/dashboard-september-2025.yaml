@@ -5153,69 +5153,183 @@ views:
         - value: 4000
           color: '#9d26ff'
       state_color: true
-    - type: custom:apexcharts-card
-      header:
-        show: true
-        show_states: false
-        standard_format: false
-        title: El-kostnad senaste 24 timmarna
-      graph_span: 24h
-      all_series_config:
-        type: column
-        show:
-          legend_value: false
-      apex_config:
-        chart:
-          animations:
-            enabled: false
-          type: bar
-        grid:
-          yaxis:
-            lines:
-              show: true
+    - type: heading
+      heading: Smart el — 4 prototyper (senaste 24 h)
+      heading_style: title
+    - type: grid
+      columns: 2
+      cards:
+      - type: custom:apexcharts-card
+        header:
+          show: true
+          show_states: false
+          title: '1. Pris + förbrukning (två kurvor)'
+        graph_span: 24h
+        apex_config:
+          chart:
+            animations:
+              enabled: false
+            height: 220
+          legend:
+            show: true
           xaxis:
-            lines:
-              show: true
-          strokeDashArray: 0.5
-          strokeWidth: 0.5
-        tooltip:
-          enabled: true
-          y:
-            formatter: "EVAL:(val) => parseFloat(val).toFixed(2).replace('.', ':') + ' kr'"
-          custom: "EVAL:function({ seriesIndex, dataPointIndex, w }) {\n  const pt = w.config.series[seriesIndex].data[dataPointIndex];\n  const cost = pt && pt.y != null ? Number(pt.y) : NaN;\n  const price = pt && pt.price != null ? Number(pt.price) : NaN;\n  const kwh = pt && pt.kwh != null ? Number(pt.kwh) : NaN;\n  const fmt = (n, u) => (Number.isFinite(n) ? n.toFixed(2).replace('.', ':') + ' ' + u : '—');\n  const when = pt && pt.x ? new Date(pt.x).toLocaleString('sv-SE', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';\n  return '<div class=\"apexcharts-tooltip-title\" style=\"font-family: inherit;\">' + when + '</div>' +\n    '<div style=\"padding: 4px 10px;\">Kostnad: <b>' + fmt(cost, 'kr') + '</b><br/>Pris: <b>' + fmt(price, 'kr/kWh') + '</b><br/>Förbrukning: <b>' + fmt(kwh, 'kWh') + '</b></div>';\n}\n"
-        dataLabels:
-          enabled: false
-        legend:
-          show: false
-        xaxis:
-          type: datetime
-          tickAmount: 24
-          labels:
-            rotate: 0
-            datetimeUTC: false
-            formatter: "EVAL:(value) => {\n  const d = new Date(value);\n  return ('0' + d.getHours()).slice(-2);\n}\n"
-        yaxis:
-          forceNiceScale: true
-          decimalsInFloat: 2
+            type: datetime
+            tickAmount: 12
+            labels:
+              datetimeUTC: false
+              formatter: "EVAL:(v) => { const d = new Date(v); return ('0' + d.getHours()).slice(-2); }\n"
+          yaxis:
+          - title:
+              text: kr/kWh
+            decimalsInFloat: 2
+          - opposite: true
+            title:
+              text: kWh
+            decimalsInFloat: 2
+          stroke:
+            width:
+            - 3
+            - 0
+          tooltip:
+            shared: true
+        series:
+        - entity: sensor.el_kostnad_24h_kvartar_runner
+          name: Elpris
+          type: line
+          float_precision: 2
+          data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nreturn parse(entity.attributes.slots).map(row=>{\nconst kwh=Number(row.kwh)||0; let p=Number(row.price)||0; const c=Number(row.cost)||0;\nif((!p||p<=0)&&kwh>0)p=c/kwh;\nreturn {x:new Date(row.start).getTime(), y:p};\n}).filter(d=>Number.isFinite(d.y)&&Number.isFinite(d.x));\n} catch(e){return [];}\n"
+        - entity: sensor.el_kostnad_24h_kvartar_runner
+          name: Förbrukning
+          type: column
+          float_precision: 3
+          data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nreturn parse(entity.attributes.slots).map(row=>({x:new Date(row.start).getTime(), y:Number(row.kwh)||0})).filter(d=>Number.isFinite(d.x));\n} catch(e){return [];}\n"
+      - type: custom:apexcharts-card
+        header:
+          show: true
+          show_states: false
+          title: '2. Smart vs dyrt (färgade staplar)'
+        graph_span: 24h
+        apex_config:
+          chart:
+            animations:
+              enabled: false
+            height: 220
+            type: bar
+          legend:
+            show: false
+          xaxis:
+            type: datetime
+            tickAmount: 12
+            labels:
+              datetimeUTC: false
+              formatter: "EVAL:(v) => { const d = new Date(v); return ('0' + d.getHours()).slice(-2); }\n"
+          yaxis:
+            min: 0
+            title:
+              text: kWh
+            decimalsInFloat: 2
+          plotOptions:
+            bar:
+              columnWidth: 90%
+          tooltip:
+            enabled: true
+        series:
+        - entity: sensor.el_kostnad_24h_kvartar_runner
+          name: Förbrukning
+          type: column
+          data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nconst rows=parse(entity.attributes.slots).map(row=>{\nconst kwh=Number(row.kwh)||0; let p=Number(row.price)||0; const c=Number(row.cost)||0;\nif((!p||p<=0)&&kwh>0)p=c/kwh;\nreturn {x:new Date(row.start).getTime(), kwh, price:p};\n}).filter(r=>Number.isFinite(r.x));\nconst med=a=>{const s=a.filter(v=>Number.isFinite(v)).sort((x,y)=>x-y);if(!s.length)return 0;const i=Math.floor(s.length/2);return s.length%2?s[i]:(s[i-1]+s[i])/2;};\nconst pMed=med(rows.map(r=>r.price)); const kMed=med(rows.map(r=>r.kwh));\nconst col=r=>{if(r.kwh<kMed*0.35)return '#888888'; return r.price<=pMed?'#28fc61':'#fc3e28';};\nreturn rows.map(r=>({x:r.x,y:r.kwh,fillColor:col(r),price:r.price}));\n} catch(e){return [];}\n"
+      - type: vertical-stack
+        cards:
+        - type: markdown
+          content: |
+            ### 3. Enkelt betyg
+            **{{ states('sensor.el_smart_andel_24h_pct') | default('—') }} %** av elen (kWh) förbrukades när priset låg **på eller under snittet** för perioden.
+            *Grön = smart, röd = mycket el när det var dyrare — se graf 2.*
+        - type: gauge
+          entity: sensor.el_smart_andel_24h_pct
+          name: Smart el (24 h)
           min: 0
-          labels:
-            formatter: "EVAL:(val) => parseFloat(val).toFixed(2).replace('.', ':') + ' kr'"
-        plotOptions:
-          bar:
-            columnWidth: 95%
-        stroke:
-          show: false
-      series:
-      - entity: sensor.el_kostnad_24h_kvartar_runner
-        name: Kostnad per kvart
-        type: column
-        unit: ' kr'
-        float_precision: 2
-        show:
-          in_chart: true
-          in_header: false
-          legend_value: false
-        data_generator: "try {\nconst ST = (typeof states !== 'undefined' && states) ? states : hass.states;\nconst parse = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' && raw.length ? JSON.parse(raw) : []);\nconst rows = parse(entity.attributes.slots);\nconst margEnt = ST['sensor.elpris_marginal_kwh_se3'];\nconst attrs = margEnt ? margEnt.attributes : {};\nconst priceSlots = [];\nfor (const row of parse(attrs.raw_today)) {\n  if (row && row.start != null && row.end != null && row.value != null) {\n    priceSlots.push({ start: new Date(row.start).getTime(), end: new Date(row.end).getTime(), v: Number(row.value) });\n  }\n}\nconst tmOk = attrs.tomorrow_valid === true || String(attrs.tomorrow_valid).toLowerCase() === 'true';\nif (tmOk) {\n  for (const row of parse(attrs.raw_tomorrow)) {\n    if (row && row.start != null && row.end != null && row.value != null) {\n      priceSlots.push({ start: new Date(row.start).getTime(), end: new Date(row.end).getTime(), v: Number(row.value) });\n    }\n  }\n}\nconst today0 = new Date();\ntoday0.setHours(0, 0, 0, 0);\nconst today0ms = today0.getTime();\nconst priceAt = (ms) => {\n  for (const s of priceSlots) {\n    if (ms >= s.start && ms < s.end) return s.v;\n  }\n  if (ms >= today0ms) {\n    const today = attrs.today;\n    if (Array.isArray(today) && today.length) {\n      const stepMin = today.length > 24 ? 15 : 60;\n      const idx = Math.floor((ms - today0ms) / (stepMin * 60000));\n      if (idx >= 0 && idx < today.length) return Number(today[idx]);\n    }\n  }\n  const st = Number(margEnt?.state);\n  return Number.isFinite(st) ? st : NaN;\n};\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nreturn rows.map((row) => {\n  const startMs = new Date(row.start).getTime();\n  const cost = Number(row.cost);\n  const kwh = Number(row.kwh);\n  let price = priceAt(startMs);\n  if (!Number.isFinite(price) || price <= 0) price = Number(row.price);\n  if ((!Number.isFinite(price) || price <= 0) && kwh > 0) price = cost / kwh;\n  return {\n    x: startMs,\n    y: cost,\n    price,\n    kwh,\n    fillColor: colorFor(price),\n  };\n});\n} catch (e) { return []; }\n"
+          max: 100
+          needle: true
+          severity:
+            green: 60
+            yellow: 35
+            red: 0
+        - type: custom:apexcharts-card
+          header:
+            show: true
+            show_states: false
+            title: '3b. Förbrukning per timme (färg)'
+          graph_span: 24h
+          apex_config:
+            chart:
+              animations:
+                enabled: false
+              height: 140
+              type: bar
+            legend:
+              show: false
+            xaxis:
+              type: datetime
+              tickAmount: 8
+              labels:
+                datetimeUTC: false
+                formatter: "EVAL:(v) => { const d = new Date(v); return ('0' + d.getHours()).slice(-2); }\n"
+            yaxis:
+              min: 0
+              decimalsInFloat: 1
+          series:
+          - entity: sensor.el_kostnad_24h_kvartar_runner
+            name: kWh
+            type: column
+            data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nconst rows=parse(entity.attributes.slots).map(row=>{\nconst kwh=Number(row.kwh)||0; let p=Number(row.price)||0; const c=Number(row.cost)||0;\nif((!p||p<=0)&&kwh>0)p=c/kwh;\nreturn {x:new Date(row.start).getTime(), kwh, price:p};\n});\nconst med=a=>{const s=a.filter(v=>Number.isFinite(v)).sort((x,y)=>x-y);if(!s.length)return 0;const i=Math.floor(s.length/2);return s.length%2?s[i]:(s[i-1]+s[i])/2;};\nconst pMed=med(rows.map(r=>r.price)); const kMed=med(rows.map(r=>r.kwh));\nconst col=r=>{if(r.kwh<kMed*0.35)return '#888888'; return r.price<=pMed?'#28fc61':'#fc3e28';};\nreturn rows.map(r=>({x:r.x,y:r.kwh,fillColor:col(r)}));\n} catch(e){return [];}\n"
+      - type: custom:apexcharts-card
+        header:
+          show: true
+          show_states: false
+          title: '4. Prisband + förbrukning'
+        graph_span: 24h
+        apex_config:
+          chart:
+            animations:
+              enabled: false
+            height: 220
+          legend:
+            show: true
+          xaxis:
+            type: datetime
+            tickAmount: 12
+            labels:
+              datetimeUTC: false
+              formatter: "EVAL:(v) => { const d = new Date(v); return ('0' + d.getHours()).slice(-2); }\n"
+          yaxis:
+          - min: 0
+            title:
+              text: kr/kWh
+            decimalsInFloat: 2
+          - opposite: true
+            min: 0
+            title:
+              text: kWh
+            decimalsInFloat: 2
+          plotOptions:
+            bar:
+              columnWidth: 95%
+          stroke:
+            width:
+            - 0
+            - 2
+        series:
+        - entity: sensor.el_kostnad_24h_kvartar_runner
+          name: Pris (bakgrund)
+          type: column
+          float_precision: 2
+          data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nconst cf=(v)=>{if(isNaN(v))return '#444';if(v<0.5)return '#809fff';if(v<1)return '#28fccf';if(v<1.5)return '#28fc61';if(v<2)return '#ebfc28';if(v<3)return '#fcd228';if(v<4)return '#fc9628';if(v<5)return '#fc3e28';if(v<6)return '#fc289d';return '#af28fc';};\nreturn parse(entity.attributes.slots).map(row=>{\nlet p=Number(row.price)||0; const kwh=Number(row.kwh)||0; const c=Number(row.cost)||0;\nif((!p||p<=0)&&kwh>0)p=c/kwh;\nreturn {x:new Date(row.start).getTime(), y:p, fillColor:cf(p), fillOpacity:0.45};\n}).filter(d=>Number.isFinite(d.x));\n} catch(e){return [];}\n"
+        - entity: sensor.el_kostnad_24h_kvartar_runner
+          name: Förbrukning
+          type: line
+          float_precision: 3
+          data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nreturn parse(entity.attributes.slots).map(row=>({x:new Date(row.start).getTime(), y:Number(row.kwh)||0})).filter(d=>Number.isFinite(d.x));\n} catch(e){return [];}\n"
   - type: grid
     cards:
     - type: entities
