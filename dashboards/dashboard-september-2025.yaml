@@ -5160,9 +5160,16 @@ views:
         standard_format: false
         title: El-kostnad senaste 24 timmarna
       graph_span: 24h
+      span:
+        end: minute
       now:
         show: true
         label: Nu
+      all_series_config:
+        type: column
+        extend_to: now
+        show:
+          legend_value: false
       apex_config:
         chart:
           animations:
@@ -5212,7 +5219,7 @@ views:
           in_chart: true
           in_header: true
           legend_value: false
-        data_generator: "const parse = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' && raw.length ? JSON.parse(raw) : []);\nconst rows = parse(entity.attributes.slots);\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nreturn rows.map((row) => {\n  const start = new Date(row.start);\n  const cost = Number(row.cost);\n  const price = Number(row.price);\n  return {\n    x: start.getTime(),\n    y: cost,\n    fillColor: colorFor(price),\n  };\n});\n"
+        data_generator: "try {\nconst parse = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' && raw.length ? JSON.parse(raw) : []);\nconst rows = parse(entity.attributes.slots);\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nreturn rows.map((row) => {\n  const start = new Date(row.start);\n  const cost = Number(row.cost);\n  const price = Number(row.price);\n  return {\n    x: start.getTime(),\n    y: cost,\n    fillColor: colorFor(price),\n  };\n});\n} catch (e) { return []; }\n"
   - type: grid
     cards:
     - type: entities

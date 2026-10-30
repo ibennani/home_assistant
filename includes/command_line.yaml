@@ -45,6 +45,7 @@
       - window_end
       - updated_at
       - method
+      - error
 
 - sensor:
     name: Tvattmaskin kostnad vid klar runner
