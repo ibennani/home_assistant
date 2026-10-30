@@ -27,6 +27,14 @@ All **kostnadsberäkning** i projektet (tvätt, disk, schemaläggning, notiser, 
 - **Automation:** `elpris_synka_tibber_faktiska` — vid start, varje timme (:05), 13:35 och 14:05
 - Körs också efter `script.git_synka_config`
 
+## Kvartarkiv (kostnad bakåt i tiden)
+
+- **Katalog:** `/config/data/elpris-kvartar/YYYY-MM-DD.json` (en fil per dag, 96 kvartar)
+- **Behållning:** idag + **7 dagar** tillbaka (äldre raderas automatiskt)
+- **Skript:** `scripts/elpris-arkiv-kvartar.py` via `shell_command.elpris_arkiv_kvartar`
+- **Fylls:** efter Tibber-synk, var 15:e minut (`--tick`), vid midnatt låses gårdagen (`--lock-yesterday`)
+- **Kostnad 24 h:** `berakna-elkostnad-24h-kvartar.py` läser arkiv + live marginal (inte Tibber bakåt)
+
 ## Fallback
 
 Om Tibber-synk saknas: Nord Pool per kvart + energiskatt + Ellevio + (Tibber elhandel − spot nu), annars fast Tibber-påslag-helper.

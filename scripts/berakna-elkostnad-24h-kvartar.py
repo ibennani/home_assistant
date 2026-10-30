@@ -21,6 +21,7 @@ STATE_ENTITY = "sensor.el_kostnad_24h_kvartar_runner"
 POWER_ENTITY = "sensor.power_eksharadsgatan_6"
 ELPRIS_ENTITY = "sensor.elpris_marginal_kwh_se3"
 TIBBER_PRICE_ENTITY = "sensor.electricity_price_eksharadsgatan_6"
+ARCHIVE_DIR = Path("/config/data/elpris-kvartar")
 TZ = ZoneInfo("Europe/Stockholm")
 HOURS_BACK = 24
 QUARTERS = HOURS_BACK * 4
@@ -347,6 +348,33 @@ def merge_price_slots(
     return sorted(by_start.values(), key=lambda x: x[0])
 
 
+def load_archive_slots(
+    window_start: datetime, window_end: datetime
+) -> list[tuple[datetime, datetime, float]]:
+    if not ARCHIVE_DIR.is_dir():
+        return []
+    out: list[tuple[datetime, datetime, float]] = []
+    day = window_start.date()
+    last_day = window_end.date()
+    while day <= last_day:
+        path = ARCHIVE_DIR / f"{day.isoformat()}.json"
+        if path.is_file():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                data = {}
+            for row in coerce_slot_list(data.get("slots") if isinstance(data, dict) else None):
+                parsed = parse_slot_row(row)
+                if not parsed:
+                    continue
+                s0, s1, price = parsed
+                if s1 <= window_start or s0 >= window_end + timedelta(minutes=15):
+                    continue
+                out.append((s0, s1, price))
+        day += timedelta(days=1)
+    return sorted(out, key=lambda x: x[0])
+
+
 def fetch_power_history_db(
     start: datetime, end: datetime
 ) -> list[tuple[datetime, float]]:
@@ -479,6 +507,13 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         marginal = fetch_marginal_slots(secrets)
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         marginal = []
+    archive = load_archive_slots(window_start, window_end)
+    by_start: dict[datetime, tuple[datetime, datetime, float]] = {
+        s0: (s0, s1, p) for s0, s1, p in archive
+    }
+    for s0, s1, p in marginal:
+        by_start[s0] = (s0, s1, p)
+    combined = sorted(by_start.values(), key=lambda x: x[0])
     fallback = 0.0
     try:
         st = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
@@ -490,15 +525,8 @@ def compute_payload(secrets: dict[str, str]) -> dict:
             fallback = float(db_st.get("state") or 0)
         except (TypeError, ValueError):
             fallback = 0.0
-    tibber_map: dict[datetime, float] = {}
-    try:
-        tibber_map = fetch_tibber_price_map(
-            secrets, window_start - timedelta(hours=1), window_end + timedelta(hours=1)
-        )
-    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
-        tibber_map = {}
     price_slots = merge_price_slots(
-        marginal, tibber_map, window_start, window_end, fallback
+        combined, {}, window_start, window_end, fallback
     )
     try:
         power = fetch_power_history(
@@ -538,7 +566,8 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         "window_end": window_end.isoformat(),
         "slots": slots_out,
         "updated_at": now.isoformat(),
-        "method": "effekt_marginalpris",
+        "method": "effekt_arkiv_marginal",
+        "archive_days": len({s0.date().isoformat() for s0, _, _ in archive}),
     }
 
 

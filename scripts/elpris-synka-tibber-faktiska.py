@@ -263,6 +263,14 @@ def main() -> int:
     }
     api_request(secrets, "POST", f"/api/states/{urllib.parse.quote(FAKTISK_ENTITY, safe='')}", body)
     log(f"OK state={state_val} today={len(today_vals)} tibber_slots={len(price_map)} tomorrow_valid={tomorrow_valid}")
+    try:
+        subprocess.run(
+            [sys.executable, "/config/scripts/elpris-arkiv-kvartar.py"],
+            timeout=45,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        pass
     return 0
 
 
