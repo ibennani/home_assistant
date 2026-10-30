@@ -235,30 +235,33 @@ def merge_price_slots(
 def fetch_power_history(
     secrets: dict[str, str], start: datetime, end: datetime
 ) -> list[tuple[datetime, float]]:
-    start_utc = start.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-    end_utc = end.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-    path = (
-        f"/api/history/period/{urllib.parse.quote(start_utc, safe='')}"
-        f"?filter_entity_id={urllib.parse.quote(POWER_ENTITY)}"
-        f"&end_time={urllib.parse.quote(end_utc, safe='')}"
-        f"&minimal_response&no_attributes"
-    )
-    data = api_request(secrets, "GET", path)
     points: list[tuple[datetime, float]] = []
-    if not isinstance(data, list) or not data:
-        return points
-    entity_rows = data[0] if isinstance(data[0], list) else []
-    for row in entity_rows:
-        if not isinstance(row, dict):
-            continue
-        try:
-            t = parse_iso(str(row.get("last_changed") or row.get("last_updated")))
-            v = float(row.get("state"))
-        except (TypeError, ValueError):
-            continue
-        if v < 0:
-            continue
-        points.append((t, v))
+    try:
+        start_param = urllib.parse.quote(start.isoformat())
+        end_param = urllib.parse.quote(end.isoformat())
+        path = (
+            f"/api/history/period/{start_param}"
+            f"?end_time={end_param}"
+            f"&filter_entity_id={urllib.parse.quote(POWER_ENTITY)}"
+            f"&minimal_response=true"
+            f"&no_attributes=true"
+        )
+        data = api_request(secrets, "GET", path)
+        if isinstance(data, list) and data and isinstance(data[0], list):
+            entity_rows = data[0]
+            for row in entity_rows:
+                if not isinstance(row, dict):
+                    continue
+                try:
+                    t = parse_iso(str(row.get("last_changed") or row.get("last_updated")))
+                    v = float(row.get("state"))
+                except (TypeError, ValueError):
+                    continue
+                if v < 0:
+                    continue
+                points.append((t, v))
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        points = []
     points.sort(key=lambda x: x[0])
     return points
 
