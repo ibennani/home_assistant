@@ -45,10 +45,15 @@ def ha_auth(secrets: dict[str, str]) -> tuple[str, str]:
         or os.environ.get("SUPERVISOR_TOKEN", "").strip()
         or os.environ.get("HASSIO_TOKEN", "").strip()
     )
-    base = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
-    if token and not secrets.get("ha_long_lived_token") and os.environ.get("SUPERVISOR_TOKEN"):
-        base = "http://supervisor/core"
-    return base, token
+    if not token:
+        raise RuntimeError("saknar HA-token")
+    if os.environ.get("SUPERVISOR_TOKEN"):
+        return "http://supervisor/core", token
+    internal = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
+    # command_line på HA-core: använd lokalt API, inte Nabu Casa-URL
+    if "ui.nabu.casa" in internal or internal.startswith("https://"):
+        return "http://127.0.0.1:8123", token
+    return internal, token
 
 
 def api_request(
