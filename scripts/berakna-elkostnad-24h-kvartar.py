@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 SECRETS_PATH = __import__("pathlib").Path("/config/secrets.yaml")
+STATE_ENTITY = "sensor.el_kostnad_24h_kvartar_runner"
 POWER_ENTITY = "sensor.power_eksharadsgatan_6"
 ELPRIS_ENTITY = "sensor.elpris_marginal_kwh_se3"
 TIBBER_PRICE_ENTITY = "sensor.electricity_price_eksharadsgatan_6"
@@ -38,19 +39,35 @@ def load_secrets() -> dict[str, str]:
     return values
 
 
+def load_supervisor_token() -> str:
+    for key in ("SUPERVISOR_TOKEN", "HASSIO_TOKEN"):
+        val = os.environ.get(key, "").strip()
+        if val:
+            return val
+    env_dir = __import__("pathlib").Path("/run/s6/container_environment")
+    if env_dir.is_dir():
+        for name in ("SUPERVISOR_TOKEN", "HASSIO_TOKEN"):
+            path = env_dir / name
+            if path.is_file():
+                try:
+                    return path.read_text(encoding="utf-8").strip()
+                except OSError:
+                    continue
+    return ""
+
+
 def ha_auth(secrets: dict[str, str]) -> tuple[str, str]:
+    supervisor = load_supervisor_token()
     token = (
-        secrets.get("ha_long_lived_token", "").strip()
+        supervisor
+        or secrets.get("ha_long_lived_token", "").strip()
         or os.environ.get("HA_TOKEN", "").strip()
-        or os.environ.get("SUPERVISOR_TOKEN", "").strip()
-        or os.environ.get("HASSIO_TOKEN", "").strip()
     )
     if not token:
         raise RuntimeError("saknar HA-token")
-    if os.environ.get("SUPERVISOR_TOKEN"):
+    if supervisor:
         return "http://supervisor/core", token
     internal = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
-    # command_line på HA-core: använd lokalt API, inte Nabu Casa-URL
     if "ui.nabu.casa" in internal or internal.startswith("https://"):
         return "http://127.0.0.1:8123", token
     return internal, token
@@ -415,12 +432,34 @@ def run_self_test() -> int:
     return 0
 
 
+def publish_state(secrets: dict[str, str], payload: dict) -> None:
+    body = {
+        "state": str(payload.get("total", 0.0)),
+        "attributes": {
+            "unit_of_measurement": "SEK",
+            "device_class": "monetary",
+            "friendly_name": "El kostnad 24h kvartar runner",
+            "total": payload.get("total", 0.0),
+            "total_kr": payload.get("total_kr", 0.0),
+            "slots": payload.get("slots", []),
+            "window_start": payload.get("window_start"),
+            "window_end": payload.get("window_end"),
+            "updated_at": payload.get("updated_at"),
+            "method": payload.get("method"),
+        },
+    }
+    entity = urllib.parse.quote(STATE_ENTITY, safe="")
+    api_request(secrets, "POST", f"/api/states/{entity}", body)
+
+
 def main() -> int:
     if len(sys.argv) > 1 and sys.argv[1] == "--self-test":
         return run_self_test()
     secrets = load_secrets()
     try:
         payload = compute_payload(secrets)
+        if payload.get("method") != "fel":
+            publish_state(secrets, payload)
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         payload = {
             "total": 0.0,
