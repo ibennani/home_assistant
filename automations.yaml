@@ -4175,6 +4175,7 @@
     - playing
     - paused
     - idle
+    - 'on'
     to:
     - 'off'
     - standby
@@ -4248,14 +4249,7 @@
           entity_id: input_select.vardagsrummet_belysning
         data:
           option: '{{ onskat_belysningslage | trim }}'
-      - action: remote.turn_off
-        target:
-          entity_id: remote.sony_tv_i_vardagsrummet
-      - action: media_player.turn_off
-        target:
-          entity_id:
-          - media_player.sony_tv_i_vardagsrummet
-          - media_player.denon_avr_x2800h
+      - action: script.slak_vardagsrum_mediacentrum
     - conditions:
       - condition: template
         value_template: '{{ trigger_id == ''appletv_aktiv'' }}'
@@ -4414,6 +4408,44 @@
               entity_id: light.taklampa_vardagsrummet
   mode: queued
   max: 5
+- id: media_slak_sony_nar_appletv_redan_av
+  alias: 'Media: Släck Sony-TV om den är på medan Apple TV är av'
+  description: Reserv om av-kommandot misslyckades eller status uppdaterades sent (assumed_state).
+  triggers:
+  - trigger: state
+    entity_id: media_player.sony_tv_i_vardagsrummet
+    from: 'off'
+    to:
+    - 'on'
+    - playing
+    - idle
+    - paused
+    for: 00:00:20
+  - trigger: state
+    entity_id: media_player.sony_tv_i_vardagsrummet
+    from: standby
+    to:
+    - 'on'
+    - playing
+    - idle
+    - paused
+    for: 00:00:20
+  conditions:
+  - condition: state
+    entity_id: input_boolean.ha_omstart_pagar
+    state: 'off'
+  - condition: state
+    entity_id: media_player.appletv
+    state:
+    - 'off'
+    - standby
+    for:
+      seconds: 30
+  - condition: template
+    value_template: "{{\n  states(\"media_player.playstation_4\")\n  in [\"standby\", \"off\", \"unavailable\", \"unknown\"]\n  and states(\"media_player.pucken_bakom_stereon_i_vardagsrummet\")\n  in [\"off\", \"unavailable\", \"unknown\"]\n}}\n"
+  actions:
+  - action: script.slak_vardagsrum_mediacentrum
+  mode: single
 - alias: 'Media: Starta Sony-TV på kvällen när ingen är hemma'
   id: '79183401601231086058674'
   triggers:

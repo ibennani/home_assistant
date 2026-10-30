@@ -1903,6 +1903,44 @@ spela_tv_stream_pa_appletv:
   - action: script.turn_on
     target:
       entity_id: script.appletv_borta_starta_kedja
+slak_vardagsrum_mediacentrum:
+  alias: 'Media: Släck vardagsrummets TV och receiver'
+  description: Stänger Denon först (ARC), sedan Sony-TV med statuspoll och omförsök.
+  mode: restart
+  sequence:
+  - action: media_player.turn_off
+    target:
+      entity_id: media_player.denon_avr_x2800h
+  - delay:
+      seconds: 2
+  - action: remote.turn_off
+    target:
+      entity_id: remote.sony_tv_i_vardagsrummet
+  - action: media_player.turn_off
+    target:
+      entity_id: media_player.sony_tv_i_vardagsrummet
+  - repeat:
+      count: 4
+      sequence:
+      - delay:
+          seconds: 4
+      - action: homeassistant.update_entity
+        target:
+          entity_id: media_player.sony_tv_i_vardagsrummet
+      - if:
+        - condition: template
+          value_template: "{{ states('media_player.sony_tv_i_vardagsrummet') not in ['off', 'standby', 'unavailable'] }}"
+        then:
+        - action: remote.turn_off
+          target:
+            entity_id: remote.sony_tv_i_vardagsrummet
+        - action: media_player.turn_off
+          target:
+            entity_id: media_player.sony_tv_i_vardagsrummet
+  - action: media_player.turn_off
+    target:
+      entity_id: media_player.denon_avr_x2800h
+    continue_on_error: true
 test_fraga_om_att_tanda_en_lampa:
   alias: Fråga om att tända en lampa
   sequence:
