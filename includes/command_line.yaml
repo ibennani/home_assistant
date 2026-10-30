@@ -29,6 +29,24 @@
     device_class: monetary
 
 - sensor:
+    name: El kostnad 24h kvartar runner
+    unique_id: el_kostnad_24h_kvartar_runner
+    command: python3 /config/scripts/berakna-elkostnad-24h-kvartar.py
+    scan_interval: 300
+    command_timeout: 120
+    value_template: "{{ value_json.total | float(0) | round(2) }}"
+    unit_of_measurement: SEK
+    device_class: monetary
+    json_attributes:
+      - total
+      - total_kr
+      - slots
+      - window_start
+      - window_end
+      - updated_at
+      - method
+
+- sensor:
     name: Tvattmaskin kostnad vid klar runner
     unique_id: tvattmaskin_kostnad_vid_klar_runner
     command: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py
