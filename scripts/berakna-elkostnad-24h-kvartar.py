@@ -286,8 +286,8 @@ def fetch_tibber_price_map(
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         nickname = "Ekshäradsgatan 6"
     payload = {
-        "start": range_start.strftime("%Y-%m-%d %H:%M:%S"),
-        "end": range_end.strftime("%Y-%m-%d %H:%M:%S"),
+        "start": range_start.astimezone(TZ).isoformat(),
+        "end": range_end.astimezone(TZ).isoformat(),
         "return_response": True,
     }
     resp = api_request(
@@ -325,19 +325,23 @@ def merge_price_slots(
     by_start: dict[datetime, tuple[datetime, datetime, float]] = {
         s0: (s0, s1, p) for s0, s1, p in marginal
     }
+    last_price = fallback
     t = floor_quarter(window_start)
     while t < window_end + timedelta(minutes=15):
-        if t not in by_start:
+        if t in by_start:
+            last_price = by_start[t][2]
+        else:
             price = tibber_map.get(t)
             if price is None:
-                for delta in (0, -15, 15, -30, 30):
+                for delta in (0, -15, 15, -30, 30, -45, 45):
                     key = t + timedelta(minutes=delta)
                     if key in tibber_map:
                         price = tibber_map[key]
                         break
             if price is None or price <= 0:
-                price = fallback_price
+                price = last_price if last_price > 0 else fallback
             by_start[t] = (t, t + timedelta(minutes=15), float(price))
+            last_price = float(price)
         t += timedelta(minutes=15)
     return sorted(by_start.values(), key=lambda x: x[0])
 
@@ -511,12 +515,16 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         slot_end = min(t + timedelta(minutes=15), window_end)
         kwh, kr, price = integrate_cost(power, t, slot_end, price_slots)
         total_kr += kr
+        if kwh > 0.0001:
+            slot_price = round(kr / kwh, 2)
+        else:
+            slot_price = round(float(price or fallback), 2)
         slots_out.append(
             {
                 "start": t.isoformat(),
                 "end": slot_end.isoformat(),
                 "kwh": round(kwh, 4),
-                "price": round(float(price or fallback), 2),
+                "price": slot_price,
                 "cost": round(kr, 2),
             }
         )
