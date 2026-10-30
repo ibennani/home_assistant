@@ -5156,7 +5156,7 @@ views:
     - type: custom:apexcharts-card
       header:
         show: true
-        show_states: true
+        show_states: false
         standard_format: false
         title: El-kostnad senaste 24 timmarna
       graph_span: 24h
