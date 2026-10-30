@@ -5153,6 +5153,68 @@ views:
         - value: 4000
           color: '#9d26ff'
       state_color: true
+    - type: custom:apexcharts-card
+      chart_type: bar
+      header:
+        show: true
+        show_states: true
+        standard_format: false
+      graph_span: 24h
+      span:
+        end: latest
+      now:
+        show: true
+        label: Nu
+      apex_config:
+        chart:
+          animations:
+            enabled: false
+          type: bar
+        grid:
+          yaxis:
+            lines:
+              show: true
+          xaxis:
+            lines:
+              show: true
+          strokeDashArray: 0.5
+          strokeWidth: 0.5
+        tooltip:
+          enabled: true
+          y:
+            formatter: "EVAL:(val) => parseFloat(val).toFixed(2).replace('.', ':') + ' kr'"
+        dataLabels:
+          enabled: false
+        legend:
+          show: false
+        xaxis:
+          type: datetime
+          tickAmount: 8
+          labels:
+            rotate: 0
+            formatter: "EVAL:(value) => {\n  const d = new Date(value);\n  const h = d.getHours();\n  return [0, 6, 12, 18].includes(h) ? ('0' + h).slice(-2) + ' ' : '';\n}\n"
+        yaxis:
+          forceNiceScale: true
+          decimalsInFloat: 2
+          min: 0
+          labels:
+            formatter: "EVAL:(val) => parseFloat(val).toFixed(2).replace('.', ':') + ' kr'"
+        plotOptions:
+          bar:
+            columnWidth: 95%
+        stroke:
+          show: false
+      series:
+      - entity: sensor.el_kostnad_24h_kvartar_runner
+        name: Kostnad per kvart
+        type: column
+        unit: ' kr'
+        float_precision: 2
+        show:
+          in_chart: true
+          in_header: true
+          legend_value: false
+        data_generator: "const parse = (raw) => Array.isArray(raw) ? raw : (typeof raw === 'string' && raw.length ? JSON.parse(raw) : []);\nconst rows = parse(entity.attributes.slots);\nconst colorFor = (v) => {\n  if (isNaN(v)) return '#888888';\n  if (v < 0) return '#809fff';\n  if (v < 0.50) return '#809fff';\n  if (v < 1.00) return '#28fccf';\n  if (v < 1.50) return '#28fc61';\n  if (v < 2.00) return '#ebfc28';\n  if (v < 3.00) return '#fcd228';\n  if (v < 4.00) return '#fc9628';\n  if (v < 5.00) return '#fc3e28';\n  if (v < 6.00) return '#fc289d';\n  return '#af28fc';\n};\nreturn rows.map((row) => {\n  const start = new Date(row.start);\n  const cost = Number(row.cost);\n  const price = Number(row.price);\n  return {\n    x: start.getTime(),\n    y: cost,\n    fillColor: colorFor(price),\n  };\n});\n"
   - type: grid
     cards:
     - type: entities

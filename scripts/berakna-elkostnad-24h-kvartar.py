@@ -1,0 +1,430 @@
+#!/usr/bin/env python3
+"""Beräkna elkostnad per kvart för rullande 24 timmar (kr + kWh per 15 min)."""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+
+SECRETS_PATH = __import__("pathlib").Path("/config/secrets.yaml")
+POWER_ENTITY = "sensor.power_eksharadsgatan_6"
+ELPRIS_ENTITY = "sensor.elpris_marginal_kwh_se3"
+TIBBER_PRICE_ENTITY = "sensor.electricity_price_eksharadsgatan_6"
+TZ = ZoneInfo("Europe/Stockholm")
+QUARTERS = 96
+
+
+def load_secrets() -> dict[str, str]:
+    if not SECRETS_PATH.exists():
+        return {}
+    values: dict[str, str] = {}
+    for line in SECRETS_PATH.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"^([a-zA-Z0-9_]+)\s*:\s*(.+?)\s*$", line.strip())
+        if not match:
+            continue
+        key, raw = match.group(1), match.group(2)
+        if raw.startswith('"') and raw.endswith('"'):
+            raw = raw[1:-1]
+        elif raw.startswith("'") and raw.endswith("'"):
+            raw = raw[1:-1]
+        values[key] = raw
+    return values
+
+
+def ha_auth(secrets: dict[str, str]) -> tuple[str, str]:
+    token = (
+        secrets.get("ha_long_lived_token", "").strip()
+        or os.environ.get("HA_TOKEN", "").strip()
+        or os.environ.get("SUPERVISOR_TOKEN", "").strip()
+    )
+    base = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
+    if token and os.environ.get("SUPERVISOR_TOKEN"):
+        base = "http://supervisor/core"
+    return base, token
+
+
+def api_request(
+    secrets: dict[str, str],
+    method: str,
+    path: str,
+    body: dict | None = None,
+) -> object:
+    base, token = ha_auth(secrets)
+    if not token:
+        raise RuntimeError("saknar HA-token")
+    data = None
+    headers = {"Authorization": f"Bearer {token}"}
+    if body is not None:
+        data = json.dumps(body).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(f"{base}{path}", data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req, timeout=90) as resp:
+        raw = resp.read().decode("utf-8")
+        return json.loads(raw) if raw else {}
+
+
+def parse_iso(ts: str) -> datetime:
+    dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(TZ)
+
+
+def floor_quarter(dt: datetime) -> datetime:
+    return dt.replace(minute=(dt.minute // 15) * 15, second=0, microsecond=0)
+
+
+def coerce_slot_list(raw: object) -> list:
+    if raw is None:
+        return []
+    if isinstance(raw, list):
+        return raw
+    if isinstance(raw, str):
+        try:
+            parsed = json.loads(raw)
+            return parsed if isinstance(parsed, list) else []
+        except json.JSONDecodeError:
+            return []
+    return []
+
+
+def parse_slot_row(s: object) -> tuple[datetime, datetime, float] | None:
+    if not isinstance(s, dict):
+        return None
+    start_raw = s.get("start")
+    end_raw = s.get("end")
+    val = s.get("value")
+    if start_raw is None or end_raw is None:
+        return None
+    try:
+        start = parse_iso(str(start_raw))
+        end = parse_iso(str(end_raw))
+        price = float(val)
+    except (TypeError, ValueError):
+        return None
+    return start, end, price
+
+
+def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
+    state = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
+    if not isinstance(state, dict):
+        return []
+    attrs = state.get("attributes") or {}
+    slots: list[tuple[datetime, datetime, float]] = []
+    for key in ("raw_today", "raw_tomorrow"):
+        if key == "raw_tomorrow":
+            tmr = attrs.get("tomorrow_valid")
+            tm_ok = tmr is True or (isinstance(tmr, str) and tmr.lower() == "true")
+            if not tm_ok:
+                continue
+        for s in coerce_slot_list(attrs.get(key)):
+            row = parse_slot_row(s)
+            if row:
+                slots.append(row)
+    if slots:
+        return sorted(slots, key=lambda x: x[0])
+    today = coerce_slot_list(attrs.get("today"))
+    if not today:
+        return []
+    midnight = datetime.now(TZ).replace(hour=0, minute=0, second=0, microsecond=0)
+    step = 15 if len(today) > 24 else 60
+    for i, val in enumerate(today):
+        start = midnight + timedelta(minutes=i * step)
+        end = start + timedelta(minutes=step)
+        try:
+            slots.append((start, end, float(val)))
+        except (TypeError, ValueError):
+            continue
+    return sorted(slots, key=lambda x: x[0])
+
+
+def extract_prices_payload(resp: object) -> dict[str, list]:
+    if not isinstance(resp, dict):
+        return {}
+    svc = resp.get("service_response") or resp.get("response") or resp
+    if isinstance(svc, dict):
+        for val in svc.values():
+            if isinstance(val, dict):
+                return val
+    return svc if isinstance(svc, dict) else {}
+
+
+def pick_home_key(prices_by_home: dict, nickname: str) -> str | None:
+    if not prices_by_home:
+        return None
+    nick = nickname.lower()
+    for key in prices_by_home:
+        if nick in str(key).lower():
+            return str(key)
+    return next(iter(prices_by_home.keys()), None)
+
+
+def fetch_tibber_price_map(
+    secrets: dict[str, str], range_start: datetime, range_end: datetime
+) -> dict[datetime, float]:
+    try:
+        nick_state = api_request(secrets, "GET", f"/api/states/{TIBBER_PRICE_ENTITY}")
+        attrs = nick_state.get("attributes", {}) if isinstance(nick_state, dict) else {}
+        nickname = str(attrs.get("app_nickname") or "Ekshäradsgatan 6")
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        nickname = "Ekshäradsgatan 6"
+    payload = {
+        "start": range_start.strftime("%Y-%m-%d %H:%M:%S"),
+        "end": range_end.strftime("%Y-%m-%d %H:%M:%S"),
+        "return_response": True,
+    }
+    resp = api_request(
+        secrets,
+        "POST",
+        "/api/services/tibber/get_prices",
+        payload,
+    )
+    prices_by_home = extract_prices_payload(resp)
+    home_key = pick_home_key(prices_by_home, nickname)
+    if not home_key:
+        return {}
+    price_map: dict[datetime, float] = {}
+    for row in prices_by_home.get(home_key, []):
+        if not isinstance(row, dict):
+            continue
+        st = row.get("start_time")
+        pr = row.get("price")
+        if st is None or pr is None:
+            continue
+        try:
+            price_map[floor_quarter(parse_iso(str(st)))] = float(pr)
+        except (TypeError, ValueError):
+            continue
+    return price_map
+
+
+def merge_price_slots(
+    marginal: list[tuple[datetime, datetime, float]],
+    tibber_map: dict[datetime, float],
+    window_start: datetime,
+    window_end: datetime,
+    fallback_price: float,
+) -> list[tuple[datetime, datetime, float]]:
+    by_start: dict[datetime, tuple[datetime, datetime, float]] = {
+        s0: (s0, s1, p) for s0, s1, p in marginal
+    }
+    t = floor_quarter(window_start)
+    while t < window_end + timedelta(minutes=15):
+        if t not in by_start:
+            price = tibber_map.get(t)
+            if price is None:
+                for delta in (0, -15, 15, -30, 30):
+                    key = t + timedelta(minutes=delta)
+                    if key in tibber_map:
+                        price = tibber_map[key]
+                        break
+            if price is None:
+                price = fallback_price
+            by_start[t] = (t, t + timedelta(minutes=15), float(price))
+        t += timedelta(minutes=15)
+    return sorted(by_start.values(), key=lambda x: x[0])
+
+
+def fetch_power_history(
+    secrets: dict[str, str], start: datetime, end: datetime
+) -> list[tuple[datetime, float]]:
+    start_utc = start.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    end_utc = end.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    path = (
+        f"/api/history/period/{urllib.parse.quote(start_utc, safe='')}"
+        f"?filter_entity_id={urllib.parse.quote(POWER_ENTITY)}"
+        f"&end_time={urllib.parse.quote(end_utc, safe='')}"
+        f"&minimal_response&no_attributes"
+    )
+    data = api_request(secrets, "GET", path)
+    points: list[tuple[datetime, float]] = []
+    if not isinstance(data, list) or not data:
+        return points
+    entity_rows = data[0] if isinstance(data[0], list) else []
+    for row in entity_rows:
+        if not isinstance(row, dict):
+            continue
+        try:
+            t = parse_iso(str(row.get("last_changed") or row.get("last_updated")))
+            v = float(row.get("state"))
+        except (TypeError, ValueError):
+            continue
+        if v < 0:
+            continue
+        points.append((t, v))
+    points.sort(key=lambda x: x[0])
+    return points
+
+
+def price_at(slots: list[tuple[datetime, datetime, float]], t: datetime) -> float | None:
+    for s0, s1, price in slots:
+        if s0 <= t < s1:
+            return price
+    return None
+
+
+def integrate_cost(
+    points: list[tuple[datetime, float]],
+    start: datetime,
+    end: datetime,
+    slots: list[tuple[datetime, datetime, float]],
+) -> tuple[float, float, float | None]:
+    """Returnerar (kWh, kostnad_kr, representativt_pris_kr_per_kwh)."""
+    if end <= start:
+        return 0.0, 0.0, price_at(slots, start)
+    series = [(t, v) for t, v in points if start <= t <= end]
+    if not series:
+        series = [(t, v) for t, v in points if t <= end]
+    if not series:
+        return 0.0, 0.0, price_at(slots, start)
+    if series[0][0] > start:
+        prev = next((v for t, v in reversed(points) if t <= start), series[0][1])
+        series.insert(0, (start, prev))
+    if series[-1][0] < end:
+        series.append((end, series[-1][1]))
+
+    total_kwh = 0.0
+    total_kr = 0.0
+    for i in range(1, len(series)):
+        t0, p0 = series[i - 1]
+        t1, p1 = series[i]
+        dt_s = (t1 - t0).total_seconds()
+        if dt_s <= 0:
+            continue
+        t = t0
+        while t < t1:
+            next_t = t1
+            for s0, s1, _ in slots:
+                for boundary in (s0, s1):
+                    if t < boundary < next_t:
+                        next_t = boundary
+            frac = (next_t - t).total_seconds() / dt_s
+            p = p0 + (p1 - p0) * ((t - t0).total_seconds() / dt_s)
+            e = p * (next_t - t).total_seconds() / 3600.0 / 1000.0
+            total_kwh += e
+            pr = price_at(slots, t)
+            if pr is not None:
+                total_kr += e * pr
+            t = next_t
+    rep = price_at(slots, start)
+    if rep is None and total_kwh > 0:
+        rep = total_kr / total_kwh
+    return total_kwh, total_kr, rep
+
+
+def compute_payload(secrets: dict[str, str]) -> dict:
+    now = datetime.now(TZ)
+    window_start = floor_quarter(now - timedelta(hours=24))
+    window_end = now
+    try:
+        marginal = fetch_marginal_slots(secrets)
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        marginal = []
+    fallback = 0.0
+    try:
+        st = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
+        if isinstance(st, dict):
+            fallback = float(st.get("state") or 0)
+    except (TypeError, ValueError, urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError):
+        fallback = 0.0
+    tibber_map: dict[datetime, float] = {}
+    try:
+        tibber_map = fetch_tibber_price_map(
+            secrets, window_start - timedelta(hours=1), window_end + timedelta(hours=1)
+        )
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        tibber_map = {}
+    price_slots = merge_price_slots(
+        marginal, tibber_map, window_start, window_end, fallback
+    )
+    try:
+        power = fetch_power_history(
+            secrets, window_start - timedelta(minutes=5), window_end
+        )
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        power = []
+
+    slots_out: list[dict] = []
+    total_kr = 0.0
+    t = window_start
+    for _ in range(QUARTERS):
+        if t >= window_end:
+            break
+        slot_end = min(t + timedelta(minutes=15), window_end)
+        kwh, kr, price = integrate_cost(power, t, slot_end, price_slots)
+        total_kr += kr
+        slots_out.append(
+            {
+                "start": t.isoformat(),
+                "end": slot_end.isoformat(),
+                "kwh": round(kwh, 4),
+                "price": round(float(price or fallback), 2),
+                "cost": round(kr, 2),
+            }
+        )
+        t += timedelta(minutes=15)
+
+    return {
+        "total": round(total_kr, 2),
+        "total_kr": round(total_kr, 2),
+        "window_start": window_start.isoformat(),
+        "window_end": window_end.isoformat(),
+        "slots": slots_out,
+        "updated_at": now.isoformat(),
+        "method": "effekt_marginalpris",
+    }
+
+
+def run_self_test() -> int:
+    slots = [
+        (
+            datetime(2026, 1, 1, 0, 0, tzinfo=TZ),
+            datetime(2026, 1, 1, 0, 15, tzinfo=TZ),
+            1.0,
+        )
+    ]
+    pts = [
+        (datetime(2026, 1, 1, 0, 0, tzinfo=TZ), 1000.0),
+        (datetime(2026, 1, 1, 0, 15, tzinfo=TZ), 1000.0),
+    ]
+    kwh, kr, _ = integrate_cost(
+        pts,
+        datetime(2026, 1, 1, 0, 0, tzinfo=TZ),
+        datetime(2026, 1, 1, 0, 15, tzinfo=TZ),
+        slots,
+    )
+    assert abs(kwh - 0.25) < 0.001, kwh
+    assert abs(kr - 0.25) < 0.01, kr
+    assert floor_quarter(datetime(2026, 3, 4, 13, 7, 30, tzinfo=TZ)) == datetime(
+        2026, 3, 4, 13, 0, 0, tzinfo=TZ
+    )
+    return 0
+
+
+def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] == "--self-test":
+        return run_self_test()
+    secrets = load_secrets()
+    try:
+        payload = compute_payload(secrets)
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        payload = {
+            "total": 0.0,
+            "total_kr": 0.0,
+            "slots": [],
+            "updated_at": datetime.now(TZ).isoformat(),
+            "method": "fel",
+        }
+    print(json.dumps(payload, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
