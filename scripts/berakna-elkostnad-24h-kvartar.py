@@ -43,9 +43,10 @@ def ha_auth(secrets: dict[str, str]) -> tuple[str, str]:
         secrets.get("ha_long_lived_token", "").strip()
         or os.environ.get("HA_TOKEN", "").strip()
         or os.environ.get("SUPERVISOR_TOKEN", "").strip()
+        or os.environ.get("HASSIO_TOKEN", "").strip()
     )
     base = secrets.get("ha_internal_url", "http://127.0.0.1:8123").rstrip("/")
-    if token and os.environ.get("SUPERVISOR_TOKEN"):
+    if token and not secrets.get("ha_long_lived_token") and os.environ.get("SUPERVISOR_TOKEN"):
         base = "http://supervisor/core"
     return base, token
 
@@ -238,11 +239,9 @@ def fetch_power_history(
     points: list[tuple[datetime, float]] = []
     try:
         start_param = urllib.parse.quote(start.isoformat())
-        end_param = urllib.parse.quote(end.isoformat())
         path = (
             f"/api/history/period/{start_param}"
-            f"?end_time={end_param}"
-            f"&filter_entity_id={urllib.parse.quote(POWER_ENTITY)}"
+            f"?filter_entity_id={urllib.parse.quote(POWER_ENTITY)}"
             f"&minimal_response=true"
             f"&no_attributes=true"
         )
@@ -257,7 +256,7 @@ def fetch_power_history(
                     v = float(row.get("state"))
                 except (TypeError, ValueError):
                     continue
-                if v < 0:
+                if t > end or v < 0:
                     continue
                 points.append((t, v))
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
