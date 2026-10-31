@@ -5157,7 +5157,7 @@ views:
       header:
         show: true
         show_states: false
-        title: El senaste 24 h — höjd = kWh, färg = kostnad (kr/kvart)
+        title: El senaste 24 h — höjd = kWh, färg = pris (kr/kWh)
       graph_span: 24h
       all_series_config:
         type: column
@@ -5203,7 +5203,7 @@ views:
         name: Förbrukning
         type: column
         float_precision: 3
-        data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nconst colorForCost=(kr)=>{\n  if(!Number.isFinite(kr)||kr<=0) return '#666666';\n  if(kr<0.35) return '#28fc61';\n  if(kr<0.65) return '#ebfc28';\n  if(kr<1.0) return '#fcd228';\n  if(kr<1.5) return '#fc9628';\n  if(kr<2.5) return '#fc3e28';\n  return '#af28fc';\n};\nreturn parse(entity.attributes.slots).map((row)=>{\n  const kwh=Number(row.kwh)||0;\n  const cost=Number(row.cost)||0;\n  let price=Number(row.price)||0;\n  if((!price||price<=0)&&kwh>0) price=cost/kwh;\n  return {\n    x: new Date(row.start).getTime(),\n    y: kwh,\n    fillColor: colorForCost(cost),\n    cost,\n    price,\n  };\n}).filter((d)=>Number.isFinite(d.x));\n} catch (e) { return []; }\n"
+        data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nconst colorFor=(v)=>{\n  if(!Number.isFinite(v)) return '#888888';\n  if(v<0) return '#809fff';\n  if(v<0.50) return '#809fff';\n  if(v<1.00) return '#28fccf';\n  if(v<1.50) return '#28fc61';\n  if(v<2.00) return '#ebfc28';\n  if(v<3.00) return '#fcd228';\n  if(v<4.00) return '#fc9628';\n  if(v<5.00) return '#fc3e28';\n  if(v<6.00) return '#fc289d';\n  return '#af28fc';\n};\nreturn parse(entity.attributes.slots).map((row)=>{\n  const kwh=Number(row.kwh)||0;\n  const cost=Number(row.cost)||0;\n  let price=Number(row.price);\n  if(!Number.isFinite(price)||price<=0) price=kwh>0?cost/kwh:NaN;\n  return {\n    x: new Date(row.start).getTime(),\n    y: kwh,\n    fillColor: colorFor(price),\n    cost,\n    price,\n  };\n}).filter((d)=>Number.isFinite(d.x));\n} catch (e) { return []; }\n"
   - type: grid
     cards:
     - type: entities
