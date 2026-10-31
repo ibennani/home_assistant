@@ -107,7 +107,7 @@ def api_request(
 def parse_iso(ts: str) -> datetime:
     dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=TZ)
     return dt.astimezone(TZ)
 
 
@@ -234,16 +234,19 @@ def marginal_slots_from_attrs(attrs: dict) -> list[tuple[datetime, datetime, flo
     return sorted(slots, key=lambda x: x[0])
 
 
-def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
-    attrs: dict = {}
+def fetch_marginal_attributes(secrets: dict[str, str]) -> dict:
     try:
         resp = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
         if isinstance(resp, dict):
-            api_attrs = resp.get("attributes")
-            if isinstance(api_attrs, dict):
-                attrs = api_attrs
+            attrs = resp.get("attributes")
+            return attrs if isinstance(attrs, dict) else {}
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         pass
+    return {}
+
+
+def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
+    attrs = fetch_marginal_attributes(secrets)
 
     def _has_price_lists(a: dict) -> bool:
         return bool(coerce_slot_list(a.get("raw_today"))) or bool(coerce_slot_list(a.get("today")))
@@ -257,6 +260,27 @@ def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, dateti
         if isinstance(db_state.get("attributes"), dict):
             attrs = db_state["attributes"]
     return marginal_slots_from_attrs(attrs)
+
+
+def marginal_price_at(attrs: dict, t: datetime) -> float | None:
+    tq = floor_quarter(t)
+    tmr = attrs.get("tomorrow_valid")
+    tm_ok = tmr is True or (isinstance(tmr, str) and str(tmr).lower() == "true")
+    keys: tuple[str, ...] = ("raw_today", "raw_tomorrow") if tm_ok else ("raw_today",)
+    for key in keys:
+        if key == "raw_tomorrow" and not tm_ok:
+            continue
+        for row in coerce_slot_list(attrs.get(key)):
+            parsed = parse_slot_row(row)
+            if not parsed:
+                continue
+            s0, s1, price = parsed
+            if s0 <= tq < s1:
+                return price
+    for s0, s1, price in marginal_slots_from_attrs(attrs):
+        if s0 <= tq < s1:
+            return price
+    return None
 
 
 def extract_prices_payload(resp: object) -> dict[str, list]:
@@ -326,9 +350,10 @@ def merge_price_slots(
     window_end: datetime,
     fallback_price: float,
 ) -> list[tuple[datetime, datetime, float]]:
-    by_start: dict[datetime, tuple[datetime, datetime, float]] = {
-        s0: (s0, s1, p) for s0, s1, p in marginal
-    }
+    by_start: dict[datetime, tuple[datetime, datetime, float]] = {}
+    for s0, _s1, p in marginal:
+        q0 = floor_quarter(s0)
+        by_start[q0] = (q0, q0 + timedelta(minutes=15), float(p))
     last_price = fallback_price
     t = floor_quarter(window_start)
     while t < window_end + timedelta(minutes=15):
@@ -509,12 +534,15 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         marginal = fetch_marginal_slots(secrets)
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         marginal = []
+    marginal_attrs = fetch_marginal_attributes(secrets)
     archive = load_archive_slots(window_start, window_end)
-    by_start: dict[datetime, tuple[datetime, datetime, float]] = {
-        s0: (s0, s1, p) for s0, s1, p in archive
-    }
-    for s0, s1, p in marginal:
-        by_start[s0] = (s0, s1, p)
+    by_start: dict[datetime, tuple[datetime, datetime, float]] = {}
+    for s0, _s1, p in archive:
+        q0 = floor_quarter(s0)
+        by_start[q0] = (q0, q0 + timedelta(minutes=15), float(p))
+    for s0, _s1, p in marginal:
+        q0 = floor_quarter(s0)
+        by_start[q0] = (q0, q0 + timedelta(minutes=15), float(p))
     combined = sorted(by_start.values(), key=lambda x: x[0])
     fallback = 0.0
     try:
@@ -550,7 +578,9 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         slot_end = min(t + timedelta(minutes=15), window_end)
         kwh, kr, _avg = integrate_cost(power, t, slot_end, price_slots)
         total_kr += kr
-        nominal = price_at(price_slots, t)
+        nominal = marginal_price_at(marginal_attrs, t)
+        if nominal is None or nominal <= 0:
+            nominal = price_at(price_slots, t)
         if nominal is None or nominal <= 0:
             nominal = float(fallback)
         if (nominal <= 0 or nominal == fallback) and kwh > 0.0001 and kr > 0:
