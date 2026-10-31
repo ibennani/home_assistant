@@ -284,6 +284,32 @@ def marginal_price_at(attrs: dict, t: datetime) -> float | None:
     for s0, s1, price in marginal_slots_from_attrs(attrs):
         if s0 <= tq < s1:
             return price
+    today_list = coerce_slot_list(attrs.get("today"))
+    if today_list:
+        step = 15 if len(today_list) > 24 else 60
+        midnight = datetime.combine(tq.date(), datetime.min.time(), tzinfo=TZ)
+        idx = int((tq - midnight).total_seconds() // (step * 60))
+        if 0 <= idx < len(today_list):
+            try:
+                val = float(today_list[idx])
+                if val > 0:
+                    return val
+            except (TypeError, ValueError):
+                pass
+    if ARCHIVE_DIR.is_dir():
+        path = ARCHIVE_DIR / f"{tq.date().isoformat()}.json"
+        if path.is_file():
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                data = {}
+            for row in coerce_slot_list(data.get("slots") if isinstance(data, dict) else None):
+                parsed = parse_slot_row(row)
+                if not parsed:
+                    continue
+                s0, s1, price = parsed
+                if s0 <= tq < s1:
+                    return price
     return None
 
 
