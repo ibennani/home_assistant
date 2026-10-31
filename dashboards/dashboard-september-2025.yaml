@@ -5197,6 +5197,50 @@ views:
         type: column
         float_precision: 3
         data_generator: "try {\nvar parseArr=function(r){if(Array.isArray(r))return r;if(typeof r==='string'&&r.length){try{return JSON.parse(r);}catch(e){}}return [];};\nvar ST=(typeof hass!=='undefined'&&hass&&hass.states)?hass.states:(typeof states!=='undefined'?states:{});\nvar marg=ST['sensor.elpris_marginal_kwh_se3'];\nvar attr=(marg&&marg.attributes)?marg.attributes:{};\nvar prEnt=ST['sensor.el_kostnad_24h_kvart_priser'];\nvar prAttr=(prEnt&&prEnt.attributes)?prEnt.attributes:{};\nvar priceByStart={};\nvar addQ=function(arr){for(var i=0;i<arr.length;i++){var q=arr[i];if(q&&q.start!=null&&q.price!=null){priceByStart[String(q.start)]=Number(q.price);}}};\naddQ(parseArr(prAttr.quarters));\nvar addRaw=function(raw){var arr=parseArr(raw);for(var i=0;i<arr.length;i++){var s=arr[i];if(s&&s.start!=null&&s.value!=null){priceByStart[String(s.start)]=Number(s.value);}}};\naddRaw(attr.raw_today);\naddRaw(attr.raw_tomorrow);\nvar colorFor=function(v){if(!Number.isFinite(v))return '#888888';if(v<0)return '#809fff';if(v<0.50)return '#809fff';if(v<1.00)return '#28fccf';if(v<1.50)return '#28fc61';if(v<2.00)return '#ebfc28';if(v<3.00)return '#fcd228';if(v<4.00)return '#fc9628';if(v<5.00)return '#fc3e28';if(v<6.00)return '#fc289d';return '#af28fc';};\nvar rows=parseArr(entity.attributes.slots);\nif(!rows.length)return [];\nvar out=[];\nfor(var j=0;j<rows.length;j++){\n  var row=rows[j];\n  if(!row||!row.start)continue;\n  var ts=new Date(row.start).getTime();\n  if(!Number.isFinite(ts))continue;\n  var kwh=Number(row.kwh);\n  if(!Number.isFinite(kwh))kwh=0;\n  var price=priceByStart[String(row.start)];\n  if(!Number.isFinite(price)||price<=0)price=Number(row.price);\n  out.push({x:ts,y:kwh,fillColor:colorFor(price),price:price,cost:Number(row.cost)||0});\n}\nreturn out;\n} catch(e){return [];}\n"
+    - type: custom:apexcharts-card
+      header:
+        show: true
+        show_states: false
+        title: El senaste 24 h — höjd = kostnad (kr), färg = elpris (kr/kWh)
+      graph_span: 24h
+      apex_config:
+        chart:
+          animations:
+            enabled: false
+          type: bar
+          height: 280
+        legend:
+          show: false
+        xaxis:
+          type: datetime
+          tickAmount: 24
+          labels:
+            datetimeUTC: false
+            formatter: "EVAL:(v) => { const d = new Date(v); return ('0' + d.getHours()).slice(-2); }\n"
+        yaxis:
+          min: 0
+          forceNiceScale: true
+          title:
+            text: kr per kvart
+          decimalsInFloat: 2
+          labels:
+            formatter: "EVAL:(v) => parseFloat(v).toFixed(2).replace('.', ':')\n"
+        plotOptions:
+          bar:
+            columnWidth: 90%
+        fill:
+          type: solid
+        stroke:
+          show: false
+        tooltip:
+          enabled: true
+          custom: "EVAL:function({ seriesIndex, dataPointIndex, w }) {\n  var pt = w.config.series[seriesIndex].data[dataPointIndex];\n  var cost = pt && pt.y != null ? Number(pt.y) : NaN;\n  var kwh = pt && pt.kwh != null ? Number(pt.kwh) : NaN;\n  var price = pt && pt.price != null ? Number(pt.price) : NaN;\n  var fmt = function(n, u) { return Number.isFinite(n) ? n.toFixed(2).replace('.', ':') + ' ' + u : '—'; };\n  var when = pt && pt.x ? new Date(pt.x).toLocaleString('sv-SE', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';\n  return '<div class=\"apexcharts-tooltip-title\" style=\"font-family: inherit;\">' + when + '</div>' +\n    '<div style=\"padding: 4px 10px;\">Kostnad: <b>' + fmt(cost, 'kr') + '</b><br/>Förbrukning: <b>' + fmt(kwh, 'kWh') + '</b><br/>Elpris: <b>' + fmt(price, 'kr/kWh') + '</b></div>';\n}\n"
+      series:
+      - entity: sensor.el_kostnad_24h_kvartar_runner
+        name: Kostnad
+        type: column
+        float_precision: 2
+        data_generator: "try {\nvar parseArr=function(r){if(Array.isArray(r))return r;if(typeof r==='string'&&r.length){try{return JSON.parse(r);}catch(e){}}return [];};\nvar ST=(typeof hass!=='undefined'&&hass&&hass.states)?hass.states:(typeof states!=='undefined'?states:{});\nvar marg=ST['sensor.elpris_marginal_kwh_se3'];\nvar attr=(marg&&marg.attributes)?marg.attributes:{};\nvar prEnt=ST['sensor.el_kostnad_24h_kvart_priser'];\nvar prAttr=(prEnt&&prEnt.attributes)?prEnt.attributes:{};\nvar priceByStart={};\nvar addQ=function(arr){for(var i=0;i<arr.length;i++){var q=arr[i];if(q&&q.start!=null&&q.price!=null){priceByStart[String(q.start)]=Number(q.price);}}};\naddQ(parseArr(prAttr.quarters));\nvar addRaw=function(raw){var arr=parseArr(raw);for(var i=0;i<arr.length;i++){var s=arr[i];if(s&&s.start!=null&&s.value!=null){priceByStart[String(s.start)]=Number(s.value);}}};\naddRaw(attr.raw_today);\naddRaw(attr.raw_tomorrow);\nvar colorFor=function(v){if(!Number.isFinite(v))return '#888888';if(v<0)return '#809fff';if(v<0.50)return '#809fff';if(v<1.00)return '#28fccf';if(v<1.50)return '#28fc61';if(v<2.00)return '#ebfc28';if(v<3.00)return '#fcd228';if(v<4.00)return '#fc9628';if(v<5.00)return '#fc3e28';if(v<6.00)return '#fc289d';return '#af28fc';};\nvar rows=parseArr(entity.attributes.slots);\nif(!rows.length)return [];\nvar out=[];\nfor(var j=0;j<rows.length;j++){\n  var row=rows[j];\n  if(!row||!row.start)continue;\n  var ts=new Date(row.start).getTime();\n  if(!Number.isFinite(ts))continue;\n  var kwh=Number(row.kwh);\n  if(!Number.isFinite(kwh))kwh=0;\n  var cost=Number(row.cost);\n  if(!Number.isFinite(cost))cost=0;\n  var price=priceByStart[String(row.start)];\n  if(!Number.isFinite(price)||price<=0)price=Number(row.price);\n  out.push({x:ts,y:cost,fillColor:colorFor(price),price:price,kwh:kwh});\n}\nreturn out;\n} catch(e){return [];}\n"
   - type: grid
     cards:
     - type: entities
