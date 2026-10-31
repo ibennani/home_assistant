@@ -245,7 +245,7 @@ def fetch_marginal_attributes(secrets: dict[str, str]) -> dict:
     return {}
 
 
-def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
+def resolve_marginal_attributes(secrets: dict[str, str]) -> dict:
     attrs = fetch_marginal_attributes(secrets)
 
     def _has_price_lists(a: dict) -> bool:
@@ -259,7 +259,11 @@ def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, dateti
         db_state = fetch_state_db(ELPRIS_ENTITY)
         if isinstance(db_state.get("attributes"), dict):
             attrs = db_state["attributes"]
-    return marginal_slots_from_attrs(attrs)
+    return attrs
+
+
+def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
+    return marginal_slots_from_attrs(resolve_marginal_attributes(secrets))
 
 
 def marginal_price_at(attrs: dict, t: datetime) -> float | None:
@@ -530,11 +534,11 @@ def compute_payload(secrets: dict[str, str]) -> dict:
     now = datetime.now(TZ)
     window_start = floor_quarter(now - timedelta(hours=HOURS_BACK))
     window_end = now
+    marginal_attrs = resolve_marginal_attributes(secrets)
     try:
-        marginal = fetch_marginal_slots(secrets)
-    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        marginal = marginal_slots_from_attrs(marginal_attrs)
+    except (TypeError, ValueError):
         marginal = []
-    marginal_attrs = fetch_marginal_attributes(secrets)
     archive = load_archive_slots(window_start, window_end)
     by_start: dict[datetime, tuple[datetime, datetime, float]] = {}
     for s0, _s1, p in archive:
