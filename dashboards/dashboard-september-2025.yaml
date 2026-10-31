@@ -5195,6 +5195,13 @@ views:
         plotOptions:
           bar:
             columnWidth: 92%
+            distributed: true
+        fill:
+          type: solid
+        stroke:
+          show: false
+        colors:
+        - "EVAL:function({ dataPointIndex, seriesIndex, w }) {\n  const pt = w.config.series[seriesIndex].data[dataPointIndex];\n  return (pt && pt.fillColor) ? pt.fillColor : '#888888';\n}\n"
         tooltip:
           enabled: true
           custom: "EVAL:function({ seriesIndex, dataPointIndex, w }) {\n  const pt = w.config.series[seriesIndex].data[dataPointIndex];\n  const kwh = pt && pt.y != null ? Number(pt.y) : NaN;\n  const cost = pt && pt.cost != null ? Number(pt.cost) : NaN;\n  const price = pt && pt.price != null ? Number(pt.price) : NaN;\n  const fmt = (n, u) => (Number.isFinite(n) ? n.toFixed(2).replace('.', ':') + ' ' + u : '—');\n  const when = pt && pt.x ? new Date(pt.x).toLocaleString('sv-SE', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';\n  return '<div class=\"apexcharts-tooltip-title\" style=\"font-family: inherit;\">' + when + '</div>' +\n    '<div style=\"padding: 4px 10px;\">Förbrukning: <b>' + fmt(kwh, 'kWh') + '</b><br/>Kostnad kvart: <b>' + fmt(cost, 'kr') + '</b><br/>Pris: <b>' + fmt(price, 'kr/kWh') + '</b></div>';\n}\n"
@@ -5203,7 +5210,7 @@ views:
         name: Förbrukning
         type: column
         float_precision: 3
-        data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nconst colorFor=(v)=>{\n  if(!Number.isFinite(v)) return '#888888';\n  if(v<0) return '#809fff';\n  if(v<0.50) return '#809fff';\n  if(v<1.00) return '#28fccf';\n  if(v<1.50) return '#28fc61';\n  if(v<2.00) return '#ebfc28';\n  if(v<3.00) return '#fcd228';\n  if(v<4.00) return '#fc9628';\n  if(v<5.00) return '#fc3e28';\n  if(v<6.00) return '#fc289d';\n  return '#af28fc';\n};\nreturn parse(entity.attributes.slots).map((row)=>{\n  const kwh=Number(row.kwh)||0;\n  const cost=Number(row.cost)||0;\n  let price=Number(row.price);\n  if(!Number.isFinite(price)||price<=0) price=kwh>0?cost/kwh:NaN;\n  return {\n    x: new Date(row.start).getTime(),\n    y: kwh,\n    fillColor: colorFor(price),\n    cost,\n    price,\n  };\n}).filter((d)=>Number.isFinite(d.x));\n} catch (e) { return []; }\n"
+        data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nconst ST=(typeof hass!=='undefined'&&hass&&hass.states)?hass.states:(typeof states!=='undefined'?states:{});\nconst marg=ST['sensor.elpris_marginal_kwh_se3'];\nconst margSlots=parse(marg?.attributes?.raw_today).concat(parse(marg?.attributes?.raw_tomorrow));\nconst priceAt=(ts)=>{\n  for(const s of margSlots){\n    if(!s||!s.start) continue;\n    const s0=new Date(s.start).getTime();\n    const s1=new Date(s.end||s.start).getTime();\n    if(ts>=s0&&ts<s1) return Number(s.value);\n  }\n  return NaN;\n};\nconst colorFor=(v)=>{\n  if(!Number.isFinite(v)) return '#888888';\n  if(v<0) return '#809fff';\n  if(v<0.50) return '#809fff';\n  if(v<1.00) return '#28fccf';\n  if(v<1.50) return '#28fc61';\n  if(v<2.00) return '#ebfc28';\n  if(v<3.00) return '#fcd228';\n  if(v<4.00) return '#fc9628';\n  if(v<5.00) return '#fc3e28';\n  if(v<6.00) return '#fc289d';\n  return '#af28fc';\n};\nreturn parse(entity.attributes.slots).map((row)=>{\n  const kwh=Number(row.kwh)||0;\n  const cost=Number(row.cost)||0;\n  const ts=new Date(row.start).getTime();\n  let price=priceAt(ts);\n  if(!Number.isFinite(price)||price<=0) price=Number(row.price);\n  if((!Number.isFinite(price)||price<=0)&&kwh>0) price=cost/kwh;\n  return {\n    x: ts,\n    y: kwh,\n    fillColor: colorFor(price),\n    cost,\n    price,\n  };\n}).filter((d)=>Number.isFinite(d.x));\n} catch (e) { return []; }\n"
   - type: grid
     cards:
     - type: entities
