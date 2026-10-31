@@ -236,21 +236,23 @@ def marginal_slots_from_attrs(attrs: dict) -> list[tuple[datetime, datetime, flo
 
 def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
     attrs: dict = {}
-    if Path("/config/configuration.yaml").exists():
-        attrs = fetch_state_attributes_db(ELPRIS_ENTITY)
-    has_raw = bool(coerce_slot_list(attrs.get("raw_today"))) or bool(
-        coerce_slot_list(attrs.get("today"))
-    )
-    if not has_raw:
-        try:
-            resp = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
-            if isinstance(resp, dict):
-                api_attrs = resp.get("attributes")
-                if isinstance(api_attrs, dict):
-                    attrs = api_attrs
-        except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
-            pass
-    if not attrs:
+    try:
+        resp = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
+        if isinstance(resp, dict):
+            api_attrs = resp.get("attributes")
+            if isinstance(api_attrs, dict):
+                attrs = api_attrs
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        pass
+
+    def _has_price_lists(a: dict) -> bool:
+        return bool(coerce_slot_list(a.get("raw_today"))) or bool(coerce_slot_list(a.get("today")))
+
+    if not _has_price_lists(attrs) and Path("/config/configuration.yaml").exists():
+        db_attrs = fetch_state_attributes_db(ELPRIS_ENTITY)
+        if _has_price_lists(db_attrs):
+            attrs = db_attrs
+    if not _has_price_lists(attrs):
         db_state = fetch_state_db(ELPRIS_ENTITY)
         if isinstance(db_state.get("attributes"), dict):
             attrs = db_state["attributes"]
@@ -525,8 +527,12 @@ def compute_payload(secrets: dict[str, str]) -> dict:
             fallback = float(db_st.get("state") or 0)
         except (TypeError, ValueError):
             fallback = 0.0
+    try:
+        tibber_map = fetch_tibber_price_map(secrets, window_start, window_end)
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
+        tibber_map = {}
     price_slots = merge_price_slots(
-        combined, {}, window_start, window_end, fallback
+        combined, tibber_map, window_start, window_end, fallback
     )
     try:
         power = fetch_power_history(
@@ -542,18 +548,19 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         if t >= window_end:
             break
         slot_end = min(t + timedelta(minutes=15), window_end)
-        kwh, kr, price = integrate_cost(power, t, slot_end, price_slots)
+        kwh, kr, _avg = integrate_cost(power, t, slot_end, price_slots)
         total_kr += kr
-        if kwh > 0.0001:
-            slot_price = round(kr / kwh, 2)
-        else:
-            slot_price = round(float(price or fallback), 2)
+        nominal = price_at(price_slots, t)
+        if nominal is None or nominal <= 0:
+            nominal = float(fallback)
+        if (nominal <= 0 or nominal == fallback) and kwh > 0.0001 and kr > 0:
+            nominal = kr / kwh
         slots_out.append(
             {
                 "start": t.isoformat(),
                 "end": slot_end.isoformat(),
                 "kwh": round(kwh, 4),
-                "price": slot_price,
+                "price": round(float(nominal), 2),
                 "cost": round(kr, 2),
             }
         )
