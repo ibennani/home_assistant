@@ -10887,3 +10887,51 @@
         notification_icon: https://imgbin.com/png/902kPvyX/plex-media-server-computer-icons-media-player-png
         tag: seerr-media
   mode: queued
+- id: fasadbelysning_ring_rorelse_ec16
+  alias: 'Belysning: Fasadbelysning vid rörelse på framsidan'
+  description: Tänd fasadbelysningen på max vid Ring-rörelse. Efter 2 minuter utan rörelse dimmas den till 1 %.
+  mode: restart
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.front_door_motion_2
+    to: 'on'
+    id: ring_motion_mqtt
+    not_from:
+    - unavailable
+    - unknown
+  - trigger: state
+    entity_id: event.front_door_motion
+    id: ring_motion_event
+    not_from:
+    - unavailable
+    - unknown
+    not_to:
+    - unavailable
+    - unknown
+  conditions:
+  - condition: template
+    value_template: "{% if trigger.id == 'ring_motion_mqtt' %}\n  {{ trigger.to_state.state == 'on'\n     and trigger.from_state.state\
+      \ not in ['unavailable', 'unknown'] }}\n{% else %}\n  {{ trigger.to_state.state not in ['unavailable', 'unknown', 'none']\
+      \ and trigger.from_state.state not in ['unavailable', 'unknown', 'none'] }}\n{% endif %}\n"
+  actions:
+  - action: light.turn_on
+    target:
+      entity_id: light.fasadbelysningen
+    data:
+      brightness: 255
+      transition: 1
+  - wait_for_trigger:
+    - trigger: state
+      entity_id: binary_sensor.front_door_motion_2
+      to: 'off'
+      for:
+        minutes: 2
+  - condition: state
+    entity_id: light.fasadbelysningen
+    state: 'on'
+  - action: light.turn_on
+    target:
+      entity_id: light.fasadbelysningen
+    data:
+      brightness_pct: 1
+      transition: 5
