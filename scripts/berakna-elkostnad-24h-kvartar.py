@@ -757,6 +757,43 @@ def run_self_test() -> int:
     return 0
 
 
+def export_quarter_prices_payload(secrets: dict[str, str]) -> dict:
+    now = datetime.now(TZ)
+    window_start = floor_quarter(now - timedelta(hours=HOURS_BACK))
+    window_end = now
+    marginal_attrs = resolve_marginal_attributes(secrets)
+    quarter_prices = build_quarter_price_map(marginal_attrs, window_start, window_end)
+    quarters: list[dict] = []
+    t = window_start
+    while t < window_end:
+        tq = floor_quarter(t)
+        price = quarter_prices.get(tq)
+        if price is None or price <= 0:
+            price = marginal_price_at(marginal_attrs, t)
+        if price is None or price <= 0:
+            try:
+                st = api_request(secrets, "GET", f"/api/states/{ELPRIS_ENTITY}")
+                price = float(st.get("state") or 0) if isinstance(st, dict) else 0.0
+            except (TypeError, ValueError, urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError):
+                price = 0.0
+        quarters.append(
+            {
+                "start": tq.isoformat(),
+                "price": round(float(price or 0), 2),
+            }
+        )
+        t += timedelta(minutes=15)
+    return {
+        "count": len(quarters),
+        "window_start": window_start.isoformat(),
+        "window_end": window_end.isoformat(),
+        "quarter_price_count": len(quarter_prices),
+        "marginal_raw_today": len(coerce_slot_list(marginal_attrs.get("raw_today"))),
+        "quarters": quarters,
+        "updated_at": now.isoformat(),
+    }
+
+
 def publish_state(secrets: dict[str, str], payload: dict) -> None:
     body = {
         "state": str(payload.get("total", 0.0)),
@@ -784,6 +821,19 @@ def publish_state(secrets: dict[str, str], payload: dict) -> None:
 def main() -> int:
     if len(sys.argv) > 1 and sys.argv[1] == "--self-test":
         return run_self_test()
+    if len(sys.argv) > 1 and sys.argv[1] == "--export-prices":
+        secrets = load_secrets()
+        try:
+            payload = export_quarter_prices_payload(secrets)
+        except Exception as exc:
+            payload = {
+                "count": 0,
+                "quarters": [],
+                "updated_at": datetime.now(TZ).isoformat(),
+                "error": str(exc)[:240],
+            }
+        print(json.dumps(payload, ensure_ascii=False))
+        return 0
     secrets = load_secrets()
     try:
         payload = compute_payload(secrets)
