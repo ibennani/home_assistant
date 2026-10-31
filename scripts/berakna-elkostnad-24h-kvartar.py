@@ -279,13 +279,13 @@ def marginal_price_at(attrs: dict, t: datetime) -> float | None:
             if not parsed:
                 continue
             s0, s1, price = parsed
-            if s0 <= tq < s1:
+            if s0 <= tq < s1 or floor_quarter(s0) == tq:
                 return price
     for s0, s1, price in marginal_slots_from_attrs(attrs):
-        if s0 <= tq < s1:
+        if s0 <= tq < s1 or floor_quarter(s0) == tq:
             return price
     today_list = coerce_slot_list(attrs.get("today"))
-    if today_list:
+    if today_list and tq.date() == datetime.now(TZ).date():
         step = 15 if len(today_list) > 24 else 60
         midnight = datetime.combine(tq.date(), datetime.min.time(), tzinfo=TZ)
         idx = int((tq - midnight).total_seconds() // (step * 60))
@@ -308,7 +308,7 @@ def marginal_price_at(attrs: dict, t: datetime) -> float | None:
                 if not parsed:
                     continue
                 s0, s1, price = parsed
-                if s0 <= tq < s1:
+                if s0 <= tq < s1 or floor_quarter(s0) == tq:
                     return price
     return None
 
@@ -613,8 +613,6 @@ def compute_payload(secrets: dict[str, str]) -> dict:
             nominal = price_at(price_slots, t)
         if nominal is None or nominal <= 0:
             nominal = float(fallback)
-        if (nominal <= 0 or nominal == fallback) and kwh > 0.0001 and kr > 0:
-            nominal = kr / kwh
         slots_out.append(
             {
                 "start": t.isoformat(),

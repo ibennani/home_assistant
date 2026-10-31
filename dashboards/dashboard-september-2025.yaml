@@ -5157,25 +5157,14 @@ views:
       header:
         show: true
         show_states: false
-        title: El senaste 24 h — höjd = kWh, färg = pris (kr/kWh)
+        title: El senaste 24 h — höjd = kWh, färg = elpris (kr/kWh)
       graph_span: 24h
-      all_series_config:
-        type: column
-        show:
-          legend_value: false
       apex_config:
         chart:
           animations:
             enabled: false
           type: bar
-          height: 260
-        grid:
-          yaxis:
-            lines:
-              show: true
-          xaxis:
-            lines:
-              show: true
+          height: 280
         legend:
           show: false
         xaxis:
@@ -5194,20 +5183,20 @@ views:
             formatter: "EVAL:(v) => parseFloat(v).toFixed(2).replace('.', ':')\n"
         plotOptions:
           bar:
-            columnWidth: 92%
+            columnWidth: 90%
         fill:
           type: solid
         stroke:
           show: false
         tooltip:
           enabled: true
-          custom: "EVAL:function({ seriesIndex, dataPointIndex, w }) {\n  const pt = w.config.series[seriesIndex].data[dataPointIndex];\n  const kwh = pt && pt.y != null ? Number(pt.y) : NaN;\n  const cost = pt && pt.cost != null ? Number(pt.cost) : NaN;\n  const price = pt && pt.price != null ? Number(pt.price) : NaN;\n  const fmt = (n, u) => (Number.isFinite(n) ? n.toFixed(2).replace('.', ':') + ' ' + u : '—');\n  const when = pt && pt.x ? new Date(pt.x).toLocaleString('sv-SE', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';\n  return '<div class=\"apexcharts-tooltip-title\" style=\"font-family: inherit;\">' + when + '</div>' +\n    '<div style=\"padding: 4px 10px;\">Förbrukning: <b>' + fmt(kwh, 'kWh') + '</b><br/>Kostnad kvart: <b>' + fmt(cost, 'kr') + '</b><br/>Pris: <b>' + fmt(price, 'kr/kWh') + '</b></div>';\n}\n"
+          custom: "EVAL:function({ seriesIndex, dataPointIndex, w }) {\n  var pt = w.config.series[seriesIndex].data[dataPointIndex];\n  var kwh = pt && pt.y != null ? Number(pt.y) : NaN;\n  var price = pt && pt.price != null ? Number(pt.price) : NaN;\n  var cost = pt && pt.cost != null ? Number(pt.cost) : NaN;\n  var fmt = function(n, u) { return Number.isFinite(n) ? n.toFixed(2).replace('.', ':') + ' ' + u : '—'; };\n  var when = pt && pt.x ? new Date(pt.x).toLocaleString('sv-SE', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';\n  return '<div class=\"apexcharts-tooltip-title\" style=\"font-family: inherit;\">' + when + '</div>' +\n    '<div style=\"padding: 4px 10px;\">Förbrukning: <b>' + fmt(kwh, 'kWh') + '</b><br/>Elpris: <b>' + fmt(price, 'kr/kWh') + '</b><br/>Kostnad kvart: <b>' + fmt(cost, 'kr') + '</b></div>';\n}\n"
       series:
       - entity: sensor.el_kostnad_24h_kvartar_runner
         name: Förbrukning
         type: column
         float_precision: 3
-        data_generator: "try {\nconst parse=(r)=>Array.isArray(r)?r:(typeof r==='string'&&r.length?JSON.parse(r):[]);\nconst ST=(typeof hass!=='undefined'&&hass&&hass.states)?hass.states:(typeof states!=='undefined'?states:{});\nconst margEnt=ST['sensor.elpris_marginal_kwh_se3'];\nconst margAttr=(margEnt&&margEnt.attributes)?margEnt.attributes:{};\nconst margToday=Array.isArray(margAttr.today)?margAttr.today:[];\nconst stepMin=(margToday.length>24)?15:60;\nconst margSlots=parse(margAttr.raw_today).concat(parse(margAttr.raw_tomorrow));\nconst priceAt=(ts)=>{\n  for(var i=0;i<margSlots.length;i++){\n    var s=margSlots[i];\n    if(!s||!s.start) continue;\n    var s0=new Date(s.start).getTime();\n    var s1=new Date(s.end||s.start).getTime();\n    if(ts>=s0&&ts<s1) return Number(s.value);\n  }\n  var d=new Date(ts);\n  var base=new Date(d.getFullYear(),d.getMonth(),d.getDate());\n  var todayBase=new Date();\n  todayBase.setHours(0,0,0,0);\n  if(base.getTime()===todayBase.getTime()&&margToday.length){\n    var idx=Math.floor((ts-base.getTime())/(stepMin*60000));\n    if(idx>=0&&idx<margToday.length) return Number(margToday[idx]);\n  }\n  return NaN;\n};\nconst colorFor=(v)=>{\n  if(!Number.isFinite(v)) return '#888888';\n  if(v<0) return '#809fff';\n  if(v<0.50) return '#809fff';\n  if(v<1.00) return '#28fccf';\n  if(v<1.50) return '#28fc61';\n  if(v<2.00) return '#ebfc28';\n  if(v<3.00) return '#fcd228';\n  if(v<4.00) return '#fc9628';\n  if(v<5.00) return '#fc3e28';\n  if(v<6.00) return '#fc289d';\n  return '#af28fc';\n};\nvar rows=parse(entity.attributes.slots);\nif(!rows.length) return [];\nreturn rows.map(function(row){\n  var kwh=Number(row.kwh)||0;\n  var cost=Number(row.cost)||0;\n  var ts=new Date(row.start).getTime();\n  if(!Number.isFinite(ts)) return null;\n  var price=priceAt(ts);\n  if(!Number.isFinite(price)||price<=0) price=Number(row.price);\n  if((!Number.isFinite(price)||price<=0)&&kwh>0) price=cost/kwh;\n  return {x:ts,y:kwh,fillColor:colorFor(price),cost:cost,price:price};\n}).filter(function(d){return d&&Number.isFinite(d.x);});\n} catch (e) { return []; }\n"
+        data_generator: "try {\nvar parseArr=function(r){if(Array.isArray(r))return r;if(typeof r==='string'&&r.length){try{return JSON.parse(r);}catch(e){}}return [];};\nvar ST=(typeof hass!=='undefined'&&hass&&hass.states)?hass.states:(typeof states!=='undefined'?states:{});\nvar marg=ST['sensor.elpris_marginal_kwh_se3'];\nvar attr=(marg&&marg.attributes)?marg.attributes:{};\nvar priceByStart={};\nvar addRaw=function(raw){var arr=parseArr(raw);for(var i=0;i<arr.length;i++){var s=arr[i];if(s&&s.start!=null&&s.value!=null){priceByStart[String(s.start)]=Number(s.value);}}};\naddRaw(attr.raw_today);\naddRaw(attr.raw_tomorrow);\nvar colorFor=function(v){if(!Number.isFinite(v))return '#888888';if(v<0)return '#809fff';if(v<0.50)return '#809fff';if(v<1.00)return '#28fccf';if(v<1.50)return '#28fc61';if(v<2.00)return '#ebfc28';if(v<3.00)return '#fcd228';if(v<4.00)return '#fc9628';if(v<5.00)return '#fc3e28';if(v<6.00)return '#fc289d';return '#af28fc';};\nvar rows=parseArr(entity.attributes.slots);\nif(!rows.length)return [];\nvar out=[];\nfor(var j=0;j<rows.length;j++){\n  var row=rows[j];\n  if(!row||!row.start)continue;\n  var ts=new Date(row.start).getTime();\n  if(!Number.isFinite(ts))continue;\n  var kwh=Number(row.kwh);\n  if(!Number.isFinite(kwh))kwh=0;\n  var price=priceByStart[String(row.start)];\n  if(!Number.isFinite(price)||price<=0)price=Number(row.price);\n  out.push({x:ts,y:kwh,fillColor:colorFor(price),price:price,cost:Number(row.cost)||0});\n}\nreturn out;\n} catch(e){return [];}\n"
   - type: grid
     cards:
     - type: entities
