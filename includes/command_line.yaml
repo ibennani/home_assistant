@@ -51,6 +51,23 @@
       - marginal_raw_today
 
 - sensor:
+    name: El kostnad 24h kvart priser
+    unique_id: el_kostnad_24h_kvart_priser
+    command: python3 /config/scripts/berakna-elkostnad-24h-kvartar.py --export-prices
+    scan_interval: 300
+    command_timeout: 120
+    value_template: "{{ value_json.count | int(0) }}"
+    json_attributes:
+      - count
+      - quarters
+      - window_start
+      - window_end
+      - quarter_price_count
+      - marginal_raw_today
+      - updated_at
+      - error
+
+- sensor:
     name: Tvattmaskin kostnad vid klar runner
     unique_id: tvattmaskin_kostnad_vid_klar_runner
     command: python3 /config/scripts/tvattmaskin-berakna-kostnad-klar.py
