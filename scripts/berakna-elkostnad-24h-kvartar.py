@@ -245,25 +245,62 @@ def fetch_marginal_attributes(secrets: dict[str, str]) -> dict:
     return {}
 
 
+def _attr_richness(attrs: dict) -> int:
+    if not attrs:
+        return 0
+    raw_n = len(coerce_slot_list(attrs.get("raw_today"))) + len(
+        coerce_slot_list(attrs.get("raw_tomorrow"))
+    )
+    if raw_n:
+        return raw_n + 1000
+    return len(coerce_slot_list(attrs.get("today")))
+
+
 def resolve_marginal_attributes(secrets: dict[str, str]) -> dict:
-    attrs = fetch_marginal_attributes(secrets)
-
-    def _has_price_lists(a: dict) -> bool:
-        return bool(coerce_slot_list(a.get("raw_today"))) or bool(coerce_slot_list(a.get("today")))
-
-    if not _has_price_lists(attrs) and Path("/config/configuration.yaml").exists():
+    candidates: list[dict] = []
+    api_attrs = fetch_marginal_attributes(secrets)
+    if api_attrs:
+        candidates.append(api_attrs)
+    if Path("/config/configuration.yaml").exists():
         db_attrs = fetch_state_attributes_db(ELPRIS_ENTITY)
-        if _has_price_lists(db_attrs):
-            attrs = db_attrs
-    if not _has_price_lists(attrs):
+        if db_attrs:
+            candidates.append(db_attrs)
         db_state = fetch_state_db(ELPRIS_ENTITY)
-        if isinstance(db_state.get("attributes"), dict):
-            attrs = db_state["attributes"]
-    return attrs
+        db_a = db_state.get("attributes") if isinstance(db_state.get("attributes"), dict) else {}
+        if db_a:
+            candidates.append(db_a)
+    if not candidates:
+        return {}
+    return max(candidates, key=_attr_richness)
 
 
 def fetch_marginal_slots(secrets: dict[str, str]) -> list[tuple[datetime, datetime, float]]:
     return marginal_slots_from_attrs(resolve_marginal_attributes(secrets))
+
+
+def build_quarter_price_map(
+    marginal_attrs: dict,
+    window_start: datetime,
+    window_end: datetime,
+) -> dict[datetime, float]:
+    """Marginal kr/kWh per kvart: arkiv för historik, raw_* skriver över dagens kvartar."""
+    out: dict[datetime, float] = {}
+    for s0, _s1, price in load_archive_slots(window_start, window_end):
+        out[floor_quarter(s0)] = float(price)
+    tmr = marginal_attrs.get("tomorrow_valid")
+    tm_ok = tmr is True or (isinstance(tmr, str) and str(tmr).lower() == "true")
+    for key in ("raw_today", "raw_tomorrow"):
+        if key == "raw_tomorrow" and not tm_ok:
+            continue
+        for row in coerce_slot_list(marginal_attrs.get(key)):
+            parsed = parse_slot_row(row)
+            if not parsed:
+                continue
+            s0, _, price = parsed
+            out[floor_quarter(s0)] = float(price)
+    for s0, _s1, price in marginal_slots_from_attrs(marginal_attrs):
+        out[floor_quarter(s0)] = float(price)
+    return out
 
 
 def marginal_price_at(attrs: dict, t: datetime) -> float | None:
@@ -379,19 +416,26 @@ def merge_price_slots(
     window_start: datetime,
     window_end: datetime,
     fallback_price: float,
+    quarter_prices: dict[datetime, float] | None = None,
 ) -> list[tuple[datetime, datetime, float]]:
     by_start: dict[datetime, tuple[datetime, datetime, float]] = {}
+    qp = quarter_prices or {}
     for s0, _s1, p in marginal:
         q0 = floor_quarter(s0)
         by_start[q0] = (q0, q0 + timedelta(minutes=15), float(p))
+    for tq, p in qp.items():
+        if p > 0:
+            by_start[tq] = (tq, tq + timedelta(minutes=15), float(p))
     last_price = fallback_price
     t = floor_quarter(window_start)
     while t < window_end + timedelta(minutes=15):
         if t in by_start:
             last_price = by_start[t][2]
         else:
-            price = tibber_map.get(t)
-            if price is None:
+            price = qp.get(t)
+            if price is None or price <= 0:
+                price = tibber_map.get(t)
+            if price is None or price <= 0:
                 for delta in (0, -15, 15, -30, 30, -45, 45):
                     key = t + timedelta(minutes=delta)
                     if key in tibber_map:
@@ -403,6 +447,24 @@ def merge_price_slots(
             last_price = float(price)
         t += timedelta(minutes=15)
     return sorted(by_start.values(), key=lambda x: x[0])
+
+
+def slot_marginal_price(
+    t: datetime,
+    marginal_attrs: dict,
+    quarter_prices: dict[datetime, float],
+    price_slots: list[tuple[datetime, datetime, float]],
+    fallback: float,
+) -> float:
+    tq = floor_quarter(t)
+    for source in (
+        quarter_prices.get(tq),
+        marginal_price_at(marginal_attrs, t),
+        price_at(price_slots, t),
+    ):
+        if source is not None and float(source) > 0:
+            return float(source)
+    return float(fallback)
 
 
 def load_archive_slots(
@@ -561,6 +623,7 @@ def compute_payload(secrets: dict[str, str]) -> dict:
     window_start = floor_quarter(now - timedelta(hours=HOURS_BACK))
     window_end = now
     marginal_attrs = resolve_marginal_attributes(secrets)
+    quarter_prices = build_quarter_price_map(marginal_attrs, window_start, window_end)
     try:
         marginal = marginal_slots_from_attrs(marginal_attrs)
     except (TypeError, ValueError):
@@ -590,7 +653,12 @@ def compute_payload(secrets: dict[str, str]) -> dict:
     except (urllib.error.URLError, urllib.error.HTTPError, OSError, RuntimeError, ValueError):
         tibber_map = {}
     price_slots = merge_price_slots(
-        combined, tibber_map, window_start, window_end, fallback
+        combined,
+        tibber_map,
+        window_start,
+        window_end,
+        fallback,
+        quarter_prices,
     )
     try:
         power = fetch_power_history(
@@ -608,11 +676,9 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         slot_end = min(t + timedelta(minutes=15), window_end)
         kwh, kr, _avg = integrate_cost(power, t, slot_end, price_slots)
         total_kr += kr
-        nominal = marginal_price_at(marginal_attrs, t)
-        if nominal is None or nominal <= 0:
-            nominal = price_at(price_slots, t)
-        if nominal is None or nominal <= 0:
-            nominal = float(fallback)
+        nominal = slot_marginal_price(
+            t, marginal_attrs, quarter_prices, price_slots, fallback
+        )
         slots_out.append(
             {
                 "start": t.isoformat(),
@@ -633,6 +699,8 @@ def compute_payload(secrets: dict[str, str]) -> dict:
         "updated_at": now.isoformat(),
         "method": "effekt_arkiv_marginal",
         "archive_days": len({s0.date().isoformat() for s0, _, _ in archive}),
+        "quarter_price_count": len(quarter_prices),
+        "marginal_raw_today": len(coerce_slot_list(marginal_attrs.get("raw_today"))),
     }
 
 
@@ -668,6 +736,24 @@ def run_self_test() -> int:
     )
     assert len(merged) >= 2
     assert merged[0][2] == 2.5
+    attrs = {
+        "raw_today": [
+            {
+                "start": "2026-10-31T10:00:00+01:00",
+                "end": "2026-10-31T10:15:00+01:00",
+                "value": 3.01,
+            }
+        ],
+        "today": [3.01],
+    }
+    t_slot = datetime(2026, 10, 31, 10, 0, tzinfo=TZ)
+    assert marginal_price_at(attrs, t_slot) == 3.01
+    qmap = build_quarter_price_map(
+        attrs,
+        datetime(2026, 10, 31, 9, 0, tzinfo=TZ),
+        datetime(2026, 10, 31, 11, 0, tzinfo=TZ),
+    )
+    assert qmap[floor_quarter(t_slot)] == 3.01
     return 0
 
 
@@ -686,6 +772,9 @@ def publish_state(secrets: dict[str, str], payload: dict) -> None:
             "updated_at": payload.get("updated_at"),
             "method": payload.get("method"),
             "error": payload.get("error"),
+            "archive_days": payload.get("archive_days"),
+            "quarter_price_count": payload.get("quarter_price_count"),
+            "marginal_raw_today": payload.get("marginal_raw_today"),
         },
     }
     entity = urllib.parse.quote(STATE_ENTITY, safe="")
